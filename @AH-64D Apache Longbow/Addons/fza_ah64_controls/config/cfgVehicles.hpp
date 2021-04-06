@@ -46,12 +46,13 @@ class CfgVehicles
 		mainBladeRadius = 7.3;
 		maxGForce = 9;
 		maxFordingDepth = 0.55;
+
 		//SFM Variables-------------/
-		liftForceCoef          = 1.25;
-		bodyFrictionCoef       = 0.7;
-		cyclicAsideForceCoef   = 1.0;
-		cyclicForwardForceCoef = 1.0;
-		backRotorForceCoef     = 1.0;
+		liftForceCoef          = 1.0; //1.0
+		bodyFrictionCoef       = 0.7; //1.0
+		cyclicAsideForceCoef   = 1.0; //1.0
+		cyclicForwardForceCoef = 1.0; //1.0
+		backRotorForceCoef     = 1.0; //1.0
 	    fuelCapacity           = 1423;
 		fuelconsumptionrate    = 0.0;
 		maxSpeed               = 298;

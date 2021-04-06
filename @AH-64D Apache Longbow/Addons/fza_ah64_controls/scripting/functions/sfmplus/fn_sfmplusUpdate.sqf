@@ -62,7 +62,11 @@ hintSilent format ["_armaFuelFrac = %1
 					\nDelta Time = %8", _armaFuelFrac, _fwdFuelMass, _aftFuelMass, _totFuelMass, getMass _heli, _maxTotFuelMass, _curFuelFlow, _deltaTime];
 */
 private _curMass = _emptyMass + _totFuelMass;
-
-[_heli] call fza_fnc_sfmplusStabilator;
-
 _heli setMass _curMass;
+
+//Main Rotor
+[_heli, 0, 0, 1.01] call fza_fnc_sfmplusRotor;
+//Tail Rotor
+[_heli, 1, 0, 1.01] call fza_fnc_sfmplusRotor;
+
+[_heli, _deltaTime] call fza_fnc_sfmplusStabilator;

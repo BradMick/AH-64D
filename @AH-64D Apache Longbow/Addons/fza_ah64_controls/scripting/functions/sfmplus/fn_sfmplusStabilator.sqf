@@ -15,10 +15,9 @@ Examples:
 Author:
 	BradMick
 ---------------------------------------------------------------------------- */
-params ["_heli"];
+params ["_heli", "_deltaTime"];
 
 private _collOut = _heli getVariable "fza_ah64d_collectiveOutput";
-
 private _colorRed = [1,0,0,1]; private _colorGreen = [0,1,0,1]; private _colorBlue = [0,0,1,1]; private _colorWhite = [1,1,1,1];
 
 DRAW_LINE = {
@@ -27,7 +26,7 @@ DRAW_LINE = {
 };
 
 private _objCtr  = getCenterOfMass _heli;
-private _stabPos = [0.0, -8.783, -0.50];	//this needs to come from the config...
+private _stabPos = _heli getVariable "fza_ah64d_stabPos";
 private _stabPvt = _objCtr vectorAdd _stabPos;
 
 //--------------------------Coll---30-----50-----57.5---60-----80-----82.5---90-----117.5---120----150---160---165---180
@@ -124,7 +123,7 @@ private _CL = _intAIRFOILTABLE select 1;
 
 private _area = [_A, _B, _C, _D] call fza_fnc_sfmplusGetArea;
 
-private _liftForce = -_CL * 0.5 * 1.225 * _area * _V_mps;
+private _liftForce = -_CL * 0.5 * 1.225 * _area * (_V_mps * _V_mps);
 /*
 LIFTMOD = [[ 0.00,  1.00],	//0kts
 			[10.29, 1.00],	//24kts
@@ -159,15 +158,15 @@ LIFTMOD = [[ 0.00, 1.00],
            [72.02, 0.00], 
            [73.05, 0.00]];			
 */
-private _liftModOut = [LIFTMOD, _V_mps] call fza_fnc_linearInterp select 1;
-_liftForce = _liftForce * _liftModOut;
+//private _liftModOut = [LIFTMOD, _V_mps] call fza_fnc_linearInterp select 1;
+//_liftForce = _liftForce * _liftModOut;
 
-private _lift = _liftVec vectorMultiply _liftForce;
+private _lift = _liftVec vectorMultiply (_liftForce * _deltaTime);
 
 _heli addForce[_heli vectorModelToWorld _lift, _G];
 
-hintSilent format ["Lift Mod = %1
-					\nLift Force = %2", LIFTMOD, _liftForce];
+//hintSilent format [ "Lift Force = %1", _liftForce];
+
 /*
               +Z   +Y
                |   /
