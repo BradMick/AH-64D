@@ -48,11 +48,11 @@ class CfgVehicles
 		maxFordingDepth = 0.55;
 
 		//SFM Variables-------------/
-		liftForceCoef          = 1.0; //1.0
+		liftForceCoef          = 0.0; //1.0
 		bodyFrictionCoef       = 0.7; //1.0
-		cyclicAsideForceCoef   = 1.0; //1.0
-		cyclicForwardForceCoef = 1.0; //1.0
-		backRotorForceCoef     = 1.0; //1.0
+		cyclicAsideForceCoef   = 0.0; //1.0
+		cyclicForwardForceCoef = 0.0; //1.0
+		backRotorForceCoef     = 0.0; //1.0
 	    fuelCapacity           = 1423;
 		fuelconsumptionrate    = 0.0;
 		maxSpeed               = 298;
@@ -1756,6 +1756,10 @@ initPhase=0;
 				initPhase=0;
             };
 			*/
+			class modelCenter
+			{
+				selection = "modelCenter";
+			}
 			class mpd_pl_obj1_v
             {
 				source = "user";

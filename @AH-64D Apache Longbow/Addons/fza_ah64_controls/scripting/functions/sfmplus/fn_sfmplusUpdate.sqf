@@ -65,8 +65,8 @@ private _curMass = _emptyMass + _totFuelMass;
 _heli setMass _curMass;
 
 //Main Rotor
-[_heli, 0, 0, 1.01] call fza_fnc_sfmplusRotor;
+[_heli, 0, 0, 1.01, _deltaTime] call fza_fnc_sfmplusRotor;
 //Tail Rotor
-[_heli, 1, 0, 1.01] call fza_fnc_sfmplusRotor;
+[_heli, 1, 0, 1.01, _deltaTime] call fza_fnc_sfmplusRotor;
 
 [_heli, _deltaTime] call fza_fnc_sfmplusStabilator;

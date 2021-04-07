@@ -25,7 +25,7 @@ DRAW_LINE = {
 	drawLine3D [_heli modelToWorldVisual _p1, _heli modelToWorldVisual _p2, _col];
 };
 
-private _objCtr  = getCenterOfMass _heli;
+private _objCtr  = _heli selectionPosition ["modelCenter", "Memory"];
 private _stabPos = _heli getVariable "fza_ah64d_stabPos";
 private _stabPvt = _objCtr vectorAdd _stabPos;
 
@@ -164,7 +164,7 @@ LIFTMOD = [[ 0.00, 1.00],
 private _lift = _liftVec vectorMultiply (_liftForce * _deltaTime);
 
 _heli addForce[_heli vectorModelToWorld _lift, _G];
-
+//_heli addTorque(_heli vectorModelToWorld [(_lift select 2) * _deltaTime, 0, 0]);
 //hintSilent format [ "Lift Force = %1", _liftForce];
 
 /*
