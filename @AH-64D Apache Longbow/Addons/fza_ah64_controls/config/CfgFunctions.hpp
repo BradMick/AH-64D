@@ -184,6 +184,14 @@ class CfgFunctions
 			class pfzReceive {R;};
 			class pfzSend {R;};
 		}
+		class sfmplus {
+			file = "\fza_ah64_controls\scripting\functions\sfmplus";
+			class sfmplusConfig {R;};
+			class sfmplusGetArea {R;};
+			class sfmplusGetInput {R;};
+			class sfmplusStabilator {R;};
+			class sfmplusUpdate {R;};
+		}
 		class targeting
 		{
 			file = "\fza_ah64_controls\scripting\functions\targeting";
