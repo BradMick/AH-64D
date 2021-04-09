@@ -85,10 +85,13 @@ _heli setVariable ["fza_ah64_fireapuarm", 0];
 [_heli] call fza_fnc_engineInit;
 [_heli] call fza_fnc_sfmplusConfig;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 if (player in _heli && !is3den &&  fza_ah64_showPopup && !fza_ah64_introShownThisScenario) then {
     createDialog "RscFzaDisplayWelcome";
 };
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
