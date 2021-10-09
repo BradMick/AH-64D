@@ -113,7 +113,7 @@ private _relWind = vectornormalized(_heli vectorWorldToModel (velocity _heli));
 _relWind = _relWind;
 
 private _AoA = (_relWind # 2 atan2 _relWind # 1) + _theta;
-_AoA = [_AoA] call CBA_fnc_simplifyAngle180;
+_AoA = [_AoA, -180, 180] call BIS_fnc_clamp;
 
 private _AIRFOILTABLE =
 [

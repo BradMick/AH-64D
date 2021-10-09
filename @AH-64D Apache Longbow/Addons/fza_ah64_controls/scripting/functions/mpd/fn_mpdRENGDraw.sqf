@@ -24,8 +24,8 @@ private _e1trq     = 0;
 private _e1opsi    = 0;
 
 if (fza_ah64_heliSimEnabled) then {
-	_e1percent = (_heli getVariable "bmk_engPwrTurSpeed" select 0) * 100;
-	_e1ng      = (_heli getVariable "bmk_engGasGenSpeed" select 0) * 1000;
+	_e1percent = (_heli getVariable "bmk_engPwrTurPct" select 0) * 100;
+	_e1ng      = (_heli getVariable "bmk_engGasGenPct" select 0) * 1000;
 	_e1tgt     = 0;
 	_e1trq     = ((_heli getVariable "bmk_engTorque" select 0) / 481) * 100;
 	_e1opsi    = 0;
@@ -119,8 +119,8 @@ private _e2trq     = 0;
 private _e2opsi    = 0;
 
 if (fza_ah64_heliSimEnabled) then {
-	_e2percent = (_heli getVariable "bmk_engPwrTurSpeed" select 1) * 100;
-	_e2ng      = (_heli getVariable "bmk_engGasGenSpeed" select 1) * 1000;
+	_e2percent = (_heli getVariable "bmk_engPwrTurPct" select 1) * 100;
+	_e2ng      = (_heli getVariable "bmk_engGasGenPct" select 1) * 1000;
 	_e2tgt     = 0;
 	_e2trq     = ((_heli getVariable "bmk_engTorque" select 1) / 481) * 100;
 	_e2opsi    = 0;
