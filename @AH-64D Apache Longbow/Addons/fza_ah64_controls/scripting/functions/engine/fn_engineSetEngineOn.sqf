@@ -28,6 +28,11 @@ if (!fza_ah64_heliSimEnabled) then {
 		_heli setVariable ["fza_ah64_estarted", true, true];
 		_heli engineOn true;
 	};
+
+	if (_eng1state == "OFF" && _eng2State == "OFF") then {
+		_heli setVariable ["fza_ah64_estarted", false, true];
+		_heli engineOn false;
+	};
 } else {
 	private _eng1state = _heli getVariable "bmk_engState" select 0;
 	private _eng2state = _heli getVariable "bmk_engState" select 1;
@@ -35,5 +40,10 @@ if (!fza_ah64_heliSimEnabled) then {
 	if (_eng1State == "STARTING" || _eng2State == "STARTING") then {
 		_heli setVariable ["fza_ah64_estarted", true, true];
 		_heli engineOn true;
+	};
+
+	if (_eng1state == "OFF" && _eng2State == "OFF") then {
+		_heli setVariable ["fza_ah64_estarted", false, true];
+		_heli engineOn false;
 	};
 };
