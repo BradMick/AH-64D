@@ -62,7 +62,7 @@ class CfgVehicles
 		bodyFrictionCoef       = 1.00;
 		cyclicAsideForceCoef   = 0.4;
 		cyclicForwardForceCoef = 0.5;
-		backRotorForceCoef     = 0.7;
+		backRotorForceCoef     = 0.0; //0.7;
 	    fuelCapacity           = 1423;
 		fuelconsumptionrate    = 0.0;
 		maxSpeed               = 298;
