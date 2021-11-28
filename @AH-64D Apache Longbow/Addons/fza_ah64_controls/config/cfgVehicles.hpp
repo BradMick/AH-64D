@@ -1431,7 +1431,7 @@ class CfgVehicles
 
 		class AnimationSources
 		{
-#define ANIMS_MMAP(seat) \
+			#define ANIMS_MMAP(seat) \
 			class seat##_mmap_tx \
 			{ \
 				source = "user"; \
@@ -1456,303 +1456,303 @@ class CfgVehicles
 				animPeriod = 0.001; \
 				initPhase=1; \
 			}; 
-		ANIMS_MMAP(plt)
-		ANIMS_MMAP(cpg)
-		////////RADAR///////
-		class tads_tur
-		{
-			source = "user";
-			animPeriod = 0.01;
-			initPhase=0;
-		};
-		class tads
-		{
-			source = "user";
-			animPeriod = 0.01;
-			initPhase=0;
-		};
-		class fcr_enable
-		{
-			displayName = "Attach FCR";
-			author = "Apache mod development team";
-			onPhaseChanged = "_this # 0 enableVehicleSensor [""ActiveRadarSensorComponent"",_this # 1 == 1];";
+			ANIMS_MMAP(plt)
+			ANIMS_MMAP(cpg)
+			////////RADAR///////
+			class tads_tur
+			{
+				source = "user";
+				animPeriod = 0.01;
+				initPhase=0;
+			};
+			class tads
+			{
+				source = "user";
+				animPeriod = 0.01;
+				initPhase=0;
+			};
+			class fcr_enable
+			{
+				displayName = "Attach FCR";
+				author = "Apache mod development team";
+				onPhaseChanged = "_this # 0 enableVehicleSensor [""ActiveRadarSensorComponent"",_this # 1 == 1];";
 
-			source = "user";
-			initPhase = 1;
-			animPeriod = 0.001;
-		}
-		/*
-		class hstab
-		{
-			source = "user";
-			animPeriod = 0.01;
-			initPhase  = 1;
-		}
-		*/
-		class pnvs
-		{
-			source = "user";
-			animPeriod = 0.01;
-			initPhase=0;
-		};
-		class pnvs_vert
-		{
-			source = "user";
-			animPeriod = 0.01;
-			initPhase=0;
-		};
-		class tads_stow
-		{
-			source = "user";
-			animPeriod = 1;
-			initPhase  = 0;
-		};
-		class m230_recoil
-		{
-			source = "reload";
-			weapon = "fza_m230";
-		};
-		class mainTurret
-		{
+				source = "user";
+				initPhase = 1;
+				animPeriod = 0.001;
+			}
+			/*
+			class hstab
+			{
+				source = "user";
+				animPeriod = 0.01;
+				initPhase  = 1;
+			}
+			*/
+			class pnvs
+			{
+				source = "user";
+				animPeriod = 0.01;
+				initPhase=0;
+			};
+			class pnvs_vert
+			{
+				source = "user";
+				animPeriod = 0.01;
+				initPhase=0;
+			};
+			class tads_stow
+			{
+				source = "user";
+				animPeriod = 1;
+				initPhase  = 0;
+			};
+			class m230_recoil
+			{
+				source = "reload";
+				weapon = "fza_m230";
+			};
+			class mainTurret
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class maingun
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase  = 0.298;
+			};
+			class pylon1
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class pylon2
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class pylon3
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class pylon4
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class swashplate_up_tns
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class swashplate_up_pitch
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class swashplate_up_bank
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class swashplate_dn_tns
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class swashplate_dn_pitch
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class swashplate_dn_bank
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class mr_act_tns
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class swup_arm1
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class swup_arm1_t
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class swup_arm2
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class swup_arm3
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class swup_arm3_t
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class swup_arm4
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class trsw
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class tr_blade1_pitch
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class tr_blade2_pitch
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class tr_blade3_pitch
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class tr_blade4_pitch
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class blade1_pitch
+			{
+				source = "user";
+				animPeriod = 0.1;
+				initPhase=0;
+			};
+			class blade1_flap
+			{
 			source = "user";
 			animPeriod = 0.1;
 			initPhase=0;
-		};
-		class maingun
-		{
-			source = "user";
-			animPeriod = 0.1;
-			initPhase  = 0.298;
-		};
-		class pylon1
-		{
+			};
+			class blade2_pitch
+			{
 			source = "user";
 			animPeriod = 0.1;
 			initPhase=0;
-		};
-		class pylon2
-		{
+			};
+			class blade2_flap
+			{
 			source = "user";
 			animPeriod = 0.1;
 			initPhase=0;
-		};
-		class pylon3
-		{
+			};
+			class blade3_pitch
+			{
 			source = "user";
 			animPeriod = 0.1;
 			initPhase=0;
-		};
-		class pylon4
-		{
+			};
+			class blade3_flap
+			{
 			source = "user";
 			animPeriod = 0.1;
 			initPhase=0;
-		};
-		class swashplate_up_tns
-		{
+			};
+			class blade4_pitch
+			{
 			source = "user";
 			animPeriod = 0.1;
 			initPhase=0;
-		};
-		class swashplate_up_pitch
-		{
+			};
+			class blade4_flap
+			{
 			source = "user";
 			animPeriod = 0.1;
 			initPhase=0;
-		};
-		class swashplate_up_bank
-		{
-			source = "user";
-			animPeriod = 0.1;
-			initPhase=0;
-		};
-		class swashplate_dn_tns
-		{
-			source = "user";
-			animPeriod = 0.1;
-			initPhase=0;
-		};
-		class swashplate_dn_pitch
-		{
-			source = "user";
-			animPeriod = 0.1;
-			initPhase=0;
-		};
-		class swashplate_dn_bank
-		{
-			source = "user";
-			animPeriod = 0.1;
-			initPhase=0;
-		};
-		class mr_act_tns
-		{
-			source = "user";
-			animPeriod = 0.1;
-			initPhase=0;
-		};
-		class swup_arm1
-		{
-			source = "user";
-			animPeriod = 0.1;
-			initPhase=0;
-		};
-		class swup_arm1_t
-		{
-			source = "user";
-			animPeriod = 0.1;
-			initPhase=0;
-		};
-		class swup_arm2
-		{
-			source = "user";
-			animPeriod = 0.1;
-			initPhase=0;
-		};
-		class swup_arm3
-		{
-			source = "user";
-			animPeriod = 0.1;
-			initPhase=0;
-		};
-		class swup_arm3_t
-		{
-			source = "user";
-			animPeriod = 0.1;
-			initPhase=0;
-		};
-		class swup_arm4
-		{
-			source = "user";
-			animPeriod = 0.1;
-			initPhase=0;
-		};
-		class trsw
-		{
-			source = "user";
-			animPeriod = 0.1;
-			initPhase=0;
-		};
-		class tr_blade1_pitch
-		{
-			source = "user";
-			animPeriod = 0.1;
-			initPhase=0;
-		};
-		class tr_blade2_pitch
-		{
-			source = "user";
-			animPeriod = 0.1;
-			initPhase=0;
-		};
-		class tr_blade3_pitch
-		{
-			source = "user";
-			animPeriod = 0.1;
-			initPhase=0;
-		};
-		class tr_blade4_pitch
-		{
-			source = "user";
-			animPeriod = 0.1;
-			initPhase=0;
-		};
-		class blade1_pitch
-		{
-			source = "user";
-			animPeriod = 0.1;
-			initPhase=0;
-		};
-class blade1_flap
-{
-source = "user";
-animPeriod = 0.1;
-initPhase=0;
-};
-class blade2_pitch
-{
-source = "user";
-animPeriod = 0.1;
-initPhase=0;
-};
-class blade2_flap
-{
-source = "user";
-animPeriod = 0.1;
-initPhase=0;
-};
-class blade3_pitch
-{
-source = "user";
-animPeriod = 0.1;
-initPhase=0;
-};
-class blade3_flap
-{
-source = "user";
-animPeriod = 0.1;
-initPhase=0;
-};
-class blade4_pitch
-{
-source = "user";
-animPeriod = 0.1;
-initPhase=0;
-};
-class blade4_flap
-{
-source = "user";
-animPeriod = 0.1;
-initPhase=0;
-};
-//////weapons///////////
-		class pod_m260_1
-		{
-			source = "user";
-			animPeriod = 0.001;
-			initPhase=0;
-		};
-		class pod_m260_2
-		{
-			source = "user";
-			animPeriod = 0.001;
-			initPhase=0;
-		};
-		class pod_m260_3
-		{
-			source = "user";
-			animPeriod = 0.001;
-			initPhase=0;
-		};
-		class pod_m260_4
-		{
-			source = "user";
-			animPeriod = 0.001;
-			initPhase=0;
-		};
-		class rail_m299_1
-		{
-			source = "user";
-			animPeriod = 0.001;
-			initPhase=0;
-		};
-		class rail_m299_2
-		{
-			source = "user";
-			animPeriod = 0.001;
-			initPhase=0;
-		};
-		class rail_m299_3
-		{
-			source = "user";
-			animPeriod = 0.001;
-			initPhase=0;
-		};
-		class rail_m299_4
-		{
-			source = "user";
-			animPeriod = 0.001;
-			initPhase=0;
-		};
+			};
+			//////weapons///////////
+			class pod_m260_1
+			{
+				source = "user";
+				animPeriod = 0.001;
+				initPhase=0;
+			};
+			class pod_m260_2
+			{
+				source = "user";
+				animPeriod = 0.001;
+				initPhase=0;
+			};
+			class pod_m260_3
+			{
+				source = "user";
+				animPeriod = 0.001;
+				initPhase=0;
+			};
+			class pod_m260_4
+			{
+				source = "user";
+				animPeriod = 0.001;
+				initPhase=0;
+			};
+			class rail_m299_1
+			{
+				source = "user";
+				animPeriod = 0.001;
+				initPhase=0;
+			};
+			class rail_m299_2
+			{
+				source = "user";
+				animPeriod = 0.001;
+				initPhase=0;
+			};
+			class rail_m299_3
+			{
+				source = "user";
+				animPeriod = 0.001;
+				initPhase=0;
+			};
+			class rail_m299_4
+			{
+				source = "user";
+				animPeriod = 0.001;
+				initPhase=0;
+			};
 			////////////////////////////////
 			///////////COCKPIT//////////////
 			////////////////////////////////
@@ -2728,49 +2728,49 @@ initPhase=0;
                 selection = "mpd_pr_eng_rtrrpm";
             };
 			*/
-		//////////////DOORS//////////////////
-		class pdoor
-		{
-			source = "user";
-			animPeriod = 1;
-			initPhase=0;
-		};
-		class gdoor
-		{
-			source = "user";
-			animPeriod = 1;
-			initPhase=0;
-		};
-		///////////////ADS//////////////////
-		class l_ads_p
-        {
-			source = "user";
-			animPeriod = 0.001;
-			initPhase=0;
-        };
-		class l_ads_b : l_ads_p
-        {
-			source = "user";
-        };
-		class l_ads_y : l_ads_p
-        {
-			source = "user";
-        };
-		class r_ads_p
-        {
-			source = "user";
-			animPeriod = 0.001;
-			initPhase=0;
-        };
-		class r_ads_b : r_ads_p
-        {
-			source = "user";
-        };
-		class r_ads_y : r_ads_p
-        {
-			source = "user";
-        };
-		////MOVING MAP TEST/////
+			//////////////DOORS//////////////////
+			class pdoor
+			{
+				source = "user";
+				animPeriod = 1;
+				initPhase=0;
+			};
+			class gdoor
+			{
+				source = "user";
+				animPeriod = 1;
+				initPhase=0;
+			};
+			///////////////ADS//////////////////
+			class l_ads_p
+			{
+				source = "user";
+				animPeriod = 0.001;
+				initPhase=0;
+			};
+			class l_ads_b : l_ads_p
+			{
+				source = "user";
+			};
+			class l_ads_y : l_ads_p
+			{
+				source = "user";
+			};
+			class r_ads_p
+			{
+				source = "user";
+				animPeriod = 0.001;
+				initPhase=0;
+			};
+			class r_ads_b : r_ads_p
+			{
+				source = "user";
+			};
+			class r_ads_y : r_ads_p
+			{
+				source = "user";
+			};
+			////MOVING MAP TEST/////
 			class mpd_gr_mmap_v
             {
 				source = "user";
@@ -2845,26 +2845,26 @@ initPhase=0;
 				initPhase=0;
             };
 
-		////MOVING MAP/////
-		class mpd_pr_mpd_had_apos_v
-		{
-			source = "user";
-			animPeriod = 0.01;
-			initPhase=0;
+			////MOVING MAP/////
+			class mpd_pr_mpd_had_apos_v
+			{
+				source = "user";
+				animPeriod = 0.01;
+				initPhase=0;
+			};
+			class mpd_pr_mpd_had_apos_h
+			{
+				source = "user";
+				animPeriod = 0.01;
+				initPhase=0;
+			};
+			class mpd_pr_mpd_had_apos2_h
+			{
+				source = "user";
+				animPeriod = 0.01;
+				initPhase=0;
+			};
 		};
-		class mpd_pr_mpd_had_apos_h
-		{
-			source = "user";
-			animPeriod = 0.01;
-			initPhase=0;
-		};
-		class mpd_pr_mpd_had_apos2_h
-		{
-			source = "user";
-			animPeriod = 0.01;
-			initPhase=0;
-		};
-	};
 		class MarkerLights
 		{
 			class PositionWhite

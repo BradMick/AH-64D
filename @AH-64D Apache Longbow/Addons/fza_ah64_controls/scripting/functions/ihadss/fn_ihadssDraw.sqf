@@ -491,6 +491,10 @@ if (_fcrdir < 0.3) then {
 if !(_heli animationPhase "fcr_enable" == 1) then {
     _fcrdir = -100;
 };
+
+//private _gmeterx = _heli animationPhase "gMeterX";
+//systemChat format ["1 gMeterX = %1", _gmeterx];
+
 _slip = (fza_ah64_slip * 0.5) + 0.492;
 if (_slip > 0.54) then {
     _slip = 0.54;
