@@ -1,0 +1,1 @@
+﻿NDSummary.OnToolTipsLoaded("File:functions/fire/fn_fireHandlepanel.sqf",{94:"<div class=\"NDToolTip TFunction LSQF\"><div class=\"TTSummary\">Arms or disarms the fire panel</div></div>"});
