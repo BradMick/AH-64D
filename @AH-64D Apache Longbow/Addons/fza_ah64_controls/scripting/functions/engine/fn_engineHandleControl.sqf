@@ -145,9 +145,11 @@ switch(_control) do {
 				[_heli, 1, "FLY"] spawn fza_sfmplus_fnc_interactPowerLever;
 			};
 		} else {
-			private _eng2State         = _heli getVariable "bmk_engState" select 1;
-			private _eng2ThrottleState = _heli getVariable "bmk_engThrottleState" select 1;
-			
+			//private _eng2State         = _heli getVariable "bmk_engState" select 1;
+			//private _eng2ThrottleState = _heli getVariable "bmk_engThrottleState" select 1;
+			private _eng2State         = _heli getVariable "bmk_new_engState" select 1;
+			private _eng2ThrottleState = _heli getVariable "bmk_new_engThrottleState" select 1;
+
 			if (_eng2State == "OFF" || (_eng2State == "ON" && _eng2ThrottleState == "FLY")) then {
 				if(_heli animationphase "plt_rtrbrake" != 0) exitWith {};
 				_heli animateSource[_eng1pwrLeverAnim, 1.0, 0.25];
@@ -236,8 +238,10 @@ switch(_control) do {
 				[_heli, 1, "FLY"] spawn fza_sfmplus_fnc_interactPowerLever;
 			};
 		} else {
-			private _eng1State         = _heli getVariable "bmk_engState" select 0;
-			private _eng1ThrottleState = _heli getVariable "bmk_engThrottleState" select 0;
+			//private _eng1State         = _heli getVariable "bmk_engState" select 0;
+			//private _eng1ThrottleState = _heli getVariable "bmk_engThrottleState" select 0;
+			private _eng1State         = _heli getVariable "bmk_new_engState" select 0;
+			private _eng1ThrottleState = _heli getVariable "bmk_new_engThrottleState" select 0;
 
 			if (_eng1State == "OFF" || (_eng1State == "ON" && _eng1ThrottleState == "FLY")) then {
 				if(_heli animationphase "plt_rtrbrake" != 0) exitWith {};
