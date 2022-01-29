@@ -450,8 +450,8 @@ _radrange = format["%1", (abs(1 / (_heli getVariable "fza_ah64_rangesetting"))) 
 //Use the perfGetData method to update the TQ in the HDU
 private _TQVal = 0;
 if (fza_ah64_heliSimEnabled) then {
-	private _e1trq = ((_heli getVariable "bmk_engTorque" select 0) / 481);
-	private _e2trq = ((_heli getVariable "bmk_engTorque" select 1) / 481);
+	private _e1trq = ((bmk_api_outputEngTQ select 0) / 481);
+	private _e2trq = ((bmk_api_outputEngTQ select 1) / 481);
 
 	_TQVal = _e1trq max _e2trq;
 } else {
