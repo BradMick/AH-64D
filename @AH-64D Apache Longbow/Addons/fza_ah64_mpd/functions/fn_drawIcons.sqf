@@ -33,16 +33,42 @@ params ["_heli", "_points", "_display", ["_scale", -1], ["_center", [0.5, 0.75]]
 #include "\fza_ah64_dms\headers\constants.h"
 
 private _validChars = createHashmapFromArray [
-	["0", "\fza_ah64_us\tex\char\Y0_ca.paa"],
-	["1", "\fza_ah64_us\tex\char\Y1_ca.paa"],
-	["2", "\fza_ah64_us\tex\char\Y2_ca.paa"],
-	["3", "\fza_ah64_us\tex\char\Y3_ca.paa"],
-	["4", "\fza_ah64_us\tex\char\Y4_ca.paa"],
-	["5", "\fza_ah64_us\tex\char\Y5_ca.paa"],
-	["6", "\fza_ah64_us\tex\char\Y6_ca.paa"],
-	["7", "\fza_ah64_us\tex\char\Y7_ca.paa"],
-	["8", "\fza_ah64_us\tex\char\Y0_ca.paa"],
-	["9", "\fza_ah64_us\tex\char\Y9_ca.paa"]
+	["0", "\fza_ah64_mpd\font\red\0_ca.paa"],
+	["1", "\fza_ah64_mpd\font\red\1_ca.paa"],
+	["2", "\fza_ah64_mpd\font\red\2_ca.paa"],
+	["3", "\fza_ah64_mpd\font\red\3_ca.paa"],
+	["4", "\fza_ah64_mpd\font\red\4_ca.paa"],
+	["5", "\fza_ah64_mpd\font\red\5_ca.paa"],
+	["6", "\fza_ah64_mpd\font\red\6_ca.paa"],
+	["7", "\fza_ah64_mpd\font\red\7_ca.paa"],
+	["8", "\fza_ah64_mpd\font\red\8_ca.paa"],
+	["9", "\fza_ah64_mpd\font\red\9_ca.paa"],
+	["A", "\fza_ah64_mpd\font\red\A_ca.paa"],
+	["B", "\fza_ah64_mpd\font\red\B_ca.paa"],
+	["C", "\fza_ah64_mpd\font\red\C_ca.paa"],
+	["D", "\fza_ah64_mpd\font\red\D_ca.paa"],
+	["E", "\fza_ah64_mpd\font\red\E_ca.paa"],
+	["F", "\fza_ah64_mpd\font\red\F_ca.paa"],
+	["G", "\fza_ah64_mpd\font\red\G_ca.paa"],
+	["H", "\fza_ah64_mpd\font\red\H_ca.paa"],
+	["I", "\fza_ah64_mpd\font\red\I_ca.paa"],
+	["J", "\fza_ah64_mpd\font\red\J_ca.paa"],
+	["K", "\fza_ah64_mpd\font\red\K_ca.paa"],
+	["L", "\fza_ah64_mpd\font\red\L_ca.paa"],
+	["M", "\fza_ah64_mpd\font\red\M_ca.paa"],
+	["N", "\fza_ah64_mpd\font\red\N_ca.paa"],
+	["O", "\fza_ah64_mpd\font\red\O_ca.paa"],
+	["P", "\fza_ah64_mpd\font\red\P_ca.paa"],
+	["Q", "\fza_ah64_mpd\font\red\Q_ca.paa"],
+	["R", "\fza_ah64_mpd\font\red\R_ca.paa"],
+	["S", "\fza_ah64_mpd\font\red\S_ca.paa"],
+	["T", "\fza_ah64_mpd\font\red\T_ca.paa"],
+	["U", "\fza_ah64_mpd\font\red\U_ca.paa"],
+	["V", "\fza_ah64_mpd\font\red\V_ca.paa"],
+	["W", "\fza_ah64_mpd\font\red\W_ca.paa"],
+	["X", "\fza_ah64_mpd\font\red\X_ca.paa"],
+	["Y", "\fza_ah64_mpd\font\red\Y_ca.paa"],
+	["Z", "\fza_ah64_mpd\font\red\Z_ca.paa"]
 ];
 
 if (_scale == -1) then {
@@ -103,21 +129,21 @@ for "_i" from 0 to 31 do {
 	private _offset = (_i * 16) + _displayOffset;
 	if (_i >= count _pointsWithPos) then {
 		//Wipe all textures
-		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT01, "");
-		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT02, "");
-		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT03, "");
-		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT04, "");
-		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT05, "");
-		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT06, "");
-		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT07, "");
-		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT08, "");
-		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT09, "");
-		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT10, "");
-		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT11, "");
-		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT12, "");
-		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT13, "");
-		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT14, "");
-		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT15, "");
+		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT01, "\fza_ah64_mpd\font\blank_ca.paa");
+		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT02, "\fza_ah64_mpd\font\blank_ca.paa");
+		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT03, "\fza_ah64_mpd\font\blank_ca.paa");
+		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT04, "\fza_ah64_mpd\font\blank_ca.paa");
+		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT05, "\fza_ah64_mpd\font\blank_ca.paa");
+		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT06, "\fza_ah64_mpd\font\blank_ca.paa");
+		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT07, "\fza_ah64_mpd\font\blank_ca.paa");
+		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT08, "\fza_ah64_mpd\font\blank_ca.paa");
+		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT09, "\fza_ah64_mpd\font\blank_ca.paa");
+		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT10, "\fza_ah64_mpd\font\blank_ca.paa");
+		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT11, "\fza_ah64_mpd\font\blank_ca.paa");
+		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT12, "\fza_ah64_mpd\font\blank_ca.paa");
+		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT13, "\fza_ah64_mpd\font\blank_ca.paa");
+		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT14, "\fza_ah64_mpd\font\blank_ca.paa");
+		SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT15, "\fza_ah64_mpd\font\blank_ca.paa");
 		SETICONTEXTURE(SEL_MPD_OBJ1_ICON, "");
 		continue;
 	};
@@ -134,126 +160,126 @@ for "_i" from 0 to 31 do {
 		case MPD_ICON_TYPE_A : {
 			//[_heli, _offset, _inds, _text1, _rightJustified] call _writeText;
 			[_heli, _offset, [SEL_MPD_OBJ1_DIGIT01, SEL_MPD_OBJ1_DIGIT02, SEL_MPD_OBJ1_DIGIT03], _text1, true] call _writeText;
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT04, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT05, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT06, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT07, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT08, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT09, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT10, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT11, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT12, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT13, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT14, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT15, "");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT04, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT05, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT06, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT07, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT08, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT09, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT10, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT11, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT12, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT13, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT14, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT15, "\fza_ah64_mpd\font\blank_ca.paa");
 		};
 		case MPD_ICON_TYPE_B : {
 			[_heli, _offset, [SEL_MPD_OBJ1_DIGIT09, SEL_MPD_OBJ1_DIGIT10, SEL_MPD_OBJ1_DIGIT11], _text1, false] call _writeText;
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT01, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT02, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT03, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT04, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT05, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT06, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT07, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT08, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT12, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT13, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT14, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT15, "");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT01, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT02, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT03, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT04, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT05, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT06, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT07, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT08, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT12, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT13, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT14, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT15, "\fza_ah64_mpd\font\blank_ca.paa");
 		};
 		case MPD_ICON_TYPE_C : {
 			[_heli, _offset, [SEL_MPD_OBJ1_DIGIT14, SEL_MPD_OBJ1_DIGIT15], _text1, false] call _writeText;
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT01, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT02, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT03, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT04, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT05, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT06, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT07, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT08, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT09, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT10, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT11, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT12, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT13, "");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT01, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT02, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT03, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT04, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT05, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT06, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT07, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT08, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT09, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT10, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT11, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT12, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT13, "\fza_ah64_mpd\font\blank_ca.paa");
 		};
 		case MPD_ICON_TYPE_D : {
 			[_heli, _offset, [SEL_MPD_OBJ1_DIGIT01, SEL_MPD_OBJ1_DIGIT02, SEL_MPD_OBJ1_DIGIT03], _text1, true] call _writeText;
 			[_heli, _offset, [SEL_MPD_OBJ1_DIGIT04, SEL_MPD_OBJ1_DIGIT05, SEL_MPD_OBJ1_DIGIT06], _text2, false] call _writeText;
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT07, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT08, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT09, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT10, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT11, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT12, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT13, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT14, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT15, "");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT07, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT08, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT09, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT10, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT11, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT12, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT13, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT14, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT15, "\fza_ah64_mpd\font\blank_ca.paa");
 		};
 		case MPD_ICON_TYPE_E : {
 			[_heli, _offset, [SEL_MPD_OBJ1_DIGIT04, SEL_MPD_OBJ1_DIGIT05, SEL_MPD_OBJ1_DIGIT06], _text1, false] call _writeText;
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT01, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT02, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT03, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT07, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT08, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT09, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT10, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT11, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT12, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT13, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT14, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT15, "");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT01, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT02, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT03, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT07, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT08, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT09, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT10, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT11, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT12, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT13, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT14, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT15, "\fza_ah64_mpd\font\blank_ca.paa");
 		};
 		case MPD_ICON_TYPE_F : {
 			[_heli, _offset, [SEL_MPD_OBJ1_DIGIT12, SEL_MPD_OBJ1_DIGIT13], _text1, false] call _writeText;
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT01, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT02, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT03, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT04, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT05, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT06, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT09, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT07, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT08, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT10, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT11, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT14, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT15, "");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT01, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT02, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT03, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT04, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT05, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT06, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT09, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT07, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT08, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT10, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT11, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT14, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT15, "\fza_ah64_mpd\font\blank_ca.paa");
 		};
 		case MPD_ICON_TYPE_G : {
 			[_heli, _offset, [SEL_MPD_OBJ1_DIGIT07, SEL_MPD_OBJ1_DIGIT08], _text1, false] call _writeText;
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT01, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT02, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT03, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT04, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT05, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT06, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT09, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT10, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT11, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT12, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT13, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT14, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT15, "");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT01, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT02, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT03, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT04, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT05, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT06, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT09, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT10, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT11, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT12, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT13, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT14, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT15, "\fza_ah64_mpd\font\blank_ca.paa");
 		};
 		case MPD_ICON_TYPE_H : {
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT01, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT02, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT03, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT04, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT05, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT06, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT07, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT08, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT09, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT10, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT11, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT12, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT13, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT14, "");
-			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT15, "");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT01, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT02, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT03, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT04, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT05, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT06, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT07, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT08, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT09, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT10, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT11, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT12, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT13, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT14, "\fza_ah64_mpd\font\blank_ca.paa");
+			SETICONTEXTURE(SEL_MPD_OBJ1_DIGIT15, "\fza_ah64_mpd\font\blank_ca.paa");
 		};
 		default {
 			["Invalid text type %1", _textMode] call BIS_fnc_error;
