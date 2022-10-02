@@ -6,7 +6,7 @@ class CfgVehicles
 		class EventHandlers;
 	};
 	#include "cfgVehicles\crew.hpp"
-	#include "\fza_ah64_controls\headers\mpdSections.h"
+	#include "..\headers\mpdSections.h"
 	class fza_ah64base : Helicopter_Base_F
 	{
 		class NewTurret;
@@ -1924,6 +1924,14 @@ class CfgVehicles
 				source=user;\
 				animPeriod = 0.001;\
 			};
+#define SECTION_A(bone) SECTION(bone)
+#define SECTION_ASE(bone) SECTION(bone)
+#define SECTION_B(bone) SECTION(bone)
+#define SECTION_C(bone) SECTION(bone)
+#define SECTION_D(bone) SECTION(bone)
+#define SECTION_E(bone) SECTION(bone)
+#define SECTION_FCR(bone) SECTION(bone)
+#define SECTION_PPOS(bone) SECTION(bone)
 			LIST_OF_BONES(pl)
 			LIST_OF_BONES(pr)
 			LIST_OF_BONES(cl)

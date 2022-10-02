@@ -16,23 +16,47 @@ hiddenselections[]={
 	"in_lt_firerdis",
 	"in_lt_mstrcau",
 	"in_lt_mstrwrn",
-#define SECTION(val) \
-	GLUE(val,_digit01),\
-	GLUE(val,_digit02),\
-	GLUE(val,_digit03),\
-	GLUE(val,_digit04),\
-	GLUE(val,_digit05),\
-	GLUE(val,_digit06),\
-	GLUE(val,_digit07),\
-	GLUE(val,_digit08),\
-	GLUE(val,_digit09),\
-	GLUE(val,_digit10),\
-	GLUE(val,_digit11),\
-	GLUE(val,_digit12),\
-	GLUE(val,_digit13),\
-	GLUE(val,_digit14),\
-	GLUE(val,_digit15),\
-	GLUE(val,_icon),
+#define SECTION_A(val)\
+	STRINGIFY(GLUE(val,_digit01)),\
+	STRINGIFY(GLUE(val,_digit02)),\
+	STRINGIFY(GLUE(val,_icon)),
+#define SECTION_ASE(val) \
+	STRINGIFY(GLUE(val,_digit01)),\
+	STRINGIFY(GLUE(val,_digit02)),\
+	STRINGIFY(GLUE(val,_icon)),
+#define SECTION_B(val) \
+	STRINGIFY(GLUE(val,_digit01)),\
+	STRINGIFY(GLUE(val,_digit02)),\
+	STRINGIFY(GLUE(val,_icon)),
+#define SECTION_C(val) \
+	STRINGIFY(GLUE(val,_digit01)),\
+	STRINGIFY(GLUE(val,_digit02)),\
+	STRINGIFY(GLUE(val,_digit03)),
+#define SECTION_D(val) \
+	STRINGIFY(GLUE(val,_digit01)),\
+	STRINGIFY(GLUE(val,_digit02)),\
+	STRINGIFY(GLUE(val,_digit03)),\
+	STRINGIFY(GLUE(val,_icon)),
+#define SECTION_E(val) \
+	STRINGIFY(GLUE(val,_digit01)),\
+	STRINGIFY(GLUE(val,_digit02)),\
+	STRINGIFY(GLUE(val,_digit03)),\
+	STRINGIFY(GLUE(val,_digit04)),\
+	STRINGIFY(GLUE(val,_digit05)),\
+	STRINGIFY(GLUE(val,_digit06)),\
+	STRINGIFY(GLUE(val,_digit07)),\
+	STRINGIFY(GLUE(val,_digit08)),\
+	STRINGIFY(GLUE(val,_digit09)),\
+	STRINGIFY(GLUE(val,_digit10)),\
+	STRINGIFY(GLUE(val,_digit11)),\
+	STRINGIFY(GLUE(val,_icon)),
+#define SECTION_FCR(val) \
+	STRINGIFY(val),
+#define SECTION_PPOS(val) \
+	STRINGIFY(GLUE(val,_digit01)),\
+	STRINGIFY(GLUE(val,_digit02)),\
+	STRINGIFY(GLUE(val,_digit03)),\
+	STRINGIFY(GLUE(val,_icon)),
 	LIST_OF_BONES(pl)
 	LIST_OF_BONES(pr)
 	"pl_mpd_back",

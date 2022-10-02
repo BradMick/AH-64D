@@ -91,8 +91,6 @@ Parameters:
 
     STRINGIFY(this is a test) => "this is a test"
 */
-#define STRINGIFY(str) #str
-
 
 #define POLAR(rad, dim) POLAR_OFFSET(0,0,rad,dim)
 

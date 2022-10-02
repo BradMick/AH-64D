@@ -22,6 +22,8 @@ class CfgAddons
 	};
 };
 
+#define STRINGIFY(str) #str
+
 /*extern*/ class SensorTemplateIR;
 /*extern*/ class SensorTemplateVisual;
 /*extern*/ class SensorTemplateActiveRadar;

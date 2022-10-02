@@ -52,7 +52,7 @@ def getPboInfo(settings):
         with open(os.path.join(pboInfo.folder,"$PBOPREFIX$"), "r") as file:
             pboInfo.pboPrefix = file.readline().strip()
         try:
-            pboInfo.a3symlink = os.path.join(arma3Path(),pboInfo.pboPrefix)
+            pboInfo.a3symlink = os.path.join("P:",pboInfo.pboPrefix)
         except:
             pboInfo.a3symlink = None
 
