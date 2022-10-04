@@ -52,4 +52,9 @@ if (isText (_config >> "textB")) then {
     _textB = getText (_config >> "textB");
 };
 
-[_tex, _offset, _color, _iconType, _textA, _textB, _type];
+private _objType = MPD_OBJ_TYPE_A;
+if (isNumber (_config >> "objType")) then {
+    _objType = getText(_config >> "objType");
+};
+
+[_tex, _offset, _color, _iconType, _textA, _textB, _type, _objType];

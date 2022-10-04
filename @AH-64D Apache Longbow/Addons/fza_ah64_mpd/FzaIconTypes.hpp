@@ -1,3 +1,12 @@
+#define MPD_OBJ_TYPE_A    0
+#define MPD_OBJ_TYPE_ASE  1
+#define MPD_OBJ_TYPE_B    2
+#define MPD_OBJ_TYPE_C    3
+#define MPD_OBJ_TYPE_D    4
+#define MPD_OBJ_TYPE_E    5
+#define MPD_OBJ_TYPE_FCR  6
+#define MPD_OBJ_TYPE_PPOS 7
+
 #define MPD_ICON_TYPE_A 0
 #define MPD_ICON_TYPE_B 1
 #define MPD_ICON_TYPE_C 2
@@ -6,8 +15,9 @@
 #define MPD_ICON_TYPE_F 5
 #define MPD_ICON_TYPE_G 6
 #define MPD_ICON_TYPE_H 7
+#define MPD_ICON_TYPE_I 8
 
-#define MPD_ICON_TEXT_ID 0
+#define MPD_ICON_TEXT_ID   0
 #define MPD_ICON_TEXT_FREE 1
 
 class FzaIconTypes {
@@ -20,11 +30,12 @@ class FzaIconTypes {
 //                      +---------+  
     //Waypoints
     class CC {                                                  //Communication check point
-        tex= "\fza_ah64_mpd\tex\tsdIcons\cc_ca.paa";
-        color    = MPD_ICON_COLOR_GREEN;
-        type     = POINT_TYPE_WP;
-        iconType = MPD_ICON_TYPE_A;
-        textA    = MPD_ICON_TEXT_ID;
+        tex        = "\fza_ah64_mpd\tex\tsdIcons\cc_ca.paa";
+        color      = MPD_ICON_COLOR_GREEN;
+        type       = POINT_TYPE_WP;
+        objectType = MDP_OBJ_TYPE_E;
+        iconType   = MPD_ICON_TYPE_A;
+        textA      = MPD_ICON_TEXT_ID;
     };
     class LZ:CC  { tex= "\fza_ah64_mpd\tex\tsdIcons\lz_ca.paa";};  //Landing Zone
     class PP:CC  { tex= "\fza_ah64_mpd\tex\tsdIcons\pp_ca.paa";};  //Passage Point
@@ -33,22 +44,24 @@ class FzaIconTypes {
     class WP:CC  { tex= "\fza_ah64_mpd\tex\tsdIcons\wp_ca.paa";};  //Waypoint
     //Hazards
     class TO {                                                  //Tower - Over 1000ft agl
-        tex= "\fza_ah64_mpd\tex\tsdIcons\to_ca.paa";
-        color    = MPD_ICON_COLOR_YELLOW;
-        type     = POINT_TYPE_HZ;
-        iconType = MPD_ICON_TYPE_A;
-        textA    = MPD_ICON_TEXT_ID;
+        tex        = "\fza_ah64_mpd\tex\tsdIcons\to_ca.paa";
+        color      = MPD_ICON_COLOR_YELLOW;
+        type       = POINT_TYPE_HZ;
+        objectType = MPD_OBJ_TYPE_E;
+        iconType   = MPD_ICON_TYPE_A;
+        textA      = MPD_ICON_TEXT_ID;
     };
     class TU:TO  { tex= "\fza_ah64_mpd\tex\tsdIcons\tu_ca.paa";};  //Tower - Under 1000ft agl
     class WL:TO  { tex= "\fza_ah64_mpd\tex\tsdIcons\wl_ca.paa";};  //Wires - Power transmission lines
     class WS:TO  { tex= "\fza_ah64_mpd\tex\tsdIcons\ws_ca.paa";};  //Wires - Telephon & electric
     //Control Measures
     class AA {                                                  //Assembly area
-        tex= "\fza_ah64_mpd\tex\tsdIcons\aa_ca.paa";
-        color    = MPD_ICON_COLOR_GREEN;
-        type     = POINT_TYPE_CM;
-        iconType = MPD_ICON_TYPE_A;
-        textA    = MPD_ICON_TEXT_FREE;
+        tex        = "\fza_ah64_mpd\tex\tsdIcons\aa_ca.paa";
+        color      = MPD_ICON_COLOR_GREEN;
+        type       = POINT_TYPE_CM;
+        objectType = MPD_OBJ_TYPE_E;
+        iconType   = MPD_ICON_TYPE_A;
+        textA      = MPD_ICON_TEXT_FREE;
     };
     class BR:CC  {                                              //Bridge
         tex= "\fza_ah64_mpd\tex\tsdIcons\br_ca.paa";
@@ -96,11 +109,12 @@ class FzaIconTypes {
     //Hazards
     //Control Measures
     class FU {                                                  //Friendly Unit
-        tex= "\fza_ah64_mpd\tex\tsdIcons\fu_ca.paa";
-        color    = MPD_ICON_COLOR_CYAN;
-        type     = POINT_TYPE_CM;
-        iconType = MPD_ICON_TYPE_B;
-        textA    = MPD_ICON_TEXT_FREE;    
+        tex        = "\fza_ah64_mpd\tex\tsdIcons\fu_ca.paa";
+        color      = MPD_ICON_COLOR_CYAN;
+        type       = POINT_TYPE_CM;
+        objectType = MPD_OBJ_TYPE_D;
+        iconType   = MPD_ICON_TYPE_B;
+        textA      = MPD_ICON_TEXT_FREE;    
     };
     class EU:FU  {                                              //Enemy Unit
         tex= "\fza_ah64_mpd\tex\tsdIcons\eu_ca.paa";
@@ -120,11 +134,12 @@ class FzaIconTypes {
     //Hazards
     //Control Measures
     class AP  {                                                 //Air Control Point
-        tex= "\fza_ah64_mpd\tex\tsdIcons\ap_ca.paa";
-        color    = MPD_ICON_COLOR_GREEN;               
-        type     = POINT_TYPE_CM;
-        iconType = MPD_ICON_TYPE_C;
-        textA    = MPD_ICON_TEXT_ID;
+        tex        = "\fza_ah64_mpd\tex\tsdIcons\ap_ca.paa";
+        color      = MPD_ICON_COLOR_GREEN;               
+        type       = POINT_TYPE_CM;
+        objectType = MPD_OBJ_TYPE_B;
+        iconType   = MPD_ICON_TYPE_C;
+        textA      = MPD_ICON_TEXT_ID;
     };
     class BP:AP  { tex= "\fza_ah64_mpd\tex\tsdIcons\bp.paa";};  //Battle Position
     class FA:AP  { tex= "\fza_ah64_mpd\tex\tsdIcons\fa.paa";};  //Forward Assembly Area
@@ -143,12 +158,13 @@ class FzaIconTypes {
     //Hazards
     //Control Measures
     class FC {                                                  //FARP - Fuel and Ammo
-        tex= "\fza_ah64_mpd\tex\tsdIcons\fc_ca.paa";
-        color    = MPD_ICON_COLOR_GREEN;
-        type     = POINT_TYPE_CM;
-        iconType = MPD_ICON_TYPE_D;
-        textA    = MPD_ICON_TEXT_ID;
-        textB    = MPD_ICON_TEXT_FREE;
+        tex        = "\fza_ah64_mpd\tex\tsdIcons\fc_ca.paa";
+        color      = MPD_ICON_COLOR_GREEN;
+        type       = POINT_TYPE_CM;
+        objectType = MPD_OBJ_TYPE_E;
+        iconType   = MPD_ICON_TYPE_D;
+        textA      = MPD_ICON_TEXT_ID;
+        textB      = MPD_ICON_TEXT_FREE;
     };
     class FF:FC  { tex= "\fza_ah64_mpd\tex\tsdIcons\ff_ca.paa";};  //FARP - Fuel only
     class FM:FC  { tex= "\fza_ah64_mpd\tex\tsdIcons\fm_ca.paa";};  //Farm - Ammo only
@@ -166,39 +182,37 @@ class FzaIconTypes {
     //Hazards
     //Control Measures
     class AG  {                                                     //Airfield - General
-        tex= "\fza_ah64_mpd\tex\tsdIcons\ag_ca.paa";
-        color    = MPD_ICON_COLOR_GREEN;
-        type     = POINT_TYPE_CM;
-        iconType = MPD_ICON_TYPE_E;
-        textA    = MPD_ICON_TEXT_FREE;
+        tex        = "\fza_ah64_mpd\tex\tsdIcons\ag_ca.paa";
+        color      = MPD_ICON_COLOR_GREEN;
+        type       = POINT_TYPE_CM;
+        objectType = MPD_OBJ_TYPE_E;
+        iconType   = MPD_ICON_TYPE_E;
+        textA      = MPD_ICON_TEXT_FREE;
     };
     class AI:AG  { tex= "\fza_ah64_mpd\tex\tsdIcons\ai_ca.paa";};      //Airfield - Instrumented
     class AL:AG  { tex= "\fza_ah64_mpd\tex\tsdIcons\al_ca.paa";};      //Light Airport
     class GL:AG  { tex= "\fza_ah64_mpd\tex\tsdIcons\gl_ca.paa";};      //Ground Light
-    class IDM:AG {                                                  //IDM Subsriber
-        tex= "\fza_ah64_mpd\tex\tsdIcons\idmsub_ca.paa";
-        color    = MPD_ICON_COLOR_CYAN;
-    };
     //Target/Threats
     //ASE
  
 //--------------------Icon Type F--------------------
 //
-//                      +---------+
-//                      |         |
-//                      |   TEX   | 00
-//                      |         |
-//                      +---------+
+//                      
+//                      
+//                          T00
+//                      
+//                      
     //Waypoints
     //Hazards
     //Control Measures
     //Target/Threats
     class TG  {
-        tex= "\fza_ah64_mpd\tex\tsdIcons\tg_ca.paa";
-        color    = MPD_ICON_COLOR_RED;
-        type     = POINT_TYPE_TG;
-        iconType = MPD_ICON_TYPE_F;
-        textA    = MPD_ICON_TEXT_ID;
+        color      = MPD_ICON_COLOR_RED;
+        type       = POINT_TYPE_TG;
+        objectType = MPD_OBJ_TYPE_C;
+        iconType   = MPD_ICON_TYPE_F;
+        textA      = "T";
+        textB      = MPD_ICON_TEXT_ID;
     };
     class SR:TG    { tex= "\fza_ah64_mpd\tex\tsdIcons\r_ca.paa";};
     class TR:TG    { tex= "\fza_ah64_mpd\tex\tsdIcons\r_ca.paa";};
@@ -220,10 +234,11 @@ class FzaIconTypes {
     //Target/Threats
     class GU    { 
         tex = "\fza_ah64_mpd\tex\tsdIcons\gu_ca.paa";
-        color    = MPD_ICON_COLOR_RED;
-        type     = POINT_TYPE_TG;
-        iconType = MPD_ICON_TYPE_G;
-        textA    = "46"; 
+        color      = MPD_ICON_COLOR_RED;
+        type       = POINT_TYPE_TG;
+        objectType = MPD_OBJ_TYPE_A;
+        iconType   = MPD_ICON_TYPE_G;
+        textA      = "GU"; 
     };
     class Icon1:GU { 
         tex = "\fza_ah64_mpd\tex\tsdIcons\gu_ca.paa";
@@ -295,21 +310,22 @@ class FzaIconTypes {
     };
     class S6:GU { 
         tex = "\fza_ah64_mpd\tex\tsdIcons\gu_ca.paa";
-        textA = "56";
+        textA = "S6";
     };
     class ZU:GU { 
         tex = "\fza_ah64_mpd\tex\tsdIcons\gu_ca.paa";
-        textA = "66";
+        textA = "ZU";
     };
     
     //ASE
     //--SA1
     class ASE_ADU_SRH_Icon1 {
-        tex = "\fza_ah64_mpd\tex\tsdIcons\ADUSearch_ca.paa";
-        color    = MPD_ICON_COLOR_RED;
-        type     = POINT_TYPE_ASE;
-        iconType = MPD_ICON_TYPE_G;
-        textA    = " 1";
+        tex        = "\fza_ah64_mpd\tex\tsdIcons\ADUSearch_ca.paa";
+        color      = MPD_ICON_COLOR_RED;
+        type       = POINT_TYPE_ASE;
+        objectType = MPD_OBJ_TYPE_ASE;
+        iconType   = MPD_ICON_TYPE_G;
+        textA      = " 1";
     };
     class ASE_ADU_ACQ_Icon1:ASE_ADU_SRH_Icon1 {
         tex = "\fza_ah64_mpd\tex\tsdIcons\ADUAcquisition_ca.paa";
@@ -445,7 +461,7 @@ class FzaIconTypes {
     //--2S6
     class ASE_ADU_SRH_S6:ASE_ADU_SRH_Icon1 { 
         tex = "\fza_ah64_mpd\tex\tsdIcons\ADUSearch_ca.paa";
-        textA = "56";
+        textA = "S6";
     };
     class ASE_ADU_ACQ_S6:ASE_ADU_SRH_Icon1 {
         tex = "\fza_ah64_mpd\tex\tsdIcons\ADUAcquisition_ca.paa";
@@ -453,7 +469,7 @@ class FzaIconTypes {
     //--ZSU-23-4
     class ASE_ADU_SRH_ZU:ASE_ADU_SRH_Icon1 { 
         tex = "\fza_ah64_mpd\tex\tsdIcons\ADUSearch_ca.paa";
-        textA = "66";
+        textA = "ZU";
     };
     class ASE_ADU_ACQ_ZU:ASE_ADU_SRH_Icon1 {
         tex = "\fza_ah64_mpd\tex\tsdIcons\ADUAcquisition_ca.paa";
@@ -473,9 +489,10 @@ class FzaIconTypes {
     //--------------------FCR LOAL--------------------
     //ADU
     class FCR_ADU_LOAL { 
-        tex = "\fza_ah64_mpd\tex\fcrIcons\aduLOAL.paa";
-        type     = POINT_TYPE_FCR;
-        iconType = MPD_ICON_TYPE_H;
+        tex        = "\fza_ah64_mpd\tex\fcrIcons\aduLOAL.paa";
+        type       = POINT_TYPE_FCR;
+        objectType = MPD_OBJ_TYPE_FCR;
+        iconType   = MPD_ICON_TYPE_H;
     };
     class FCR_ADU_LOAL_ANTS:FCR_ADU_LOAL      { tex = "\fza_ah64_mpd\tex\fcrIcons\aduLOAL_ANTS_ca.paa";};
     class FCR_ADU_LOAL_NTS:FCR_ADU_LOAL       { tex = "\fza_ah64_mpd\tex\fcrIcons\aduLOAL_NTS_ca.paa";};
@@ -556,4 +573,19 @@ class FzaIconTypes {
     class FCR_WHEEL_MOVE_NTS_NOMSL:FCR_ADU_LOAL { tex = "\fza_ah64_mpd\tex\fcrIcons\wheelMOVE_NTS_NoMSL_ca.paa";}; 
     //Flyer
     class FCR_FLYER_MOVE:FCR_ADU_LOAL           { tex = "\fza_ah64_mpd\tex\fcrIcons\flyer_ca.paa";};
+};
+//--------------------Icon Type I--------------------
+//
+//                      +---------+
+//                      |         |
+//                      |   TEX   |
+//                      |         |
+//                      +---------+
+//                          AAA
+class IDM {                                                  //IDM Subsriber
+    tex        = "\fza_ah64_mpd\tex\tsdIcons\idmsub_ca.paa";
+    color      = MPD_ICON_COLOR_CYAN;
+    type       = POINT_TYPE_CM;
+    objectType = MPD_OBJ_TYPE_PPOS;
+    iconType   = MPD_ICON_TYPE_I;
 };

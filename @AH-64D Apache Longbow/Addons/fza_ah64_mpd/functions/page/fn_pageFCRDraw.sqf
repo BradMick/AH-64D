@@ -172,7 +172,7 @@ private _pointsArray = [];
         _unitSelAndWpnStatus = "_ANTS";
     };
     private _tex = format ["\fza_ah64_mpd\tex\tsdIcons\%1%2%3_ca.paa", _unitType, _unitStatus, _unitSelAndWpnStatus];
-    _pointsArray pushBack [MPD_POSMODE_WORLD, _pos, _tex, MPD_ICON_COLOR_YELLOW, MPD_ICON_TYPE_A, "", ""];
+    _pointsArray pushBack [MPD_POSMODE_WORLD, _pos, _tex, MPD_ICON_COLOR_YELLOW, MPD_ICON_TYPE_A, "", "", MPD_OBJ_TYPE_FCR];
 } forEach (_heli getVariable "fza_ah64_fcrTargets");
 
 [_heli, _pointsArray, _mpdIndex,  (0.08125 * 8 / 8000), [0.5, 0.87], _lastScanInfo # 0, _lastScanInfo #1] call fza_mpd_fnc_drawIcons;

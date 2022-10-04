@@ -1,3 +1,12 @@
+#define MPD_OBJ_TYPE_A    0
+#define MPD_OBJ_TYPE_ASE  1
+#define MPD_OBJ_TYPE_B    2
+#define MPD_OBJ_TYPE_C    3
+#define MPD_OBJ_TYPE_D    4
+#define MPD_OBJ_TYPE_E    5
+#define MPD_OBJ_TYPE_FCR  6
+#define MPD_OBJ_TYPE_PPOS 7
+
 #define MPD_ICON_TYPE_A 0
 #define MPD_ICON_TYPE_B 1
 #define MPD_ICON_TYPE_C 2
