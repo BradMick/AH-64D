@@ -28,6 +28,7 @@ private _getOrCreateCtrl = {
 };
 
 private _yScale = (4/3) / (getResolution # 4);
+private _yOffset = (1-_yScale)/2;
 
 _heli animateSource ["plt_uiscale", _yScale];
 
@@ -51,12 +52,12 @@ if (_dmsPoint # 0 == MPD_POSMODE_WORLD) then {
     private _y = _heliCtr # 1 - cos _theta * (_r * _scale);
     _uiCtr = [_x, _y];
 };
-_uiCtr set [0, (_uiCtr # 0)];
+systemChat format ["ICON: %1, UICTR: %2", _dmsPoint # 4, _uiCtr];
 private _uiTop = [_uiCtr # 0 - (0.5*_iconSize), _uiCtr # 1 - (0.5*_iconSize)];
 
 // Icon draw
 private _iconCtrl = [_display, _ctrlPoint, "icon", "RscPicture"] call _getOrCreateCtrl;
-_iconCtrl ctrlSetPosition [_uiTop # 0, _uiTop # 1 * _yScale, _iconSize, _iconSize * _yScale];
+_iconCtrl ctrlSetPosition [_uiTop # 0, _yOffset + _uiTop # 1 * _yScale, _iconSize, _iconSize * _yScale];
 _iconCtrl ctrlSetText (_iconTex);
 _iconCtrl ctrlCommit 0;
 
@@ -68,6 +69,34 @@ private _colorMap = createHashMapFromArray
     ];
 
 private _textColor = _colorMap get _iconColor;
+
+//Test pattern
+for "_i" from 0 to 10 do {
+    private _horLine = [_display, _ctrlPoint, format["hor%1", _i], "RscLine"] call _getOrCreateCtrl;
+    private _vertLine = [_display, _ctrlPoint, format["ver%1", _i], "RscLine"] call _getOrCreateCtrl;
+    private _horPos =
+        [ 0
+        , _yOffset + (_i * 0.1) * _yScale
+        , 1
+        , 0
+        ];
+    private _vertPos =
+        [ _i * 0.1
+        , _yOffset
+        , 0
+        , _yScale
+        ];
+    _horLine ctrlSetTextColor [0, 1, 1, 1];
+    _vertLine ctrlSetTextColor [0, 1, 1, 1];
+    systemChat format["hor%1: %2", _i, _horPos];
+    systemChat format["ver%1: %2", _i, _vertPos];
+
+    _horLine ctrlSetPosition _horPos;
+    _horLine ctrlCommit 0;
+        
+    _vertLine ctrlSetPosition _vertPos;
+    _vertLine ctrlCommit 0;
+};
 
 private _drawText = {
     params ["_textPrefix", "_textData"];
@@ -86,7 +115,7 @@ private _drawText = {
     };
     _textCtrl ctrlSetPosition
         [ _uiTop # 0 + (_textOffset # 0 * _iconSize) + _xOffset
-        , (_uiTop # 1 + (_textOffset # 1 * _iconSize) + _yOffset - 0.5) * _yScale
+        , _yOffset + (_uiTop # 1 + (_textOffset # 1 * _iconSize) + _yOffset - 0.5) * _yScale
         , 1
         , 1 * _yScale
         ];

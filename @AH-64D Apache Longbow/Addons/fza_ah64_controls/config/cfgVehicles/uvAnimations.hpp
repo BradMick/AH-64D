@@ -6,9 +6,29 @@ class UVAnimations
         section = plt_pl_mpd_back;
         minValue = 0.1;
         maxValue = 10;
-        center[] = {0, 0};
+        center[] = {0.5, 0.5};
         scale0[] = {1, 0.1};
         scale1[] = {1, 10};
+    };
+    class plt_lmpd_xfudge {
+        type = scale;
+        source = fudgex;
+        section = plt_pl_mpd_back;
+        minValue = 0.1;
+        maxValue = 10;
+        center[] = {0.5, 0.5};
+        scale0[]={0.1,1};
+        scale1[]={10,1};
+    };
+    class plt_lmpd_yfudge {
+        type = scale;
+        source = fudgey;
+        section = plt_pl_mpd_back;
+        minValue = 0.1;
+        maxValue = 10;
+        center[] = {0.5, 0.5};
+        scale0[]={1,0.1};
+        scale1[]={1,10};
     };
     class plt_rmpd_uiscale : plt_lmpd_uiscale {
         section = plt_pr_mpd_back;
