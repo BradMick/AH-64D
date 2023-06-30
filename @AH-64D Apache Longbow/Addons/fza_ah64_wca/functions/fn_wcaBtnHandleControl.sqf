@@ -24,10 +24,16 @@ switch (_control) do {
     };
     case "mstrCaut": {
         systemChat "Master Caution";
+        
+        [_heli] call fza_audio_fnc_delCaution;
+
         playsound "fza_ah64_switch_flip4";
     };
     case "mstrWarn": {
         systemChat "Master Warning";
+
+        
+
         playsound "fza_ah64_switch_flip4";
     };
 };

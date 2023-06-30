@@ -39,14 +39,16 @@ private _flightModel    = getText (_configVehicles >> "fza_flightModel");
 
 private _mags = _heli weaponsTurret [-1];
 
-private _wcas = [];
+private _wcas   = [];
+private _activeWCA = _heli getVariable ["fza_ah64_existingWCA", createHashMap];
 
 ///////////////////////////////////////////////////////////////////////////////////////////// 
 // System States    /////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////// 
+private _activeCaut  = false;
 //--APU
-private _apuBtnOn = _heli getVariable "fza_systems_apuBtnOn";
-private _apuOn    = _heli getVariable "fza_systems_apuOn";
+private _apuBtnOn    = _heli getVariable "fza_systems_apuBtnOn";
+private _apuOn       = _heli getVariable "fza_systems_apuOn";
 private _apuRPM_pct  = _heli getVariable "fza_systems_apuRPM_pct";
 private _apuDamage   = _heli getHitPointDamage "hit_apu";
 //--FCR
@@ -71,7 +73,7 @@ private _onGnd           = true;
 if (_eng1PwrLvrState == "FLY" || _eng2PwrLvrState == "FLY") then {
     _pwrLvrAtFly = true; 
 };
-if (getpos _heli # 2 >= 3) then {
+if (!isTouchingGround _heli) then {
     _onGnd = false;
 };
 private _rtrRPM     = [_heli] call fza_sfmplus_fnc_getRtrRPM;
@@ -101,33 +103,41 @@ private _utilLevel_pct       = _heli getVariable "fza_systems_utilLevel_pct";
 //--APU Warnings
 if (_heli getVariable "fza_ah64_apu_fire") then {
     _wcas pushBack [WCA_WARNING, "APU FIRE", ""];
+    [_heli, 5, "fza_ah64_APU_fire", 3] call fza_audio_fnc_addWarning;
 };
 //--Engine 1 Out
 if (_eng1Ng < 0.63 && !_onGnd) then {
     _wcas pushBack [WCA_WARNING, "ENGINE 1 OUT", "ENG1 OUT"];
+    [_heli, 1, "fza_ah64_engine_1_out", 3] call fza_audio_fnc_addWarning;
 };
 //--Engine 1 Fire
 if (_heli getVariable "fza_ah64_e1_fire") then {
     _wcas pushBack [WCA_WARNING, "ENGINE 1 FIRE", ""];
+    [_heli, 3, "fza_ah64_engine_1_fire", 3] call fza_audio_fnc_addWarning;
 };
 //--Engine 2 Fire
 if (_heli getVariable "fza_ah64_e2_fire") then {
     _wcas pushBack [WCA_WARNING, "ENGINE 2 FIRE", ""];
+    [_heli, 4, "fza_ah64_engine_2_fire", 3] call fza_audio_fnc_addWarning;
 };
 //--Engine 2 Out
 if (_eng2Ng < 0.63 && !_onGnd) then {
     _wcas pushBack [WCA_WARNING, "ENGINE 2 OUT", "ENG2 OUT"];
+    [_heli, 2, "fza_ah64_engine_2_out", 3] call fza_audio_fnc_addWarning;
 };
 //--Rotor RPM Low
 if (!_onGnd && _pwrLvrAtFly && (_rtrRPM < 0.95)) then {
     _wcas pushBack [WCA_WARNING, "LOW ROTOR RPM", "LOW RTR"];
+    [_heli, 6, "fza_ah64_rotor_rpm_low", 3] call fza_audio_fnc_addWarning;
 };
 //--Hydraulics
 if (_priHydPumpDamage >= SYS_HYD_DMG_THRESH && _utilHydPumpDamage >= SYS_HYD_DMG_THRESH) then {
     _wcas pushBack [WCA_WARNING, "HYD FAILURE", "HYD FAIL"];
+    [_heli, 7, "fza_ah64_hydraulic_failure", 3] call fza_audio_fnc_addWarning;
 };
 if (_priHydPSI < SYS_MIN_HYD_PSI && _utilLevel_pct < SYS_HYD_MIN_LVL) then {
     _wcas pushBack [WCA_WARNING, "TAIL ROTOR HYD", "TAIL RTR"];
+    [_heli, 8, "fza_ah64_tail_rotor_hydraulic_failure", 3] call fza_audio_fnc_addWarning;
 };
 ///////////////////////////////////////////////////////////////////////////////////////////// 
 // CAUTIONS         /////////////////////////////////////////////////////////////////////////
@@ -135,6 +145,13 @@ if (_priHydPSI < SYS_MIN_HYD_PSI && _utilLevel_pct < SYS_HYD_MIN_LVL) then {
 //--Generator 1 Fail
 if (_gen1Damage >= SYS_GEN_DMG_THRESH) then {
     _wcas pushBack [WCA_CAUTION, "GENERATOR 1 FAIL", "GEN1 FAIL"];
+
+    if ((_activeWCA get "GEN_1_FAIL") == false) then {
+         _activeWCA set ["GEN_1_FAIL", true];
+         _activeCaut = true;
+    };
+} else {
+    _activeWCA deleteat "GEN_1_FAIL";
 };
 //--Generator 2 Fail
 if (_gen2Damage >= SYS_GEN_DMG_THRESH) then {
@@ -151,6 +168,7 @@ if (_rect2Damage >= SYS_RECT_DMG_THRESH) then {
 //--Intermediate and Tail Rotor Gearboxes
 if (_IGBDamage >= SYS_IGB_DMG_THRESH || _TGBDamage >= SYS_TGB_DMG_THRESH) then {
     _wcas pushBack [WCA_CAUTION, "GEARBOX VIBRATION", "GRBX VIB"];
+    _activeCaut = true;
 };
 //--Nose gearbox 1
 if (_NGB1Damage >= SYS_NGB_DMG_THRESH) then {
@@ -207,6 +225,10 @@ if (_priHydPumpDamage >= SYS_HYD_DMG_THRESH
     || !(_heli getVariable "fza_ah64_fmcYawOn")
     || !(_heli getVariable "fza_ah64_fmcCollOn")) then {
         _wcas pushBack [WCA_CAUTION, "FMC DISENGAGED", "FMC DISENG"];
+    };
+
+if (_activeCaut) then {
+    [_heli] call fza_audio_fnc_addCaution;
 };
 ///////////////////////////////////////////////////////////////////////////////////////////// 
 // ADVISORIES       /////////////////////////////////////////////////////////////////////////
@@ -275,7 +297,7 @@ if (_heli getVariable "fza_ah64_rtrbrake") then {
 if (_fcrDamage >= SYS_FCR_DMG_THRESH) then {
     _wcas pushBack [WCA_ADVISORY, "FCR FAULT", "FCR FAULT"];
 };
-if (isTouchingGround _heli) then {
+if (_onGnd) then {
     _wcas pushBack [WCA_ADVISORY, "TAIL WHEEL LOCk SEL", "TW LOCK SEL"];
 };
 
