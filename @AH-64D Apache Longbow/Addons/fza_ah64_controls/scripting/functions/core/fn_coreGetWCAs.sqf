@@ -37,10 +37,11 @@ params ["_heli"];
 private _configVehicles = configFile >> "CfgVehicles" >> typeof _heli;
 private _flightModel    = getText (_configVehicles >> "fza_flightModel");
 
-private _mags = _heli weaponsTurret [-1];
+private _mags      = _heli weaponsTurret [-1];
 
-private _wcas   = [];
+private _wcas      = [];
 private _activeWCA = _heli getVariable ["fza_ah64_existingWCA", createHashMap];
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////// 
 // System States    /////////////////////////////////////////////////////////////////////////
@@ -201,20 +202,34 @@ if (_heli getHitPointDamage "IrJammer" >= 0.8) then {
 if (_stabDamage >= SYS_STAB_DMG_THRESH) then {
     _wcas pushBack [WCA_CAUTION, "AUTO/MAN STAB FAIL", "STAB FAIL"];
 };
-//--Hydraulics
+//--Primary Hydraulics
 if (_priHydPSI < SYS_MIN_HYD_PSI) then {
     _wcas pushBack [WCA_CAUTION, "PRI HYD PSI LOW", "PRI HYD PSI"];
+
+    if ((_activeWCA get "PRI_PSI_LO") == false) then {
+        _activeWCA set ["PRI_PSI_LO", true];
+        _activeCaut = true;
+   };
+} else {
+   _activeWCA deleteat "PRI_PSI_LO";
 };
 if (_priLevel_pct < SYS_HYD_MIN_LVL) then {
     _wcas pushBack [WCA_CAUTION, "PRI HYD LEVEL LOW", "PRI HYD LVL"];
 };
+//--Utility Hydraulics
 if (_utilHydPSI < SYS_MIN_HYD_PSI) then {
     _wcas pushBack [WCA_CAUTION, "UTIL HYD PSI LOW", "UTIL HYD PSI"];
+
+    if ((_activeWCA get "UTIL_PSI_LO") == false) then {
+        _activeWCA set ["UTIL_PSI_LO", true];
+        _activeCaut = true;
+   };
+} else {
+   _activeWCA deleteat "UTIL_PSI_LO";
 };
 if (_utilLevel_pct < SYS_HYD_MIN_LVL) then {
     _wcas pushBack [WCA_CAUTION, "UTIL HYD LEVEL LOW", "UTIL HYD LVL"];
 };
-
 //--Flight Controls
 if (_priHydPumpDamage >= SYS_HYD_DMG_THRESH) then {
     _wcas pushBack [WCA_CAUTION, "BUCS FAIL", "BUCS FAIL"];
@@ -230,6 +245,7 @@ if (_priHydPumpDamage >= SYS_HYD_DMG_THRESH
 if (_activeCaut) then {
     [_heli] call fza_audio_fnc_addCaution;
 };
+systemChat format ["%1", _activeWCA];
 ///////////////////////////////////////////////////////////////////////////////////////////// 
 // ADVISORIES       /////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////// 
