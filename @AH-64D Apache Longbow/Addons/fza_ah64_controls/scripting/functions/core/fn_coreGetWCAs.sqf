@@ -39,14 +39,15 @@ private _flightModel    = getText (_configVehicles >> "fza_flightModel");
 
 private _mags      = _heli weaponsTurret [-1];
 
-private _wcas      = [];
-private _activeWCA = _heli getVariable ["fza_ah64_existingWCA", createHashMap];
-
+private _wcas       = [];
+private _activeCaut = _heli getVariable ["fza_ah64_activeCaut", createHashMap];
+private _activeWarn = _heli getVariable ["fza_ah64_activeWarn", createHashMap];
 
 ///////////////////////////////////////////////////////////////////////////////////////////// 
 // System States    /////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////// 
-private _activeCaut  = false;
+private _playCautAudio = false;
+private _playWarnAudio = false;
 //--APU
 private _apuBtnOn    = _heli getVariable "fza_systems_apuBtnOn";
 private _apuOn       = _heli getVariable "fza_systems_apuOn";
@@ -109,7 +110,15 @@ if (_heli getVariable "fza_ah64_apu_fire") then {
 //--Engine 1 Out
 if (_eng1Ng < 0.63 && !_onGnd) then {
     _wcas pushBack [WCA_WARNING, "ENGINE 1 OUT", "ENG1 OUT"];
-    [_heli, 1, "fza_ah64_engine_1_out", 3] call fza_audio_fnc_addWarning;
+    
+    if (!("ENG_1_FAIL" in _activeWarn)) then {
+        systemChat format ["true!"];
+         _activeWarn set ["ENG_1_FAIL", true];
+         [_heli, 2, "fza_ah64_engine_1_out", 3] call fza_audio_fnc_addWarning;
+         _playWarnAudio = true;
+    };
+} else {
+    _activeCaut deleteat "ENG_1_FAIL";
 };
 //--Engine 1 Fire
 if (_heli getVariable "fza_ah64_e1_fire") then {
@@ -140,6 +149,8 @@ if (_priHydPSI < SYS_MIN_HYD_PSI && _utilLevel_pct < SYS_HYD_MIN_LVL) then {
     _wcas pushBack [WCA_WARNING, "TAIL ROTOR HYD", "TAIL RTR"];
     [_heli, 8, "fza_ah64_tail_rotor_hydraulic_failure", 3] call fza_audio_fnc_addWarning;
 };
+
+systemChat format ["%1", _activeWarn];
 ///////////////////////////////////////////////////////////////////////////////////////////// 
 // CAUTIONS         /////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////// 
@@ -147,12 +158,13 @@ if (_priHydPSI < SYS_MIN_HYD_PSI && _utilLevel_pct < SYS_HYD_MIN_LVL) then {
 if (_gen1Damage >= SYS_GEN_DMG_THRESH) then {
     _wcas pushBack [WCA_CAUTION, "GENERATOR 1 FAIL", "GEN1 FAIL"];
 
-    if ((_activeWCA get "GEN_1_FAIL") == false) then {
-         _activeWCA set ["GEN_1_FAIL", true];
-         _activeCaut = true;
+    if ((_activeCaut get "GEN_1_FAIL") == false) then {
+        systemChat format ["true!"];
+         _activeCaut set ["GEN_1_FAIL", true];
+         _playCautAudio = true;
     };
 } else {
-    _activeWCA deleteat "GEN_1_FAIL";
+    _activeCaut deleteat "GEN_1_FAIL";
 };
 //--Generator 2 Fail
 if (_gen2Damage >= SYS_GEN_DMG_THRESH) then {
@@ -169,7 +181,7 @@ if (_rect2Damage >= SYS_RECT_DMG_THRESH) then {
 //--Intermediate and Tail Rotor Gearboxes
 if (_IGBDamage >= SYS_IGB_DMG_THRESH || _TGBDamage >= SYS_TGB_DMG_THRESH) then {
     _wcas pushBack [WCA_CAUTION, "GEARBOX VIBRATION", "GRBX VIB"];
-    _activeCaut = true;
+    _playCautAudio = true;
 };
 //--Nose gearbox 1
 if (_NGB1Damage >= SYS_NGB_DMG_THRESH) then {
@@ -206,12 +218,12 @@ if (_stabDamage >= SYS_STAB_DMG_THRESH) then {
 if (_priHydPSI < SYS_MIN_HYD_PSI) then {
     _wcas pushBack [WCA_CAUTION, "PRI HYD PSI LOW", "PRI HYD PSI"];
 
-    if ((_activeWCA get "PRI_PSI_LO") == false) then {
-        _activeWCA set ["PRI_PSI_LO", true];
-        _activeCaut = true;
+    if ((_activeCaut get "PRI_PSI_LO") == false) then {
+        _activeCaut set ["PRI_PSI_LO", true];
+        _playCautAudio = true;
    };
 } else {
-   _activeWCA deleteat "PRI_PSI_LO";
+   _activeCaut deleteat "PRI_PSI_LO";
 };
 if (_priLevel_pct < SYS_HYD_MIN_LVL) then {
     _wcas pushBack [WCA_CAUTION, "PRI HYD LEVEL LOW", "PRI HYD LVL"];
@@ -220,12 +232,12 @@ if (_priLevel_pct < SYS_HYD_MIN_LVL) then {
 if (_utilHydPSI < SYS_MIN_HYD_PSI) then {
     _wcas pushBack [WCA_CAUTION, "UTIL HYD PSI LOW", "UTIL HYD PSI"];
 
-    if ((_activeWCA get "UTIL_PSI_LO") == false) then {
-        _activeWCA set ["UTIL_PSI_LO", true];
-        _activeCaut = true;
+    if ((_activeCaut get "UTIL_PSI_LO") == false) then {
+        _activeCaut set ["UTIL_PSI_LO", true];
+        _playCautAudio = true;
    };
 } else {
-   _activeWCA deleteat "UTIL_PSI_LO";
+   _activeCaut deleteat "UTIL_PSI_LO";
 };
 if (_utilLevel_pct < SYS_HYD_MIN_LVL) then {
     _wcas pushBack [WCA_CAUTION, "UTIL HYD LEVEL LOW", "UTIL HYD LVL"];
@@ -242,10 +254,10 @@ if (_priHydPumpDamage >= SYS_HYD_DMG_THRESH
         _wcas pushBack [WCA_CAUTION, "FMC DISENGAGED", "FMC DISENG"];
     };
 
-if (_activeCaut) then {
+if (_playCautAudio) then {
     [_heli] call fza_audio_fnc_addCaution;
 };
-systemChat format ["%1", _activeWCA];
+systemChat format ["%1", _activeCaut];
 ///////////////////////////////////////////////////////////////////////////////////////////// 
 // ADVISORIES       /////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////// 
