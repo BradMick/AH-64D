@@ -53,7 +53,7 @@ private _bladeArea            = 3.899;      //m^2
 //                                ,[ 61.73,   0.3326,     0.0415]
 //                                ,[ 77.17,   0.3117,     0.0415]
 //                                ];
-private _rotorGndEffModifier  = 0.1964;
+private _rotorGndEffModifier  = 1.1207;
 
 private _pitchTorqueScalar    = 2.75;//2.25//1.75;//PITCH_SCALAR;
 private _rollTorqueScalar     = 1.00;//0.75;//ROLL_SCALAR;
@@ -81,7 +81,7 @@ private _bladeVelAt75Chord      = _rotorOmega * _bladeLengthAt75Chord + _velXY;
 // Lift & Thrust           //////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 private _bladeLiftCoef_min      = 0.1590;
-private _bladeLiftCoef_max1     = 0.3574;
+private _bladeLiftCoef_max1     = 0.3627;
 private _bladeLiftCoef_max2     = [[  0.00, 0.2452]
                                   ,[  5.14, 0.2281]
                                   ,[ 10.29, 0.2510]
@@ -144,21 +144,17 @@ if (_velZ < -VEL_VRS && _velXY < VEL_ETL) then {
 } else {
     _rotorIndVelScalar = 1 - (_modelVelZ / VEL_VRS);
 };
-systemChat format ["Model Vel Z = %1 -- Pitch = %2", _modelVelZ toFixed 2, _heli call BIS_fnc_getPitchBank select 0 toFixed 1];
+systemChat format ["Model Vel Z = %1 -- Pitch = %2 -- RoC = %3", _modelVelZ toFixed 2, _heli call BIS_fnc_getPitchBank select 0 toFixed 1, _velZ * 196.85 toFixed 0];
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Ground Effect           //////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 private _heightAGL            = _rotorHeightAGL + (ASLToAGL getPosASL _heli #2);
-private _rotorGndEffScalar    = 1 - (_heightAGL / _rotorDiameter);
-_rotorGndEffScalar            = [_rotorGndEffScalar, 0.0, 1.0] call BIS_fnc_clamp;
-private _rotorGndEffVelScalar = linearConversion [0.0, VEL_ETL, _velXY, 1.0, 0.0];
-_rotorGndEffVelScalar         = [_rotorGndEffVelScalar, 0.0, 1.0] call BIS_fnc_clamp;
-_rotorGndEffScalar            = _rotorGndEffScalar * _rotorGndEffVelScalar * _rotorGndEffModifier;
-private _rotorGndEffThrust    = _baseThrust * _rotorGndEffScalar;
+private _rotorGndEffScalar    = _rotorDiameter / _heightAGL;
+rotorGndEffScalar             = [_rotorGndEffScalar, 1.0, _rotorGndEffModifier] call BIS_fnc_clamp;
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Outputs                 //////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
-private _finalThrust          = (_baseThrust * _rotorIndVelScalar) + _rotorGndEffThrust;
+private _finalThrust          = _baseThrust * _rotorIndVelScalar * rotorGndEffScalar;
 private _engineTorqueReq      = _rotorTorque / _gearRatio;
 _heli setVariable ["fza_sfmplus_reqEngTorque", _engineTorqueReq];
 
