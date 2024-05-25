@@ -26,36 +26,41 @@ private _rotorHeightAGL       = 3.606;      //m
 private _designRPM            = 289.0;
 private _gearRatio            = 72.29;
 private _numBlades            = 4;
-private _velBestEndurance     = 35.583;     //75kts
+//private _velBestEndurance     = 35.583;     //75kts
+private _vel_vbe              = 36.01108; //m/s - 70kts
+private _vel_vne              = 128.611;  //m/s - 250kts
 
 private _bladeLengthAt75Chord = 5.486;      //m
 private _rotorDiameter        = 14.63;      //m
 private _bladeArea            = 3.899;      //m^2
 
-private _bladeLiftCoef_min    = 0.1590;
-private _bladeDragCoef_min    = 0.0084;
-private _bladeLiftDragTable   = [//  TAS----CL_max------CD_max 
-                                 [  0.00,   0.3574,     0.0596]
-                                ,[  2.57,   0.3804,     0.0572]
-                                ,[  5.14,   0.3925,     0.0548]
-                                ,[ 10.29,   0.4185,     0.0523]
-                                ,[ 15.43,   0.4297,     0.0499]
-                                ,[ 20.58,   0.4297,     0.0475]
-                                ,[ 25.72,   0.4297,     0.0451]
-                                ,[ 30.87,   0.4297,     0.0426]
-                                ,[ 36.01,   0.4297,     0.0402]
-                                ,[ 41.16,   0.4297,     0.0402]
-                                ,[ 46.30,   0.4297,     0.0402]
-                                ,[ 51.44,   0.4297,     0.0402]
-                                ,[ 56.59,   0.4297,     0.0402]
-                                ,[ 61.73,   0.4297,     0.0402]
-                                ];
+//private _bladeLiftCoef_min    = 0.1590;
+//private _bladeDragCoef_min    = 0.0084;
+//private _bladeLiftDragTable   = [//  TAS----CL_max------CD_max 
+//                                 [  0.00,   0.3574,     0.0596]
+//                                ,[  2.57,   0.3674,     0.0573]
+//                                ,[  5.14,   0.3774,     0.0551]
+//                                ,[ 10.29,   0.3874,     0.0528]
+//                                ,[ 15.43,   0.3974,     0.0506]
+//                                ,[ 20.58,   0.4073,     0.0483]
+//                                ,[ 25.72,   0.4173,     0.0460]
+//                                ,[ 30.87,   0.4273,     0.0438]
+//                                ,[ 36.01,   0.4373,     0.0415]
+//                                ,[ 41.16,   0.4164,     0.0415]
+//                                ,[ 46.30,   0.3954,     0.0415]
+//                                ,[ 51.44,   0.3745,     0.0415]
+//                                ,[ 56.59,   0.3536,     0.0415]
+//                                ,[ 61.73,   0.3326,     0.0415]
+//                                ,[ 77.17,   0.3117,     0.0415]
+//                                ];
 private _rotorGndEffModifier  = 0.1964;
 
 private _pitchTorqueScalar    = 2.75;//2.25//1.75;//PITCH_SCALAR;
 private _rollTorqueScalar     = 1.00;//0.75;//ROLL_SCALAR;
 private _yawTorqueScalar      = 1.10; //0.95, 1.10
 
+
+systemChat format ["Collective Pos = %1", fza_sfmplus_collectiveOutput];
 
 (velocityModelSpace _heli)
     params ["_modelVelX", "_modelVelY", "_modelVelZ"];
@@ -71,27 +76,65 @@ private _rotorRPM               = _inputRPM * _designRPM;
 private _rotorOmega             = (2 * PI) * (_rotorRPM / 60);
 
 private _velXY                  = vectorMagnitude [_modelVelX, _modelVelY];
-private _bladeVelAt75Chord      = _rotorOmega * _bladeLengthAt75Chord;
+private _bladeVelAt75Chord      = _rotorOmega * _bladeLengthAt75Chord + _velXY;
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Lift & Thrust           //////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
-private _bladeLiftCoef_max      = [_bladeLiftDragTable, _velXY] call fza_fnc_linearInterp select 1;
+private _bladeLiftCoef_min      = 0.1590;
+private _bladeLiftCoef_max1     = 0.3574;
+private _bladeLiftCoef_max2     = [[  0.00, 0.2452]
+                                  ,[  5.14, 0.2281]
+                                  ,[ 10.29, 0.2510]
+                                  ,[ 20.58, 0.2669]
+                                  ,[ 26.75, 0.2554]
+                                  ,[ 36.01, 0.2692]
+                                  ,[ 46.30, 0.2864]
+                                  ,[ 61.73, 0.2906]
+                                  ,[ 66.88, 0.3029]
+                                  ];
 
-private _bladeLiftCoef          = _bladeLiftCoef_min + ((_bladeLiftCoef_max - _bladeLiftCoef_min) * (fza_sfmplus_collectiveOutput + _altHoldCollOut));
+_bladeLiftCoef_max2             = [_bladeLiftCoef_max2, _velXY] call fza_fnc_linearInterp select 1;
+
+private _bladeLiftCoef_max      = _bladeLiftCoef_max1 + ((_bladeLiftCoef_max2 - _bladeLiftCoef_max1) / _vel_vbe) * _velXY;
+private _bladeLiftCoef          = _bladeLiftCoef_min  + ((_bladeLiftCoef_max - _bladeLiftCoef_min) * (fza_sfmplus_collectiveOutput + _altHoldCollOut));
 private _bladeLift              = _bladeLiftCoef * 0.5 * _dryAirDensity * _bladeArea * _bladeVelAt75Chord^2;
 
 private _baseThrust             = _bladeLift   * _numBlades;
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Drag & Torque           //////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
-private _bladeDragCoef_max      = [_bladeLiftDragTable, _velXY] call fza_fnc_linearInterp select 2;
+//private _bladeDragCoef_min      = 0.0084;
+//private _bladeDragCoef_max1     = 0.0596;
+//private _bladeDragCoef_max2     = 0.0432;      
 
-private _bladeDragCoef          = _bladeDragCoef_min + ((_bladeDragCoef_max - _bladeDragCoef_min) * (fza_sfmplus_collectiveOutput + _altHoldCollOut));
-private _bladeDrag              = _bladeDragCoef * 0.5 * _dryAirDensity * _bladeArea * _bladeVelAt75Chord^2;
+//private _profileDragCoef_min    = 0.0084;
+//private _profileDragCoef_max    = 0.0090;
 
-private _bladeTorque            = _bladeDrag   * _bladeLengthAt75Chord;
+//private _bladeDragCoef_max      = _bladeDragCoef_max1 + ((_bladeDragCoef_max2 - _bladeDragCoef_max1) / _vel_vbe) * _velXY;
+//private _bladeDragCoef          = _bladeDragCoef_min  + ((_bladeDragCoef_max - _bladeDragCoef_min) * (fza_sfmplus_collectiveOutput + _altHoldCollOut));
+//private _bladeDrag              = _bladeDragCoef * 0.5 * _dryAirDensity * _bladeArea * _bladeVelAt75Chord^2;
 
-private _rotorTorque            = _bladeTorque * _numBlades;
+//private _bladeTorque            = _bladeDrag   * _bladeLengthAt75Chord;
+//private _rotorTorque            = _bladeTorque * _numBlades;
+/////////////////////////////////////////////////////////////////////////////////////////////
+// Power & Torque          //////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+private _profile_min = 0.1330;
+private _profile_max = 0.2080;
+
+private _induced_min = 0.8110;
+private _induced_max = 0.6072;
+
+private _profile_cur = _profile_min + ((_profile_max - _profile_min) / _vel_vne) * _velXY;
+
+private _induced_val = _induced_min * (fza_sfmplus_collectiveOutput + _altHoldCollOut);
+private _induced_cur = ((_induced_val - _induced_max) / _vel_vbe) * _velXY + _induced_val;
+
+private _power_val   = _profile_cur + _induced_cur;
+
+private _power_req   = _power_val * 2857.17;
+private _torque_req  = (_power_req / 0.001) / 0.105 / 21109;
+private _rotorTorque = _torque_req * _gearRatio;
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Induced Velocity        //////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -99,8 +142,9 @@ private _rotorIndVelScalar      = 1.0;
 if (_velZ < -VEL_VRS && _velXY < VEL_ETL) then { 
     _rotorIndVelScalar = 0.0;
 } else {
-    _rotorIndVelScalar = 1 - (_velZ / VEL_VRS);
+    _rotorIndVelScalar = 1 - (_modelVelZ / VEL_VRS);
 };
+systemChat format ["Model Vel Z = %1 -- Pitch = %2", _modelVelZ toFixed 2, _heli call BIS_fnc_getPitchBank select 0 toFixed 1];
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Ground Effect           //////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////

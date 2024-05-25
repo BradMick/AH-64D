@@ -45,7 +45,7 @@ DRAG_TABLE =[
 ,[ 8000,2.24,1.99,1.97,2.32,2.57]
 ];
 */
-    _interpDragCoefTableY      = [_heliSimDragTableY, _altitude] call fza_fnc_linearInterp;
+    _interpDragCoefTableY      = [DRAG_TABLE, _altitude] call fza_fnc_linearInterp; //_heliSimDragTableY
     private _dragCoefTableY    = [[-40, _interpDragCoefTableY # 1]
                                  ,[-20, _interpDragCoefTableY # 2]
                                  ,[  0, _interpDragCoefTableY # 3]
