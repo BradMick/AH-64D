@@ -41,8 +41,8 @@ private _rtrPowerScalarTable    = [
                                   ,[6000, 1.377]
                                   ,[8000, 1.284]
                                   ];
-private _rtrThrustScalar_min    = -0.0625;
-private _rtrThrustScalar_max    =  0.0581;
+private _rtrThrustScalar_min    = -0.1000;
+private _rtrThrustScalar_max    =  0.0957;
 private _rtrThrustScalar_med    = (_rtrThrustScalar_min + _rtrThrustScalar_max) / 2;
 private _sideThrustScalar       = 1.0;
 private _rtrAirspeedVelocityMod = 0.4;
