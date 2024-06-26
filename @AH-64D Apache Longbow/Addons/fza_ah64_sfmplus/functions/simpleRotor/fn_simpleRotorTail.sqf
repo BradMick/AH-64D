@@ -106,7 +106,7 @@ private _outTq     = [0.0, 0.0, 0.0];
 if (_tailRtrDamage < 0.85 && _IGBDamage < SYS_IGB_DMG_THRESH && _TGBDamage < SYS_TGB_DMG_THRESH) then {
     if (currentPilot _heli == player) then {     
         //Tail rotor thrust force
-        _heli addForce [_heli vectorModelToWorld _thrustX, _rtrPos];
+        _heli addForce [_heli vectorModelToWorld _thrustX, getCenterOfMass _heli];
 
         //Tail rotor torque
         private _torque   = [0.0, _torqueY, _torqueZ];

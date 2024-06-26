@@ -47,7 +47,7 @@ DRAG_TABLE =[
 ,[ 8000,2.24,1.99,1.97,2.32,2.57]
 ];
 */
-    _interpDragCoefTableY      = [_heliSimDragTableY, _altitude] call fza_fnc_linearInterp;
+    _interpDragCoefTableY      = [_heliSimDragTableY, _altitude] call fza_fnc_linearInterp; //_heliSimDragTableY
     private _dragCoefTableY    = [[-40, _interpDragCoefTableY # 1]
                                  ,[-20, _interpDragCoefTableY # 2]
                                  ,[  0, _interpDragCoefTableY # 3]
@@ -92,9 +92,9 @@ velocityModelSpace _heli
     params ["_locVelX", "_locVelY", "_locVelZ"];
 
 private _drag = 
-            [ _fuselageDragCoefX * _fuselageAreaSide   * (_locVelX * _locVelX)
+            [ 0.0//_fuselageDragCoefX * _fuselageAreaSide   * (_locVelX * _locVelX)
             , _fuselageDragCoefY * _fuselageAreaFront  * (_locVelY * _locVelY)
-            , _fuselageDragCoefZ * _fuselageAreaBottom * (_locVelZ * _locVelZ)
+            , 0.0//_fuselageDragCoefZ * _fuselageAreaBottom * (_locVelZ * _locVelZ)
             ] vectorMultiply (-0.5 * _rho * _deltaTime);
 
 _heli addForce[_heli vectorModelToWorld _drag, getCenterOfMass _heli];

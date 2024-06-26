@@ -167,7 +167,7 @@ private _mainRtrDamage  = _heli getHitPointDamage "HitHRotor";
 if (currentPilot _heli == player) then {
     if (_mainRtrDamage < 0.99) then {
         //Main rotor thrust
-        _heli addForce  [_heli vectorModelToWorld _thrustZ, _rtrPos];
+        _heli addForce  [_heli vectorModelToWorld _thrustZ, getCenterOfMass _heli];
         private _torque = [0.0, 0.0, 0.0];
 
         //Main rotor torque
