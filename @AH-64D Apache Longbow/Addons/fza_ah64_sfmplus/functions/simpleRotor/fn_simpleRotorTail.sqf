@@ -41,10 +41,10 @@ private _rtrPowerScalarTable    = [
                                   ,[6000, 1.377]
                                   ,[8000, 1.284]
                                   ];
-private _rtrThrustScalar_min    = -0.1000;
+private _rtrThrustScalar_min    = -0.2500;
 private _rtrThrustScalar_max    =  0.0957;
 private _rtrThrustScalar_med    = (_rtrThrustScalar_min + _rtrThrustScalar_max) / 2;
-private _sideThrustScalar       = 1.0;
+private _sideThrustScalar       = 0.50;
 private _rtrAirspeedVelocityMod = 0.4;
 private _rtrTorqueScalar        = 1.00;
 private _baseThrust             = 102302;  //N - max gross weight (kg) * gravity (9.806 m/s)
@@ -96,6 +96,8 @@ private _totThrust     = _rtrThrust;
 private _thrustX       = _axisX vectorMultiply ((_totThrust * _sideThrustScalar * -1.0) * _deltaTime);
 private _torqueY       = 0.0;
 private _torqueZ       = ((_rtrPos # 1) * _totThrust * -1.0) * _deltaTime; 
+
+systemChat format ["Tail Rotor Anti-Torque Torque = %1", _torqueZ toFixed 0];
 
 private _tailRtrDamage = _heli getHitPointDamage "hitvrotor";
 private _IGBDamage     = _heli getHitPointDamage "hit_drives_intermediategearbox";
