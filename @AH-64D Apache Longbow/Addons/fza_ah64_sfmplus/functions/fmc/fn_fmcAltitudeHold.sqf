@@ -1,5 +1,6 @@
 params ["_heli", "_deltaTime"];
 #include "\fza_ah64_sfmplus\headers\core.hpp"
+#include "\fza_ah64_systems\headers\systems.hpp"
 
 private _pidRadAlt  = _heli getVariable "fza_sfmplus_pid_radHold";
 private _pidBarAlt  = _heli getVariable "fza_sfmplus_pid_barHold";
@@ -54,6 +55,18 @@ if ( _heli getVariable "fza_ah64_altHoldActive") then {
 } else {
     [_pidRadAlt] call fza_fnc_pidReset;
     [_pidBarAlt] call fza_fnc_pidReset;
+};
+
+private _priHydFail = false;
+private _priHydPSI  = _heli getVariable "fza_systems_priHydPsi";
+if (_priHydPSI < SYS_MIN_HYD_PSI) then {
+    _priHydFail = true;
+};
+
+private _fmcCollOn = _heli getVariable "fza_ah64_fmcCollOn";
+
+if (!_fmcCollOn || _priHydFail) then {
+    _output = 0.0;
 };
 
 _output;

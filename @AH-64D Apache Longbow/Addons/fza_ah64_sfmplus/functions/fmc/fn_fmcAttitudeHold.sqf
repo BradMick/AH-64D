@@ -1,5 +1,6 @@
 params ["_heli", "_deltaTime"];
 #include "\fza_ah64_sfmplus\headers\core.hpp"
+#include "\fza_ah64_systems\headers\systems.hpp"
 
 //Roll
 private _pidRoll      = _heli getVariable "fza_sfmplus_pid_roll";
@@ -101,6 +102,23 @@ if ( _heli getVariable "fza_ah64_attHoldActive" && !(_heli getVariable "fza_ah64
     //Attitude hold
     [_pidRoll_att]  call fza_fnc_pidReset;
     [_pidPitch_att] call fza_fnc_pidReset;
+};
+
+private _priHydFail = false;
+private _priHydPSI  = _heli getVariable "fza_systems_priHydPsi";
+if (_priHydPSI < SYS_MIN_HYD_PSI) then {
+    _priHydFail = true;
+};
+
+private _fmcPitchOn = _heli getVariable "fza_ah64_fmcPitchOn";
+private _fmcRollOn  = _heli getVariable "fza_ah64_fmcRollOn";
+
+if (!_fmcPitchOn || _priHydFail) then {
+    _attHoldCycPitchOut = 0.0;
+};
+
+if (!_fmcRollOn || _priHydFail) then {
+    _attHoldCycRollOut  = 0.0;
 };
 
 //systemChat format ["Dist = %4 -- DistX = %1 -- DistY = %2 -- Dir = %3", _distX toFixed 2, _distY toFixed 2, _dir toFixed 2, _dist toFixed 2];

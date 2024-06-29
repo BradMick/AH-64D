@@ -74,4 +74,16 @@ if (_heli getVariable "fza_ah64_hdgHoldActive") then {
     [_pid] call fza_fnc_pidReset;
 };
 
+private _priHydFail = false;
+private _priHydPSI  = _heli getVariable "fza_systems_priHydPsi";
+if (_priHydPSI < SYS_MIN_HYD_PSI) then {
+    _priHydFail = true;
+};
+
+private _fmcYawOn = _heli getVariable "fza_ah64_fmcYawOn";
+
+if (!_fmcYawOn || _priHydFail) then {
+    _output = 0.0;
+};
+
 _output;
