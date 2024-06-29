@@ -67,7 +67,7 @@ switch (_wingType) do {
         private _AoA = (_relWind # 1 atan2 _relWind # 0) + _wingRot;
         _AoA = [_AoA] call CBA_fnc_simplifyAngle180;
 
-        private _intAirfoilTable = [getArray (_sfmPlusConfig >> "stabAirfoilTable"), _AoA] call fza_fnc_linearInterp;
+        private _intAirfoilTable = [getArray (_sfmPlusConfig >> "vertFinAirfoilTable"), _AoA] call fza_fnc_linearInterp;
         private _CL              = _intAirfoilTable select 1;
         
         private _area      = [_A, _B, _C, _D] call fza_fnc_getArea;
@@ -79,11 +79,13 @@ switch (_wingType) do {
         private _drag      = _dragVec vectorMultiply (_dragForce * _deltaTime);
 
         private _deltaPos  = _G vectorDiff (getCenterOfMass _heli);
-        private _moment    = _lift vectorCrossProduct _deltaPos;
+        private _moment    = (_lift vectorCrossProduct _deltaPos) vectorMultiply -15;
         
-        _heli addForce[_heli vectorModelToWorld _lift, getCenterOfMass _heli];
-        _heli addForce[_heli vectorModelToWorld _drag, getCenterOfMass _heli];
+        //_heli addForce[_heli vectorModelToWorld _lift, getCenterOfMass _heli];
+        //_heli addForce[_heli vectorModelToWorld _drag, getCenterOfMass _heli];
         _heli addTorque (_heli vectorModelToWorld _moment);
+
+        systemChat format ["Vert Fin Torque = %1 - Lift = %2", (_moment select 2) toFixed 0, _liftForce toFixed 0];
     };
 };
 
