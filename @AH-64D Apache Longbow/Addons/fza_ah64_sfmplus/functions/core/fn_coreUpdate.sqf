@@ -31,6 +31,11 @@ if (isAutoHoverOn _heli && _flightModel != "SFMPlus") then {
     _heli action ["AutoHoverCancel", _heli];  
 };
 
+//if (isNil "GWT") exitwith { systemChat "Invalid GWT!"};
+//if (isNil "PA") exitwith  { systemChat "Invalid PA!"; };
+//if (isNil "FAT") exitwith { systemChat "Invalid FAT!"; };
+//if (isNil "DRAG_TABLE") exitwith { systemChat "Drag table is empty!"; };
+
 //Environment
 private _altitude          = _heli getVariable "fza_sfmplus_PA"; //0;     //ft
 private _altimeter         = 29.92; //in mg
