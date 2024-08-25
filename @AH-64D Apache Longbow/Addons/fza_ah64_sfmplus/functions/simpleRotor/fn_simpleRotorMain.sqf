@@ -46,7 +46,7 @@ private _tipLossAndGndEffScalarTable =
 ];
 
 private _bladeLiftCoefScalarTable =
-[//---------0 ft-----------------
+[//-m/s-------SL--2k ft--4k ft--6k ft--8k ft-
  [  0.0,  0.5412]
 ,[  5.14, 0.5269]
 ,[ 10.29, 0.5343]
