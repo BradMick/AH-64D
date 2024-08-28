@@ -36,13 +36,54 @@ private _bladePitch_min         = 1.0;     //deg
 private _bladePitch_max         = 7.9341;  //deg
 private _bladeLiftCurveSlope    = 5.7;
 
-private _tipLossAndGndEffScalarTable = 
-[//-GWT-----Tip-----Gnd
- [ 6804, 1.0126, 1.2060]
-,[ 7711, 1.0058, 1.1949]
-,[ 8165, 1.0000, 1.2086]
-,[ 8618, 0.9948, 1.2028]
-,[ 9525, 0.9964, 1.2036]
+private _vel_vbe                =  38.583;
+private _vel_vne                = 128.611;
+//Get the current collective value
+private _collectiveOut          = fza_sfmplus_collectiveOutput + _altHoldCollOut;
+//Gather velocities
+private _velXY                  = vectorMagnitude [velocityModelSpace _heli # 0, velocityModelSpace _heli # 1];
+private _velZ                   = velocityModelSpace _heli # 2;
+//Get the current gross weight
+private _curGWT_kg              = _heli getVariable "fza_sfmplus_GWT";
+
+private _tipLossScalarTable = 
+[//-GWT---0k ft---2k ft---4k ft---6k ft---8k ft
+ [ 6804, 1.0126]
+,[ 7711, 1.0058]
+,[ 8165, 1.0000]
+,[ 8618, 0.9948]
+,[ 9525, 0.9964]
+];
+
+private _intTipLossScalarTable = [_tipLossScalarTable, _curGWT_kg] call fza_fnc_linearInterp;
+
+private _tipLossScalarAltTable =
+[
+ [    0, _intTipLossScalarTable select 1]
+,[ 2000, _intTipLossScalarTable select 2]
+,[ 4000, _intTipLossScalarTable select 3]
+,[ 6000, _intTipLossScalarTable select 4]
+,[ 8000, _intTipLossScalarTable select 5]
+];
+
+private _groundEffScalarTable = 
+[//-GWT---0k ft---2k ft---4k ft---6k ft---8k ft
+ [ 6804, 1.2060]
+,[ 7711, 1.1949]
+,[ 8165, 1.2086]
+,[ 8618, 1.2028]
+,[ 9525, 1.2036]
+];
+
+private _intGroundEffScalarTable = [_groundEffScalarTable, _curGWT_kg] call fza_fnc_linearInterp;
+
+private _groundEffScalarAltTable =
+[
+ [    0, _intGroundEffScalarTable select 1]
+,[ 2000, _intGroundEffScalarTable select 2]
+,[ 4000, _intGroundEffScalarTable select 3]
+,[ 6000, _intGroundEffScalarTable select 4]
+,[ 8000, _intGroundEffScalarTable select 5]
 ];
 
 private _bladeLiftCoefScalarTable =
@@ -59,8 +100,18 @@ private _bladeLiftCoefScalarTable =
 ,[ 56.59, 0.4734]
 ,[ 61.73, 0.4456]
 ,[ 66.88, 0.4393]
-,[ 69.96, 0.4557]
 ,[ 72.02, 0.4904]
+];
+
+private _intBladeLiftCoefScalarTable = [_bladeLiftCoefScalarTable, _velXY] call fza_fnc_linearInterp;
+
+private _bladeLiftCoefScalarAltTable =
+[
+ [    0, _intBladeLiftCoefScalarTable select 1]
+,[ 2000, _intBladeLiftCoefScalarTable select 2]
+,[ 4000, _intBladeLiftCoefScalarTable select 3]
+,[ 6000, _intBladeLiftCoefScalarTable select 4]
+,[ 8000, _intBladeLiftCoefScalarTable select 5]
 ];
 
 private _profileScalar_min = 0.1800;
@@ -72,15 +123,6 @@ private _inducedScalarTable =
 , [ 1.000, 1.3170, 1.0715]
 ];
 
-private _vel_vbe     =  38.583;
-private _vel_vne     = 128.611;
-//Get the current collective value
-private _collectiveOut     = fza_sfmplus_collectiveOutput + _altHoldCollOut;
-//Gather velocities
-private _velXY             = vectorMagnitude [velocityModelSpace _heli # 0, velocityModelSpace _heli # 1];
-private _velZ              = velocityModelSpace _heli # 2;
-//Get the current gross weight
-private _curGWT_kg         = _heli getVariable "fza_sfmplus_GWT";
 //Get engine RPM
 (_heli getVariable "fza_sfmplus_engPctNP")
     params ["_eng1PctNP", "_eng2PctNp"];
@@ -105,10 +147,10 @@ private _rtrTorque         = _torque_req * _gearRatio;
 //Blade Pitch Angle
 private _bladePitchAngleAt75PctChord = _bladePitch_min + (_bladePitch_max - _bladePitch_min) * _collectiveOut;
 //Lift coefficient scalars
-private _bladeLiftCoefScalar         = [_bladeLiftCoefScalarTable,    _velXY] call fza_fnc_linearInterp select 1;
-private _bladeTipLossScalar          = [_tipLossAndGndEffScalarTable, _curGWT_kg] call fza_fnc_linearInterp select 1;
+private _bladeLiftCoefScalar         = [_bladeLiftCoefScalarAltTable, _altitude] call fza_fnc_linearInterp select 1;
+private _bladeTipLossScalar          = [_tipLossScalarAltTable, altitude] call fza_fnc_linearInterp select 1;
 //Ground Effect Scalar
-private _groundEffectScalar_val      = [_tipLossAndGndEffScalarTable, _curGWT_kg] call fza_fnc_linearInterp select 2;
+private _groundEffectScalar_val      = [_groundEffScalarAltTable, _altitude] call fza_fnc_linearInterp select 1;
 private _heightAGL                   = ASLToAGL getPosASL _heli # 2;
 private _groundEffectScalar          = linearConversion[0.0, _bladeRadius * 2.0, _heightAGL, _groundEffectScalar_val, 1.0];
 _groundEffectScalar                  = [_groundEffectScalar, 1.0, _groundEffectScalar_val] call BIS_fnc_clamp;
