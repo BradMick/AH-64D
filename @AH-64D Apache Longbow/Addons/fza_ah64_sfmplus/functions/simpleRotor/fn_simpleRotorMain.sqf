@@ -48,11 +48,11 @@ private _curGWT_kg              = _heli getVariable "fza_sfmplus_GWT";
 
 private _tipLossScalarTable = 
 [//-GWT---0k ft---2k ft---4k ft---6k ft---8k ft
- [ 6804, 1.0126]
-,[ 7711, 1.0058]
-,[ 8165, 1.0000]
-,[ 8618, 0.9948]
-,[ 9525, 0.9964]
+ [ 6804, 1.0126, 1.0221, 1.0168, 1.0175, 1.0237]
+,[ 7711, 1.0058, 1.0042, 1.0028, 1.0011, 1.0108]
+,[ 8165, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000]
+,[ 8618, 0.9948, 0.9962, 0.9921, 0.9938, 0.9855]
+,[ 9525, 0.9964, 0.9947, 0.9835, 0.9832, 0.9792]
 ];
 
 private _intTipLossScalarTable = [_tipLossScalarTable, _curGWT_kg] call fza_fnc_linearInterp;
@@ -68,11 +68,11 @@ private _tipLossScalarAltTable =
 
 private _groundEffScalarTable = 
 [//-GWT---0k ft---2k ft---4k ft---6k ft---8k ft
- [ 6804, 1.2060]
-,[ 7711, 1.1949]
-,[ 8165, 1.2086]
-,[ 8618, 1.2028]
-,[ 9525, 1.2036]
+ [ 6804, 1.2060, 1.1908, 1.1951, 1.2100, 1.2030]
+,[ 7711, 1.1949, 1.1986, 1.2021, 1.2134, 1.2072]
+,[ 8165, 1.2086, 1.1930, 1.1966, 1.9850, 1.2075]
+,[ 8618, 1.2028, 1.1970, 1.2074, 1.2089, 1.2064]
+,[ 9525, 1.2036, 1.1972, 1.1665, 1.1677, 1.1739]
 ];
 
 private _intGroundEffScalarTable = [_groundEffScalarTable, _curGWT_kg] call fza_fnc_linearInterp;
@@ -87,20 +87,20 @@ private _groundEffScalarAltTable =
 ];
 
 private _bladeLiftCoefScalarTable =
-[//-m/s-------SL--2k ft--4k ft--6k ft--8k ft-
- [  0.0,  0.5412]
-,[  5.14, 0.5269]
-,[ 10.29, 0.5343]
-,[ 20.58, 0.5734]
-,[ 27.78, 0.5724]
-,[ 36.01, 0.5732]
-,[ 38.07, 0.5776]
-,[ 46.30, 0.5342]
-,[ 51.44, 0.5046]
-,[ 56.59, 0.4734]
-,[ 61.73, 0.4456]
-,[ 66.88, 0.4393]
-,[ 72.02, 0.4904]
+[//-m/s-------SL---2k ft---4k ft---6k ft---8k ft
+ [  0.0,  0.5360, 0.6605, 0.8147, 0.9996, 1.2319]
+,[  5.14, 0.5269, 0.6448, 0.7947, 0.9856, 1.2089]
+,[ 10.29, 0.5343, 0.6526, 0.8081, 0.9887, 1.2180]
+,[ 20.58, 0.5734, 0.7070, 0.8723, 1.0609, 1.3013]
+,[ 27.78, 0.5724, 0.7226, 0.8972, 1.0963, 1.3411]
+,[ 36.01, 0.5732, 0.7051, 0.8752, 1.0689, 1.2966]
+,[ 38.07, 0.5776, 0.7106, 0.8577, 1.0481, 1.2821]
+,[ 46.30, 0.5342, 0.6689, 0.8377, 1.0409, 1.2548]
+,[ 51.44, 0.5046, 0.6370, 0.8646, 0.9846, 1.1893]
+,[ 56.59, 0.4734, 0.5976, 0.7489, 0.9254, 1.1205]
+,[ 61.73, 0.4456, 0.5625, 0.7053, 0.8726, 1.0199]
+,[ 66.88, 0.4393, 0.5581, 0.6956, 0.8565, 1.0009]
+,[ 72.02, 0.4904, 0.6190, 0.7502, 0.9417, 1.1129]
 ];
 
 private _intBladeLiftCoefScalarTable = [_bladeLiftCoefScalarTable, _velXY] call fza_fnc_linearInterp;
@@ -175,7 +175,7 @@ if (_velZ < -VEL_VRS && _velXY < VEL_ETL) then {
 private _thrust = _bladeLift * _numBlades;
 _thrust         = _thrust * _inducedVelocityScalar;
 
-/*
+
 hintsilent format ["Collective Out = %1
                    \nProfile Scalar = %2
                    \nInduced Scalar Min = %3
@@ -187,7 +187,7 @@ hintsilent format ["Collective Out = %1
                    \nBlade Ground Effect Scalar = %9
                    \nBlade Lift Coef = %10
                    \nThrust = %11", _collectiveOut, _profileScalar, _inducedScalar_min, _inducedScalar_max, _powerScalar, _bladePitchAngleAt75PctChord, _bladeLiftCoefScalar, _bladeTipLossScalar, _groundEffectScalar, _bladeLiftCoef, _thrust];
-*/
+
 
 //END NEW ROTOR MODEL TESTING
 
