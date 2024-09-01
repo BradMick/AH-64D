@@ -362,7 +362,7 @@ _speedkts = format["%1", round(1.94384 * vectorMagnitude((velocity _heli) vector
 
 ([_heli] call fza_sfmplus_fnc_getAltitude)
     params ["_barAlt", "_radAlt"];
-_baraltft = format["%1",  _barAlt toFixed 0];
+_baraltft = format["%1", (_heli getVariable "fza_sfmplus_PA") toFixed 0];
 _radaltft = format["%1", [_radAlt toFixed 0, ""] select (_radAlt > 1428)];
 
 private _fcrLastScan = _heli getVariable "fza_ah64_fcrLastScan";
