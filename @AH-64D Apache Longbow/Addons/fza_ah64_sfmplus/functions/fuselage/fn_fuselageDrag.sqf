@@ -66,7 +66,7 @@ DRAG_TABLE =[
     _interpBetaTable           = [_betaTable, _beta] call fza_fnc_linearInterp;
     _interpBetaVal             = _interpBetaTable select 1;
 
-    private _fuselageYawTorque = [0.0, 0.0, 1.0] vectorMultiply ((_interpBetaVal * 250000) * _deltaTime);
+    private _fuselageYawTorque = [0.0, 0.0, 1.0] vectorMultiply ((_interpBetaVal * 25000) * _deltaTime);
 
     private _gammaTable       = [[-180, -0.100]
                                 ,[ -90, -0.075]
@@ -79,7 +79,7 @@ DRAG_TABLE =[
     _interpGammaTable           = [_gammaTable, _gamma] call fza_fnc_linearInterp;
     _interpGammaVal             = _interpGammaTable select 1;
 
-   private _fuselagePitchTorque = [1.0, 0.0, 0.0] vectorMultiply ((_interpGammaVal * 250000) * _deltaTime);
+   private _fuselagePitchTorque = [1.0, 0.0, 0.0] vectorMultiply ((_interpGammaVal * 25000) * _deltaTime);
 
     //systemChat format ["_interpBetaTable = %1 -- _interpBetaVal %2", _interpBetaTable select 1 toFixed 3, _interpBetaVal tofixed 3];
     //systemChat format ["_interpGammaTable = %1 -- _interpGammaVal %2", _interpGammaTable select 1 toFixed 3, _interpGammaVal tofixed 3];
