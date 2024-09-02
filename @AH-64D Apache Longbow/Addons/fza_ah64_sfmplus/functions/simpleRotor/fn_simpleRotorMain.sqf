@@ -36,8 +36,6 @@ private _bladePitch_min         = 1.0;     //deg
 private _bladePitch_max         = 7.9341;  //deg
 private _bladeLiftCurveSlope    = 5.7;
 
-private _vel_vbe                =  38.583;
-private _vel_vne                = 128.611;
 //Get the current collective value
 private _collectiveOut          = fza_sfmplus_collectiveOutput + _altHoldCollOut;
 //Gather velocities
@@ -131,12 +129,12 @@ private _inputRPM          = _eng1PctNP max _eng2PctNp;
 private _omega             = (2.0 * PI) * ((_rtrDesignRPM * _inputRPM) / 60);
 
 //Profile power scalar
-private _profileScalar     = _profileScalar_min + ((_profileScalar_max - _profileScalar_min) / _vel_vne) * _velXY;
+private _profileScalar     = _profileScalar_min + ((_profileScalar_max - _profileScalar_min) / VEL_VNE) * _velXY;
 //Induced power scalar
 private _inducedScalar_min = [_inducedScalarTable, _collectiveOut] call fza_fnc_linearInterp select 1;
 _inducedScalar_min         = _inducedScalar_min *  _collectiveOut;
 private _inducedScalar_max = [_inducedScalarTable, _collectiveOut] call fza_fnc_linearInterp select 2;
-private _inducedScalar     = ((_inducedScalar_min - _inducedScalar_max) / _vel_vbe) * _velXY + _inducedScalar_min;
+private _inducedScalar     = ((_inducedScalar_min - _inducedScalar_max) / VEL_VBE) * _velXY + _inducedScalar_min;
 //Total power
 private _powerScalar       = _profileScalar + _inducedScalar;
 

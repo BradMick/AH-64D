@@ -1,4 +1,5 @@
 params ["_heli", "_deltaTime", "_altitude", "_temperature", "_rho"];
+#include "\fza_ah64_sfmplus\headers\core.hpp"
 
 private _configVehicles     = configFile >> "CfgVehicles" >> typeof _heli;
 private _flightModel        = getText (_configVehicles >> "fza_flightModel");
@@ -15,6 +16,9 @@ private _fuselageDragCoefZ    = 0.5;
 private _interpDragCoefTableY = [];
 
 private _fuselageTorque       = [];
+
+velocityModelSpace _heli
+    params ["_locVelX", "_locVelY", "_locVelZ"];
 
 if (_flightModel == "SFMPlus") then {
     //                                  PA   -40     0    40
@@ -87,9 +91,6 @@ DRAG_TABLE =[
     _fuselageTorque = _fuselagePitchTorque vectorAdd _fuselageYawTorque;
 };
 private _fuselageDragCoefY     = _interpDragCoefTableY # 1;
-
-velocityModelSpace _heli
-    params ["_locVelX", "_locVelY", "_locVelZ"];
 
 private _drag = 
             [ 0.0//_fuselageDragCoefX * _fuselageAreaSide   * (_locVelX * _locVelX)
