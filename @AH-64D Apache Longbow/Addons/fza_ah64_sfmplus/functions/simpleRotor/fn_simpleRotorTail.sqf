@@ -74,10 +74,13 @@ if (_bladePitch_cur >= 0.0) then {
 //Thrust scalar as a result of altitude
 private _airDensityThrustScalar    = _dryAirDensity / ISA_STD_DAY_AIR_DENSITY;
 //Additional thrust gained from increasing forward airspeed
-private _velYZ                      = vectorMagnitude [velocityModelSpace _heli # 1, velocityModelSpace _heli # 2];
+([_heli, fza_ah64_enableWind] call fza_sfmplus_fnc_getVelocities)
+    params ["_gndSpeed", "_vel2D", "_vel3D","_velVert","_velModelSpace", "_velWorldSpace"];
+
+private _velYZ                     = vectorMagnitude [_velModelSpace # 1, _velModelSpace # 2];
 private _airspeedVelocityScalar    = (1 + (_velYZ / VEL_VBE)) ^ (_rtrAirspeedVelocityMod);
 //Induced flow handler
-private _velX                      = velocityModelSpace _heli # 0;
+private _velX                      = _velModelSpace # 0;
 private _inducedVelocityScalar     = 1.0;
 if (_velX < -VEL_VRS && _velYZ < VEL_ETL) then { 
     _inducedVelocityScalar = 0.0;

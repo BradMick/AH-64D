@@ -99,7 +99,7 @@ private _drag =
             ] vectorMultiply (-0.5 * _rho * _deltaTime);
 
 _heli addForce[_heli vectorModelToWorld _drag, getCenterOfMass _heli];
-_heli addTorque (_heli vectorModelToWorld _fuselageTorque);
+//_heli addTorque (_heli vectorModelToWorld _fuselageTorque);
 
 #ifdef __A3_DEBUG__
 private _vecX = [1.0, 0.0, 0.0];

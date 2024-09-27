@@ -88,6 +88,7 @@ class CfgFunctions
             class getAltitude {R;};
             class getInput {R;};
             class getRtrRPM {R;};
+            class getVelocities {R;};
             class getwindDirVel {R;};
             class onGround {R;};
         };
