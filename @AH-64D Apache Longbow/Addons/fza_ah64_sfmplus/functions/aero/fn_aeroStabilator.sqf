@@ -17,8 +17,9 @@ Examples:
 Author:
     BradMick
 ---------------------------------------------------------------------------- */
-#include "\fza_ah64_systems\headers\systems.hpp"
 params ["_heli", "_rho"];
+#include "\fza_ah64_sfmplus\headers\core.hpp"
+#include "\fza_ah64_systems\headers\systems.hpp"
 
 private _stabDamage    = _heli getHitPointDamage "hit_stabilator";
 private _dcBusOn       = _heli getVariable "fza_systems_dcBusOn";
@@ -42,25 +43,23 @@ private _theta           = 0.0;
 
 private _intStabTable    = [getArray (_sfmPlusConfig >> "heliSimStabTable"), fza_sfmplus_collectiveOutput] call fza_fnc_linearInterp;
 _stabOutputTable = [
-                    [15.43, _intStabTable select 1]   //30kts
-                   ,[20.58, _intStabTable select 2]   //40kts
-                   ,[25.72, _intStabTable select 3]   //50kts
-                   ,[30.87, _intStabTable select 4]   //60kts
-                   ,[36.01, _intStabTable select 5]   //70kts
-                   ,[41.16, _intStabTable select 6]   //80kts
-                   ,[46.30, _intStabTable select 7]   //90kts
-                   ,[51.44, _intStabTable select 8]   //100kts
-                   ,[56.59, _intStabTable select 9]   //110kts
-                   ,[61.73, _intStabTable select 10]  //120kts
-                   ,[66.88, _intStabTable select 11]  //130kts
-                   ,[72.02, _intStabTable select 12]  //140kts
-                   ,[77.17, _intStabTable select 13]  //150kts
-                   ,[82.31, _intStabTable select 14]  //160kts
-                   ,[87.46, _intStabTable select 15]  //170kts
-                   ,[92.60, _intStabTable select 16]  //180kts
-                   ,[97.74, _intStabTable select 17]  //190kts
-                   ,[102.9, _intStabTable select 18]  //200kts
-                   ];
+[ 0.00, _intStabTable select 1]   //0kts
+,[15.43, _intStabTable select 2]   //30kts
+,[20.58, _intStabTable select 3]   //40kts
+,[25.72, _intStabTable select 4]   //50kts
+,[29.58, _intStabTable select 5]   //57.5kts
+,[30.87, _intStabTable select 6]   //60kts
+,[41.16, _intStabTable select 7]   //80kts
+,[42.44, _intStabTable select 8]   //82.5kts
+,[51.44, _intStabTable select 9]   //100kts
+,[59.16, _intStabTable select 10]   //115kts
+,[61.73, _intStabTable select 11]  //120kts
+,[72.02, _intStabTable select 12]  //140kts
+,[77.17, _intStabTable select 13]  //150kts
+,[82.31, _intStabTable select 14]  //160kts
+,[84.88, _intStabTable select 15]  //165kts
+,[92.60, _intStabTable select 16]  //180kts
+];
 
 ([_heli, fza_ah64_sfmplusEnableWind] call fza_sfmplus_fnc_getVelocities)
     params [ 
@@ -75,6 +74,8 @@ _stabOutputTable = [
            ];
 
 _theta = [_stabOutputTable, _vel2D * KNOTS_TO_MPS] call fza_fnc_linearInterp select 1;
+
+systemChat format ["stab theta = %1 -- vel2D = %2 -- collective = %3", _theta, _vel2D * KNOTS_TO_MPS, fza_sfmplus_collectiveOutput];
 
 if (_stabDamage >= SYS_STAB_DMG_THRESH || !_dcBusOn) then {
     _theta = _heli getvariable "fza_ah64_stabilatorPosition";
