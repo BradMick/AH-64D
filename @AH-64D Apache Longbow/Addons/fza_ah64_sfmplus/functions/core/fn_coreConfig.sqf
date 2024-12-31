@@ -30,7 +30,11 @@ fza_sfmplus_collectiveOutput = 0.0;
 fza_sfmplus_currentTime      = 0.0;
 fza_sfmplus_previousTime     = 0.0;
 fza_sfmplus_deltaTime        = 0.0;
-fza_sfmplus_fixedDeltaTime   = 0.0;
+
+fza_sfmplus_accumulator       = 0.0;
+fza_sfmplus_fixedCurrentTime  = 0.0;
+fza_sfmplus_fixedPreviousTime = 0.0;
+fza_sfmplus_fixedDeltaTime    = 0.0;
 
 fza_sfmplus_gndSpeed         = 0.0;
 fza_sfmplus_vel2D            = 0.0;

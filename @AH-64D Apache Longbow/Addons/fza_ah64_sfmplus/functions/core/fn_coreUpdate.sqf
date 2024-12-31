@@ -30,6 +30,8 @@ if (isAutoHoverOn _heli) then {
     _heli action ["AutoHoverCancel", _heli];  
 };
 
+[] call fza_sfmplus_fnc_fixedUpdate;
+
 //Environment
 private _altitude          = _heli getVariable "fza_sfmplus_PA"; //0;     //ft
 private _altimeter         = 29.92; //in mg
