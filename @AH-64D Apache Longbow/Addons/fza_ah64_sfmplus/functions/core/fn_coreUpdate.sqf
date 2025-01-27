@@ -92,6 +92,10 @@ if !(isMultiplayer) then {
     [_heli] call fza_sfmplus_fnc_probes;
 };
 
+[_heli] call fza_sfmplus_fnc_wheelController;
+
+//fza_ah64_positionUpdated = false;
+
 #ifdef __A3_DEBUG_
 /*
 (_heli call BIS_fnc_getPitchBank)

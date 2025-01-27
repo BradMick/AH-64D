@@ -127,3 +127,6 @@ _heli setVariable ["fza_sfmplus_aero_accel",         [0.0, 0.0, 0.0]];
 
 //Actuators
 [_heli] call fza_sfmplus_fnc_actuatorVariables;
+
+//Wheels
+[_heli] call fza_sfmplus_fnc_wheelVariables;
