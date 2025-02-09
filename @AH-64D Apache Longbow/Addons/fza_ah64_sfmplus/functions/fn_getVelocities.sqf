@@ -25,12 +25,10 @@ params ["_heli", "_useWind"];
 //Ground speed
 private _gndSpeed        = round(vectorMagnitude [velocityModelSpace _heli select 0, velocityModelSpace _heli select 1] * MPS_TO_KNOTS);
 
-private _velWind = [];
+private _velWind = [0.0, 0.0, 0.0];
 
 if (_useWind) then {
     _velWind = wind;
-} else {
-    _velWind = [0.0, 0.0, 0.0];
 };
 
 //3D velocity of the aircraft

@@ -8,6 +8,13 @@ class CfgFunctions
     class fza_ah64_cannon
     {
         tag = "fza_cannon";
+        class ballistics {
+            file = "\fza_ah64_cannon\functions\ballistics";
+            class ballisticSolver {R;};
+            class getFinalVelocity {R;};
+            class getTargetElevation {R;};
+            class getTurretElevationAngle {R;};
+        };
         class functions {
             file = "\fza_ah64_cannon\functions";
             class fired {R;};

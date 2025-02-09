@@ -197,8 +197,8 @@ if (_gunFailed) then {
     _maingun = 0.298;
 };
 
-[_heli, "mainTurret", _mainturret] call fza_fnc_updateAnimations;
-[_heli, "mainGun", _maingun] call fza_fnc_updateAnimations;
+//[_heli, "mainTurret", _mainturret] call fza_fnc_updateAnimations;
+//[_heli, "mainGun", _maingun] call fza_fnc_updateAnimations;
 
 for "_i" from 0 to 3 do {
     if (WEP_TYPE(_firstPylonMags#_i) == "auxTank") then {

@@ -92,6 +92,8 @@ if !(isMultiplayer) then {
     [_heli] call fza_sfmplus_fnc_probes;
 };
 
+[_heli] call fza_cannon_fnc_ballisticSolver;
+
 #ifdef __A3_DEBUG_
 /*
 (_heli call BIS_fnc_getPitchBank)
