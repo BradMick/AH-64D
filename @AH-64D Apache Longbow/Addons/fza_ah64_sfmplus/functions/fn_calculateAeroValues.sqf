@@ -80,6 +80,16 @@ private _beta = _ax / GRAVITY;//_ax atan2 (_ay - GRAVITY);
 systemChat format ["_beta = %1", _beta];
 */
 
+private _ax = _heli getVariable "fza_sfmplus_accelX";
+private _ay = _heli getVariable "fza_sfmplus_accelY";
+
+private _gPlusAy      = GRAVITY + _ay;
+private _beta_deg_new = _ax atan2 _gPlusAy;
+
+private _beta_g_new   = tan _beta_deg_new;
+
+systemChat format ["_beta_deg_new = %1 -- _beta_g_new = %2", _beta_deg_new, _beta_g_new];
+
 _heli setVariable ["fza_sfmplus_aero_alpha_deg", _alpha_deg, true];
 _heli setVariable ["fza_sfmplus_aero_beta_deg",  _beta_deg,  true];
 _heli setVariable ["fza_sfmplus_aero_beta_g",    _beta_g,    true];
