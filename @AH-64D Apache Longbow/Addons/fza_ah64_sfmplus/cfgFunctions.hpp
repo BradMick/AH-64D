@@ -104,6 +104,12 @@ class CfgFunctions
             class simpleRotorTail {R;};
             class simpleRotorVariables {R;};
         };
+        class wheel {
+            file = "\fza_ah64_sfmplus\functions\wheel";
+            class wheel {R;};
+            class wheelController {R;};
+            class wheelVariables {R;};
+        };
         class utility {
             file = "\fza_ah64_sfmplus\functions";
             class calculateAeroValues {R;};

@@ -62,6 +62,6 @@ private _windSpeed     = vectorMagnitude wind;
 private _velWindWorldSpaceX = -(_windSpeed * sin _windDir);
 private _velWindWorldSpaceY = -(_windSpeed * cos _windDir);
 
-private _velWindWorldSpace  = [_velWindWorldSpaceX, _velWindWorldSpaceY, 0.0];
+private _velWindWorldSpace  = [0.0,0.0,0.0];//[_velWindWorldSpaceX, _velWindWorldSpaceY, 0.0];
 
 _heli setVariable ["fza_sfmplus_velWindWorldSpace", _velWindWorldSpace];
