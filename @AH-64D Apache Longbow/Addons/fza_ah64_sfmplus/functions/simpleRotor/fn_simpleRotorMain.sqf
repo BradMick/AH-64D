@@ -86,7 +86,7 @@ private _rtrTipLossTable          = [
                                     ,[ 9525, 0.940]
                                     ];
 
-private _velocityThrustExponent = 0.386;
+private _velocityThrustExponent = 0.519;//0.386;
 private _vrsScalarExponent      = 0.3;
 private _rtrTorqueScalar        = 1.0;
 
@@ -153,10 +153,23 @@ private _vel_vbe     =  36.011;
 private _vel_vne     = 128.611;
 
 private _profile_min = 0.180;
-private _profile_max = 0.704;
+private _profile_max = 0.713;
 
-private _induced_min = 1.171;//IND_MIN;//0.8110;
-private _induced_max = 0.918;//IND_MAX;//0.6072;
+private _inducedPwrScalarTable =
+[
+ [0.00,  0.258]
+,[0.05,  0.299]
+,[0.46,  0.460]
+,[0.655, 0.679]
+,[0.765, 0.700]
+,[1.000, 1.408]
+];
+
+private _inducedMinVal_min = 0.474;
+private _inducedMinVal_max = 1.171;
+
+private _inducedMaxVal_min = 0.274;
+private _inducedMaxVal_max = 0.918;
 
 private _velXNoWind  = _heli getVariable "fza_sfmplus_velModelSpaceNoWind" select 0;
 private _velYNoWind  = _heli getVariable "fza_sfmplus_velModelSpaceNoWind" select 1;
@@ -164,8 +177,13 @@ private _velXYNoWind = vectorMagnitude [_velXNoWind, _velYNoWind];
 
 private _profile_cur = _profile_min + ((_profile_max - _profile_min) / _vel_vne) * _velXYNoWind;
 
-private _induced_val = _induced_min * ((_heli getVariable "fza_sfmplus_collectiveOutput") + _altHoldCollOut);
-private _induced_cur = ((_induced_val - _induced_max) / _vel_vbe) * _velXYNoWind + _induced_val;
+//private _inducedMinVal = ([_inducedMinTable, _velXYNoWind] call fza_fnc_linearInterp) select 1;
+//private _inducedMaxVal = ([_inducedMaxTable, _velXYNoWind] call fza_fnc_linearInterp) select 1;
+_induced_min = _inducedMinVal_max - ((_inducedMinVal_max - _inducedMinVal_min) / _vel_vne) * _velXYNoWind;
+_induced_max = _inducedMaxVal_max - ((_inducedMaxVal_max - _inducedMaxVal_min) / _vel_vne) * _velXYNoWind;
+private _inducedPowerScalar = ([_inducedPwrScalarTable, (_heli getVariable "fza_sfmplus_collectiveOutput") + _altHoldCollOut] call fza_fnc_linearInterp) select 1;
+private _induced_val        = _induced_min * _inducedPowerScalar;
+private _induced_cur        = ((_induced_val - _induced_max) / _vel_vbe) * _velXYNoWind + _induced_val;
 
 private _power_val   = _profile_cur + _induced_cur;
 if (_power_val < 0.0) then {
