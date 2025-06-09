@@ -86,7 +86,19 @@ private _rtrTipLossTable          = [
                                     ,[ 9525, 0.940]
                                     ];
 
-private _velocityThrustExponent = 0.519;//0.386;
+private _velocityThrustExponentTable = 
+[
+ [ 0.00, 0.000]
+,[10.29, 0.209]
+,[20.58, 0.558]
+,[36.01, 0.606]
+,[46.30, 0.497]
+,[51.44, 0.473]
+,[61.73, 0.386]
+,[66.88, 0.382]
+,[72.02, 0.404]
+];
+
 private _vrsScalarExponent      = 0.3;
 private _rtrTorqueScalar        = 1.0;
 
@@ -96,7 +108,8 @@ private _rollTorqueScalar       = 0.75;
 private _baseThrust             = 102306;  //N - max gross weight (kg) * gravity (9.806 m/s)
 
 //Thrust produced 
-private _bladePitch_cur                = _bladePitch_min + (_bladePitch_max - _bladePitch_min) * ((_heli getVariable "fza_sfmplus_collectiveOutput") + _altHoldCollOut);
+private _collective_val                = (_heli getVariable "fza_sfmplus_collectiveOutput") + _altHoldCollOut;
+private _bladePitch_cur                = _bladePitch_min + (_bladePitch_max - _bladePitch_min) * _collective_val;
 private _rtrThrustScalar_min           = [_rtrThrustScalarTable_min, _altitude] call fza_fnc_linearInterp select 1;
 private _bladePitchInducedThrustScalar = _rtrThrustScalar_min + ((1 - _rtrThrustScalar_min) / _bladePitch_max)  * _bladePitch_cur;
 (_heli getVariable "fza_sfmplus_engPctNP")
@@ -119,7 +132,7 @@ if (_velWindY < 0.0) then {
     _velWindY = 0.0;
 };
 private _velXY                     = vectorMagnitude [_velX + _velWindX, _velY + _velWindY];
-//private _velocityThrustExponent    = [_velocityThrustExpTable, _velXY] call fza_fnc_linearInterp select 1;
+private _velocityThrustExponent    = [_velocityThrustExponentTable, _velXY] call fza_fnc_linearInterp select 1;
 //systemChat format ["_velocityThrustExponent = %1 -- _collectiveOutput = %2", _velocityThrustExponent toFixed 3, (_heli getVariable "fza_sfmplus_collectiveOutput") toFixed 3];
 private _airspeedVelocityScalar    = (1 + (_velXY / VEL_VBE)) ^ (_velocityThrustExponent);
 
@@ -155,35 +168,45 @@ private _vel_vne     = 128.611;
 private _profile_min = 0.180;
 private _profile_max = 0.713;
 
-private _inducedPwrScalarTable =
+private _induced_min = 0.000;
+private _induced_max = 1.202;
+
+//private _inducedMinVal_min = 0.474;
+//private _inducedMinVal_max = 1.171;
+
+//private _inducedMaxVal_min = 0.274;
+//private _inducedMaxVal_max = 0.918;
+
+private _inducedPowerVelTable =
 [
- [0.00,  0.258]
-,[0.05,  0.299]
-,[0.46,  0.460]
-,[0.655, 0.679]
-,[0.765, 0.700]
-,[1.000, 1.408]
+ [ 0.00, 1.000]
+,[10.29, 0.877]
+,[20.58, 0.694]
+,[36.01, 0.412]
+,[46.30, 0.388]
+,[51.44, 0.436]
+,[61.73, 0.698]
+,[66.88, 0.934]
+,[72.02, 1.227]
 ];
-
-private _inducedMinVal_min = 0.474;
-private _inducedMinVal_max = 1.171;
-
-private _inducedMaxVal_min = 0.274;
-private _inducedMaxVal_max = 0.918;
 
 private _velXNoWind  = _heli getVariable "fza_sfmplus_velModelSpaceNoWind" select 0;
 private _velYNoWind  = _heli getVariable "fza_sfmplus_velModelSpaceNoWind" select 1;
 private _velXYNoWind = vectorMagnitude [_velXNoWind, _velYNoWind];
 
 private _profile_cur = _profile_min + ((_profile_max - _profile_min) / _vel_vne) * _velXYNoWind;
-
 //private _inducedMinVal = ([_inducedMinTable, _velXYNoWind] call fza_fnc_linearInterp) select 1;
 //private _inducedMaxVal = ([_inducedMaxTable, _velXYNoWind] call fza_fnc_linearInterp) select 1;
-_induced_min = _inducedMinVal_max - ((_inducedMinVal_max - _inducedMinVal_min) / _vel_vne) * _velXYNoWind;
-_induced_max = _inducedMaxVal_max - ((_inducedMaxVal_max - _inducedMaxVal_min) / _vel_vne) * _velXYNoWind;
-private _inducedPowerScalar = ([_inducedPwrScalarTable, (_heli getVariable "fza_sfmplus_collectiveOutput") + _altHoldCollOut] call fza_fnc_linearInterp) select 1;
-private _induced_val        = _induced_min * _inducedPowerScalar;
-private _induced_cur        = ((_induced_val - _induced_max) / _vel_vbe) * _velXYNoWind + _induced_val;
+//_induced_min = _inducedMinVal_max - ((_inducedMinVal_max - _inducedMinVal_min) / _vel_vne) * _velXYNoWind;
+//_induced_max = _inducedMaxVal_max - ((_inducedMaxVal_max - _inducedMaxVal_min) / _vel_vne) * _velXYNoWind;
+
+private _induced_val        = _induced_min + (_induced_max - _induced_min) * _collective_val;
+private _induced_val_scalar = [1.0 - (_velXYNoWind / _vel_vne), 1.0, 0.0] call BIS_fnc_clamp;
+_induced_val                = _induced_val * _induced_val_scalar;
+
+private _induced_cur = _induced_val * ([_inducedPowerVelTable, _velXYNoWind] call fza_fnc_linearInterp select 1);
+//private _induced_val        = _induced_min * _inducedPowerScalar;
+//private _induced_cur        = ((_induced_val - _induced_max) / _vel_vbe) * _velXYNoWind + _induced_val;
 
 private _power_val   = _profile_cur + _induced_cur;
 if (_power_val < 0.0) then {
