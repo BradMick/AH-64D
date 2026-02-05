@@ -46,20 +46,24 @@ if (!(_heli getVariable ["fza_ah64_aircraftSystemsInitialised", false]) && local
 
 
     //Hydraulics
-    _heli setVariable ["fza_systems_priHydPSI_pct",     1.0, true];
-    _heli setVariable ["fza_systems_priLevel_pct",      1.0, true];
-    _heli setVariable ["fza_systems_utilHydPSI_pct",    1.0, true];
-    _heli setVariable ["fza_systems_utilLevel_pct",     1.0, true];
-    _heli setVariable ["fza_systems_accHydPSI_pct",     1.0, true];
+    _heli setVariable ["fza_systems_priHydPSI_pct",     1.0, true]; //<-- For tracking the pressure output of the PUMP, used in the lerp
+    _heli setVariable ["fza_systems_priLevel_pct",      1.0, true]; //<-- For tracking the RESERVOIR fluid level, used in the lerp
+
+    _heli setVariable ["fza_systems_utilHydPSI_pct",    1.0, true]; //<-- For tracking the pressure output of the PUMP, used in the lerp
+    _heli setVariable ["fza_systems_utilLevel_pct",     1.0, true]; //<-- For tracking the RESERVOIR fluid level, used in the lerp
+    
+    _heli setVariable ["fza_systems_accHydPSI_pct",     1.0, true]; //<-- The "stored pressure" of the accumulator, used when the emer hyd button is pressed, a bit
+    //trickier because this is always 1.0 until there is a dual psi event (pri + util). Will slowly bleed down when the EMER HYD is pressed. Can be reset to 1.0 w/
+    //a repair. 
 };
 
 _heli setVariable ["fza_systems_apuStartDelay",     5.0];
 _heli setVariable ["fza_systems_apuFF_kgs",         0.0];
-_heli setVariable ["fza_systems_priHydPsi",         1.0];
-_heli setVariable ["fza_systems_utilHydPsi",        1.0];
+_heli setVariable ["fza_systems_priHydPsi",         1.0]; //<-- the actual PSI from the pump, PSI_pct * 3000 (or whatever)
+_heli setVariable ["fza_systems_utilHydPsi",        1.0]; //<-- the actual PSI from the pump, PSI_pct * 3000 (or whatever)
 _heli setVariable ["fza_systems_dmgTimerCont",      0.0];
 _heli setVariable ["fza_systems_dmgTimerTrans",     0.0];
-_heli setVariable ["fza_systems_accHydPsi",         0.0];
+_heli setVariable ["fza_systems_accHydPsi",         0.0]; //<-- the actual "stored" PSI of the accumulator, this will bleed down over time
 private _battTime = SYS_BATT_TIMER * 60;
 _heli setVariable ["fza_systems_battTimer",         _battTime];
 private _leakTimer = SYS_LEAK_TIMER * 60;

@@ -23,6 +23,10 @@ private _utilHydPumpDamage = _heli getHitPointDamage "hit_hyd_utilPump";
 private _utilHydPSI_pct    = _heli getVariable "fza_systems_utilHydPSI_pct";
 private _utilHydPSI        = _heli getVariable "fza_systems_utilHydPsi";
 
+//The utility reservoir isolates the "extremeties" (pylons, gun, tail rotor) to
+//preserve fluid for the lat/long and collective servos. Thus when the reservoir
+//level goes to 0, the pressure remains.
+
 if (_utilHydPumpDamage > SYS_HYD_DMG_THRESH) then {
     _utilHydPSI_pct = 0.0;
 } else {

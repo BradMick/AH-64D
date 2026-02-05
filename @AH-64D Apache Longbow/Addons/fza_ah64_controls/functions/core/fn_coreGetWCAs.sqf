@@ -356,7 +356,7 @@ if (_priHydPSI < SYS_MIN_HYD_PSI) then {
 } else {
     [_activeCaut, "PRI HYD PSI"] call fza_wca_fnc_wcaDelCaution;
 };
-if (_priLevel_pct < SYS_HYD_MIN_LVL) then {
+if (_priLevel_pct < (SYS_HYD_MIN_LVL + 0.05)) then {
     ([_heli, _activeCaut, "PRI HYD LEVEL LOW", "PRI HYD LVL", _playCautAudio] call fza_wca_fnc_wcaAddCaution)
         params ["_wcaAddCaution", "_playAudio"];
 
@@ -374,7 +374,7 @@ if (_utilHydPSI < SYS_MIN_HYD_PSI) then {
 } else {
     [_activeCaut, "UTIL HYD PSI"] call fza_wca_fnc_wcaDelCaution;
 };
-if (_utilLevel_pct < SYS_HYD_MIN_LVL) then {
+if (_utilLevel_pct < (SYS_HYD_MIN_LVL + 0.05)) then {
     ([_heli, _activeCaut, "UTIL HYD LEVEL LOW", "UTIL HYD LVL", _playCautAudio] call fza_wca_fnc_wcaAddCaution)
         params ["_wcaAddCaution", "_playAudio"];
 
