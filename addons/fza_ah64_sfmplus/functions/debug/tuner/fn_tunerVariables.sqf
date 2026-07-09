@@ -345,14 +345,6 @@ _spec pushBack (["Environment", "fza_sfmplus_tune_windSpeedKts", "Wind Speed (kt
 // in the non-blocking overlay panel (bind "Toggle FM Tuner Overlay").
 /////////////////////////////////////////////////////////////////////////////
 
-// Raw-airframe mode: suppresses the attitude-hold + SAS CORRECTION (all axes) so
-// the aircraft flies its true natural trimmed attitude, WITHOUT engaging the
-// by-design actuator lag (the FMC flags stay on, controls stay crisp). Required
-// by the master tuner; it also force-enables this while running.
-_spec pushBack (["Balance", "fza_sfmplus_tune_fmcYawOff", "Raw Airframe (no stabilization)", "Master Auto-Tuner", "bool",
-    false, "fza_sfmplus_tune_fmcYawOff",
-    ["(runtime toggle only)", "// stabilization suppressed for tuning: %1"]] call _fnMake);
-
 // HOVER-tune mode: pick IGE or OGE to tune a hover (mutually exclusive; IGE wins if
 // both on; both off = forward-flight tuning by airspeed band). When on, the tuner
 // sequence is YAW -> VERT only (stabilator is NOT tuned at a hover) and it drives the
@@ -365,7 +357,7 @@ _spec pushBack (["Balance", "fza_sfmplus_tune_hoverOGE", "Hover Tune: OGE (80 ft
     ["(runtime toggle only)", "// hover-tune OGE: %1"]] call _fnMake);
 
 // Master auto-tuner on/off. When on it tunes the force scalar tables against the
-// target attitudes for the commanded speed band. REQUIRES Raw Airframe on.
+// target attitudes/positions for the commanded speed band (or the hover state).
 _spec pushBack (["Balance", "fza_sfmplus_tune_masterOn", "MASTER Auto-Tune (on/off)", "Master Auto-Tuner", "bool",
     false, "fza_sfmplus_tune_masterOn",
     ["(runtime toggle only)", "// master auto-tune enabled: %1"]] call _fnMake);

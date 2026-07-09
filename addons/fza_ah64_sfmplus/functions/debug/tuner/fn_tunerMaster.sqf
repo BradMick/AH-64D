@@ -2,17 +2,18 @@
 Function: fza_sfmplus_fnc_tunerMaster
 
 Description:
-    Master auto-tuner. While it runs the flight controls are LOCKED OUT (you can't
-    fly and tune at once), so the tuner DRIVES the controls to the real AH-64
-    flight-test positions itself - deliberately, ONE axis at a time - and tunes the
-    force scalars so the aircraft is trimmed and stable AT those positions.
+    Master auto-tuner. It DRIVES the controls to the real AH-64 flight-test positions
+    itself - deliberately, ONE axis at a time - and tunes the force scalars so the
+    aircraft is trimmed and stable AT those positions. The aircraft is kept in a stable
+    hover meanwhile by the FMC attitude hold (pos submode, fn_fmcAttitudeHold); the
+    master does not run or force any pitch/roll hold of its own.
 
-    Deliberate ONE-AXIS-AT-A-TIME drive (sequence YAW -> PITCH -> ROLL -> VERT):
-    the ACTIVE axis slowly walks its force-trim toward the flight-test control
-    position while its force scalar is tuned; every INACTIVE axis stays in
-    self-stabilizing ATTITUDE-HOLD so the aircraft never diverges. An axis is
-    "done" only when its control has reached the real position AND its force is
-    trimmed there.
+    Deliberate ONE-AXIS-AT-A-TIME drive. Sequence depends on flight state:
+      forward flight:  YAW -> PITCH -> ROLL -> VERT
+      hover (IGE/OGE):  YAW -> VERT  (stabilator inactive - PITCH not tuned)
+    The ACTIVE axis slowly walks its force-trim toward the flight-test control
+    position while its force scalar is tuned. An axis is "done" only when its control
+    has reached the real position AND its force is trimmed there.
 
       YAW   : drive PEDAL trim to the flight-test pedal position; tune tail-rotor
               thrust (fza_sfmplus_tune_tailThrustTable) + main-rotor torque
@@ -30,9 +31,8 @@ Description:
               level flight (climb -> 0). No control-position target (you can't
               "position" thrust); gates on climb only.
 
-    Requires Raw Airframe (all FMC off) so the stabilization doesn't absorb the
-    trim / mask the forces. Runs while fza_sfmplus_tune_masterOn is enabled. Fly
-    stable at the commanded speed; it tunes the band you are in.
+    Runs while fza_sfmplus_tune_masterOn is enabled. Fly stable at the commanded
+    speed; it tunes the band you are in.
 
     Publishes for the GUI/overlay: fza_sfmplus_master_axis (string), _err, _band,
     and the live scalar being tuned (fza_sfmplus_master_scalar / _scalarName).
@@ -60,9 +60,9 @@ private _ctx = createHashMapFromArray
     ["bands",     _bands],
     ["prevSpd",   0.0],
     //Axis case ids: 0 VERT(thrust), 1 PITCH(stab), 2 ROLL, 3 YAW(tail thrust).
-    //Tuning SEQUENCE (priority order): the aircraft must be STABLE first. Tune YAW
-    //(tail thrust) first to stop the spin, then PITCH + ROLL (attitude stability),
-    //then VERT (hover/cruise thrust). seqIdx walks seqOrder; axis = seqOrder[seqIdx].
+    //Tuning SEQUENCE (priority order): tune YAW (tail thrust) first to stop the spin,
+    //then PITCH (stab lift) and ROLL, then VERT (thrust). At a hover the sequence is
+    //rebuilt to YAW -> VERT only (see the hover-state block). seqIdx walks seqOrder.
     ["seqOrder",  [3, 1, 2, 0]], // YAW -> PITCH -> ROLL -> VERT (forward flight)
     ["seqIsHover",false],       // which sequence seqOrder currently holds; rebuilt on mode change
     ["seqIdx",    0],
@@ -74,12 +74,9 @@ private _ctx = createHashMapFromArray
     //error per second; applied *dt. Clamped per table below. ---
     ["kThrust",   3.0e-4],      // mainThrustTable step per ft/min of climb
     ["kStab",     2.0e-3],      // stabLiftScalarTable step per deg of pitch error
-    //Yaw is tuned against the actual YAW RATE (rad/s) - ground truth, captures
-    //ANY yaw source whether or not it is in the force log. Error is small (rad/s),
-    //so these gains are large relative to the moment-based ones they replaced.
-    //Yaw is tuned against the NET yaw MOMENT (Nm) - what the scalars actually
-    //control (rate is its integral; targeting rate saturates/runs away). Gains are
-    //table-step per Nm of net yaw moment, so they are small (moment ~ hundreds Nm).
+    //Yaw is tuned against the NET yaw MOMENT (Nm) - what the scalars actually control
+    //(rate is its integral; targeting rate saturates/runs away). Gains are table-step
+    //per Nm of net yaw moment, so they are small (moment ~ hundreds Nm).
     ["kTail",     6.0e-5],      // tailThrustTable step per Nm of net yaw moment (primary)
     ["kTorque",   9.0e-6],      // rtrTqScalarTable step per Nm of net yaw moment (slow trim)
 
@@ -180,13 +177,11 @@ private _ctx = createHashMapFromArray
     };
     _heli setVariable ["fza_sfmplus_master_band", _bestIdx];
 
-    //HOVER STATE (IGE / OGE) - EXPLICIT, set by you (not auto-detected from AGL, which
-    //was unreliable). fza_sfmplus_tune_hoverMode is "" (forward flight), "IGE", or
-    //"OGE"; you select which hover you're tuning. When set, the tuner tunes hover as
-    //its own case: pedal + cyclic go to the IGE/OGE hover positions, then tail-rotor
-    //thrust and main-rotor thrust are tuned. The stabilator is NOT tuned at a hover.
-    //Two mutually-exclusive GUI toggles select the hover state (IGE wins if both on).
-    //"" = forward flight (use the airspeed bands).
+    //HOVER STATE (IGE / OGE) - EXPLICIT, selected by two mutually-exclusive GUI toggles
+    //(hoverIGE / hoverOGE; IGE wins if both on; both off = forward flight, use airspeed
+    //bands). When set, the tuner tunes hover as its own case: pedal + cyclic go to the
+    //IGE/OGE hover positions, then tail-rotor and main-rotor thrust are tuned. The
+    //stabilator is NOT tuned at a hover.
     private _hoverState = "";
     if (_heli getVariable ["fza_sfmplus_tune_hoverIGE", false]) then { _hoverState = "IGE"; }
     else { if (_heli getVariable ["fza_sfmplus_tune_hoverOGE", false]) then { _hoverState = "OGE"; }; };
@@ -214,30 +209,13 @@ private _ctx = createHashMapFromArray
     //speed wobbles. Auto mode falls back to live speed.
     private _lookupSpd = if (_tgtKt >= 5.0) then { _tgtKt / 1.94384 } else { _spd };
 
-    //=== DELIBERATE CONTROL DRIVE + VELOCITY (DRIFT) STABILIZATION ============
-    //The tuner is the ONLY thing flying the aircraft: while it runs the flight
-    //controls are locked out, so we cannot fly and tune at the same time. The tuner
-    //therefore has to DRIVE the controls to the real flight-test positions itself -
-    //but deliberately, ONE axis at a time, so it never diverges:
-    //
-    //  - The ACTIVE axis (the one currently being tuned) slowly drives its control
-    //    (force-trim) toward the real flight-test control position for this speed,
-    //    at a small rate, while its force scalar is tuned so the ship stays trimmed
-    //    there. This is the axis whose control we WANT to reach the target.
-    //  - Every INACTIVE axis holds the ship steady via a VELOCITY (drift) hold - NOT
-    //    an attitude hold. With the forces still untuned, commanding a pitch/roll
-    //    ANGLE is impossible (nothing produces that angle) and merely tilting the
-    //    rotor makes the ship translate and diverge. A real hover-hold instead nulls
-    //    the DRIFT VELOCITY: pitch trim kills fwd/aft drift, roll trim kills lateral
-    //    drift. The attitude then falls out naturally as whatever nulls the drift,
-    //    so it works regardless of whether the forces are tuned yet.
-    //
-    //This is the safe form of "drive the controls to the flight-test positions":
-    //only one axis moves toward its raw target at a time; the rest hold zero drift.
+    //=== ACTIVE-AXIS CONTROL DRIVE ==========================================
+    //The tuner drives the controls to the real flight-test positions ONE axis at a
+    //time: the ACTIVE axis (being tuned) slowly walks its force-trim toward the target
+    //control position while its force scalar is tuned so the ship trims there. The
+    //aircraft is kept stable meanwhile by the EXTERNAL position hold (BradMick's FMC
+    //pos-hold PIDs, wired in separately) - this function no longer runs its own hold.
     (_heli getVariable ["fza_sfmplus_angVelModelSpace", [0,0,0]]) params ["_wP","_wR","_wY"];
-    //Position-hold drift velocity: WIND-RELATIVE body velocity (X = right, Y = fwd),
-    //exactly the signal the working FMC position hold uses to hold ground position.
-    (_heli getVariable ["fza_sfmplus_velModelSpaceNoWind", [0,0,0]]) params ["_velX","_velY"];
 
     private _axisNow  = _ctx get "axis";   // 0 VERT, 1 PITCH, 2 ROLL, 3 YAW
     private _curPitch = (_heli call BIS_fnc_getPitchBank) select 0;
@@ -277,19 +255,9 @@ private _ctx = createHashMapFromArray
         _heli setVariable ["fza_ah64_forceTrimPosRoll", ([_rTrimCur + ((_driveRate * (_tgtCycR - _rTrimCur)) * _dt),-1.0,1.0] call BIS_fnc_clamp), true];
     };
 
-    //=== POSITION HOLD (pitch/roll) - YOUR PIDs GO HERE ======================
-    //The master no longer runs its own pitch/roll hover hold. When PITCH/ROLL is NOT
-    //the active axis it must be held at a zero-drift hover so the other axes can tune.
-    //Wire your own position-hold PIDs here, writing to:
-    //   fza_ah64_forceTrimPosPitch   (cyclic fwd/aft trim, -1..1, fwd = +)
-    //   fza_ah64_forceTrimPosRoll    (cyclic left/right trim, -1..1, left = +)
-    //Available signals this frame:
-    //   _velX / _velY  = wind-relative body drift (m/s), X = right, Y = forward
-    //   _wP / _wR      = body pitch/roll rate (rad/s)
-    //   _curPitch / _curRoll = attitude (deg)
-    //   _dt            = frame time (s)
-    //Guard with (_axisNow != 1) for pitch and (_axisNow != 2) for roll so you don't
-    //fight the active-axis drive above.
+    //Pitch/roll are held at a stable hover by the FMC attitude hold (pos submode,
+    //fn_fmcAttitudeHold) running on the normal FMC path - the master no longer runs
+    //or forces any pitch/roll hold of its own.
 
     //--- YAW: active -> drive pedal trim toward target, then FREEZE; else heading-hold.
     //The pedal walks to the flight-test target and, once within tolerance, STOPS

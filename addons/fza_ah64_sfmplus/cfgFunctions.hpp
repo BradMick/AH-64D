@@ -131,7 +131,6 @@ class CfgFunctions
         };
         class simpleRotor {
             file = "\fza_ah64_sfmplus\functions\simpleRotor";
-            class simpleRotorMain_v2 {R;};
             class simpleRotorMain {R;};
             class simpleRotorNewtRaphSolver {R;};
             class simpleRotorTail {R;};
