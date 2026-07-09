@@ -103,15 +103,24 @@ _curLongCG  = _curLongMom / _curMass;
 _curLatMom  = _stn1LatMom + _stn2LatMom + _stn3LatMom + _stn4LatMom;
 _curLatCG   = _curLatMom / _curMass;
 
+//Tuner center of mass offsets (default 0.0 - no change)
+private _comOffX = _heli getVariable ["fza_sfmplus_tune_comOffsetX", 0.0];
+private _comOffY = _heli getVariable ["fza_sfmplus_tune_comOffsetY", 0.0];
+private _comOffZ = _heli getVariable ["fza_sfmplus_tune_comOffsetZ", 0.0];
+
 if (fza_ah64_sfmplusRealismSetting == REALISTIC) then {
-    _heli setCenterOfMass [_curLatCG, 7.12 - _curLongCG, -1.34];
+    _heli setCenterOfMass [_curLatCG + _comOffX, _curLongCG + _comOffY, -1.34 + _comOffZ];
 } else {
-    _heli setCenterOfMass [ 0.0, 7.12 - _curLongCG, -1.34];
+    _heli setCenterOfMass [ 0.0 + _comOffX, _curLongCG + _comOffY, -1.34 + _comOffZ];
 };
 //systemChat format ["Total Mass = %1 lbs (%2 kg) -- Total Moment = %3 -- Long CG = %4 in -- Lat CG = %5 in", (_curMass * 2.20462) toFixed 1, _curMass toFixed 1, _curLongMom toFixed 3, (_curLongCG * 39.3701) toFixed 1, (_curLatCG * 39.3701) toFixed 1];
 //systemChat format ["Center of Mass = %1", getCenterOfMass _heli];
 
 //_curMass = 4535;//8165;
+//Tuner gross weight override - bypasses the computed mass when enabled
+if (_heli getVariable ["fza_sfmplus_tune_gwtOverride", false]) then {
+    _curMass = _heli getVariable ["fza_sfmplus_tune_gwtValue", _curMass];
+};
 _heli setMass _curMass;
 
 _heli setVariable ["fza_sfmplus_GWT", _curMass,   true];

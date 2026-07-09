@@ -31,6 +31,25 @@ class CfgFunctions
             file = "\fza_ah64_sfmplus\functions\damage";
             class damageApply {R;};
         };
+        class debug {
+            file = "\fza_ah64_sfmplus\functions\debug\tuner";
+            class tunerVariables {R;};
+            class tunerApply {R;};
+            class tunerSetValue {R;};
+            class tunerLoad {R;};
+            class tunerSave {R;};
+            class tunerExport {R;};
+            class tunerGui {R;};
+            class tunerBuildRows {R;};
+            class tunerBalance {R;};
+            class tunerTargets {R;};
+            class tunerMaster {R;};
+            class tunerYawDamper {R;};
+            class tunerForceTables {R;};
+            class tunerOverlay {R;};
+            class forceLog {R;};
+            class forceLogReset {R;};
+        };
         class engine {
             file = "\fza_ah64_sfmplus\functions\engine";
             class engine  {R;};

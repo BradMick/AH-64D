@@ -1,7 +1,7 @@
 #include "\fza_ah64_sfmplus\headers\core.hpp"
 #include "\fza_ah64_systems\headers\systems.hpp"
 
-params ["_heli","_wingPos","_pitch","_roll","_span","_chord","_sweep","_twist","_tipWidthScalar",["_isStab", false]];
+params ["_heli","_wingPos","_pitch","_roll","_span","_chord","_sweep","_twist","_tipWidthScalar","_wingLiftScalarTable",["_isStab", false],["_forceLogName", ""]];
 
 if (!local _heli) exitWith {};
 
@@ -10,7 +10,7 @@ private _sfmPlusConfig = _cfg >> "Fza_SfmPlus";
 
 private _deltaTime      = _heli getVariable "fza_sfmplus_deltaTime";
 private _rho            = _heli getVariable "fza_sfmplus_rho";
-private _heliCOM        = getCenterOfMass _heli;
+private _heliCom        = getCenterOfMass _heli;
 private _numElements    = 5;
 private _chordLinePos   = 0.25;
 
@@ -28,6 +28,7 @@ private _B_wingTipLeadingEdge   = [];
 private _C_wingTipTrailingEdge  = [];
 private _D_wingRootTrailingEdge = [];
 private _airfoilTable           = [];
+private _liftScalar             = 1.0;
 
 if (_isStab) then {
     private _stabDamage = _heli getHitPointDamage "hit_stabilator";
@@ -83,8 +84,8 @@ if (_isStab) then {
 
     _airfoilTable = getArray (_sfmPlusConfig >> "airfoilTable01");
 } else {
-    private _vectorRight   = [[1.0, 0.0, 0.0], _pitch, _roll, 0.0] call fza_fnc_rotateVector;
-    private _vectorForward = [[0.0, 1.0, 0.0], _pitch, _roll, 0.0] call fza_fnc_rotateVector;
+    private _vectorRight   = [[1.0, 0.0, 0.0], _pitch, _roll, 0.0] call fza_sfmplus_fnc_vectorRotate;
+    private _vectorForward = [[0.0, 1.0, 0.0], _pitch, _roll, 0.0] call fza_sfmplus_fnc_vectorRotate;
 
     private _wingRootCenter = _wingPos       vectorDiff (_vectorRight   vectorMultiply (_span * 0.5));
     private _wingTipCenter  = _wingPos       vectorAdd  (_vectorRight   vectorMultiply (_span * 0.5));
@@ -185,7 +186,8 @@ for "_j" from 0 to (_numElements - 1) do {
     private _liftVector = _relativeWindNormalized vectorCrossProduct _up;
     _liftVector = _liftVector vectorCrossProduct _relativeWindNormalized;
     _liftVector = vectorNormalized _liftVector;
-    _liftVector = _liftVector vectorMultiply (_lift * _deltaTime);
+    _liftScalar = [_wingLiftScalarTable, _v] call fza_fnc_linearInterp select 1;
+    _liftVector = _liftVector vectorMultiply (_lift * _liftScalar * _deltaTime);
 
     private _dragVector = _relativeWind;
     _dragVector = (vectorNormalized _dragVector) vectorMultiply -1.0;
@@ -199,6 +201,16 @@ for "_j" from 0 to (_numElements - 1) do {
     _heli addForce [_heli vectorModelToWorld _liftVector, _e];
     _heli addForce [_heli vectorModelToWorld _dragVector, _e];
 
+    //This element's OWN force (lift+drag) and moment (F x r about the CoM), as
+    //named locals.
+    private _force  = _liftVector vectorAdd _dragVector;
+    private _moment = _force vectorCrossProduct _fromAeroCenterToCOM;
+
+    //Tuner force readout: log the element's own _force and _moment verbatim.
+    //Accumulates per surface name across the element loop.
+    if (fza_sfmplus_forceLogOn && _forceLogName != "") then {
+        [_heli, _forceLogName, _force, _moment] call fza_sfmplus_fnc_forceLog;
+    };
 };
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Debug                /////////////////////////////////////////////////////////////////////

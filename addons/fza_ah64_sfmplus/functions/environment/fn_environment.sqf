@@ -41,6 +41,15 @@ private _altitude          = round ((_baseAlt + _baroAlt) / 10) * 10;; //PA  fee
 private _altimeter         = 29.92; //in mg
 private _temperature       = _baseFAT - round((_baroAlt / 1000) * 2); //FAT deg C
 
+//Tuner overrides - when enabled, replace the computed PA / FAT before the
+//pressure and air density calculations below so rho stays consistent.
+if (_heli getVariable ["fza_sfmplus_tune_paOverride", false]) then {
+    _altitude = _heli getVariable ["fza_sfmplus_tune_paValue", _altitude];
+};
+if (_heli getVariable ["fza_sfmplus_tune_fatOverride", false]) then {
+    _temperature = _heli getVariable ["fza_sfmplus_tune_fatValue", _temperature];
+};
+
 private _referencePressure = _altimeter * IN_MG_TO_HPA;
 private _referenceAltitude = 0;
 private _exp               = -GRAVITY * MOLAR_MASS_OF_AIR * (_altitude - _referenceAltitude) / (UNIVERSAL_GAS_CONSTANT * (_temperature + DEG_C_TO_KELVIN));
@@ -56,6 +65,15 @@ _heli setVariable ["fza_sfmplus_rho", _dryAirDensity];
 //Wind world-space velocity vector — direction/speed display is handled in getVelocities
 private _windSpeed         = vectorMagnitude wind;
 private _windDirToward     = (windDir + 180) mod 360;
+
+//Tuner wind override — use a fixed azimuth / speed for repeatable tuning.
+//Speed 0 with the override on effectively turns wind off. Direction is the
+//azimuth the wind blows FROM (matching windDir); +180 gives the "toward" bearing.
+if (_heli getVariable ["fza_sfmplus_tune_windOverride", false]) then {
+    _windSpeed     = (_heli getVariable ["fza_sfmplus_tune_windSpeedKts", 0.0]) * KNOTS_TO_MPS;
+    _windDirToward = ((_heli getVariable ["fza_sfmplus_tune_windDirFrom", 0.0]) + 180) mod 360;
+};
+
 private _velWindWorldSpace = [0,0,0];//[_windSpeed * sin _windDirToward, _windSpeed * cos _windDirToward, 0.0];
 
 if (fza_ah64_sfmPlusRotorModel == 0) then {

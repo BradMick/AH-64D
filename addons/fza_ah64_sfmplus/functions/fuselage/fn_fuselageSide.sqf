@@ -19,6 +19,35 @@ private _airfoilTable   = getArray (_sfmPlusConfig >> "airfoilTable01");
 private _count          = _heli getVariable "fza_sfmplus_fuselageSideCount";
 private _coords         = _heli getVariable "fza_sfmplus_fuselageSide";
 
+//Fuselage side-force scalar vs airspeed. The fuselage produces a physical side
+//force (and thus a yaw moment) when the aircraft flies crabbed - this scalar
+//lets the tuner dial that side-force per airspeed so the tail-trim requirement
+//is realistic. Source array is the single source of truth: publish into the live
+//tuner var when unset so editing here + reloading takes effect, and the master /
+//write-back read & write this same var.
+private _sideForceScalarTable = _heli getVariable ["fza_sfmplus_tune_fuseSideScalarTable", []];
+if (_sideForceScalarTable isEqualTo []) then {
+    _sideForceScalarTable =
+    [
+     [ 0.00, 1.000]
+    ,[10.29, 1.000]
+    ,[20.58, 1.000]
+    ,[36.01, 1.000]
+    ,[46.30, 1.000]
+    ,[51.44, 1.000]
+    ,[61.73, 1.000]
+    ,[66.88, 1.000]
+    ,[72.02, 1.000]
+    ];
+    _heli setVariable ["fza_sfmplus_tune_fuseSideScalarTable", _sideForceScalarTable];
+};
+//Interpolate at the current 2D airspeed (m/s).
+private _fuseSpd = vectorMagnitude [
+    (_heli getVariable ["fza_sfmplus_velModelSpace", [0,0,0]]) select 0,
+    (_heli getVariable ["fza_sfmplus_velModelSpace", [0,0,0]]) select 1
+];
+private _sideForceScalar = [_sideForceScalarTable, _fuseSpd] call fza_fnc_linearInterp select 1;
+
 private _pitch          = _rotation select 0;
 private _roll           = _rotation select 1;
 private _yaw            = _rotation select 2;
@@ -90,11 +119,11 @@ for "_i" from 0 to (_count - 1) do {
     private _liftVector = _relWindNormalized vectorCrossProduct _up;
     _liftVector = _liftVector vectorCrossProduct _relWindNormalized;
     _liftVector = vectorNormalized _liftVector;
-    _liftVector = _liftVector vectorMultiply (_lift * _deltaTime);
+    _liftVector = _liftVector vectorMultiply (_lift * _sideForceScalar * _deltaTime);
 
     private _dragVector = _relWind;
     _dragVector = (vectorNormalized _dragVector) vectorMultiply -1.0;
-    _dragVector = _dragVector vectorMultiply (_drag * _deltaTime);
+    _dragVector = _dragVector vectorMultiply (_drag * _sideForceScalar * _deltaTime);
 
     #ifdef __A3_DEBUG__
     [_heli, _e vectorAdd (_liftVector vectorMultiply _debugLineScale), _e, "green"] call fza_fnc_debugDrawLine;
@@ -104,7 +133,15 @@ for "_i" from 0 to (_count - 1) do {
     _heli addForce [_heli vectorModelToWorld _liftVector, _e];
     _heli addForce [_heli vectorModelToWorld _dragVector, _e];
 
-	
+    //This panel's OWN force and moment (F x r about the CoM), as named locals.
+    private _force  = _liftVector vectorAdd _dragVector;
+    private _moment = _force vectorCrossProduct _deltaPos;
+
+    //Tuner force readout: log the component's own _force and _moment verbatim.
+    if (fza_sfmplus_forceLogOn) then {
+        [_heli, "Fuselage Side", _force, _moment] call fza_sfmplus_fnc_forceLog;
+    };
+
     #ifdef __A3_DEBUG__
     //Draw the wing
     [_heli, _a, _b, "red"]   call fza_fnc_debugDrawLine;

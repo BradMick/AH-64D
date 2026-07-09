@@ -67,8 +67,11 @@ if (_heli animationPhase "fcr_enable" != 1) then {
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FLT_FCR_CENTERLINE), _fcrHeading];
 
 // Velocity Vector
+// Lateral drift comes from the SHARED sideslip calc (fza_sfmplus_aero_beta_deg,
+// + = velocity to the RIGHT of the nose), so the HMD and MPD read one consistent
+// source. Vertical (flight-path angle) from world vertical velocity as before.
 private _velocity  = _heli getVariable "fza_sfmplus_velWorldSpace";
-private _velocityX = [[_heli, 0, 0, _velocity # 0, _velocity # 1] call fza_fnc_relativeDirection] call CBA_fnc_simplifyAngle180;
+private _velocityX = _heli getVariable ["fza_sfmplus_aero_beta_deg", 0.0];
 private _velocityY = (_velocity # 2) atan2 ([0,0,0] distance2D _velocity);
 
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FLT_FLIGHT_PATH_X), _velocityX];

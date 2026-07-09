@@ -63,6 +63,15 @@ for "_i" from 0 to (_count - 1) do {
 
     _heli addForce[_heli vectorModelToWorld _dragVector, _e];
 
+    //This panel's OWN force (drag) and moment (F x r about the CoM), as named locals.
+    private _force  = _dragVector;
+    private _moment = _force vectorCrossProduct (_e vectorDiff _heliCom);
+
+    //Tuner force readout: log the component's own _force and _moment verbatim.
+    if (fza_sfmplus_forceLogOn) then {
+        [_heli, "Fuselage Front", _force, _moment] call fza_sfmplus_fnc_forceLog;
+    };
+
 
     #ifdef __A3_DEBUG__
     //Draw the wing

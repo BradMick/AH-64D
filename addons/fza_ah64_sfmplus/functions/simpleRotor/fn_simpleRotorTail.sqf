@@ -71,6 +71,25 @@ private _bladePitchInducedThrustTable = [
    ,[ 0.90, -0.1768]
    ,[ 1.00, -0.2000]
   ];
+//Tail rotor authority (thrust) scalar vs airspeed. Source array is the single
+//source of truth: publish into the live tuner var when unset so editing here +
+//reloading takes effect (tuner/yaw-balancer read & write this var).
+private _rtrThrustScalarTable = _heli getVariable ["fza_sfmplus_tune_tailThrustTable", []];
+if (_rtrThrustScalarTable isEqualTo []) then {
+    _rtrThrustScalarTable =
+    [
+     [ 0.00, 1.000]
+    ,[10.29, 1.000]
+    ,[20.58, 1.000]
+    ,[36.01, 1.000]
+    ,[46.30, 1.000]
+    ,[51.44, 1.000]
+    ,[61.73, 1.000]
+    ,[66.88, 1.000]
+    ,[72.02, 1.000]
+    ];
+    _heli setVariable ["fza_sfmplus_tune_tailThrustTable", _rtrThrustScalarTable];
+};
 private _rtrAirspeedVelocityMod = 0.4;
 private _baseThrust             = 102302;  //N - max gross weight (kg) * gravity (9.806 m/s)
 
@@ -81,6 +100,9 @@ _pedalLeftRightTrim         = _heli getVariable "fza_ah64_forceTrimPosYaw";
 
 private _pedalInput         = ([_pedalLeftRight, _pedalLeftRightTrim] call fza_sfmplus_fnc_getInterpInput) + _fmcYawOut;
 _pedalInput                 = [_pedalInput, -1.0, 1.0] call BIS_fnc_clamp;
+//Publish the total tail-rotor yaw input (manual pedal + trim + FMC) so the
+//yaw-balance tuner can read the full standing yaw command, not just the FMC part.
+_heli setVariable ["fza_sfmplus_tailPedalInput", _pedalInput];
 private _bladePitchInducedThrustScalar = ([_bladePitchInducedThrustTable, _pedalInput] call fza_fnc_linearInterp select 1) * 0.7;//linearConversion [_bladePitch_min, _bladePitch_max, _bladePitch_cur, _rtrThrustScalar_min, _rtrThrustScalar_max, true];
 //systemChat format ["_bladePitchInducedThrustScalar = %1 -- _pedalLeftRight = %2", _bladePitchInducedThrustScalar toFixed 3, _pedalLeftRight];
 (_heli getVariable "fza_sfmplus_engPctNP")
@@ -121,10 +143,14 @@ private _axisX = [1.0, 0.0, 0.0];
 private _axisY = [0.0, 1.0, 0.0];
 private _axisZ = [0.0, 0.0, 1.0];
 
-private _totThrust     = _rtrThrust;
-private _thrustVector  = _axisX vectorMultiply (_totThrust * _deltaTime);
-private _moment        = _thrustVector vectorCrossProduct _deltaPos;
-//systemChat format ["tail rotor _torqueZ = %1 -- _totThrust = %2 -- _deltaPos = %3 zz", (_moment select 2) toFixed 0, _totThrust toFixed 0, _deltaPos];
+//Tail rotor authority: airspeed-indexed thrust multiplier (yaw balance knob).
+//Fold it into _totThrust so the thrust vector, moment AND the force-log readout
+//all use the scaled value.
+private _tailAuthority   = [_rtrThrustScalarTable, _velYZ] call fza_fnc_linearInterp select 1;
+private _totThrust       = _rtrThrust * _tailAuthority;
+private _thrustVector    = _axisX vectorMultiply (_totThrust * _deltaTime);
+//F x r, matching the force-log convention. Used only by the non-REALISTIC path.
+private _moment          = _thrustVector vectorCrossProduct _deltaPos;
 
 private _tailRtrDamage = _heli getHitPointDamage "hitvrotor";
 private _IGBDamage     = _heli getHitPointDamage "hit_drives_intermediategearbox";
@@ -137,10 +163,19 @@ if (_tailRtrDamage < 0.85 && _IGBDamage < SYS_IGB_DMG_THRESH && _TGBDamage < SYS
         if ( fza_ah64_sfmplusRealismSetting == REALISTIC) then {
             if ([vectorMagnitude _thrustVector] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _thrustVector] call fza_sfmplus_fnc_isINF) then { _thrustVector = [0.0, 0.0, 0.0]; };
             _heli addForce [_heli vectorModelToWorld _thrustVector, _rtrPos];
+            //Tuner force readout: log the exact locals the component computed and
+            //prints - _thrustVector and _moment - verbatim.
+            if (fza_sfmplus_forceLogOn) then {
+                [_heli, "Tail Rotor", _thrustVector, _moment] call fza_sfmplus_fnc_forceLog;
+            };
         } else {
             private _torque = [0.0, 0.0, _moment select 2];
             if ([vectorMagnitude _torque] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _torque] call fza_sfmplus_fnc_isINF) then { _torque = [0.0, 0.0, 0.0]; };
             _heli addTorque (_heli vectorModelToWorld _torque);
+            //Tuner force readout: log the applied torque verbatim.
+            if (fza_sfmplus_forceLogOn) then {
+                [_heli, "Tail Rotor", [0.0,0.0,0.0], _torque] call fza_sfmplus_fnc_forceLog;
+            };
         };
 
     };

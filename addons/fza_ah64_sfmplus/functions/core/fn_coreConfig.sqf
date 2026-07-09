@@ -198,3 +198,15 @@ _heli setVariable ["fza_sfmplus_pid_engine",        [[0.7000, 0.0000, 0.0005, 0.
 
 //Actuators
 [_heli] call fza_sfmplus_fnc_actuatorVariables;
+
+//Flight model tuner - restore persisted overrides and apply them live.
+//Runs last so every heli variable and PID hashmap above already exists.
+[_heli, call fza_sfmplus_fnc_tunerLoad] call fza_sfmplus_fnc_tunerApply;
+
+//Seed the target-attitude tables (pitch/roll per airspeed) for the master tuner.
+[_heli] call fza_sfmplus_fnc_tunerTargets;
+
+//Start the master auto-tuner. It is the single automatic tuner - it tunes the
+//force scalar tables (thrust/torque/tail/stab) against the target attitudes and
+//owns yaw balance. Gated by the GUI toggles (on/off, FMC-off, target airspeed).
+[_heli] call fza_sfmplus_fnc_tunerMaster;

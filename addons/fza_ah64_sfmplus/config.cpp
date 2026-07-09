@@ -13,3 +13,5 @@ class CfgPatches
 
 #include "CfgFunctions.hpp"
 #include "extendedEventHandlers.hpp"
+#include "functions\debug\tuner\tunerGui.hpp"
+#include "functions\debug\tuner\overlay.hpp"

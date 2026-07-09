@@ -109,11 +109,50 @@ private _velocityThrustExponentTable =
 ];
 
 private _vrsScalarExponent      = 0.3;
-private _rtrTorqueScalar        = 1.0;
+//Main rotor yaw-torque scalar vs airspeed. This source array is the single source
+//of truth for the default: publish it into the live tuner var when unset so
+//editing it here + reloading takes effect (tuner/balancer read & write this var).
+private _rtrTorqueScalarTable = _heli getVariable ["fza_sfmplus_tune_rtrTqScalarTable", []];
+if (_rtrTorqueScalarTable isEqualTo []) then {
+    _rtrTorqueScalarTable =
+    [
+     [ 0.00, 1.000]
+    ,[10.29, 1.000]
+    ,[20.58, 1.000]
+    ,[36.01, 1.000]
+    ,[46.30, 1.000]
+    ,[51.44, 1.000]
+    ,[61.73, 1.000]
+    ,[66.88, 1.000]
+    ,[72.02, 1.000]
+    ];
+    _heli setVariable ["fza_sfmplus_tune_rtrTqScalarTable", _rtrTorqueScalarTable];
+};
+//Main-rotor thrust scalar vs airspeed (distinct from the TAIL authority table).
+//This source array is the single source of truth for the default: publish it into
+//the live tuner var when unset, so editing it here + reloading takes effect (the
+//tuner/balancer then read and write this same var).
+private _rtrThrustScalarTable = _heli getVariable ["fza_sfmplus_tune_mainThrustTable", []];
+if (_rtrThrustScalarTable isEqualTo []) then {
+    _rtrThrustScalarTable =
+    [
+     [ 0.00, 1.000]
+    ,[10.29, 1.000]
+    ,[20.58, 1.000]
+    ,[36.01, 1.000]
+    ,[46.30, 1.000]
+    ,[51.44, 1.000]
+    ,[61.73, 1.000]
+    ,[66.88, 1.000]
+    ,[72.02, 1.000]
+    ];
+    _heli setVariable ["fza_sfmplus_tune_mainThrustTable", _rtrThrustScalarTable];
+};
+
 private _isOnGnd                = [_heli] call fza_sfmplus_fnc_onGround;
 
-private _pitchTorqueScalar      = 2.50 * 1.3;
-private _rollTorqueScalar       = 0.75 * 1.3;
+private _pitchTorqueScalar      = _heli getVariable ["fza_sfmplus_tune_pitchTqScalar", 2.50 * 1.3];
+private _rollTorqueScalar       = _heli getVariable ["fza_sfmplus_tune_rollTqScalar", 0.75 * 1.3];
 
 private _baseThrust             = 102306;  //N - max gross weight (kg) * gravity (9.806 m/s)
 
@@ -260,6 +299,7 @@ private _heightAGL     = _rtrHeightAGL  + (ASLToAGL getPosASL _heli # 2);
 private _rtrDiam       = _bladeRadius * 2;
 
 private _rtrGndEffScalar = ([_rtrGndEffTable, _heli getVariable "fza_sfmplus_GWT"] call fza_fnc_linearInterp) select 1;
+_rtrGndEffScalar         = _rtrGndEffScalar * (_heli getVariable ["fza_sfmplus_tune_gndEffScalar", 1.0]);
 private _gndEffScalar  = (1 - (_heightAGL / _rtrDiam)) * _rtrGndEffScalar;
 _gndEffScalar          = [_gndEffScalar, 0.0, 1.0] call BIS_fnc_clamp;
 private _gndEffThrust  = _rtrThrust * _gndEffScalar;
@@ -314,7 +354,19 @@ private _tipLossScalar   = [_rtrTipLossTable, _heli getVariable "fza_sfmplus_GWT
 private _totThrust       = (_rtrThrust + _gndEffThrust + _climbThrust) * _tipLossScalar;
 if ([_totThrust] call fza_sfmplus_fnc_isNAN || [_totThrust] call fza_sfmplus_fnc_isINF) then { _totThrust = 0.0; };
 [_heli, "fza_sfmplus_rtrThrust", 0, _totThrust, true] call fza_fnc_setArrayVariable;
-private _thrustZ         = _axisZ vectorMultiply (_totThrust * _deltaTime);
+//Main-thrust scalar. In forward flight: the airspeed-banded table. In HOVER (low
+//forward speed): blend the IGE and OGE hover thrust values by AGL height (IGE at
+//5 ft, OGE at 80 ft) so ground effect gets its own tuned thrust at each height.
+private _rtrThrustScalar = [_rtrThrustScalarTable, _velXY] call fza_fnc_linearInterp select 1;
+if (_velXY < 2.6) then {   // < ~5 kt = hover
+    private _igeThr = _heli getVariable ["fza_sfmplus_tune_igeThrust", 1.0];
+    private _ogeThr = _heli getVariable ["fza_sfmplus_tune_ogeThrust", 1.0];
+    private _aglFt  = (ASLToAGL getPosASL _heli # 2) * 3.28084;
+    //Linear blend: 5 ft -> IGE value, 80 ft -> OGE value, clamped outside.
+    private _f      = [(_aglFt - 5.0) / 75.0, 0.0, 1.0] call BIS_fnc_clamp;
+    _rtrThrustScalar = _igeThr + (_f * (_ogeThr - _igeThr));
+};
+private _thrustZ         = _axisZ vectorMultiply (_totThrust * _rtrThrustScalar * _deltaTime);
 private _inducedVelocity = sqrt(_totThrust / (2 * _dryAirDensity * _rtrArea));
 if ([_inducedVelocity] call fza_sfmplus_fnc_isNAN || [_inducedVelocity] call fza_sfmplus_fnc_isINF) then { _inducedVelocity = 0.0; };
 _heli setVariable ["fza_sfmplus_vrsVelocityMin", _inducedVelocity * 0.23];
@@ -356,7 +408,7 @@ if (_pitchInput < 0.0) then {
     _pitchInput = _pitchInput * (1.0 - _retBladeStallInput);
 };
 private _retBladeStallPitchBias = _retBladeStallInput * 3.0;
-private _torqueX                = (_pitchTorque * (_pitchInput - _retBladeStallPitchBias)) * _deltaTime;
+private _momentX                = (_pitchTorque * (_pitchInput - _retBladeStallPitchBias)) * _deltaTime;
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Roll Torque          /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -371,13 +423,14 @@ if (_rollInput > 0.0) then {
 };
 private _rollTorque            = linearConversion [0.0, 1.0, _inputRpmPct, 0.0, 100000 * _rollTorqueScalar, true];
 private _retBladeStallRollBias = _retBladeStallInput * 3.0;
-private _torqueY               = (_rollTorque * (_rollInput + _retBladeStallRollBias)) * _deltaTime;
+private _momentY               = (_rollTorque * (_rollInput + _retBladeStallRollBias)) * _deltaTime;
 //systemChat format ["_pitchInput = %1 -- _rollInput = %2", _pitchInput toFixed 3, _rollInput toFixed 3];
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Yaw Torque           /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
-private _torqueZ         = _rtrTorque * _rtrTorqueScalar * _deltaTime;
-//systemChat format ["main rotor _torqueZ = %1", _torqueZ toFixed 0];
+private _rtrTorqueScalar = [_rtrTorqueScalarTable, _velXY] call fza_fnc_linearInterp select 1;
+private _momentZ         = _rtrTorque * _rtrTorqueScalar * _deltaTime;
+//systemChat format ["main rotor _momentZ = %1", _momentZ toFixed 0];
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Rotor Forces         /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -385,20 +438,53 @@ if (currentPilot _heli == player) then {
     private _mainRtrDamage = _heli getHitPointDamage "HitHRotor";
 
     if (_mainRtrDamage < 0.99) then {
+        //Rotor disk BASE TILT: a steady LEFT/RIGHT tilt of the thrust vector, from
+        //an airspeed-indexed ROLL-TILT TABLE (deg) that is SEPARATE from force trim.
+        //(Force trim is live attitude control and would wash the tilt out; the tilt
+        //must be its own standing value.) The tilted thrust, applied at the hub
+        //above/offset from the CoM, gives the coupled roll and - via the hub offset
+        //- the YAW moment a real coned rotor makes. The MASTER auto-tuner adjusts
+        //this table to null the yaw RATE. Live cyclic still drives the moments
+        //(_momentX/_momentY) below for attitude control. Source-published when unset.
+        private _rotorTiltTable = _heli getVariable ["fza_sfmplus_tune_rotorTiltTable", []];
+        if (_rotorTiltTable isEqualTo []) then {
+            _rotorTiltTable =
+            [
+             [ 0.00, 0.000]
+            ,[10.29, 0.000]
+            ,[20.58, 0.000]
+            ,[36.01, 0.000]
+            ,[46.30, 0.000]
+            ,[51.44, 0.000]
+            ,[61.73, 0.000]
+            ,[66.88, 0.000]
+            ,[72.02, 0.000]
+            ];
+            _heli setVariable ["fza_sfmplus_tune_rotorTiltTable", _rotorTiltTable];
+        };
+        private _tiltR        = [_rotorTiltTable, _velXY] call fza_fnc_linearInterp select 1;   // left/right disk tilt (deg)
+        private _thrustVector = [_thrustZ, _cyclicFwdAftTrim, _cyclicLeftRightTrim, 0.0] call fza_sfmplus_fnc_vectorRotate;
+
         //Main rotor thrust
-        if ([vectorMagnitude _thrustZ] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _thrustZ] call fza_sfmplus_fnc_isINF) then { _thrustZ = [0.0, 0.0, 0.0]; };
-        _heli addForce  [_heli vectorModelToWorld _thrustZ, _rtrPos];
+        if ([vectorMagnitude _thrustVector] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _thrustVector] call fza_sfmplus_fnc_isINF) then { _thrustVector = [0.0, 0.0, 0.0]; };
+        _heli addForce  [_heli vectorModelToWorld _thrustVector, _rtrPos];
 
         //Main rotor torque
-        private _torque = [0.0, 0.0, 0.0];
+        private _moment = [0.0, 0.0, 0.0];
         if (fza_ah64_sfmplusRealismSetting == REALISTIC) then {
-            _torque = [_torqueX, _torqueY, _torqueZ];
+            _moment = [_momentX, _momentY, _momentZ];
         } else {
-            _torque = [_torqueX, _torqueY, 0.0];   
+            _moment = [_momentX, _momentY, 0.0];
         };
 
-        if ([vectorMagnitude _torque] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _torque] call fza_sfmplus_fnc_isINF) then { _torque = [0.0, 0.0, 0.0]; };
-        _heli addTorque (_heli vectorModelToWorld _torque);
+        if ([vectorMagnitude _moment] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _moment] call fza_sfmplus_fnc_isINF) then { _moment = [0.0, 0.0, 0.0]; };
+        _heli addTorque (_heli vectorModelToWorld _moment);
+
+        //Tuner force readout: log the exact locals the component computed and
+        //prints - _thrustZ and _moment - verbatim.
+        if (fza_sfmplus_forceLogOn) then {
+            [_heli, "Main Rotor", _thrustVector, _moment] call fza_sfmplus_fnc_forceLog;
+        };
     };
 };
 /////////////////////////////////////////////////////////////////////////////////////////////
