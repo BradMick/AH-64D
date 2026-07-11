@@ -116,15 +116,15 @@ private _rtrTorqueScalarTable = _heli getVariable ["fza_sfmplus_tune_rtrTqScalar
 if (_rtrTorqueScalarTable isEqualTo []) then {
     _rtrTorqueScalarTable =
     [
-     [ 0.00, 1.000]
-    ,[10.29, 1.000]
-    ,[20.58, 1.000]
-    ,[36.01, 1.000]
-    ,[46.30, 1.000]
-    ,[51.44, 1.000]
-    ,[61.73, 1.000]
-    ,[66.88, 1.000]
-    ,[72.02, 1.000]
+     [ 0.00, 0.585]   // fixed hover-tuned reference, carried across all bands
+    ,[10.29, 0.585]
+    ,[20.58, 0.585]
+    ,[36.01, 0.585]
+    ,[46.30, 0.585]
+    ,[51.44, 0.585]
+    ,[61.73, 0.585]
+    ,[66.88, 0.585]
+    ,[72.02, 0.585]
     ];
     _heli setVariable ["fza_sfmplus_tune_rtrTqScalarTable", _rtrTorqueScalarTable];
 };
@@ -136,15 +136,15 @@ private _rtrThrustScalarTable = _heli getVariable ["fza_sfmplus_tune_mainThrustT
 if (_rtrThrustScalarTable isEqualTo []) then {
     _rtrThrustScalarTable =
     [
-     [ 0.00, 1.000]
-    ,[10.29, 1.000]
-    ,[20.58, 1.000]
-    ,[36.01, 1.000]
-    ,[46.30, 1.000]
-    ,[51.44, 1.000]
-    ,[61.73, 1.000]
-    ,[66.88, 1.000]
-    ,[72.02, 1.000]
+     [ 0.00, 1.164]   // 0-90 kt tuned; 100-140 extrapolated from that trend
+    ,[10.29, 1.059]
+    ,[20.58, 0.953]
+    ,[36.01, 0.848]
+    ,[46.30, 0.889]
+    ,[51.44, 0.890]
+    ,[61.73, 0.947]
+    ,[66.88, 0.990]
+    ,[72.02, 1.043]
     ];
     _heli setVariable ["fza_sfmplus_tune_mainThrustTable", _rtrThrustScalarTable];
 };
@@ -374,26 +374,89 @@ _heli setVariable ["fza_sfmplus_vrsVelocityMax", _inducedVelocity * 1.25];
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Retreating Blade Stall ///////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
-private _retBladeStallSpeedTable = 
+//Smooth power-curve fit (all points regenerated from one convex curve fitted to the
+//known anchors) so interpolation is predictable - monotonic, no kinks. LOW ~ v^1.77,
+//HIGH ~ v^1.73, both anchored to 0 at hover and 1.00/2.00 at 200 kt.
+private _retBladeStallSpeedTable =
 [
- [  0.00, 0.00, 0.00]   //0ktas
-,[ 77.16, 0.00, 0.00]   //150ktas
-,[ 82.30, 0.04, 0.20]   //160ktas
-,[ 87.45, 0.12, 0.50]   //170ktas
-,[ 92.59, 0.25, 0.90]   //180ktas
-,[ 97.74, 0.50, 1.40]   //190ktas
-,[100.31, 0.70, 1.70]   //195ktas
-,[102.88, 1.00, 2.00]   //200ktas
+ [ 0.00,  0.000, 0.000]   //   0 kt
+,[10.29,  0.017, 0.037]   //  20 kt
+,[20.58,  0.058, 0.123]   //  40 kt
+,[36.01,  0.156, 0.325]   //  70 kt
+,[46.30,  0.243, 0.502]   //  90 kt
+,[51.44,  0.293, 0.602]   // 100 kt
+,[61.73,  0.404, 0.826]   // 120 kt
+,[66.88,  0.466, 0.949]   // 130 kt
+,[72.02,  0.532, 1.079]   // 140 kt
+,[82.30,  0.673, 1.359]   // 160 kt
+,[92.59,  0.830, 1.666]   // 180 kt
+,[102.88, 1.000, 2.000]   // 200 kt
 ];
 
 private _retBladeStallCollTable =
 [
  [0.0, [_retBladeStallSpeedTable, _velXY] call fza_fnc_linearInterp select 1]
-,[0.7, [_retBladeStallSpeedTable, _velXY] call fza_fnc_linearInterp select 2]
+,[1.0, [_retBladeStallSpeedTable, _velXY] call fza_fnc_linearInterp select 2]
 ];
 
+//Table A gives the 0..1 RBS SEVERITY at this airspeed + collective (RBS worsens with
+//blade pitch angle: gross weight, speed, DA - captured by the low/high collective cols).
 private _retBladeStallInput = [_retBladeStallCollTable, _fmcCollOut] call fza_fnc_linearInterp select 1;
-private _retBladeStallVal   = linearConversion [77.16, 102.88, _velXY, 1.0, 0.0, true];
+
+//Table B: RBS PITCH & ROLL AUTHORITY vs airspeed, INDEPENDENT of the severity table.
+//How much pitch/roll RBS commands at each airspeed, in the SAME input units as pilot
+//cyclic. Small at low speed, large at high. Multiplied by the severity (Table A) to get
+//the live RBS input, which scales the SAME _pitchTorque/_rollTorque as the pilot and ADDS
+//to the pilot moment - pilot authority is untouched but progressively overpowered by RBS
+//(no recovery once it hits). Torque sign: pitch + = nose DOWN (so nose-UP RBS is
+//NEGATIVE); roll + = RIGHT roll (so LEFT roll is NEGATIVE). AH-64 RBS pitches the nose
+//UP and rolls LEFT toward the retreating blade, so both default columns are NEGATIVE at
+//high speed. Two separate [band,value] tables so each is editable in the tuner panel.
+//Tuneable via fza_sfmplus_tune_rbsPitchTable / _rbsRollTable (source arrays below are the
+//defaults, seeded when unset). Bands: 9 standard + 160/180/200 kt.
+private _rbsPitchTable = _heli getVariable ["fza_sfmplus_tune_rbsPitchTable", []];
+if (_rbsPitchTable isEqualTo []) then {
+    _rbsPitchTable =
+    [
+     [ 0.00,  0.0000]   //   0 kt
+    ,[10.29, -0.3333]   //  20 kt
+    ,[20.58, -0.6667]   //  40 kt
+    ,[36.01, -1.0000]   //  70 kt
+    ,[46.30, -0.9000]   //  90 kt   (0-90 tuned; deepens monotonically past 90)
+    ,[51.44, -0.9545]   // 100 kt
+    ,[61.73, -1.0636]   // 120 kt
+    ,[66.88, -1.1182]   // 130 kt
+    ,[72.02, -1.1727]   // 140 kt
+    ,[82.30, -1.2818]   // 160 kt
+    ,[92.59, -1.3909]   // 180 kt
+    ,[102.88,-1.5000]   // 200 kt
+    ];
+    _heli setVariable ["fza_sfmplus_tune_rbsPitchTable", _rbsPitchTable];
+};
+private _rbsRollTable = _heli getVariable ["fza_sfmplus_tune_rbsRollTable", []];
+if (_rbsRollTable isEqualTo []) then {
+    _rbsRollTable =
+    [
+     [ 0.00,  0.0000]   //   0 kt   (- = left roll toward retreating blade)
+    ,[10.29, -0.0500]   //  20 kt
+    ,[20.58, -0.1000]   //  40 kt
+    ,[36.01, -0.1500]   //  70 kt
+    ,[46.30, -0.2000]   //  90 kt   (0-90 tuned; extrapolated past 90)
+    ,[51.44, -0.2146]   // 100 kt
+    ,[61.73, -0.2490]   // 120 kt
+    ,[66.88, -0.2653]   // 130 kt
+    ,[72.02, -0.2808]   // 140 kt
+    ,[82.30, -0.3098]   // 160 kt
+    ,[92.59, -0.3361]   // 180 kt
+    ,[102.88,-0.3598]   // 200 kt
+    ];
+    _heli setVariable ["fza_sfmplus_tune_rbsRollTable", _rbsRollTable];
+};
+private _rbsPitchAuth = [_rbsPitchTable, _velXY] call fza_fnc_linearInterp select 1;
+private _rbsRollAuth  = [_rbsRollTable,  _velXY] call fza_fnc_linearInterp select 1;
+//Live RBS input = severity (A) * authority (B), in the same units as pilot cyclic input.
+private _rbsPitchInput = _retBladeStallInput * _rbsPitchAuth;
+private _rbsRollInput  = _retBladeStallInput * _rbsRollAuth;
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Pitch Torque         /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -401,14 +464,12 @@ private _cyclicFwdAft     = _heli getVariable "fza_sfmplus_cyclicFwdAft";
 private _cyclicFwdAftTrim = 0.0;
 _cyclicFwdAftTrim         = _heli getVariable "fza_ah64_forceTrimPosPitch";
 
-private _pitchTorque      = linearConversion [0.0, 1.0, _inputRpmPct, 0.0, 100000 * _pitchTorqueScalar, true];
+private _pitchTorque      = linearConversion [0.0, 1.0, _inputRpmPct, 0.0, 100000 * _pitchTorqueScalar * _deltaTime, true];
 private _pitchInput       = ([_cyclicFwdAft, _cyclicFwdAftTrim] call fza_sfmplus_fnc_getInterpInput) + _fmcPitchOut;
-_pitchInput               = [_pitchInput, -_retBladeStallVal, 1.0] call BIS_fnc_clamp;
-if (_pitchInput < 0.0) then {
-    _pitchInput = _pitchInput * (1.0 - _retBladeStallInput);
-};
-private _retBladeStallPitchBias = _retBladeStallInput * 3.0;
-private _momentX                = (_pitchTorque * (_pitchInput - _retBladeStallPitchBias)) * _deltaTime;
+_pitchInput               = [_pitchInput, -1.0, 1.0] call BIS_fnc_clamp;
+
+//RBS pitch adds to the pilot pitch input (same _pitchTorque, both scaled by dt).
+private _momentX          = (_pitchTorque * _pitchInput) + (_pitchTorque * _rbsPitchInput);
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Roll Torque          /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -416,14 +477,11 @@ private _cyclicLeftRight     = _heli getVariable "fza_sfmplus_cyclicLeftRight";
 private _cyclicLeftRightTrim = 0.0;
 _cyclicLeftRightTrim         = _heli getVariable "fza_ah64_forceTrimPosRoll";
 
+private _rollTorque          = linearConversion [0.0, 1.0, _inputRpmPct, 0.0, 100000 * _rollTorqueScalar * _deltaTime, true];
 private _rollInput           = ([_cyclicLeftRight, _cyclicLeftRightTrim] call fza_sfmplus_fnc_getInterpInput) + _fmcRollOut;
-_rollInput                   = [_rollInput, -1.0, _retBladeStallVal] call BIS_fnc_clamp;
-if (_rollInput > 0.0) then {
-    _rollInput = _rollInput * (1.0 - _retBladeStallInput);
-};
-private _rollTorque            = linearConversion [0.0, 1.0, _inputRpmPct, 0.0, 100000 * _rollTorqueScalar, true];
-private _retBladeStallRollBias = _retBladeStallInput * 3.0;
-private _momentY               = (_rollTorque * (_rollInput + _retBladeStallRollBias)) * _deltaTime;
+_rollInput                   = [_rollInput, -1.0, 1.0] call BIS_fnc_clamp;
+
+private _momentY             = (_rollTorque * _rollInput) - (_rollTorque * _rbsRollInput);
 //systemChat format ["_pitchInput = %1 -- _rollInput = %2", _pitchInput toFixed 3, _rollInput toFixed 3];
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Yaw Torque           /////////////////////////////////////////////////////////////////////
@@ -438,32 +496,11 @@ if (currentPilot _heli == player) then {
     private _mainRtrDamage = _heli getHitPointDamage "HitHRotor";
 
     if (_mainRtrDamage < 0.99) then {
-        //Rotor disk BASE TILT: a steady LEFT/RIGHT tilt of the thrust vector, from
-        //an airspeed-indexed ROLL-TILT TABLE (deg) that is SEPARATE from force trim.
-        //(Force trim is live attitude control and would wash the tilt out; the tilt
-        //must be its own standing value.) The tilted thrust, applied at the hub
-        //above/offset from the CoM, gives the coupled roll and - via the hub offset
-        //- the YAW moment a real coned rotor makes. The MASTER auto-tuner adjusts
-        //this table to null the yaw RATE. Live cyclic still drives the moments
-        //(_momentX/_momentY) below for attitude control. Source-published when unset.
-        private _rotorTiltTable = _heli getVariable ["fza_sfmplus_tune_rotorTiltTable", []];
-        if (_rotorTiltTable isEqualTo []) then {
-            _rotorTiltTable =
-            [
-             [ 0.00, 0.000]
-            ,[10.29, 0.000]
-            ,[20.58, 0.000]
-            ,[36.01, 0.000]
-            ,[46.30, 0.000]
-            ,[51.44, 0.000]
-            ,[61.73, 0.000]
-            ,[66.88, 0.000]
-            ,[72.02, 0.000]
-            ];
-            _heli setVariable ["fza_sfmplus_tune_rotorTiltTable", _rotorTiltTable];
-        };
-        private _tiltR        = [_rotorTiltTable, _velXY] call fza_fnc_linearInterp select 1;   // left/right disk tilt (deg)
-        private _thrustVector = [_thrustZ, _cyclicFwdAftTrim, _cyclicLeftRightTrim, 0.0] call fza_sfmplus_fnc_vectorRotate;
+        private _thrustVector = [_thrustZ, _cyclicFwdAftTrim * 6.0, _cyclicLeftRightTrim * 6.0, 0.0] call fza_sfmplus_fnc_vectorRotate;
+
+        #ifdef __A3_DEBUG__
+        [_heli, _rtrPos, _rtrPos vectorAdd (vectorNormalized _thrustVector), "white"] call fza_fnc_debugDrawLine;
+        #endif
 
         //Main rotor thrust
         if ([vectorMagnitude _thrustVector] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _thrustVector] call fza_sfmplus_fnc_isINF) then { _thrustVector = [0.0, 0.0, 0.0]; };
@@ -616,9 +653,9 @@ if (cameraView == "INTERNAL") then {
 };
 
 #ifdef __A3_DEBUG__
-[_heli, _rtrPos, _rtrPos vectorAdd _axisX, "red"]   call fza_fnc_debugDrawLine;
-[_heli, _rtrPos, _rtrPos vectorAdd _axisY, "green"] call fza_fnc_debugDrawLine;
-[_heli, _rtrPos, _rtrPos vectorAdd _axisZ, "blue"]  call fza_fnc_debugDrawLine;
+[_heli, _rtrPos, _rtrPos vectorAdd _axisX,        "red"]   call fza_fnc_debugDrawLine;
+[_heli, _rtrPos, _rtrPos vectorAdd _axisY,        "green"] call fza_fnc_debugDrawLine;
+[_heli, _rtrPos, _rtrPos vectorAdd _axisZ,        "blue"]  call fza_fnc_debugDrawLine;
 [_heli, 24, _rtrPos, _bladeRadius, 2, "white", 0]   call fza_fnc_debugDrawCircle;
 #endif
 

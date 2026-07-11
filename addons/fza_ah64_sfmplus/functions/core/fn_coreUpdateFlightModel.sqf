@@ -80,15 +80,15 @@ if (fza_ah64_sfmPlusRotorModel == 1) then {
  ,1.0                   //tipWidthScalar    
  ,(_heli getVariable ["fza_sfmplus_tune_finLiftScalarTable",
  [
-  [ 0.00, 1.000]
- ,[10.29, 1.000]
- ,[20.58, 1.000]
- ,[36.01, 1.000]
- ,[46.30, 1.200]
- ,[51.44, 1.400]
- ,[61.73, 1.600]
- ,[66.88, 1.800]
- ,[72.02, 2.000]
+  [ 0.00, 1.000]   // 0-90 kt tuned; 100-140 extrapolated (fin lift keeps ramping with speed)
+ ,[10.29, 1.213]
+ ,[20.58, 1.425]
+ ,[36.01, 1.638]
+ ,[46.30, 1.850]
+ ,[51.44, 1.912]
+ ,[61.73, 2.058]
+ ,[66.88, 2.127]
+ ,[72.02, 2.193]
  ]])
  ,false
  ,"Vertical Fin" ] call fza_sfmplus_fnc_wing;
@@ -105,15 +105,15 @@ if (fza_ah64_sfmPlusRotorModel == 1) then {
  ,1.0
  ,(_heli getVariable ["fza_sfmplus_tune_stabLiftScalarTable",
  [
-  [ 0.00, 1.000]
- ,[10.29, 1.000]
- ,[20.58, 1.000]
- ,[36.01, 1.000]
- ,[46.30, 1.000]
- ,[51.44, 1.000]
- ,[61.73, 1.000]
- ,[66.88, 1.000]
- ,[72.02, 1.000]
+  [ 0.00, 1.000]   // 0-90 kt tuned; 100-140 extrapolated (stab download ramps with speed)
+ ,[10.29, 1.074]
+ ,[20.58, 1.148]
+ ,[36.01, 1.222]
+ ,[46.30, 1.296]
+ ,[51.44, 1.317]
+ ,[61.73, 1.368]
+ ,[66.88, 1.392]
+ ,[72.02, 1.415]
  ]])
  ,true
  ,"Stabilator"

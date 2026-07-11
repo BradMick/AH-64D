@@ -137,18 +137,48 @@ _btnReset ctrlAddEventHandler ["ButtonClick", {
     //Reset all values to defaults, apply, and rebuild the active tab.
     private _display = ctrlParent (_this select 0);
     private _spec    = call fza_sfmplus_fnc_tunerVariables;
-    private _values  = createHashMap;
-    { _values set [_x get "key", _x get "default"]; } forEach _spec;
+    private _heli    = uiNamespace getVariable ["fza_sfmplus_tunerHeli", objNull];
+
+    //EVERY airspeed table whose DEFAULT lives in a source .sqf (seeded when unset).
+    //These must be cleared (setVariable nil) so the source functions republish their
+    //edited-in-source arrays next frame - NOT overwritten by the tuner spec defaults.
+    private _sourceTables =
+    [
+        "fza_sfmplus_tune_mainThrustTable", "fza_sfmplus_tune_rtrTqScalarTable",
+        "fza_sfmplus_tune_tailThrustTable", "fza_sfmplus_tune_stabLiftScalarTable",
+        "fza_sfmplus_tune_finLiftScalarTable", "fza_sfmplus_tune_fuseSideScalarTable",
+        "fza_sfmplus_tune_rbsPitchTable", "fza_sfmplus_tune_rbsRollTable",
+        "fza_sfmplus_tune_targetPitchTable", "fza_sfmplus_tune_targetRollTable",
+        "fza_sfmplus_tune_targetCollTable", "fza_sfmplus_tune_targetCycPitchTable",
+        "fza_sfmplus_tune_targetCycRollTable", "fza_sfmplus_tune_targetPedalTable"
+    ];
+
+    //Build the reset values from spec defaults, but SKIP the source tables so
+    //fza_sfmplus_fnc_tunerApply doesn't write spec defaults over them.
+    private _values = createHashMap;
+    {
+        private _entry = _x;
+        private _isSourceRow = ((_entry get "type") == "dragtable") &&
+            { ((_entry get "target") select 0) in _sourceTables };
+        if (!_isSourceRow) then { _values set [_entry get "key", _entry get "default"]; };
+    } forEach _spec;
     uiNamespace setVariable ["fza_sfmplus_tunerValues", _values];
-    private _heli = uiNamespace getVariable ["fza_sfmplus_tunerHeli", objNull];
     [_heli, _values] call fza_sfmplus_fnc_tunerApply;
-    //Clear the airspeed table vars so the source functions (fn_simpleRotorMain /
-    //fn_simpleRotorTail) republish their edited-in-source default tables next frame.
-    { _heli setVariable [_x, nil]; } forEach
-        ["fza_sfmplus_tune_mainThrustTable", "fza_sfmplus_tune_rtrTqScalarTable", "fza_sfmplus_tune_tailThrustTable"];
+
+    //Now clear every source table so it republishes from its .sqf source next frame.
+    { _heli setVariable [_x, nil]; } forEach _sourceTables;
+
+    //CRITICAL: wipe the PERSISTED profile too. Otherwise fn_tunerLoad re-overlays the
+    //saved values on the next GUI open, and fn_tunerApply re-writes the saved FORCE
+    //TABLES onto the aircraft every spawn - so source edits would never take effect.
+    //Clearing both saved keys makes the source arrays the effective values again.
+    profileNamespace setVariable ["fza_sfmplus_tuner", []];
+    profileNamespace setVariable ["fza_sfmplus_tuner_forceTables", []];
+    saveProfileNamespace;
+
     _display call fza_sfmplus_fnc_tunerBuildRows;
     private _status = _display displayCtrl FZA_SFMPLUS_TUNER_IDC_STATUS;
-    _status ctrlSetText "Reset - tables reloaded from source.";
+    _status ctrlSetText "Reset - saved profile cleared, all tables reloaded from source.";
 }];
 
 //Live-refresh the Balance-tab readout while the dialog is open: attitude vs

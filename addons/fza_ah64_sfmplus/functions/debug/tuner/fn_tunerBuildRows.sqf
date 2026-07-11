@@ -82,6 +82,83 @@ if (_activeTab == "Balance") then {
     _y = _y + _rowH + _pad;
 };
 
+//Airframe tab: a single EN-MASSE interpolation control set at the very top. You
+//enter two anchor speeds (kt) and hit Interpolate; every airspeed-banded table has
+//its bands BETWEEN those two anchors linearly filled from that table's own anchor
+//values. One control, applies to ALL dragtables at once (not per-table).
+if (_activeTab == "Airframe") then {
+    private _bandsKt = [0, 20, 40, 70, 90, 100, 120, 130, 140];   // band -> kt (labels)
+    uiNamespace setVariable ["fza_sfmplus_tunerInterpBandsKt", _bandsKt];
+
+    private _lbl = _display ctrlCreate ["fza_sfmplus_TunerText", -1, _group];
+    _lbl ctrlSetPosition [0.0, _y, _grpW * 0.30, _rowH];
+    _lbl ctrlSetText "Interpolate all tables:";
+    _lbl ctrlSetTextColor [1, 0.85, 0.4, 1];
+    _lbl ctrlCommit 0;
+    _rowControls pushBack _lbl;
+
+    private _lblFrom = _display ctrlCreate ["fza_sfmplus_TunerText", -1, _group];
+    _lblFrom ctrlSetPosition [_grpW * 0.30, _y, _grpW * 0.09, _rowH];
+    _lblFrom ctrlSetText "from kt";
+    _lblFrom ctrlCommit 0;
+    _rowControls pushBack _lblFrom;
+
+    private _edFrom = _display ctrlCreate ["fza_sfmplus_TunerEdit", -1, _group];
+    _edFrom ctrlSetPosition [_grpW * 0.39, _y, _grpW * 0.10, _rowH];
+    _edFrom ctrlSetText "0";
+    _edFrom ctrlCommit 0;
+    _rowControls pushBack _edFrom;
+    uiNamespace setVariable ["fza_sfmplus_tunerInterpFrom", _edFrom];
+
+    private _lblTo = _display ctrlCreate ["fza_sfmplus_TunerText", -1, _group];
+    _lblTo ctrlSetPosition [_grpW * 0.50, _y, _grpW * 0.06, _rowH];
+    _lblTo ctrlSetText "to kt";
+    _lblTo ctrlCommit 0;
+    _rowControls pushBack _lblTo;
+
+    private _edTo = _display ctrlCreate ["fza_sfmplus_TunerEdit", -1, _group];
+    _edTo ctrlSetPosition [_grpW * 0.56, _y, _grpW * 0.10, _rowH];
+    _edTo ctrlSetText "90";
+    _edTo ctrlCommit 0;
+    _rowControls pushBack _edTo;
+    uiNamespace setVariable ["fza_sfmplus_tunerInterpTo", _edTo];
+
+    private _btn = _display ctrlCreate ["fza_sfmplus_TunerButton", -1, _group];
+    _btn ctrlSetPosition [_grpW * 0.68, _y, _grpW * 0.30, _rowH];
+    _btn ctrlSetText "Interpolate";
+    _btn ctrlSetBackgroundColor [0.2, 0.3, 0.2, 1];
+    _btn ctrlCommit 0;
+    _rowControls pushBack _btn;
+    _btn ctrlAddEventHandler ["ButtonClick", {
+        params ["_ctrl"];
+        private _display = ctrlParent _ctrl;
+        private _bandsKt = uiNamespace getVariable ["fza_sfmplus_tunerInterpBandsKt", []];
+        private _fromKt  = parseNumber (ctrlText (uiNamespace getVariable ["fza_sfmplus_tunerInterpFrom", controlNull]));
+        private _toKt    = parseNumber (ctrlText (uiNamespace getVariable ["fza_sfmplus_tunerInterpTo",   controlNull]));
+        //Map each entered speed to the NEAREST band index.
+        private _fnNearest = {
+            params ["_kt"];
+            private _best = 0; private _bestErr = 1e9;
+            { private _e = abs (_kt - _x); if (_e < _bestErr) then { _bestErr = _e; _best = _forEachIndex; }; } forEach _bandsKt;
+            _best
+        };
+        private _fromIdx = [_fromKt] call _fnNearest;
+        private _toIdx   = [_toKt]   call _fnNearest;
+        ([_fromIdx, _toIdx] call fza_sfmplus_fnc_tunerInterpolate) params ["_tables", "_bands"];
+        private _status = _display displayCtrl FZA_SFMPLUS_TUNER_IDC_STATUS;
+        if (_tables < 0) then {
+            _status ctrlSetText "Interpolate: pick two anchor speeds with bands between them.";
+        } else {
+            _status ctrlSetText format ["Interpolated %1 bands across %2 tables (%3-%4 kt).",
+                _bands, _tables, _bandsKt select _fromIdx, _bandsKt select _toIdx];
+            //Rebuild so the filled values show in the rows.
+            _display call fza_sfmplus_fnc_tunerBuildRows;
+        };
+    }];
+
+    _y = _y + _rowH + _pad;
+};
+
 //The per-generator forces readout lives in the non-blocking overlay panel; it is
 //not a dialog tab. Keep the force log OFF here so it only runs while the overlay
 //is up (the overlay enables it itself).

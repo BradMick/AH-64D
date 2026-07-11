@@ -137,9 +137,10 @@ private _pfh = [{
     private _sStab = ["fza_sfmplus_tune_stabLiftScalarTable"] call _fnScalar;// stabilator lift
     private _sFuse = ["fza_sfmplus_tune_fuseSideScalarTable"] call _fnScalar; // fuselage side-force (manual)
     private _sFin  = ["fza_sfmplus_tune_finLiftScalarTable"]  call _fnScalar; // vertical fin lift (manual)
-    //Rotor disk roll-tilt (deg) at current speed - baseline 0, master-tuned to null yaw rate.
-    private _tTilt = _heli getVariable ["fza_sfmplus_tune_rotorTiltTable", []];
-    private _sTilt = if (_tTilt isEqualTo []) then { 0.0 } else { [_tTilt, _lookupSpd] call fza_fnc_linearInterp select 1 };
+    //LIVE rotor disk roll-tilt: disk tilt is now a pilot-input effect, driven by the
+    //cyclic ROLL trim (forceTrimPosRoll) that tilts the thrust vector. Show that live
+    //value (+ = disk tilted right) rather than the retired base-tilt table.
+    private _sTilt = _heli getVariable ["fza_ah64_forceTrimPosRoll", 0.0];
     (_disp displayCtrl 54316) ctrlSetText format ["SCALARS  mainThr %1  tailThr %2  torque %3  stabLift %4  fuseSide %5  fin %6  tilt %7",
         _sMain toFixed 3, _sTail toFixed 3, _sTorq toFixed 3, _sStab toFixed 3, _sFuse toFixed 3, _sFin toFixed 3, _sTilt toFixed 2];
 

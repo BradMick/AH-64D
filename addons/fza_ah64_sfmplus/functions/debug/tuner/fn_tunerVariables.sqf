@@ -167,23 +167,123 @@ private _spdBands = [0.00, 10.29, 20.58, 36.01, 46.30, 51.44, 61.73, 66.88, 72.0
     ] call _fnMake);
 } forEach _spdBands;
 
-// Rotor disk BASE ROLL-TILT by AIRSPEED band (deg, + = disk tilted right). This
-// is the STEADY left/right tilt of the thrust vector (separate from force trim),
-// which produces the coupled yaw moment. The master auto-tuner drives this table
-// to null the yaw RATE; you can also hand-edit it here. Default 0. fn_simpleRotorMain
-// reads it; write-back exports/persists.
+// STABILATOR lift scalar by AIRSPEED band. Shapes how much download/lift the
+// stabilator carries per airspeed, setting the pitch trim. The master (PITCH axis)
+// drives this so the aircraft holds the target pitch attitude at the flight-test
+// cyclic position; you can also hand-edit it here. Default 1.0. fn_coreUpdateFlightModel
+// passes fza_sfmplus_tune_stabLiftScalarTable into the stabilator surface; write-back
+// exports/persists.
 {
     private _band = _x;
     _spec pushBack ([
         "Airframe",
-        format ["fza_sfmplus_tune_rotorTilt_%1", _band],
-        format ["Disk tilt @ %1 kt", round (_band * 1.94384)],
-        "Rotor Disk Roll-Tilt (deg, by airspeed)",
+        format ["fza_sfmplus_tune_stabLift_%1", _band],
+        format ["Stab lift @ %1 kt", round (_band * 1.94384)],
+        "Stabilator Lift (by airspeed)",
         "dragtable",
-        0.0,
-        ["fza_sfmplus_tune_rotorTiltTable", _forEachIndex, _band],
-        ["fn_simpleRotorMain.sqf", format ["// rotorTiltTable row %1 (%2 m/s): %3", _forEachIndex, _band, "%1"]],
-        -10.0, 10.0
+        1.0,
+        ["fza_sfmplus_tune_stabLiftScalarTable", _forEachIndex, _band],
+        ["fn_coreUpdateFlightModel.sqf", format ["// stabLiftScalarTable row %1 (%2 m/s): %3", _forEachIndex, _band, "%1"]],
+        0.2, 3.0
+    ] call _fnMake);
+} forEach _spdBands;
+
+// RETREATING BLADE STALL pitch/roll AUTHORITY by airspeed (in pilot-cyclic input units).
+// How much nose-up pitch + roll RBS commands at each airspeed; multiplied by the RBS
+// SEVERITY (airspeed + collective) and added to the pilot moment via the same pitch/roll
+// torque - so pilot authority is untouched but progressively overpowered by RBS. Signed:
+// pitch + = nose DOWN (nose-up RBS is NEGATIVE), roll + = RIGHT roll (left-roll RBS is
+// NEGATIVE - AH-64 RBS rolls left toward the retreating blade). Bands extend past the
+// standard 9 to 160/180/200 kt where RBS really bites. fn_simpleRotorMain reads
+// fza_sfmplus_tune_rbsPitchTable / _rbsRollTable; write-back exports/persists.
+private _rbsBands = [0.00, 10.29, 20.58, 36.01, 46.30, 51.44, 61.73, 66.88, 72.02, 82.30, 92.59, 102.88];
+private _rbsPitchDef = [0,0,0,0,0,0,0,0,0,-0.10,-0.30,-0.60];
+private _rbsRollDef  = [0,0,0,0,0,0,0,0,0,-0.20,-0.60,-1.20];
+{
+    private _band = _x;
+    _spec pushBack ([
+        "Airframe",
+        format ["fza_sfmplus_tune_rbsPitch_%1", _band],
+        format ["RBS pitch @ %1 kt", round (_band * 1.94384)],
+        "Retreating Blade Stall - Pitch (by airspeed)",
+        "dragtable",
+        _rbsPitchDef select _forEachIndex,
+        ["fza_sfmplus_tune_rbsPitchTable", _forEachIndex, _band],
+        ["fn_simpleRotorMain.sqf", format ["// rbsPitchTable row %1 (%2 m/s): %3", _forEachIndex, _band, "%1"]],
+        -3.0, 3.0
+    ] call _fnMake);
+} forEach _rbsBands;
+{
+    private _band = _x;
+    _spec pushBack ([
+        "Airframe",
+        format ["fza_sfmplus_tune_rbsRoll_%1", _band],
+        format ["RBS roll @ %1 kt", round (_band * 1.94384)],
+        "Retreating Blade Stall - Roll (by airspeed)",
+        "dragtable",
+        _rbsRollDef select _forEachIndex,
+        ["fza_sfmplus_tune_rbsRollTable", _forEachIndex, _band],
+        ["fn_simpleRotorMain.sqf", format ["// rbsRollTable row %1 (%2 m/s): %3", _forEachIndex, _band, "%1"]],
+        -3.0, 3.0
+    ] call _fnMake);
+} forEach _rbsBands;
+
+// MAIN ROTOR THRUST scalar by AIRSPEED band. Calibrates rotor thrust to the real
+// power-required schedule so holding the target collective yields level flight
+// (climb -> 0). The master (VERT axis) drives this in forward flight; hover uses the
+// separate IGE/OGE hover-thrust vars below. Default 1.0. fn_simpleRotorMain reads
+// fza_sfmplus_tune_mainThrustTable; write-back exports/persists.
+{
+    private _band = _x;
+    _spec pushBack ([
+        "Airframe",
+        format ["fza_sfmplus_tune_mainThrust_%1", _band],
+        format ["Main thrust @ %1 kt", round (_band * 1.94384)],
+        "Main Rotor Thrust (by airspeed)",
+        "dragtable",
+        1.0,
+        ["fza_sfmplus_tune_mainThrustTable", _forEachIndex, _band],
+        ["fn_simpleRotorMain.sqf", format ["// mainThrustTable row %1 (%2 m/s): %3", _forEachIndex, _band, "%1"]],
+        0.5, 1.5
+    ] call _fnMake);
+} forEach _spdBands;
+
+// TAIL ROTOR THRUST scalar by AIRSPEED band. Sets anti-torque authority so the NET
+// yaw moment balances at the flight-test pedal position. The master (YAW axis) drives
+// this to null the net yaw moment (torque is a fixed hover-set reference; fin is hand-
+// tuned). Default 1.0, wide range up to 10 (the tail carries the full correction in
+// forward flight). fn_simpleRotorTail reads fza_sfmplus_tune_tailThrustTable.
+{
+    private _band = _x;
+    _spec pushBack ([
+        "Airframe",
+        format ["fza_sfmplus_tune_tailThrust_%1", _band],
+        format ["Tail thrust @ %1 kt", round (_band * 1.94384)],
+        "Tail Rotor Thrust (by airspeed)",
+        "dragtable",
+        1.0,
+        ["fza_sfmplus_tune_tailThrustTable", _forEachIndex, _band],
+        ["fn_simpleRotorTail.sqf", format ["// tailThrustTable row %1 (%2 m/s): %3", _forEachIndex, _band, "%1"]],
+        0.25, 10.0
+    ] call _fnMake);
+} forEach _spdBands;
+
+// MAIN ROTOR TORQUE scalar by AIRSPEED band. Scales the main-rotor reaction torque
+// (the yaw the tail must counter). The master (YAW axis) trims this slowly alongside
+// tail thrust to drive the NET yaw moment -> 0. Default 1.0. fn_simpleRotorMain reads
+// fza_sfmplus_tune_rtrTqScalarTable; write-back exports/persists.
+{
+    private _band = _x;
+    _spec pushBack ([
+        "Airframe",
+        format ["fza_sfmplus_tune_rtrTq_%1", _band],
+        format ["Torque @ %1 kt", round (_band * 1.94384)],
+        "Main Rotor Torque (by airspeed)",
+        "dragtable",
+        1.0,
+        ["fza_sfmplus_tune_rtrTqScalarTable", _forEachIndex, _band],
+        ["fn_simpleRotorMain.sqf", format ["// rtrTqScalarTable row %1 (%2 m/s): %3", _forEachIndex, _band, "%1"]],
+        0.5, 1.5
     ] call _fnMake);
 } forEach _spdBands;
 

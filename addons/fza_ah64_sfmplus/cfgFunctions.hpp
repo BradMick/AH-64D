@@ -41,6 +41,7 @@ class CfgFunctions
             class tunerExport {R;};
             class tunerGui {R;};
             class tunerBuildRows {R;};
+            class tunerInterpolate {R;};
             class tunerBalance {R;};
             class tunerTargets {R;};
             class tunerMaster {R;};

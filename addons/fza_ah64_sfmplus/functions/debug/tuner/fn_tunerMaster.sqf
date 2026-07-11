@@ -2,34 +2,39 @@
 Function: fza_sfmplus_fnc_tunerMaster
 
 Description:
-    Master auto-tuner. It DRIVES the controls to the real AH-64 flight-test positions
-    itself - deliberately, ONE axis at a time - and tunes the force scalars so the
-    aircraft is trimmed and stable AT those positions. The aircraft is kept in a stable
-    hover meanwhile by the FMC attitude hold (pos submode, fn_fmcAttitudeHold); the
-    master does not run or force any pitch/roll hold of its own.
+    Master auto-tuner. YOU fly the aircraft (set the pitch/roll attitude and airspeed);
+    the tuner adjusts the force SCALARS so the aircraft is trimmed and stable at the
+    attitude you are holding. It does NOT move the cyclic - the only control it drives
+    is the PEDAL (to a known position so the yaw axis can tune tail thrust against it).
 
-    Deliberate ONE-AXIS-AT-A-TIME drive. Sequence depends on flight state:
-      forward flight:  YAW -> PITCH -> ROLL -> VERT
-      hover (IGE/OGE):  YAW -> VERT  (stabilator inactive - PITCH not tuned)
-    The ACTIVE axis slowly walks its force-trim toward the flight-test control
-    position while its force scalar is tuned. An axis is "done" only when its control
-    has reached the real position AND its force is trimmed there.
+    ONE AXIS AT A TIME. Sequence depends on flight state:
+      forward flight:  YAW -> LONGITUDINAL -> ROLL
+      hover (IGE/OGE):  YAW -> VERT  (stabilator inactive)
+    Each axis tunes its force(s) against a measured error and only advances once that
+    error is in tolerance (see per-axis notes below).
 
-      YAW   : drive PEDAL trim to the flight-test pedal position; tune tail-rotor
-              thrust (fza_sfmplus_tune_tailThrustTable) + main-rotor torque
-              (fza_sfmplus_tune_rtrTqScalarTable) so NET yaw moment -> 0, and the
-              rotor disk tilt (fza_sfmplus_tune_rotorTiltTable) so yaw RATE -> 0.
-              Tuned FIRST so the aircraft stops spinning before anything else.
-      PITCH : drive CYCLIC-PITCH trim to the flight-test position; tune stabilator
-              lift (fza_sfmplus_tune_stabLiftScalarTable) so the aircraft holds the
-              target pitch attitude AT that cyclic position.
-      ROLL  : drive CYCLIC-ROLL trim to the flight-test position and hold steady.
-              Tunes no force directly (roll balance comes from the disk tilt tuned
-              in the YAW axis); gates on being at the real position + target roll.
-      VERT  : tune MAIN ROTOR THRUST (fza_sfmplus_tune_mainThrustTable, or the
-              IGE/OGE hover thrust var) so holding the target collective yields
-              level flight (climb -> 0). No control-position target (you can't
-              "position" thrust); gates on climb only.
+      YAW   : drive PEDAL trim to the flight-test pedal position + freeze it, then
+              null NET yaw moment. MAIN TORQUE (fza_sfmplus_tune_rtrTqScalarTable) is
+              tuned ONLY at a hover and copied to ALL bands (a fixed reference). TAIL
+              THRUST (fza_sfmplus_tune_tailThrustTable) carries the balance: half at
+              hover (torque takes the rest), the FULL correction in forward flight
+              (torque fixed). The VERTICAL FIN is hand-tuned (fixed lift properties),
+              so the master does not touch it. Tuned FIRST so spin stops early. (Rotor
+              disk tilt is a live pilot-input effect and is NOT tuned here.)
+      LONGITUDINAL (forward flight): CO-TUNE stabilator lift + main rotor thrust
+              TOGETHER against the PITCH TARGET and level flight. Stab lift and thrust
+              are coupled (thrust is fwd of the CoM so it pitches the nose; stab sets
+              pitch; each shifts the other's balance), so tuning them separately fights
+              itself. Every frame: stab lift (fza_sfmplus_tune_stabLiftScalarTable)
+              chases the pitch error; main thrust (fza_sfmplus_tune_mainThrustTable)
+              chases climb PLUS a weighted share of the pitch error. Settles only when
+              BOTH pitch = target AND climb = 0. The tuner does NOT move the cyclic -
+              YOU set/hold the pitch attitude; the forces are tuned to that attitude.
+      ROLL  : confirm the roll target is held. Tunes no force and moves no control -
+              YOU set the roll; gates on the roll attitude error alone.
+      VERT  : HOVER only - tune the IGE/OGE hover thrust var so holding the target
+              collective yields level flight (climb -> 0). In forward flight thrust is
+              handled by the LONGITUDINAL co-tune, so VERT is not in the fwd sequence.
 
     Runs while fza_sfmplus_tune_masterOn is enabled. Fly stable at the commanded
     speed; it tunes the band you are in.
@@ -59,11 +64,11 @@ private _ctx = createHashMapFromArray
     ["heli",      _heli],
     ["bands",     _bands],
     ["prevSpd",   0.0],
-    //Axis case ids: 0 VERT(thrust), 1 PITCH(stab), 2 ROLL, 3 YAW(tail thrust).
-    //Tuning SEQUENCE (priority order): tune YAW (tail thrust) first to stop the spin,
-    //then PITCH (stab lift) and ROLL, then VERT (thrust). At a hover the sequence is
-    //rebuilt to YAW -> VERT only (see the hover-state block). seqIdx walks seqOrder.
-    ["seqOrder",  [3, 1, 2, 0]], // YAW -> PITCH -> ROLL -> VERT (forward flight)
+    //Axis case ids: 0 VERT(hover thrust), 1 LONGITUDINAL(stab lift + main thrust
+    //co-tune), 2 ROLL, 3 YAW(tail thrust). SEQUENCE: YAW first (stop the spin), then
+    //LONGITUDINAL (co-tune stab+thrust to the pitch target), then ROLL. At a hover the
+    //sequence is rebuilt to YAW -> VERT (see the hover-state block). seqIdx walks seqOrder.
+    ["seqOrder",  [3, 1, 2]], // YAW -> LONGITUDINAL -> ROLL (forward flight)
     ["seqIsHover",false],       // which sequence seqOrder currently holds; rebuilt on mode change
     ["seqIdx",    0],
     ["axis",      3],           // start on YAW (tail thrust) to kill the spin first
@@ -72,17 +77,26 @@ private _ctx = createHashMapFromArray
 
     //--- FORCE-SCALAR tuning rates (the actual job). Each is a table-step per unit
     //error per second; applied *dt. Clamped per table below. ---
-    ["kThrust",   3.0e-4],      // mainThrustTable step per ft/min of climb
-    ["kStab",     2.0e-3],      // stabLiftScalarTable step per deg of pitch error
+    ["kThrust",   3.0e-4],      // mainThrustTable step per ft/min of climb (VERT hover)
+    //LONGITUDINAL co-tune (forward flight): main thrust and stab lift are coupled -
+    //thrust change shifts pitch, stab change shifts the thrust needed - so they are
+    //tuned TOGETHER every frame (50/50), each half-strength, until BOTH climb and pitch
+    //settle. kStab is much faster than before (stab tuning was painfully slow).
+    ["kStab",     8.0e-3],      // stabLiftScalarTable step per deg of pitch error (4x faster)
+    ["kThrustCo", 3.0e-4],      // mainThrustTable step per ft/min in the longitudinal co-tune
+    //Thrust's SHARE of the pitch error: converts a deg of pitch error into a ft/min-
+    //equivalent for the thrust step, so thrust also helps hold the pitch target. Kept
+    //SMALL so stab lift is the dominant pitch authority and the two don't fight/hunt.
+    ["kPitchToThrust", 40.0],   // ft/min-equivalent per deg of pitch error (thrust's pitch share)
     //Yaw is tuned against the NET yaw MOMENT (Nm) - what the scalars actually control
     //(rate is its integral; targeting rate saturates/runs away). Gains are table-step
     //per Nm of net yaw moment, so they are small (moment ~ hundreds Nm).
     ["kTail",     6.0e-5],      // tailThrustTable step per Nm of net yaw moment (primary)
-    ["kTorque",   9.0e-6],      // rtrTqScalarTable step per Nm of net yaw moment (slow trim)
+    ["kTorque",   9.0e-6],      // rtrTqScalarTable step per Nm - HOVER ONLY, then carried to all bands
 
-    //Pitch/roll position hold is supplied externally (user PIDs in the hold block);
-    //no gains for it here.
-    ["kYawHold",  0.80],        // yaw heading-hold: trim per rad/s of yaw rate (stops spin)
+    //Pitch/roll position hold is supplied externally (FMC pos hold); no gains here.
+    //When yaw is not the active axis the pedal is FROZEN (not re-driven), so there is
+    //no tuner yaw heading-hold gain - the FMC heading hold owns residual yaw drift.
     //Deliberate control-drive rate: the ACTIVE axis walks its force-trim toward the
     //flight-test control position by this fraction of the remaining gap per second.
     //Small = slow/deliberate (never a lurch); ~5%/s closes the gap over ~20 s.
@@ -92,8 +106,6 @@ private _ctx = createHashMapFromArray
     ["tPitch",    0.3],         // deg
     ["tRoll",     0.3],         // deg
     ["tYaw",      120.0],       // Nm net yaw moment - "yaw balanced" tolerance
-    ["kTilt",     40.0],        // deg of disk tilt per rad/s of yaw rate (nulls the standing rate)
-    ["tYawRateT", 0.004],       // rad/s (~0.23 deg/s) - only tune tilt when rate exceeds this
     ["tClimb",    40.0],        // ft/min
     ["tCtl",      0.03],        // trim units - control must be within this of the flight-test position
 
@@ -187,16 +199,17 @@ private _ctx = createHashMapFromArray
     else { if (_heli getVariable ["fza_sfmplus_tune_hoverOGE", false]) then { _hoverState = "OGE"; }; };
     _heli setVariable ["fza_sfmplus_master_hoverState", _hoverState];
 
-    //TUNING SEQUENCE depends on hover vs forward flight. At a HOVER the stabilator is
-    //inactive (no airflow) so PITCH is NOT tuned, and ROLL has no force to tune - the
-    //only things to tune are the pedal-then-tail-thrust (YAW) and main thrust (VERT):
-    //   hover:   YAW -> VERT
-    //   forward: YAW -> PITCH -> ROLL -> VERT
-    //Rebuild + reset the walk index only when the mode actually changes, so seqIdx
-    //never desyncs from the array it indexes.
+    //TUNING SEQUENCE depends on hover vs forward flight.
+    //   hover:   YAW -> VERT      (stabilator inactive; VERT tunes hover thrust)
+    //   forward: YAW -> LONGITUDINAL -> ROLL
+    //In forward flight, case 1 (LONGITUDINAL) CO-TUNES stab lift + main thrust together
+    //against the pitch target and climb, so there is no separate VERT step (it would
+    //re-tune thrust against climb alone and undo the pitch-aware thrust). ROLL only
+    //confirms the roll target. Rebuild + reset the walk index only on a mode change so
+    //seqIdx never desyncs from the array it indexes.
     private _wantHoverSeq = (_hoverState != "");
     if ((_ctx get "seqIsHover") != _wantHoverSeq) then {
-        _ctx set ["seqOrder", if (_wantHoverSeq) then { [3, 0] } else { [3, 1, 2, 0] }];
+        _ctx set ["seqOrder", if (_wantHoverSeq) then { [3, 0] } else { [3, 1, 2] }];
         _ctx set ["seqIsHover", _wantHoverSeq];
         _ctx set ["seqIdx", 0];
         _ctx set ["axis", 3];        // always (re)start on YAW - pedal + tail thrust first
@@ -213,10 +226,8 @@ private _ctx = createHashMapFromArray
     //The tuner drives the controls to the real flight-test positions ONE axis at a
     //time: the ACTIVE axis (being tuned) slowly walks its force-trim toward the target
     //control position while its force scalar is tuned so the ship trims there. The
-    //aircraft is kept stable meanwhile by the EXTERNAL position hold (BradMick's FMC
-    //pos-hold PIDs, wired in separately) - this function no longer runs its own hold.
-    (_heli getVariable ["fza_sfmplus_angVelModelSpace", [0,0,0]]) params ["_wP","_wR","_wY"];
-
+    //aircraft is kept stable meanwhile by the EXTERNAL position hold (FMC pos hold);
+    //this function no longer runs its own hold.
     private _axisNow  = _ctx get "axis";   // 0 VERT, 1 PITCH, 2 ROLL, 3 YAW
     private _curPitch = (_heli call BIS_fnc_getPitchBank) select 0;
     private _curRoll  = (_heli call BIS_fnc_getPitchBank) select 1;
@@ -224,56 +235,44 @@ private _ctx = createHashMapFromArray
     //stab lift so the ship settles at target pitch; gate roll on target roll).
     private _tgtPitch = [_heli getVariable ["fza_sfmplus_tune_targetPitchTable", [[0,0]]], _lookupSpd] call fza_fnc_linearInterp select 1;
     private _tgtRoll  = [_heli getVariable ["fza_sfmplus_tune_targetRollTable",  [[0,0]]], _lookupSpd] call fza_fnc_linearInterp select 1;
-    //Flight-test control-position targets (the positions the ACTIVE axis is driven to).
-    //At a hover (explicit IGE/OGE mode) these come from the dedicated, editable hover
-    //targets instead of the airspeed bands - so you get a distinct control target for
-    //IGE vs OGE that you can set explicitly.
-    private _tgtCycP  = 0.0; private _tgtCycR = 0.0; private _tgtPed = 0.0;
-    if (_hoverState != "") then {
-        private _pfx = if (_hoverState == "IGE") then { "fza_sfmplus_tune_ige" } else { "fza_sfmplus_tune_oge" };
-        _tgtCycP = _heli getVariable [_pfx + "CycPitch", -0.342];
-        _tgtCycR = _heli getVariable [_pfx + "CycRoll",  -0.045];
-        _tgtPed  = _heli getVariable [_pfx + "Pedal",    -0.352];
+    //Flight-test PEDAL target (the only control the tuner drives - to a known pedal
+    //position so the yaw axis can tune tail thrust against it). At a hover (explicit
+    //IGE/OGE mode) it comes from the editable hover pedal target; else the airspeed
+    //band. (Cyclic pitch/roll targets are NOT used - YOU fly pitch/roll; the tuner
+    //never moves the cyclic.)
+    private _tgtPed = if (_hoverState != "") then {
+        _heli getVariable [(if (_hoverState == "IGE") then { "fza_sfmplus_tune_ige" } else { "fza_sfmplus_tune_oge" }) + "Pedal", -0.352]
     } else {
-        _tgtCycP = [_heli getVariable ["fza_sfmplus_tune_targetCycPitchTable", [[0,0]]], _lookupSpd] call fza_fnc_linearInterp select 1;
-        _tgtCycR = [_heli getVariable ["fza_sfmplus_tune_targetCycRollTable",  [[0,0]]], _lookupSpd] call fza_fnc_linearInterp select 1;
-        _tgtPed  = [_heli getVariable ["fza_sfmplus_tune_targetPedalTable",    [[0,0]]], _lookupSpd] call fza_fnc_linearInterp select 1;
+        [_heli getVariable ["fza_sfmplus_tune_targetPedalTable", [[0,0]]], _lookupSpd] call fza_fnc_linearInterp select 1
     };
 
-    //Rate at which the ACTIVE axis walks its control toward the flight-test target
-    //(trim units per second). Small + ETL-slowed so it's deliberate, never a lurch.
+    //Rate at which the pedal (YAW) walks toward its flight-test target (trim units
+    //per second). Small + ETL-slowed so it's deliberate, never a lurch.
     private _driveRate = (_ctx get "kDrive") * (1.0 - 0.5 * _etlFactor);
 
-    //--- ACTIVE-AXIS control drive: when PITCH or ROLL is the axis being tuned, walk
-    //its cyclic trim toward the flight-test control position (deliberate, per-frame).
-    if (_axisNow == 1) then {
-        private _pTrimCur = _heli getVariable ["fza_ah64_forceTrimPosPitch", 0.0];
-        _heli setVariable ["fza_ah64_forceTrimPosPitch", ([_pTrimCur + ((_driveRate * (_tgtCycP - _pTrimCur)) * _dt),-1.0,1.0] call BIS_fnc_clamp), true];
-    };
-    if (_axisNow == 2) then {
-        private _rTrimCur = _heli getVariable ["fza_ah64_forceTrimPosRoll", 0.0];
-        _heli setVariable ["fza_ah64_forceTrimPosRoll", ([_rTrimCur + ((_driveRate * (_tgtCycR - _rTrimCur)) * _dt),-1.0,1.0] call BIS_fnc_clamp), true];
-    };
+    //--- CYCLIC PITCH/ROLL: the tuner does NOT move it. Tuning is done by adjusting
+    //FORCES (stab lift, main thrust) to achieve the target PITCH ATTITUDE - the flight
+    //controls must stay put. Driving the cyclic toward a "flight-test position" fought
+    //the force tuning (it kept pushing the nose down against the stab/thrust settings),
+    //so it was removed. Pitch/roll are flown by the FMC attitude hold on the normal FMC
+    //path; the cyclic sits wherever that puts it. (Only the PEDAL is driven, below, so
+    //the yaw axis can tune tail thrust against a known pedal position.)
 
-    //Pitch/roll are held at a stable hover by the FMC attitude hold (pos submode,
-    //fn_fmcAttitudeHold) running on the normal FMC path - the master no longer runs
-    //or forces any pitch/roll hold of its own.
-
-    //--- YAW: active -> drive pedal trim toward target, then FREEZE; else heading-hold.
-    //The pedal walks to the flight-test target and, once within tolerance, STOPS
-    //moving (holds that exact position) so the tail-thrust tuning sees a fixed pedal
-    //and can converge the net yaw moment against it.
-    private _yTrimCur = _heli getVariable ["fza_ah64_forceTrimPosYaw", 0.0];
-    private _yStep = 0.0;
+    //--- YAW: active -> drive pedal trim toward target, then FREEZE. When yaw is NOT
+    //the active axis, LEAVE THE PEDAL ALONE - it stays exactly where the YAW-axis
+    //tuning put it (the flight-test position, with tail/torque balanced there). The
+    //tuner must NOT re-drive the pedal to chase yaw rate while a later axis (e.g. stab
+    //lift) is tuning, or it would break the yaw tuning you already dialed in. Any
+    //residual heading drift is the FMC heading hold's job, not the tuner's.
     if (_axisNow == 3) then {
+        private _yTrimCur = _heli getVariable ["fza_ah64_forceTrimPosYaw", 0.0];
         private _dPed = _tgtPed - _yTrimCur;
         //Freeze once at target (dead-band = the control tolerance) so the pedal is
         //rock-steady while tail thrust tunes.
-        if ((abs _dPed) > (_ctx get "tCtl")) then { _yStep = _driveRate * _dPed; };
-    } else {
-        _yStep = -((_ctx get "kYawHold") * _wY);
+        if ((abs _dPed) > (_ctx get "tCtl")) then {
+            _heli setVariable ["fza_ah64_forceTrimPosYaw", ([_yTrimCur + ((_driveRate * _dPed) * _dt),-1.0,1.0] call BIS_fnc_clamp), true];
+        };
     };
-    _heli setVariable ["fza_ah64_forceTrimPosYaw", ([_yTrimCur + (_yStep * _dt),-1.0,1.0] call BIS_fnc_clamp), true];
 
     //=== TUNING GATE ========================================================
     //Stabilization above ALWAYS runs (so the ship holds position hands-off). The
@@ -288,6 +287,9 @@ private _ctx = createHashMapFromArray
     private _axis = _ctx get "axis";
     private _err = 0.0; private _axisName = ""; private _tol = 0.0;
     private _scalarName = ""; private _scalarVal = 0.0;
+    //Optional SECOND error for co-tune axes (e.g. longitudinal: pitch is _err, climb is
+    //_secondErr). Default "already satisfied" so single-error axes are unaffected.
+    private _secondErr = 0.0; private _secondTol = 1e9;
 
     //Slow the force-tuning steps in the ETL region so the tuner takes small, stable
     //bites of a moving target instead of over-stepping and hunting. 1.0 normally,
@@ -340,15 +342,25 @@ private _ctx = createHashMapFromArray
                 };
             };
         };
-        case 1: {   //PITCH: cyclic-pitch trim is being driven to the flight-test
-            //position (above); here we tune STAB LIFT so that AT that position the
-            //ship holds the target pitch attitude. err = current pitch - target.
-            //+ = nose too high. More stab (down) lift lowers the nose, so +err ->
-            //increase stab lift scalar.
-            _axisName = "PITCH: tuning STAB LIFT";
-            _err = _curPitch - _tgtPitch;
-            _tol = _ctx get "tPitch";
-            _scalarName = "stabLift";
+        case 1: {   //LONGITUDINAL co-tune: STAB LIFT + MAIN THRUST together, BOTH
+            //serving the PITCH TARGET (the attitude the aircraft is trying to hold),
+            //with thrust also holding level flight (climb -> 0). These are coupled:
+            //stab lift sets pitch via tail download; main thrust, applied 2.06 m FORWARD
+            //of the CoM, ALSO pitches the nose (more thrust -> nose up). And changing
+            //stab lift changes the thrust needed for level flight. Tuning them
+            //sequentially fights itself, so we tune BOTH every frame:
+            //  - STAB LIFT chases PITCH error (primary pitch authority, full strength).
+            //  - MAIN THRUST chases CLIMB error PLUS a weighted share of PITCH error
+            //    (both "+ -> reduce thrust", so the two thrust jobs align, no fight).
+            //Settle only when BOTH pitch=target AND climb=0. Cyclic-pitch trim is driven
+            //to the flight-test position above.
+            _axisName = "LONGITUDINAL: co-tuning STAB LIFT + MAIN THRUST (pitch target)";
+            _err  = _curPitch - _tgtPitch;              // deg, + = nose too high (PRIMARY)
+            _tol  = _ctx get "tPitch";
+            private _climbErr = _heli getVariable ["fza_sfmplus_velClimb", 0.0];   // ft/min
+            _scalarName = "stab+thrust";
+
+            //STAB LIFT vs pitch: +err (nose high) -> more stab (down) lift lowers nose.
             if ((abs _err) >= _tol) then {
                 private _t = _heli getVariable ["fza_sfmplus_tune_stabLiftScalarTable", _bands apply {[_x,1.0]}];
                 private _v = ((_t select _bestIdx) select 1) + ((_ctx get "kStab") * _err * _dt * _tuneRate);
@@ -359,6 +371,25 @@ private _ctx = createHashMapFromArray
             } else {
                 _scalarVal = ((_heli getVariable ["fza_sfmplus_tune_stabLiftScalarTable", _bands apply {[_x,1.0]}]) select _bestIdx) select 1;
             };
+
+            //MAIN THRUST: climb error (primary) + weighted pitch error. Both signs are
+            //"positive -> reduce thrust" (+climb rises; +pitch nose-high, and thrust is
+            //fwd of CoM so less thrust lowers the nose), so they reinforce. Stab is the
+            //dominant pitch authority - thrust only takes a FRACTION of the pitch error
+            //(kPitchToThrust) so the two don't fight over pitch.
+            private _thrustPitchTerm = (_ctx get "kPitchToThrust") * _err;   // ft/min-equivalent
+            if ((abs _climbErr) >= (_ctx get "tClimb") || (abs _err) >= _tol) then {
+                private _t = _heli getVariable ["fza_sfmplus_tune_mainThrustTable", _bands apply {[_x,1.0]}];
+                private _v = ((_t select _bestIdx) select 1)
+                    - ((_ctx get "kThrustCo") * _climbErr * _dt * _tuneRate)
+                    - ((_ctx get "kThrustCo") * _thrustPitchTerm * _dt * _tuneRate);
+                _v = [_v,0.5,1.5] call BIS_fnc_clamp;
+                _t set [_bestIdx, [(_t select _bestIdx) select 0, _v]];
+                _heli setVariable ["fza_sfmplus_tune_mainThrustTable", _t];
+            };
+            //Second-error gate: settled only when climb is ALSO in tol.
+            _secondErr = _climbErr;
+            _secondTol = _ctx get "tClimb";
         };
         case 2: {   //ROLL: cyclic-roll trim is being driven to the flight-test
             //position (above). No force is tuned here (roll balance comes from the
@@ -369,16 +400,20 @@ private _ctx = createHashMapFromArray
             _tol = _ctx get "tRoll";
             _scalarName = "-";
         };
-        case 3: {   //YAW: pedal trim is being driven to the flight-test position
-            //(above). Tune TAIL THRUST and MAIN TORQUE together, 50/50, so the NET
-            //yaw moment -> 0 at that pedal position. Both scalars are driven by the
-            //SAME net-moment error every frame, each carrying half the correction.
-            _axisName = "YAW: tuning TAIL + TORQUE (50/50)";
-            //Error = NET yaw MOMENT (Nm) summed from the force log - the quantity
-            //the scalars directly control. Force the log on so it has live data.
-            //Sign convention (confirmed): +Myaw = nose turning RIGHT, - = LEFT.
-            //Main rotor logs + (nose-right CCW reaction), tail logs - (nose-left).
-            //We drive the net -> 0.
+        case 3: {   //YAW: pedal trim is driven to the flight-test position + frozen
+            //(above). Drive the NET yaw moment -> 0 at that pedal position.
+            //
+            //MAIN ROTOR TORQUE is a FIXED reference: it is tuned ONLY at a hover and
+            //then copied to ALL airspeed bands, so it never changes in forward flight.
+            //This gives tail thrust (and the hand-tuned fin) a stable point of reference.
+            //  - HOVER (band 0): tune TAIL THRUST + TORQUE against the net yaw moment;
+            //    the resulting torque is written to every band (the fixed reference).
+            //  - FORWARD FLIGHT (bands 1..8): torque is left at the hover value; the fin
+            //    is hand-tuned; the master tunes TAIL THRUST ONLY to null the net moment.
+            //
+            //Error = NET yaw MOMENT (Nm) from the force log. Sign (confirmed): +Myaw =
+            //nose RIGHT, - = LEFT. Main rotor logs + (CCW reaction), tail logs -. Drive
+            //net -> 0: +net needs MORE tail thrust (tail Myaw -), LESS torque (main +).
             fza_sfmplus_forceLogOn = true;
             private _fLog = _heli getVariable ["fza_sfmplus_forceLogPublished", createHashMap];
             private _netYaw = 0;
@@ -387,46 +422,36 @@ private _ctx = createHashMapFromArray
             } forEach ["Main Rotor","Tail Rotor","Right Wing","Left Wing","Vertical Fin","Stabilator","Fuselage Front","Fuselage Side","Fuselage Top","Yaw Damper"];
             _err = _netYaw;   // Nm, + = nose-right; drive net -> 0
             _tol = _ctx get "tYaw";
-            _scalarName = "tail/torque";
+            private _isHoverYaw = (_hoverState != "");
+            _scalarName = if (_isHoverYaw) then { "tail/torque" } else { "tail" };
             if ((abs _err) >= _tol) then {
-                //+net (nose-right) needs MORE tail thrust (tail Myaw is negative =
-                //nose-left, so more tail lowers the net) and LESS main torque (main
-                //Myaw is positive = nose-right, so less torque lowers the net).
-                //=> tail steps +err, torque steps -err. 50/50 split.
+                //TAIL THRUST: +net (nose-right) -> more tail (tail Myaw is nose-left).
+                //At hover carry half the correction (torque takes the other half); in
+                //forward flight tail carries the FULL correction (torque is fixed).
+                private _tailFrac = if (_isHoverYaw) then { 0.5 } else { 1.0 };
                 private _tt = _heli getVariable ["fza_sfmplus_tune_tailThrustTable", _bands apply {[_x,1.0]}];
-                private _vt = ((_tt select _bestIdx) select 1) + (0.5 * (_ctx get "kTail") * _err * _dt * _tuneRate);
-                _vt = [_vt, 0.25, 3.0] call BIS_fnc_clamp;
+                private _vt = ((_tt select _bestIdx) select 1) + (_tailFrac * (_ctx get "kTail") * _err * _dt * _tuneRate);
+                _vt = [_vt, 0.25, 10.0] call BIS_fnc_clamp;
                 _tt set [_bestIdx, [(_tt select _bestIdx) select 0, _vt]];
                 _heli setVariable ["fza_sfmplus_tune_tailThrustTable", _tt];
-
-                //Main-rotor torque: -err lowers the net when it's too high.
-                private _tq = _heli getVariable ["fza_sfmplus_tune_rtrTqScalarTable", _bands apply {[_x,1.0]}];
-                private _vq = ((_tq select _bestIdx) select 1) - (0.5 * (_ctx get "kTorque") * _err * _dt * _tuneRate);
-                _vq = [_vq, 0.5, 1.5] call BIS_fnc_clamp;
-                _tq set [_bestIdx, [(_tq select _bestIdx) select 0, _vq]];
-                _heli setVariable ["fza_sfmplus_tune_rtrTqScalarTable", _tq];
-
-                //Report tail thrust as the representative scalar for the readout.
                 _scalarVal = _vt;
+
+                //MAIN TORQUE: tuned ONLY at hover, then written to ALL bands (fixed ref).
+                if (_isHoverYaw) then {
+                    private _tq = _heli getVariable ["fza_sfmplus_tune_rtrTqScalarTable", _bands apply {[_x,1.0]}];
+                    private _vq = ((_tq select 0) select 1) - (0.5 * (_ctx get "kTorque") * _err * _dt * _tuneRate);
+                    _vq = [_vq, 0.5, 1.5] call BIS_fnc_clamp;
+                    //Set every band to the hover-tuned torque value: fixed reference.
+                    { _tq set [_forEachIndex, [_x select 0, _vq]]; } forEach _tq;
+                    _heli setVariable ["fza_sfmplus_tune_rtrTqScalarTable", _tq];
+                };
             } else {
                 _scalarVal = ((_heli getVariable ["fza_sfmplus_tune_tailThrustTable", _bands apply {[_x,1.0]}]) select _bestIdx) select 1;
             };
-
-            //ROTOR DISK TILT nulls the standing yaw RATE. Tail/torque balance the
-            //net MOMENT (stops acceleration) but can't remove an existing rate; the
-            //disk tilt provides a coupled yaw moment (via lateral thrust at the hub)
-            //that actively decelerates the rotation to zero. Tune the tilt table at
-            //this band against the yaw RATE. Sign: +yawRate (nose-right) needs a tilt
-            //that produces a nose-LEFT coupled moment -> step tilt by -k*yawRate
-            //(verified/adjustable). Only tune when the rate is meaningfully non-zero.
-            private _yawRateNow = (_heli getVariable ["fza_sfmplus_angVelModelSpace", [0,0,0]]) select 2;   // rad/s, + = nose-right
-            if ((abs _yawRateNow) >= (_ctx get "tYawRateT")) then {
-                private _rtT = _heli getVariable ["fza_sfmplus_tune_rotorTiltTable", _bands apply {[_x,0.0]}];
-                private _vTilt = ((_rtT select _bestIdx) select 1) - ((_ctx get "kTilt") * _yawRateNow * _dt * _tuneRate);
-                _vTilt = [_vTilt, -10.0, 10.0] call BIS_fnc_clamp;
-                _rtT set [_bestIdx, [(_rtT select _bestIdx) select 0, _vTilt]];
-                _heli setVariable ["fza_sfmplus_tune_rotorTiltTable", _rtT];
-            };
+            _axisName = if (_isHoverYaw) then { "YAW (hover): tuning TAIL + TORQUE (torque -> all bands)" }
+                                        else { "YAW: tuning TAIL THRUST (torque fixed, fin hand-tuned)" };
+            //(Rotor disk tilt is now a live pilot-input effect - the master does not
+            //tune it. Any standing yaw rate is left to the pilot/FMC to trim out.)
         };
     };
 
@@ -442,20 +467,18 @@ private _ctx = createHashMapFromArray
     //fix, so blocking on it would lock the tuner on yaw forever (never advancing to
     //the other checks). Advance on moment-in-tolerance.
     //
-    //CONTROL-POSITION GATE: an axis is only "done" when BOTH its force error is in
-    //tolerance AND the control (force-trim) it drives has actually reached the real
-    //flight-test position for this speed. That is the whole point of the deliberate
-    //drive - the aircraft must be trimmed AT the real control position, not just at
-    //some position that happens to balance. Pitch/roll/yaw check their driven trim
-    //against the target; VERT has no control-position target so it gates on force only.
+    //CONTROL-POSITION GATE: only the YAW axis drives a control (the PEDAL), so only it
+    //gates on reaching the flight-test position. PITCH/ROLL are flown by YOU (the tuner
+    //never moves the cyclic); they gate on their attitude/force error alone. VERT has
+    //no control-position target either.
     private _ctlTol   = _ctx get "tCtl";
     private _ctlAtTgt = switch (_axisNow) do {
-        case 1: { (abs ((_heli getVariable ["fza_ah64_forceTrimPosPitch", 0.0]) - _tgtCycP)) < _ctlTol };
-        case 2: { (abs ((_heli getVariable ["fza_ah64_forceTrimPosRoll",  0.0]) - _tgtCycR)) < _ctlTol };
-        case 3: { (abs ((_heli getVariable ["fza_ah64_forceTrimPosYaw",   0.0]) - _tgtPed )) < _ctlTol };
-        default { true };   // VERT (0): no control-position target
+        case 3: { (abs ((_heli getVariable ["fza_ah64_forceTrimPosYaw", 0.0]) - _tgtPed)) < _ctlTol };
+        default { true };
     };
-    private _inTol = ((abs _err) < _tol) && _ctlAtTgt;
+    //Settled when the primary error AND any co-tune second error are both in tol,
+    //and the driven control has reached the flight-test position.
+    private _inTol = ((abs _err) < _tol) && ((abs _secondErr) < _secondTol) && _ctlAtTgt;
     if (_inTol) then {
         private _settleT = (_ctx get "settleT") + _dt;
         _ctx set ["settleT", _settleT];

@@ -91,8 +91,11 @@ if (_heli getVariable "fza_ah64_attHoldActive" && !(_heli getVariable "fza_ah64_
     if (_subMode == "att") then {
        (_heli getVariable "fza_ah64_attHoldDesiredAtt")
               params ["_setPitch", "_setRoll"];
-        private _pitchError = [_curPitch - _setPitch] call CBA_fnc_simplifyAngle180;
+        //private _pitchError = [_curPitch - _setPitch] call CBA_fnc_simplifyAngle180;
+        //private _rollError  = [_curRoll  - _setRoll]  call CBA_fnc_simplifyAngle180;
+        private _pitchError = [_curPitch - SET_PITCH] call CBA_fnc_simplifyAngle180;
         private _rollError  = [_curRoll  - _setRoll]  call CBA_fnc_simplifyAngle180;
+
 
         private _roll  = [_pidRoll_att,  _deltaTime, 0.0, _rollError] call fza_fnc_pidRun;
         _roll          = [_roll,  -1.0, 1.0] call BIS_fnc_clamp;

@@ -78,15 +78,15 @@ private _rtrThrustScalarTable = _heli getVariable ["fza_sfmplus_tune_tailThrustT
 if (_rtrThrustScalarTable isEqualTo []) then {
     _rtrThrustScalarTable =
     [
-     [ 0.00, 1.000]
-    ,[10.29, 1.000]
-    ,[20.58, 1.000]
-    ,[36.01, 1.000]
-    ,[46.30, 1.000]
-    ,[51.44, 1.000]
-    ,[61.73, 1.000]
-    ,[66.88, 1.000]
-    ,[72.02, 1.000]
+     [ 0.00, 2.434]   // 0-90 kt tuned; held flat ~1.0 for 100-140 (fin offloads tail at speed)
+    ,[10.29, 1.754]
+    ,[20.58, 1.074]
+    ,[36.01, 0.393]
+    ,[46.30, 0.997]
+    ,[51.44, 0.997]
+    ,[61.73, 0.997]
+    ,[66.88, 0.997]
+    ,[72.02, 0.997]
     ];
     _heli setVariable ["fza_sfmplus_tune_tailThrustTable", _rtrThrustScalarTable];
 };

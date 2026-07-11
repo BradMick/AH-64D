@@ -49,8 +49,8 @@ private _bands =
 ];
 
 //Each entry: [variable, label, sourceFile, sourceHint, untunedBaseline]. The
-//baseline is the "not tuned" value (1.0 for multiplier scalars, 0.0 for the
-//additive disk-tilt table) so save/export can tell whether a table was changed.
+//baseline is the "not tuned" value (1.0 for these multiplier scalars) so save/export
+//can tell whether a table was changed.
 private _tables =
 [
      ["fza_sfmplus_tune_mainThrustTable",     "Main Rotor Thrust",  "fn_simpleRotorMain.sqf", "_rtrThrustScalarTable", 1.0]
@@ -59,7 +59,8 @@ private _tables =
     ,["fza_sfmplus_tune_stabLiftScalarTable", "Stabilator Lift",    "fn_coreUpdateFlightModel.sqf", "Stabilator lift-scalar arg", 1.0]
     ,["fza_sfmplus_tune_fuseSideScalarTable", "Fuselage Side-Force","fn_fuselageSide.sqf", "_sideForceScalarTable", 1.0]
     ,["fza_sfmplus_tune_finLiftScalarTable",  "Vertical Fin Lift",  "fn_coreUpdateFlightModel.sqf", "Vertical Fin lift-scalar arg", 1.0]
-    ,["fza_sfmplus_tune_rotorTiltTable",       "Rotor Disk Roll-Tilt","fn_simpleRotorMain.sqf", "_rotorTiltTable", 0.0]
+    ,["fza_sfmplus_tune_rbsPitchTable",        "RBS Pitch Authority","fn_simpleRotorMain.sqf", "_rbsPitchTable", 0.0]
+    ,["fza_sfmplus_tune_rbsRollTable",         "RBS Roll Authority", "fn_simpleRotorMain.sqf", "_rbsRollTable", 0.0]
 ];
 
 [_bands, _tables]
