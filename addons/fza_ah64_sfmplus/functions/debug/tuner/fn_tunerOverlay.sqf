@@ -193,12 +193,13 @@ private _pfh = [{
     private _sclTables = [
         "fza_sfmplus_tune_mainThrustTable",
         "fza_sfmplus_tune_tailThrustTable",
+        "fza_sfmplus_tune_tailTrimTable",
         "fza_sfmplus_tune_rtrTqScalarTable",
         "fza_sfmplus_tune_stabLiftScalarTable",
         "fza_sfmplus_tune_fuseSideScalarTable",
         "fza_sfmplus_tune_finLiftScalarTable"
     ];
-    private _sclHdrs  = ["mainThr","tailThr","torque","stabLift","fuseSide","fin"];
+    private _sclHdrs  = ["mainThr","tailThr","tailTrim","torque","stabLift","fuseSide","fin"];
     private _sclBands = [0.00, 10.29, 20.58, 36.01, 46.30, 51.44, 61.73, 66.88, 72.02];
     //Which band is nearest the current speed (to highlight the live row).
     private _liveBand = 0; private _bErr = 1e9;

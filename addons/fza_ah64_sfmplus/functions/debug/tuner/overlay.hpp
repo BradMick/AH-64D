@@ -33,16 +33,17 @@ class RscText;
 #define TBLROW(R,YS) LCELL(R,YS) NCELL1(R,YS) NCELL2(R,YS) NCELL3(R,YS) NCELL4(R,YS) NCELL5(R,YS) NCELL6(R,YS)
 
 // SCALARS-by-band table: same 7-column geometry, IDC base 54500 (54500+R*10+C).
-// Row 0 = header, rows 1..9 = the 9 airspeed bands. Col 0 = band label, cols 1..6
-// = mainThr / tailThr / torque / stabLift / fuseSide / fin.
+// Row 0 = header, rows 1..9 = the 9 airspeed bands. Col 0 = band label, cols 1..7
+// = mainThr / tailThr / tailTrim / torque / stabLift / fuseSide / fin.
 #define SCELL1(R,YS) class SCell_##R##_1 : fza_sfmplus_TunerCell { idc = 54600+R*10+1; x = "safeZoneX + 0.216"; y = YS; w = 0.106; h = ROW_H; };
 #define SCELL2(R,YS) class SCell_##R##_2 : fza_sfmplus_TunerCell { idc = 54600+R*10+2; x = "safeZoneX + 0.328"; y = YS; w = 0.106; h = ROW_H; };
 #define SCELL3(R,YS) class SCell_##R##_3 : fza_sfmplus_TunerCell { idc = 54600+R*10+3; x = "safeZoneX + 0.440"; y = YS; w = 0.106; h = ROW_H; };
 #define SCELL4(R,YS) class SCell_##R##_4 : fza_sfmplus_TunerCell { idc = 54600+R*10+4; x = "safeZoneX + 0.552"; y = YS; w = 0.106; h = ROW_H; };
 #define SCELL5(R,YS) class SCell_##R##_5 : fza_sfmplus_TunerCell { idc = 54600+R*10+5; x = "safeZoneX + 0.664"; y = YS; w = 0.106; h = ROW_H; };
 #define SCELL6(R,YS) class SCell_##R##_6 : fza_sfmplus_TunerCell { idc = 54600+R*10+6; x = "safeZoneX + 0.776"; y = YS; w = 0.106; h = ROW_H; };
+#define SCELL7(R,YS) class SCell_##R##_7 : fza_sfmplus_TunerCell { idc = 54600+R*10+7; x = "safeZoneX + 0.888"; y = YS; w = 0.106; h = ROW_H; };
 #define SLCELL(R,YS) class SCell_##R##_0 : fza_sfmplus_TunerCellL { idc = 54600+R*10;   x = "safeZoneX + 0.016"; y = YS; w = LAB_W; h = ROW_H; };
-#define SCLROW(R,YS) SLCELL(R,YS) SCELL1(R,YS) SCELL2(R,YS) SCELL3(R,YS) SCELL4(R,YS) SCELL5(R,YS) SCELL6(R,YS)
+#define SCLROW(R,YS) SLCELL(R,YS) SCELL1(R,YS) SCELL2(R,YS) SCELL3(R,YS) SCELL4(R,YS) SCELL5(R,YS) SCELL6(R,YS) SCELL7(R,YS)
 
 class RscTitles
 {
@@ -144,7 +145,7 @@ class RscTitles
 
             //--- SCALARS-by-band table (header + 9 airspeed bands) ----------------
             //Header row sits clearly BELOW the Net Nm line, with a gap.
-            SCLROW(0,"safeZoneY + 0.8145")   // header: band mainThr tailThr torque stabLift fuseSide fin
+            SCLROW(0,"safeZoneY + 0.8145")   // header: band mainThr tailThr tailTrim torque stabLift fuseSide fin
             SCLROW(1,"safeZoneY + 0.8490")   // band 0
             SCLROW(2,"safeZoneY + 0.8835")   // band 1
             SCLROW(3,"safeZoneY + 0.9180")   // band 2

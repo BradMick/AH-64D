@@ -25,6 +25,7 @@ params ["_heli"];
 if (!local _heli) exitWith {};
 
 private _deltaTime              = _heli getVariable "fza_sfmplus_deltaTime";//fza_ah64_fixedTimeStep;
+private _heliCom                = getCenterOfMass _heli;
 
 private _altitude               = _heli getVariable "fza_sfmplus_PA";
 private _temperature            = _heli getVariable "fza_sfmplus_FAT";
@@ -504,7 +505,7 @@ if (currentPilot _heli == player) then {
 
         //Main rotor thrust
         if ([vectorMagnitude _thrustVector] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _thrustVector] call fza_sfmplus_fnc_isINF) then { _thrustVector = [0.0, 0.0, 0.0]; };
-        _heli addForce  [_heli vectorModelToWorld _thrustVector, _rtrPos];
+        _heli addForce  [_heli vectorModelToWorld _thrustVector, _heliCom];
 
         //Main rotor torque
         private _moment = [0.0, 0.0, 0.0];
@@ -527,6 +528,7 @@ if (currentPilot _heli == player) then {
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Rotor Effects        /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
+/*
 if (cameraView == "INTERNAL") then {
     //Camera shake effect for ETL (16 to 24 knots)
     if (_velXYNoWind > 8.23 && _velXYNoWind < 12.35 && !_isOnGnd) then {
@@ -651,7 +653,7 @@ if (cameraView == "INTERNAL") then {
         setCustomSoundController[_heli, "CustomSoundController4", 0.0];
     };
 };
-
+*/
 #ifdef __A3_DEBUG__
 [_heli, _rtrPos, _rtrPos vectorAdd _axisX,        "red"]   call fza_fnc_debugDrawLine;
 [_heli, _rtrPos, _rtrPos vectorAdd _axisY,        "green"] call fza_fnc_debugDrawLine;

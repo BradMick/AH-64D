@@ -36,6 +36,25 @@ fza_sfmplus_forceLogOn = false;
     [0, [false, false, false]]
 ] call CBA_fnc_addKeybind;
 
+//MASTER AUTO-TUNER on/off - toggle the master auto-tuner without opening the panel.
+//Flips fza_sfmplus_tune_masterOn on the aircraft; the master PFH (installed at
+//aircraft init in fn_coreConfig) reads it every frame, so this takes effect at once.
+//A hint confirms the new state. Bind a key under Configure > Controls > Addons (AH-64D).
+["AH-64D", "ToggleFMMasterTuner", ["Toggle FM Master Auto-Tuner", "Turns the master auto-tuner on/off without opening the panel"],
+    {
+        private _veh = vehicle player;
+        if (_veh isKindOf "fza_ah64base" || {_veh getVariable ["fza_ah64_sfmPlusInitialised", false]}) then {
+            private _on = !(_veh getVariable ["fza_sfmplus_tune_masterOn", false]);
+            _veh setVariable ["fza_sfmplus_tune_masterOn", _on, true];
+            hintSilent parseText format ["<t size='1.4' font='EtelkaMonospacePro' color='%1'>MASTER Auto-Tune %2</t>",
+                (if (_on) then { "#66ff66" } else { "#ff6666" }), (if (_on) then { "ON" } else { "OFF" })];
+        };
+        false
+    },
+    {false},
+    [0, [false, false, false]]
+] call CBA_fnc_addKeybind;
+
 //private _nonAnalogEvents = ["Activate", "Deactivate"];
 //
 //{

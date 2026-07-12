@@ -61,7 +61,7 @@ for "_i" from 0 to (_count - 1) do {
     [_heli, _e vectorAdd (_dragVector vectorMultiply _debugLineScale), _e, "red"]   call fza_fnc_debugDrawLine;
     #endif
 
-    _heli addForce[_heli vectorModelToWorld _dragVector, _e];
+    _heli addForce[_heli vectorModelToWorld _dragVector, _heliCom];
 
     //This panel's OWN force (drag) and moment (F x r about the CoM), as named locals.
     private _force  = _dragVector;

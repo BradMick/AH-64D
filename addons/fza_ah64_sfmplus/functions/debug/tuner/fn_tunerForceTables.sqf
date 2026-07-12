@@ -56,6 +56,7 @@ private _tables =
      ["fza_sfmplus_tune_mainThrustTable",     "Main Rotor Thrust",  "fn_simpleRotorMain.sqf", "_rtrThrustScalarTable", 1.0]
     ,["fza_sfmplus_tune_rtrTqScalarTable",    "Main Rotor Torque",  "fn_simpleRotorMain.sqf", "_rtrTorqueScalarTable", 1.0]
     ,["fza_sfmplus_tune_tailThrustTable",     "Tail Rotor Thrust",  "fn_simpleRotorTail.sqf", "_rtrThrustScalarTable", 1.0]
+    ,["fza_sfmplus_tune_tailTrimTable",       "Tail Airspeed Trim", "fn_simpleRotorTail.sqf", "_tailTrimTable", 0.0]
     ,["fza_sfmplus_tune_stabLiftScalarTable", "Stabilator Lift",    "fn_coreUpdateFlightModel.sqf", "Stabilator lift-scalar arg", 1.0]
     ,["fza_sfmplus_tune_fuseSideScalarTable", "Fuselage Side-Force","fn_fuselageSide.sqf", "_sideForceScalarTable", 1.0]
     ,["fza_sfmplus_tune_finLiftScalarTable",  "Vertical Fin Lift",  "fn_coreUpdateFlightModel.sqf", "Vertical Fin lift-scalar arg", 1.0]

@@ -168,6 +168,15 @@ _btnReset ctrlAddEventHandler ["ButtonClick", {
     //Now clear every source table so it republishes from its .sqf source next frame.
     { _heli setVariable [_x, nil]; } forEach _sourceTables;
 
+    //The FORCE tables (main/tail/rbs/etc.) re-seed inside their per-frame source
+    //functions (fn_simpleRotorMain/Tail, fn_coreUpdateFlightModel), which run every
+    //frame and refill a nil var. But the flight-control TARGET tables are seeded ONLY
+    //at aircraft init by fn_tunerTargets - it does NOT run per frame - so after nil-ing
+    //them nothing would republish and every target would read [[0,0]] (all tgt = 0.00).
+    //Re-call it here so the target tables refill immediately (it seeds only-when-unset,
+    //so it's safe/idempotent - it just refills exactly the ones we cleared above).
+    [_heli] call fza_sfmplus_fnc_tunerTargets;
+
     //CRITICAL: wipe the PERSISTED profile too. Otherwise fn_tunerLoad re-overlays the
     //saved values on the next GUI open, and fn_tunerApply re-writes the saved FORCE
     //TABLES onto the aircraft every spawn - so source edits would never take effect.

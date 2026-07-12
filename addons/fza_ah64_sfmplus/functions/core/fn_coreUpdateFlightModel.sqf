@@ -71,7 +71,7 @@ if (fza_ah64_sfmPlusRotorModel == 1) then {
 //Vertical fin
 [ _heli
  ,[0.0, -7.45, -0.75]   //pos
- ,3.0                   //pitch
+ ,0.0                   //pitch
  ,90.0                  //roll
  ,2.25                  //span
  ,0.95                  //chord

@@ -198,13 +198,15 @@ for "_j" from 0 to (_numElements - 1) do {
     [_heli, _e vectorAdd (_dragVector vectorMultiply _debugLineScale), _e, "red"]   call fza_fnc_debugDrawLine;
     #endif
 
-    _heli addForce [_heli vectorModelToWorld _liftVector, _e];
-    _heli addForce [_heli vectorModelToWorld _dragVector, _e];
+    _heli addForce [_heli vectorModelToWorld _liftVector, _heliCom];
+    _heli addForce [_heli vectorModelToWorld _dragVector, _heliCom];
 
     //This element's OWN force (lift+drag) and moment (F x r about the CoM), as
     //named locals.
     private _force  = _liftVector vectorAdd _dragVector;
     private _moment = _force vectorCrossProduct _fromAeroCenterToCOM;
+
+    _heli addTorque (_heli vectorModelToWorld _moment);
 
     //Tuner force readout: log the element's own _force and _moment verbatim.
     //Accumulates per surface name across the element loop.

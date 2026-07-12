@@ -268,6 +268,26 @@ private _rbsRollDef  = [0,0,0,0,0,0,0,0,0,-0.20,-0.60,-1.20];
     ] call _fnMake);
 } forEach _spdBands;
 
+// AIRSPEED TAIL TRIM by AIRSPEED band. Added to the tail thrust AFTER authority (baseThrust
+// scalar units); carries the forward-flight yaw balance + the ~100 kt tail-thrust REVERSAL
+// that the pedal fold-back cannot produce. The master (YAW axis, forward flight) drives this
+// to null the net yaw moment; authority/torque are fixed references. 0 at hover. Signed range
+// [-1, 1]. fn_simpleRotorTail reads fza_sfmplus_tune_tailTrimTable.
+{
+    private _band = _x;
+    _spec pushBack ([
+        "Airframe",
+        format ["fza_sfmplus_tune_tailTrim_%1", _band],
+        format ["Tail trim @ %1 kt", round (_band * 1.94384)],
+        "Tail Airspeed Trim (by airspeed)",
+        "dragtable",
+        0.0,
+        ["fza_sfmplus_tune_tailTrimTable", _forEachIndex, _band],
+        ["fn_simpleRotorTail.sqf", format ["// tailTrimTable row %1 (%2 m/s): %3", _forEachIndex, _band, "%1"]],
+        -1.0, 1.0
+    ] call _fnMake);
+} forEach _spdBands;
+
 // MAIN ROTOR TORQUE scalar by AIRSPEED band. Scales the main-rotor reaction torque
 // (the yaw the tail must counter). The master (YAW axis) trims this slowly alongside
 // tail thrust to drive the NET yaw moment -> 0. Default 1.0. fn_simpleRotorMain reads

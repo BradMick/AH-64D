@@ -130,12 +130,14 @@ for "_i" from 0 to (_count - 1) do {
     [_heli, _e vectorAdd (_dragVector vectorMultiply _debugLineScale), _e, "red"]   call fza_fnc_debugDrawLine;
     #endif
 
-    _heli addForce [_heli vectorModelToWorld _liftVector, _e];
-    _heli addForce [_heli vectorModelToWorld _dragVector, _e];
+    _heli addForce [_heli vectorModelToWorld _liftVector, _heliCom];
+    _heli addForce [_heli vectorModelToWorld _dragVector, _heliCom];
 
     //This panel's OWN force and moment (F x r about the CoM), as named locals.
     private _force  = _liftVector vectorAdd _dragVector;
     private _moment = _force vectorCrossProduct _deltaPos;
+
+    _heli addTorque (_heli vectorModelToWorld _moment);
 
     //Tuner force readout: log the component's own _force and _moment verbatim.
     if (fza_sfmplus_forceLogOn) then {
