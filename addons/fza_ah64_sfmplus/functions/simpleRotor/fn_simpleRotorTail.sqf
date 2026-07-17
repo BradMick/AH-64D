@@ -36,12 +36,8 @@ private _sasYawOut              = _heli getVariable "fza_sfmplus_fmcSasYawOut";
 private _fmcYawOut              = _hdgHoldPedalYawOut + _sasYawOut;
 //_fmcYawOut                      = [_fmcYawOut, -0.15, 0.15] call BIS_fnc_clamp;
 
-private _rtrPos                 = [0.0, 0.0, 0.0];
-if (fza_ah64_sfmplusRealismSetting == REALISTIC) then {
-    _rtrPos = [-0.87, -6.98, -0.075];
-} else {
-    _rtrPos = [ 0.00, -6.98, -0.075];
-};
+private _rtrPos                 = [-0.87, -6.98, -0.075];
+
 private _rtrDesignRPM           = 1403.0;
 private _rtrRPMTrimVal          = 1.01;
 private _rtrGearRatio           = 14.90;
@@ -55,27 +51,34 @@ private _bladeChord             = 0.253;   //m
 //the stops, ~linear through center). ALL magnitude/shaping lives in scalars downstream -
 //the AIRSPEED authority (_rtrThrustScalarTable, now a flat constant that sets the OGE
 //thrust point) and the FIN-OFFLOAD table (below, carries the forward-flight trim reversal).
+//ASYMMETRIC: left pedal (-) has ~2x the authority of right (+). Physical for a CCW main
+//rotor - the tail already makes strong RIGHT anti-torque thrust in trim, so LEFT pedal
+//(which reduces/reverses it to yaw the nose left, against both the main-rotor nose-right
+//tendency and the standing anti-torque) needs more range. Full left = +2.0, full right =
+//-1.0. Smooth + monotonic: slope eases gently (~-2.27 far left to -0.25 far right), no mid
+//peak or flat spot, continuous through zero. Right half ~ unchanged so trim/hover balance
+//holds (trim pedal +0.16 -> ~-0.24). Reverse the asymmetry for a CW rotor.
 private _bladePitchInducedThrustTable = [
-    [-1.00,  1.0000]
-   ,[-0.90,  0.9833]
-   ,[-0.80,  0.9500]
-   ,[-0.70,  0.9000]
-   ,[-0.60,  0.8333]
-   ,[-0.50,  0.7500]
-   ,[-0.40,  0.6333]
-   ,[-0.30,  0.5000]
-   ,[-0.20,  0.3333]
-   ,[-0.10,  0.1667]
+    [-1.00,  2.0000]
+   ,[-0.90,  1.7730]
+   ,[-0.80,  1.5520]
+   ,[-0.70,  1.3370]
+   ,[-0.60,  1.1280]
+   ,[-0.50,  0.9250]
+   ,[-0.40,  0.7280]
+   ,[-0.30,  0.5370]
+   ,[-0.20,  0.3520]
+   ,[-0.10,  0.1730]
    ,[ 0.00,  0.0000]
-   ,[ 0.10, -0.1667]
-   ,[ 0.20, -0.3333]
-   ,[ 0.30, -0.5000]
-   ,[ 0.40, -0.6333]
-   ,[ 0.50, -0.7500]
-   ,[ 0.60, -0.8333]
-   ,[ 0.70, -0.9000]
-   ,[ 0.80, -0.9500]
-   ,[ 0.90, -0.9833]
+   ,[ 0.10, -0.1551]
+   ,[ 0.20, -0.3002]
+   ,[ 0.30, -0.4349]
+   ,[ 0.40, -0.5584]
+   ,[ 0.50, -0.6701]
+   ,[ 0.60, -0.7692]
+   ,[ 0.70, -0.8543]
+   ,[ 0.80, -0.9239]
+   ,[ 0.90, -0.9749]
    ,[ 1.00, -1.0000]
   ];
 //Tail rotor authority (thrust) scalar vs airspeed. Now a FLAT CONSTANT across all bands:
@@ -196,12 +199,10 @@ private _tailAuthority   = [_rtrThrustScalarTable, _velYZ] call fza_fnc_linearIn
 //_tailTrimTable note above). At hover it is 0, so IGE/OGE is unaffected.
 private _tailTrim        = [_tailTrimTable, _velYZ] call fza_fnc_linearInterp select 1;
 private _totThrust       = (_rtrThrust * _tailAuthority) + (_baseThrust * _tailTrim);
-systemChat format ["_totThrust %1", _totThrust toFixed 0];
+//systemChat format ["_totThrust %1", _totThrust toFixed 0];
 
-private _thrustVector    = _axisX vectorMultiply (_totThrust * _deltaTime);
-systemChat format ["_thrustVector [%1, %2, %3]", _thrustVector select 0 toFixed 0, _thrustVector select 1 toFixed 0, _thrustVector select 2 toFixed 0];
-//F x r, matching the force-log convention. Used only by the non-REALISTIC path.
-private _moment          = _thrustVector vectorCrossProduct _deltaPos;
+private _thrustVector  = _axisX vectorMultiply (_totThrust * _deltaTime);
+private _moment        = _thrustVector vectorCrossProduct _deltaPos;
 
 private _tailRtrDamage = _heli getHitPointDamage "hitvrotor";
 private _IGBDamage     = _heli getHitPointDamage "hit_drives_intermediategearbox";
@@ -209,29 +210,26 @@ private _TGBDamage     = _heli getHitPointDamage "hit_drives_tailrotorgearbox";
 
 private _outThrust = [0.0, 0.0, 0.0];
 private _outTq     = [0.0, 0.0, 0.0];
+
+if ([vectorMagnitude _thrustVector] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _thrustVector] call fza_sfmplus_fnc_isINF) then { _thrustVector = [0.0, 0.0, 0.0]; };
+
 if (_tailRtrDamage < 0.85 && _IGBDamage < SYS_IGB_DMG_THRESH && _TGBDamage < SYS_TGB_DMG_THRESH) then {
     if (currentPilot _heli == player) then {     
         if ( fza_ah64_sfmplusRealismSetting == REALISTIC) then {
-            if ([vectorMagnitude _thrustVector] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _thrustVector] call fza_sfmplus_fnc_isINF) then { _thrustVector = [0.0, 0.0, 0.0]; };
-            _heli addForce [_heli vectorModelToWorld _thrustVector, _heliCom];
+            //Tail rotor thrust
+            _heli addForce [_heli vectorModelToWorld _thrustVector, _rtrPos];
+            //Tail rotor torque
             _heli addTorque (_heli vectorModelToWorld _moment);
-            systemChat format ["_moment [%1, %2, %3]", _moment select 0 toFixed 0, _moment select 1 toFixed 0, _moment select 2 toFixed 0];
-
-            //Tuner force readout: log the exact locals the component computed and
-            //prints - _thrustVector and _moment - verbatim.
-            if (fza_sfmplus_forceLogOn) then {
-                [_heli, "Tail Rotor", _thrustVector, _moment] call fza_sfmplus_fnc_forceLog;
-            };
         } else {
-            private _torque = [0.0, 0.0, _moment select 2];
-            if ([vectorMagnitude _torque] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _torque] call fza_sfmplus_fnc_isINF) then { _torque = [0.0, 0.0, 0.0]; };
-            _heli addTorque (_heli vectorModelToWorld _torque);
-            //Tuner force readout: log the applied torque verbatim.
-            if (fza_sfmplus_forceLogOn) then {
-                [_heli, "Tail Rotor", [0.0,0.0,0.0], _torque] call fza_sfmplus_fnc_forceLog;
-            };
+            //Tail rotor thrust
+            _heli addForce [_heli vectorModelToWorld _thrustVector, _heliCom];
+            //Tail rotor torque
+            _heli addTorque (_heli vectorModelToWorld _moment);
         };
-
+        //Tuner force readout
+        if (fza_sfmplus_forceLogOn) then {
+            [_heli, "Tail Rotor", _thrustVector, _moment] call fza_sfmplus_fnc_forceLog;
+        };
     };
 };
 

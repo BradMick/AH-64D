@@ -498,25 +498,30 @@ if (currentPilot _heli == player) then {
 
     if (_mainRtrDamage < 0.99) then {
         private _thrustVector = [_thrustZ, _cyclicFwdAftTrim * 6.0, _cyclicLeftRightTrim * 6.0, 0.0] call fza_sfmplus_fnc_vectorRotate;
+        //private _thrustVector = _thrustZ;
 
         #ifdef __A3_DEBUG__
         [_heli, _rtrPos, _rtrPos vectorAdd (vectorNormalized _thrustVector), "white"] call fza_fnc_debugDrawLine;
         #endif
 
-        //Main rotor thrust
         if ([vectorMagnitude _thrustVector] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _thrustVector] call fza_sfmplus_fnc_isINF) then { _thrustVector = [0.0, 0.0, 0.0]; };
-        _heli addForce  [_heli vectorModelToWorld _thrustVector, _heliCom];
+        if ([vectorMagnitude _moment] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _moment] call fza_sfmplus_fnc_isINF) then { _moment = [0.0, 0.0, 0.0]; };
 
         //Main rotor torque
         private _moment = [0.0, 0.0, 0.0];
         if (fza_ah64_sfmplusRealismSetting == REALISTIC) then {
+            //Main rotor thrust
+            _heli addForce  [_heli vectorModelToWorld _thrustVector, _rtrPos];
+            //Main rotor torque
             _moment = [_momentX, _momentY, _momentZ];
+            _heli addTorque (_heli vectorModelToWorld _moment);
         } else {
+            //Main rotor thrust
+            _heli addForce  [_heli vectorModelToWorld _thrustVector, _heliCom];
+            //Main rotor to
             _moment = [_momentX, _momentY, 0.0];
+            _heli addTorque (_heli vectorModelToWorld _moment);
         };
-
-        if ([vectorMagnitude _moment] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _moment] call fza_sfmplus_fnc_isINF) then { _moment = [0.0, 0.0, 0.0]; };
-        _heli addTorque (_heli vectorModelToWorld _moment);
 
         //Tuner force readout: log the exact locals the component computed and
         //prints - _thrustZ and _moment - verbatim.
