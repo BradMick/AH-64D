@@ -21,31 +21,38 @@ params ["_heli"];
 
 if (!local _heli) exitWith {};
 
-private _armCPG         = [ 0.00, 2.09];
-private _armPLT         = [ 0.00, 3.64];
-private _armFwdFuelCell = [ 0.00, 3.51];
-private _armAmmoBay     = [ 0.00, 5.32];
-private _armAftFuelCell = [ 0.00, 6.79];
+private _fs0            = 6.40;
 
-private _armStation01   = [-2.16, 4.72];
-private _armStation02   = [-1.50, 4.72];
-private _armStation03   = [ 1.50, 4.72];
-private _armStation04   = [ 2.16, 4.72];
+private _armCPG         = [ 0.00, 4.312];
+private _armPLT         = [ 0.00, 2.760];
+private _armFwdFuelCell = [ 0.00, 2.542];
+private _armAmmoBay     = [ 0.00, 0.944];
+private _armAftFuelCell = [ 0.00,-0.077];
+
+private _armStation01   = [-2.16, 1.345];
+private _armStation02   = [-1.50, 1.345];
+private _armStation03   = [ 1.50, 1.345];
+private _armStation04   = [ 2.16, 1.345];
 
 private _curMass   = 0;
 private _curMom    = 0;
 private _emptyMass = 0;
 private _emptyMom  = 0;
 
+//Empty mass + moment come from config. The config moment is expressed in CG-SPACE (arm
+//from FS0: emptyMom/emptyMass = ~5.28 m = ~208 in, near the aft CG limit). But the payload
+//arms below are in MODEL space (distance from the model origin), and setCenterOfMass wants
+//MODEL space - so convert the empty moment to model space: model_arm = _fs0 - cgSpaceArm,
+//i.e. _emptyMom_model = _emptyMass*_fs0 - _emptyMom_cfg. (Payload arms are NOT converted.)
 if (_heli animationPhase "fcr_enable" == 1) then {
     _emptyMass = _heli getVariable "fza_sfmplus_emptyMassFCR";
-    _emptyMom  = _heli getVariable "fza_sfmplus_emptyMomFCR";
+    _emptyMom  = (_emptyMass * _fs0) - (_heli getVariable "fza_sfmplus_emptyMomFCR");
 } else {
     _emptyMass = _heli getVariable "fza_sfmplus_emptyMassNonFCR";
-    _emptyMom  = _heli getVariable "fza_sfmplus_emptyMomNonFCR";
+    _emptyMom  = (_emptyMass * _fs0) - (_heli getVariable "fza_sfmplus_emptyMomNonFCR");
 };
 
-//Crew
+//Crew. Arms are MODEL space (distance from model origin) - use directly, no conversion.
 private _cpgMass     = 113.4;   //kg - 250lbs
 private _cpgMom      = _cpgMass * (_armCPG select 1);
 
@@ -137,4 +144,8 @@ private _heliCoM = getCenterOfMass _heli;
 [_heli, _heliCoM, _heliCoM vectorAdd _vecX, "red"]   call fza_fnc_debugDrawLine;
 [_heli, _heliCoM, _heliCoM vectorAdd _vecY, "green"] call fza_fnc_debugDrawLine;
 [_heli, _heliCoM, _heliCoM vectorAdd _vecZ, "blue"]  call fza_fnc_debugDrawLine;
+
+[_heli, [0.0,1.295,-10], [0.0,1.295, 10], "blue"]  call fza_fnc_debugDrawLine;
+[_heli, [0.0,1.142,-10], [0.0,1.142, 10], "blue"]  call fza_fnc_debugDrawLine;
+
 #endif

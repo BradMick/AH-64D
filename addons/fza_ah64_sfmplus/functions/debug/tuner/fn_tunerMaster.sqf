@@ -91,20 +91,31 @@ private _ctx = createHashMapFromArray
 
     //--- FORCE-SCALAR tuning rates (the actual job). Each is a table-step per unit
     //error per second; applied *dt. Clamped per table below. ---
-    ["kThrust",   3.0e-4],      // mainThrustTable step per ft/min of climb (VERT hover)
+    //ALL force gains bumped ~2.75x (2026-07-17): the original values nulled each value over
+    //~10 s, which - stacked across axes + the settle/transition overhead - made the whole
+    //tune take so long the aircraft drifted before it could settle (esp. tail trim, which
+    //moved but never converged in time to transition). ~2.75x targets ~3-4 s per value.
+    //Watch for hunting/overshoot in sim and back down any that oscillate.
+    ["kThrust",   8.0e-4],      // mainThrustTable step per ft/min of climb (VERT hover)
     //THRUST axis (forward flight): main thrust chases CLIMB (climb -> 0). Pitch is owned
     //by the PITCH(flapback) axis now, so thrust no longer takes a pitch share; the
     //stabilator only ASSISTS longitudinal trim (kStabAssist, below).
-    ["kThrustCo", 3.0e-4],      // mainThrustTable step per ft/min of climb (THRUST axis)
+    ["kThrustCo", 8.0e-4],      // mainThrustTable step per ft/min of climb (THRUST axis)
     //Yaw is tuned against the NET yaw MOMENT (Nm) - what the scalars actually control
     //(rate is its integral; targeting rate saturates/runs away). Gains are table-step
     //per Nm of net yaw moment, so they are small (moment ~ hundreds Nm).
-    ["kTail",     6.0e-5],      // tailThrustTable (constant authority) step per Nm - HOVER ONLY
-    ["kTorque",   9.0e-6],      // rtrTqScalarTable step per Nm - HOVER ONLY, then carried to all bands
+    //kTail/kTailTrim were bumped 10x (6e-5->6e-4, 1.5e-7->1.5e-6) when tail _baseThrust was
+    //cut 10x (102302->10230, realistic 10%-of-max tail rotor). A 10x smaller base thrust
+    //means each unit of authority/trim makes 10x less yaw moment, so the tuner had to move
+    //the table 10x further per Nm of error - i.e. it tuned 10x too slow. The 10x gain bump
+    //restores the original convergence speed. kTorque is unaffected (main rotor, own base).
+    ["kTail",     1.65e-3],     // tailThrustTable (constant authority) step per Nm - HOVER ONLY
+    ["kTorque",   2.5e-5],      // rtrTqScalarTable step per Nm - HOVER ONLY, then carried to all bands
     //Forward-flight airspeed TAIL TRIM (tailTrimTable) step per Nm of net yaw moment. The
-    //trim is in baseThrust-scalar units (1.0 trim ~ baseThrust N ~ hundreds of kNm of yaw
-    //moment), so the gain is TINY. Sized to null a ~2 kNm error over ~10 s without lurching.
-    ["kTailTrim", 1.5e-7],      // tailTrimTable step per Nm of net yaw moment (forward flight)
+    //trim is in baseThrust-scalar units (1.0 trim ~ baseThrust N of yaw thrust), so the gain
+    //is small. Sized to null a ~2 kNm error over ~10 s without lurching (10x the old value
+    //to match the 10x-reduced tail base thrust).
+    ["kTailTrim", 4.0e-6],      // tailTrimTable step per Nm of net yaw moment (forward flight)
 
     //PITCH(flapback) axis: the flapback/RBS pitch authority table (rbsPitchTable) is
     //tuned against the PITCH-ATTITUDE error while the cyclic sits at its flight-test
@@ -113,16 +124,19 @@ private _ctx = createHashMapFromArray
     //below target) we back the authority off toward zero (less negative); when the nose
     //is too HIGH (err>0) we deepen it (more negative). kFlapback is a table-step per deg
     //of pitch error. Stabilator co-assists here (kStabAssist) for longitudinal trim.
-    ["kFlapback",  6.0e-3],     // rbsPitchTable step per deg of pitch error
-    ["kStabAssist",4.0e-3],     // stabLiftScalarTable step per deg (gentle longitudinal assist)
+    ["kFlapback",  1.65e-2],    // rbsPitchTable step per deg of pitch error
+    ["kStabAssist",1.1e-2],     // stabLiftScalarTable step per deg (gentle longitudinal assist)
 
     //Pitch/roll position hold is supplied externally (FMC pos hold); no gains here.
     //When yaw is not the active axis the pedal is FROZEN (not re-driven), so there is
     //no tuner yaw heading-hold gain - the FMC heading hold owns residual yaw drift.
     //Deliberate control-drive rate: the ACTIVE axis walks its force-trim toward the
-    //flight-test control position by this fraction of the remaining gap per second.
-    //Small = slow/deliberate (never a lurch); ~5%/s closes the gap over ~20 s.
-    ["kDrive",    0.05],        // fraction of (target - current) trim per second
+    //flight-test control position by this fraction of the remaining gap per second
+    //(exponential approach). 0.45 closes ~95% of the gap in ~5 s (was 0.05 = ~20 s, which
+    //made the whole tune take so long the aircraft drifted before it settled). It's a walk
+    //to a KNOWN position (not error-chasing), so faster doesn't cause hunting. NOTE: halved
+    //in the ETL band by _driveRate = kDrive*(1-0.5*_etlFactor), so ~5 s applies outside ETL.
+    ["kDrive",    0.45],        // fraction of (target - current) trim per second (~5 s to close)
 
     //Tolerances (error must be under this to count as settled / on-target).
     ["tPitch",    0.3],         // deg

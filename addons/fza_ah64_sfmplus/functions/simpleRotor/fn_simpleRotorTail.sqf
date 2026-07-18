@@ -54,32 +54,33 @@ private _bladeChord             = 0.253;   //m
 //ASYMMETRIC: left pedal (-) has ~2x the authority of right (+). Physical for a CCW main
 //rotor - the tail already makes strong RIGHT anti-torque thrust in trim, so LEFT pedal
 //(which reduces/reverses it to yaw the nose left, against both the main-rotor nose-right
-//tendency and the standing anti-torque) needs more range. Full left = +2.0, full right =
-//-1.0. Smooth + monotonic: slope eases gently (~-2.27 far left to -0.25 far right), no mid
-//peak or flat spot, continuous through zero. Right half ~ unchanged so trim/hover balance
-//holds (trim pedal +0.16 -> ~-0.24). Reverse the asymmetry for a CW rotor.
+//tendency and the standing anti-torque) needs more range. Full left = +4.0, full right =
+//-2.0. STEEPENED (was +2/-1) to raise max yaw rate toward ~30 deg/s (was ~15) - the ramp
+//is PINNED near the surveyed hover pedal (-0.352 -> ~0.68, ~unchanged) so hover anti-torque
+//trim holds, then steepens toward the stops so the trim->full-deflection SWING roughly
+//doubles. Smooth + monotonic, continuous through zero. Reverse the asymmetry for a CW rotor.
 private _bladePitchInducedThrustTable = [
-    [-1.00,  2.0000]
-   ,[-0.90,  1.7730]
-   ,[-0.80,  1.5520]
-   ,[-0.70,  1.3370]
-   ,[-0.60,  1.1280]
-   ,[-0.50,  0.9250]
-   ,[-0.40,  0.7280]
-   ,[-0.30,  0.5370]
-   ,[-0.20,  0.3520]
-   ,[-0.10,  0.1730]
+    [-1.00,  4.0000]
+   ,[-0.90,  3.4102]
+   ,[-0.80,  2.8365]
+   ,[-0.70,  2.2817]
+   ,[-0.60,  1.7507]
+   ,[-0.50,  1.2517]
+   ,[-0.40,  0.8046]
+   ,[-0.30,  0.5420]
+   ,[-0.20,  0.3614]
+   ,[-0.10,  0.1807]
    ,[ 0.00,  0.0000]
-   ,[ 0.10, -0.1551]
-   ,[ 0.20, -0.3002]
-   ,[ 0.30, -0.4349]
-   ,[ 0.40, -0.5584]
-   ,[ 0.50, -0.6701]
-   ,[ 0.60, -0.7692]
-   ,[ 0.70, -0.8543]
-   ,[ 0.80, -0.9239]
-   ,[ 0.90, -0.9749]
-   ,[ 1.00, -1.0000]
+   ,[ 0.10, -0.2924]
+   ,[ 0.20, -0.5689]
+   ,[ 0.30, -0.8287]
+   ,[ 0.40, -1.0705]
+   ,[ 0.50, -1.2929]
+   ,[ 0.60, -1.4940]
+   ,[ 0.70, -1.6714]
+   ,[ 0.80, -1.8211]
+   ,[ 0.90, -1.9368]
+   ,[ 1.00, -2.0000]
   ];
 //Tail rotor authority (thrust) scalar vs airspeed. Now a FLAT CONSTANT across all bands:
 //with the pedal ramp normalised to +-1.0 and the fin-offload table carrying the airspeed
@@ -92,15 +93,15 @@ private _rtrThrustScalarTable = _heli getVariable ["fza_sfmplus_tune_tailThrustT
 if (_rtrThrustScalarTable isEqualTo []) then {
     _rtrThrustScalarTable =
     [
-     [ 0.00, 0.0946]   // flat constant across all bands (OGE thrust point; fin-offload does the rest)
-    ,[10.29, 0.0946]
-    ,[20.58, 0.0946]
-    ,[36.01, 0.0946]
-    ,[46.30, 0.0946]
-    ,[51.44, 0.0946]
-    ,[61.73, 0.0946]
-    ,[66.88, 0.0946]
-    ,[72.02, 0.0946]
+     [ 0.00, 0.26]   // flat constant across all bands (OGE thrust point; fin-offload does the rest)
+    ,[10.29, 0.26]
+    ,[20.58, 0.26]
+    ,[36.01, 0.26]
+    ,[46.30, 0.26]
+    ,[51.44, 0.26]
+    ,[61.73, 0.26]
+    ,[66.88, 0.26]
+    ,[72.02, 0.26]
     ];
     _heli setVariable ["fza_sfmplus_tune_tailThrustTable", _rtrThrustScalarTable];
 };
@@ -138,7 +139,7 @@ if (_tailTrimTable isEqualTo []) then {
     _heli setVariable ["fza_sfmplus_tune_tailTrimTable", _tailTrimTable];
 };
 private _rtrAirspeedVelocityMod = 0.4;
-private _baseThrust             = 102302;  //N - max gross weight (kg) * gravity (9.806 m/s)
+private _baseThrust             = 10230;  //N - max gross weight (kg) * gravity (9.806 m/s) * 10%
 
 //Thrust produced
 private _pedalLeftRight     = _heli getVariable "fza_sfmplus_pedalLeftRight";
