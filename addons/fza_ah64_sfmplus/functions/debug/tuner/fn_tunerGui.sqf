@@ -147,7 +147,6 @@ _btnReset ctrlAddEventHandler ["ButtonClick", {
         "fza_sfmplus_tune_mainThrustTable", "fza_sfmplus_tune_rtrTqScalarTable",
         "fza_sfmplus_tune_tailThrustTable", "fza_sfmplus_tune_stabLiftScalarTable",
         "fza_sfmplus_tune_finLiftScalarTable", "fza_sfmplus_tune_fuseSideScalarTable",
-        "fza_sfmplus_tune_rbsPitchTable", "fza_sfmplus_tune_rbsRollTable",
         "fza_sfmplus_tune_targetPitchTable", "fza_sfmplus_tune_targetRollTable",
         "fza_sfmplus_tune_targetCollTable", "fza_sfmplus_tune_targetCycPitchTable",
         "fza_sfmplus_tune_targetCycRollTable", "fza_sfmplus_tune_targetPedalTable"

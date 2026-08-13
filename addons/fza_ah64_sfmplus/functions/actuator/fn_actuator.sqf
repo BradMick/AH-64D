@@ -19,33 +19,26 @@ Author:
 params ["_heli", "_inputAxis", "_input", "_lagVal"];
 #include "\fza_ah64_systems\headers\systems.hpp"
 
-private _priHydPumpDamage  = _heli getHitPointDamage "hit_hyd_pripump";
-private _output            = 0.0;
-
-//If the FMC or Primary Hydraulics are working, then there is no input lag, however, if the
-//FMC or Primary hydraulics are NOT working, then there is input lag.
-switch (_inputAxis) do {
-    case "pitch" : {
-        if (_priHydPumpDamage < SYS_HYD_DMG_THRESH && _heli getVariable "fza_ah64_fmcPitchOn") then {
-            _output = _input;
-        } else {
-            _output = [_heli, _inputAxis, _input, _lagVal] call fza_sfmplus_fnc_actuatorLag;
-        };
-    };
-    case "roll" : {
-        if (_priHydPumpDamage < SYS_HYD_DMG_THRESH && _heli getVariable "fza_ah64_fmcRollOn") then {
-            _output = _input;
-        } else {
-            _output = [_heli, _inputAxis, _input, _lagVal] call fza_sfmplus_fnc_actuatorLag;
-        };
-    };
-    case "yaw" : {
-        if (_priHydPumpDamage < SYS_HYD_DMG_THRESH && _heli getVariable "fza_ah64_fmcYawOn") then {
-            _output = _input;
-        } else {
-            _output = [_heli, _inputAxis, _input, _lagVal] call fza_sfmplus_fnc_actuatorLag;
-        };
-    };
+//SAS SERVO = a FAST ELECTRICAL path. When SCAS is available (that axis's FMC channel on AND
+//primary hydraulics good), the pilot command reaches the swashplate through this electrical
+//servo essentially INSTANTLY ("speed of light" - the real aircraft's lag is 100% invisible
+//with SCAS on), and the slow mechanical linkage just follows behind. So: SCAS available ->
+//output = input (CRISP, unlagged). When SCAS is NOT available (FMC axis off OR primary
+//hydraulics lost - the FMC/SAS servo runs THROUGH primary hydraulics), the fast electrical
+//path is gone and the command falls back to the raw MECHANICAL LAG (push/pull tubes, bell
+//cranks). The lag is therefore ONLY felt with SCAS off. (The SCAS rate augmentation itself is
+//summed on top downstream in fn_rotorControl; this function is the pilot-command path only.)
+private _priHydOk = (_heli getHitPointDamage "hit_hyd_pripump") < SYS_HYD_DMG_THRESH;
+private _scasAvail = switch (_inputAxis) do {
+    case "pitch"      : { _priHydOk && (_heli getVariable "fza_ah64_fmcPitchOn") };
+    case "roll"       : { _priHydOk && (_heli getVariable "fza_ah64_fmcRollOn")  };
+    case "yaw"        : { _priHydOk && (_heli getVariable "fza_ah64_fmcYawOn")   };
+    case "collective" : { _priHydOk && (_heli getVariable "fza_ah64_fmcCollOn")  };
+    default { false };
 };
 
-_output;
+if (_scasAvail) then {
+    _input   // fast electrical path -> instant, no lag
+} else {
+    [_heli, _inputAxis, _input, _lagVal] call fza_sfmplus_fnc_actuatorLag   // mechanical lag
+};

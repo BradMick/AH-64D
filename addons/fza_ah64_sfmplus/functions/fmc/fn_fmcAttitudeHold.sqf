@@ -3,23 +3,23 @@ params ["_heli"];
 
 //Roll
 private _pidRoll      = _heli getVariable "fza_sfmplus_pid_roll";
-//_pidRoll set ["kp", R_KP];
-//_pidRoll set ["ki", R_KI];
-//_pidRoll set ["kd", R_KD];
+_pidRoll set ["kp", _heli getVariable "fza_sfmplus_tune_posRoll_kp"];
+_pidRoll set ["ki", _heli getVariable "fza_sfmplus_tune_posRoll_ki"];
+_pidRoll set ["kd", _heli getVariable "fza_sfmplus_tune_posRoll_kd"];
 private _pidRoll_att  = _heli getVariable "fza_sfmplus_pid_roll_att";
-//_pidRoll_att set ["kp", R_KP];
-//_pidRoll_att set ["ki", R_KI];
-//_pidRoll_att set ["kd", R_KD];
+_pidRoll_att set ["kp", _heli getVariable "fza_sfmplus_tune_attRoll_kp"];
+_pidRoll_att set ["ki", _heli getVariable "fza_sfmplus_tune_attRoll_ki"];
+_pidRoll_att set ["kd", _heli getVariable "fza_sfmplus_tune_attRoll_kd"];
 
 //Pitch
 private _pidPitch     = _heli getVariable "fza_sfmplus_pid_pitch";
-//_pidPitch set ["kp", P_KP];
-//_pidPitch set ["ki", P_KI];
-//_pidPitch set ["kd", P_KD];
+_pidPitch set ["kp", _heli getVariable "fza_sfmplus_tune_posPitch_kp"];
+_pidPitch set ["ki", _heli getVariable "fza_sfmplus_tune_posPitch_ki"];
+_pidPitch set ["kd", _heli getVariable "fza_sfmplus_tune_posPitch_kd"];
 private _pidPitch_att = _heli getVariable "fza_sfmplus_pid_pitch_att";
-//_pidPitch_att set ["kp", R_KP];
-//_pidPitch_att set ["ki", R_KI];
-//_pidPitch_att set ["kd", R_KD];
+_pidPitch_att set ["kp", _heli getVariable "fza_sfmplus_tune_attPitch_kp"];
+_pidPitch_att set ["ki", _heli getVariable "fza_sfmplus_tune_attPitch_ki"];
+_pidPitch_att set ["kd", _heli getVariable "fza_sfmplus_tune_attPitch_kd"];
 
 //Position & Velocity hold
 private _subMode  = _heli getVariable "fza_ah64_attHoldSubMode";
@@ -94,7 +94,7 @@ if (_heli getVariable "fza_ah64_attHoldActive" && !(_heli getVariable "fza_ah64_
         //private _pitchError = [_curPitch - _setPitch] call CBA_fnc_simplifyAngle180;
         //private _rollError  = [_curRoll  - _setRoll]  call CBA_fnc_simplifyAngle180;
         private _pitchError = [_curPitch - SET_PITCH] call CBA_fnc_simplifyAngle180;
-        private _rollError  = [_curRoll  - _setRoll]  call CBA_fnc_simplifyAngle180;
+        private _rollError  = [_curRoll  - SET_ROLL]  call CBA_fnc_simplifyAngle180;
 
 
         private _roll  = [_pidRoll_att,  _deltaTime, 0.0, _rollError] call fza_fnc_pidRun;

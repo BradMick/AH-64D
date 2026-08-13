@@ -69,6 +69,11 @@ if (_engState in ["STARTING", "ON"]) then {
             { _rotorTqReq = _rotorTqReq + _x; } forEach (_heli getVariable "fza_sfmplus_reqEngTorque");
             private _numActive  = [2, 1] select (_isSingleEng);
             private _myShareTq  = _rotorTqReq / _numActive;
+            //DIAG (torque scale): OGE hover should read ~84% per engine; user sees ~49%. Print the
+            //raw rotor demand + this engine's share + refTq so we see the true factor. Remove when done.
+            if (_engNum == 0) then {
+                systemChat format ["ENG rotorTqReq=%1 share=%2 refTq=%3 pct=%4", _rotorTqReq toFixed 0, _myShareTq toFixed 0, _engRefTq toFixed 0, (_myShareTq / _engRefTq) toFixed 3];
+            };
 
             // ── Isochronous governor trim ─────────────────────────────────────
             // Proportional trim on normalised Np error. The feed-forward carries

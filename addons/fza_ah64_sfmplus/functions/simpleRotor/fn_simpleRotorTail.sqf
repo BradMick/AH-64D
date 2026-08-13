@@ -152,7 +152,7 @@ _pedalInput                 = [_pedalInput, -1.0, 1.0] call BIS_fnc_clamp;
 //yaw-balance tuner can read the full standing yaw command, not just the FMC part.
 _heli setVariable ["fza_sfmplus_tailPedalInput", _pedalInput];
 private _bladePitchInducedThrustScalar = [_bladePitchInducedThrustTable, _pedalInput] call fza_fnc_linearInterp select 1;//linearConversion [_bladePitch_min, _bladePitch_max, _bladePitch_cur, _rtrThrustScalar_min, _rtrThrustScalar_max, true];
-systemChat format ["_bladePitchInducedThrustScalar = %1 -- _pedalInput = %2", _bladePitchInducedThrustScalar toFixed 3, _pedalInput];
+//systemChat format ["_bladePitchInducedThrustScalar = %1 -- _pedalInput = %2", _bladePitchInducedThrustScalar toFixed 3, _pedalInput];
 (_heli getVariable "fza_sfmplus_engPctNP")
     params ["_eng1PctNP", "_eng2PctNp"];
 private _inputRPM                  = _eng1PctNP max _eng2PctNp;
@@ -220,6 +220,7 @@ if (_tailRtrDamage < 0.85 && _IGBDamage < SYS_IGB_DMG_THRESH && _TGBDamage < SYS
             //Tail rotor thrust
             _heli addForce [_heli vectorModelToWorld _thrustVector, _rtrPos];
             //Tail rotor torque
+            _moment set [1, (_moment select 1) * TEST];
             _heli addTorque (_heli vectorModelToWorld _moment);
         } else {
             //Tail rotor thrust
@@ -227,6 +228,10 @@ if (_tailRtrDamage < 0.85 && _IGBDamage < SYS_IGB_DMG_THRESH && _TGBDamage < SYS
             //Tail rotor torque
             _heli addTorque (_heli vectorModelToWorld _moment);
         };
+        //Net-force accumulator (ALWAYS on): total applied tail force this frame, model
+        //space, post-deltaTime (getAccelerations undoes dt). Feeds body accel.
+        [_heli, "Tail Rotor", _thrustVector] call fza_sfmplus_fnc_accumForce;
+
         //Tuner force readout
         if (fza_sfmplus_forceLogOn) then {
             [_heli, "Tail Rotor", _thrustVector, _moment] call fza_sfmplus_fnc_forceLog;

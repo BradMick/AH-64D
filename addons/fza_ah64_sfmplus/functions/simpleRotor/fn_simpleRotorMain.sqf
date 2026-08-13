@@ -373,92 +373,6 @@ if ([_inducedVelocity] call fza_sfmplus_fnc_isNAN || [_inducedVelocity] call fza
 _heli setVariable ["fza_sfmplus_vrsVelocityMin", _inducedVelocity * 0.23];
 _heli setVariable ["fza_sfmplus_vrsVelocityMax", _inducedVelocity * 1.25];
 /////////////////////////////////////////////////////////////////////////////////////////////
-// Retreating Blade Stall ///////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////
-//Smooth power-curve fit (all points regenerated from one convex curve fitted to the
-//known anchors) so interpolation is predictable - monotonic, no kinks. LOW ~ v^1.77,
-//HIGH ~ v^1.73, both anchored to 0 at hover and 1.00/2.00 at 200 kt.
-private _retBladeStallSpeedTable =
-[
- [ 0.00,  0.000, 0.000]   //   0 kt
-,[10.29,  0.017, 0.037]   //  20 kt
-,[20.58,  0.058, 0.123]   //  40 kt
-,[36.01,  0.156, 0.325]   //  70 kt
-,[46.30,  0.243, 0.502]   //  90 kt
-,[51.44,  0.293, 0.602]   // 100 kt
-,[61.73,  0.404, 0.826]   // 120 kt
-,[66.88,  0.466, 0.949]   // 130 kt
-,[72.02,  0.532, 1.079]   // 140 kt
-,[82.30,  0.673, 1.359]   // 160 kt
-,[92.59,  0.830, 1.666]   // 180 kt
-,[102.88, 1.000, 2.000]   // 200 kt
-];
-
-private _retBladeStallCollTable =
-[
- [0.0, [_retBladeStallSpeedTable, _velXY] call fza_fnc_linearInterp select 1]
-,[1.0, [_retBladeStallSpeedTable, _velXY] call fza_fnc_linearInterp select 2]
-];
-
-//Table A gives the 0..1 RBS SEVERITY at this airspeed + collective (RBS worsens with
-//blade pitch angle: gross weight, speed, DA - captured by the low/high collective cols).
-private _retBladeStallInput = [_retBladeStallCollTable, _fmcCollOut] call fza_fnc_linearInterp select 1;
-
-//Table B: RBS PITCH & ROLL AUTHORITY vs airspeed, INDEPENDENT of the severity table.
-//How much pitch/roll RBS commands at each airspeed, in the SAME input units as pilot
-//cyclic. Small at low speed, large at high. Multiplied by the severity (Table A) to get
-//the live RBS input, which scales the SAME _pitchTorque/_rollTorque as the pilot and ADDS
-//to the pilot moment - pilot authority is untouched but progressively overpowered by RBS
-//(no recovery once it hits). Torque sign: pitch + = nose DOWN (so nose-UP RBS is
-//NEGATIVE); roll + = RIGHT roll (so LEFT roll is NEGATIVE). AH-64 RBS pitches the nose
-//UP and rolls LEFT toward the retreating blade, so both default columns are NEGATIVE at
-//high speed. Two separate [band,value] tables so each is editable in the tuner panel.
-//Tuneable via fza_sfmplus_tune_rbsPitchTable / _rbsRollTable (source arrays below are the
-//defaults, seeded when unset). Bands: 9 standard + 160/180/200 kt.
-private _rbsPitchTable = _heli getVariable ["fza_sfmplus_tune_rbsPitchTable", []];
-if (_rbsPitchTable isEqualTo []) then {
-    _rbsPitchTable =
-    [
-     [ 0.00,  0.0000]   //   0 kt
-    ,[10.29, -0.3333]   //  20 kt
-    ,[20.58, -0.6667]   //  40 kt
-    ,[36.01, -1.0000]   //  70 kt
-    ,[46.30, -0.9000]   //  90 kt   (0-90 tuned; deepens monotonically past 90)
-    ,[51.44, -0.9545]   // 100 kt
-    ,[61.73, -1.0636]   // 120 kt
-    ,[66.88, -1.1182]   // 130 kt
-    ,[72.02, -1.1727]   // 140 kt
-    ,[82.30, -1.2818]   // 160 kt
-    ,[92.59, -1.3909]   // 180 kt
-    ,[102.88,-1.5000]   // 200 kt
-    ];
-    _heli setVariable ["fza_sfmplus_tune_rbsPitchTable", _rbsPitchTable];
-};
-private _rbsRollTable = _heli getVariable ["fza_sfmplus_tune_rbsRollTable", []];
-if (_rbsRollTable isEqualTo []) then {
-    _rbsRollTable =
-    [
-     [ 0.00,  0.0000]   //   0 kt   (- = left roll toward retreating blade)
-    ,[10.29, -0.0500]   //  20 kt
-    ,[20.58, -0.1000]   //  40 kt
-    ,[36.01, -0.1500]   //  70 kt
-    ,[46.30, -0.2000]   //  90 kt   (0-90 tuned; extrapolated past 90)
-    ,[51.44, -0.2146]   // 100 kt
-    ,[61.73, -0.2490]   // 120 kt
-    ,[66.88, -0.2653]   // 130 kt
-    ,[72.02, -0.2808]   // 140 kt
-    ,[82.30, -0.3098]   // 160 kt
-    ,[92.59, -0.3361]   // 180 kt
-    ,[102.88,-0.3598]   // 200 kt
-    ];
-    _heli setVariable ["fza_sfmplus_tune_rbsRollTable", _rbsRollTable];
-};
-private _rbsPitchAuth = [_rbsPitchTable, _velXY] call fza_fnc_linearInterp select 1;
-private _rbsRollAuth  = [_rbsRollTable,  _velXY] call fza_fnc_linearInterp select 1;
-//Live RBS input = severity (A) * authority (B), in the same units as pilot cyclic input.
-private _rbsPitchInput = _retBladeStallInput * _rbsPitchAuth;
-private _rbsRollInput  = _retBladeStallInput * _rbsRollAuth;
-/////////////////////////////////////////////////////////////////////////////////////////////
 // Pitch Torque         /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 private _cyclicFwdAft     = _heli getVariable "fza_sfmplus_cyclicFwdAft";
@@ -469,8 +383,7 @@ private _pitchTorque      = linearConversion [0.0, 1.0, _inputRpmPct, 0.0, 10000
 private _pitchInput       = ([_cyclicFwdAft, _cyclicFwdAftTrim] call fza_sfmplus_fnc_getInterpInput) + _fmcPitchOut;
 _pitchInput               = [_pitchInput, -1.0, 1.0] call BIS_fnc_clamp;
 
-//RBS pitch adds to the pilot pitch input (same _pitchTorque, both scaled by dt).
-private _momentX          = (_pitchTorque * _pitchInput) + (_pitchTorque * _rbsPitchInput);
+private _momentX          = _pitchTorque * _pitchInput;
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Roll Torque          /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -482,7 +395,7 @@ private _rollTorque          = linearConversion [0.0, 1.0, _inputRpmPct, 0.0, 10
 private _rollInput           = ([_cyclicLeftRight, _cyclicLeftRightTrim] call fza_sfmplus_fnc_getInterpInput) + _fmcRollOut;
 _rollInput                   = [_rollInput, -1.0, 1.0] call BIS_fnc_clamp;
 
-private _momentY             = (_rollTorque * _rollInput) - (_rollTorque * _rbsRollInput);
+private _momentY             = _rollTorque * _rollInput;
 //systemChat format ["_pitchInput = %1 -- _rollInput = %2", _pitchInput toFixed 3, _rollInput toFixed 3];
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Yaw Torque           /////////////////////////////////////////////////////////////////////
@@ -497,7 +410,24 @@ if (currentPilot _heli == player) then {
     private _mainRtrDamage = _heli getHitPointDamage "HitHRotor";
 
     if (_mainRtrDamage < 0.99) then {
-        private _thrustVector = [_thrustZ, _cyclicFwdAftTrim * 6.0, _cyclicLeftRightTrim * 6.0, 0.0] call fza_sfmplus_fnc_vectorRotate;
+        //AERODYNAMIC DISC FLAPBACK (approximates the rotor H-force coupling BET has and this
+        //model lacked - the reason the SIMPLE model crabbed the WRONG way, see the crab memory).
+        //In forward flight dissymmetry of lift tilts the disc: via 90deg gyroscopic precession a
+        //rolling forcing (advancing-blade extra lift) becomes a LONGITUDINAL flap-back (nose-up),
+        //plus a LATERAL disc tilt. Approximated from ADVANCE RATIO mu = V_fwd / tip speed. Adding
+        //this speed-dependent tilt to the thrust vector gives the disc a lateral in-plane hub
+        //force independent of pilot roll -> lateral imbalance now forces a CRAB (like BET) instead
+        //of a bank. kFlapLon/kFlapLat are tuning constants: dial to the real crab-vs-speed curve
+        //(~0 crab at 20-40kt, ~2.5-3deg by 90kt). Tilt angles are in DEGREES (same as the *6.0
+        //cyclic terms). SIGN of the LATERAL term is the trap - VERIFY in-sim (a wrong lateral sign
+        //flips the crab direction); flapback (longitudinal, nose-up) is the well-understood one.
+        private _advanceRatio = if (_bladeTipVel > 1.0) then { _velY / _bladeTipVel } else { 0.0 };
+        private _kFlapLon     = _heli getVariable ["fza_sfmplus_tune_flapbackLon",  0.0];  // deg per unit mu, nose-up flapback
+        private _kFlapLat     = _heli getVariable ["fza_sfmplus_tune_flapbackLat", 10.0];  // deg per unit mu, lateral tilt (sign TBD in-sim)
+        private _flapLon      = _kFlapLon * _advanceRatio;
+        private _flapLat      = _kFlapLat * _advanceRatio;
+
+        private _thrustVector = [_thrustZ, 0.0, (_rollInput * -6.0) - _flapLat, 0.0] call fza_sfmplus_fnc_vectorRotate;
         //private _thrustVector = _thrustZ;
 
         #ifdef __A3_DEBUG__
@@ -522,6 +452,10 @@ if (currentPilot _heli == player) then {
             _moment = [_momentX, _momentY, 0.0];
             _heli addTorque (_heli vectorModelToWorld _moment);
         };
+
+        //Net-force accumulator (ALWAYS on): this generator's total applied force this
+        //frame, model space, post-deltaTime (getAccelerations undoes dt). Feeds body accel.
+        [_heli, "Main Rotor", _thrustVector] call fza_sfmplus_fnc_accumForce;
 
         //Tuner force readout: log the exact locals the component computed and
         //prints - _thrustZ and _moment - verbatim.

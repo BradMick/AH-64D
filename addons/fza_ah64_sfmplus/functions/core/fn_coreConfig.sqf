@@ -95,6 +95,8 @@ _heli setVariable ["fza_sfmplus_velZ_prev",         0.0];
 _heli setVariable ["fza_sfmplus_accelZ",            0.0];
 _heli setVariable ["fza_sfmplus_accelZ_avg",        [fza_sfmplus_movingAverageSize] call fza_sfmplus_fnc_smoothAverageInit];
 
+_heli setVariable ["fza_sfmplus_forceAccum",         createHashMap];
+
 _heli setVariable ["fza_sfmplus_emptyMassFCR",       getNumber (_config >> "emptyMassFCR")];        //kg
 _heli setVariable ["fza_sfmplus_emptyMomFCR",        getNumber (_config >> "emptyMomFCR")];
 _heli setVariable ["fza_sfmplus_emptyCoMFCR",        getArray (_config >> "emptyCoMFCR")];
@@ -137,12 +139,48 @@ _heli setVariable ["fza_sfmplus_pid_barHold",        [0.0010, 0.0000, 0.0008, 0.
 //Heading Hold
 _heli setVariable ["fza_sfmplus_pid_hdgHold",        [0.0750, 0.0200, 0.0050, 0.0200] call fza_fnc_pidCreate];
 _heli setVariable ["fza_sfmplus_pid_trnCoord",       [0.8500, 0.0600, 0.2000, 0.0600] call fza_fnc_pidCreate];
-//SAS Functions
-_heli setVariable ["fza_sfmplus_pid_sas_pitch",      [0.1000, 0.0000, 0.0020, 0.0000] call fza_fnc_pidCreate];
-_heli setVariable ["fza_sfmplus_pid_sas_roll",       [0.0080, 0.0000, 0.0020, 0.0000] call fza_fnc_pidCreate];
+//SAS Functions — proportional rate DAMPING (kp = per-rate opposition, output = -kp*rate).
+//ROLL kp ramped 0.012 -> 0.10: it was ~12x below pitch, so the low-inertia roll axis was barely
+//damped (twitchy). 0.10 brings it near pitch (0.15) firmness; dial to taste. Pitch/yaw unchanged.
+_heli setVariable ["fza_sfmplus_pid_sas_pitch",      [0.1500, 0.0000, 0.0020, 0.0000] call fza_fnc_pidCreate];
+_heli setVariable ["fza_sfmplus_pid_sas_roll",       [0.1000, 0.0000, 0.0020, 0.0000] call fza_fnc_pidCreate];
 _heli setVariable ["fza_sfmplus_pid_sas_yaw",        [0.3000, 0.0500, 0.0250, 0.0500] call fza_fnc_pidCreate];
 //Auto pedal
 _heli setVariable ["fza_sfmplus_pid_autoPedalHdg",   [0.1000, 0.0010, 0.0500, 0.0010] call fza_fnc_pidCreate];
+
+//LIVE-TUNABLE augmentation PID gains (SAS dampers + attitude/heading/altitude holds). The
+//augmentation functions (fn_fmcSAS, fn_fmcAttitudeHold, fn_fmcHeadingHold, fn_fmcAltitudeHold)
+//read these each frame and set[] them onto their PID, so the tuner GUI can dial kp/ki/kd live
+//while flying (the hold/SAS PIDs were tuned for the SIMPLE model and are wrong for BET). Seeded
+//from the pidCreate values above.
+//SAS rate dampers
+_heli setVariable ["fza_sfmplus_tune_sasPitch_kp", 0.1500]; _heli setVariable ["fza_sfmplus_tune_sasPitch_ki", 0.0000]; _heli setVariable ["fza_sfmplus_tune_sasPitch_kd", 0.0020];
+_heli setVariable ["fza_sfmplus_tune_sasRoll_kp",  0.1000]; _heli setVariable ["fza_sfmplus_tune_sasRoll_ki",  0.0000]; _heli setVariable ["fza_sfmplus_tune_sasRoll_kd",  0.0020];
+_heli setVariable ["fza_sfmplus_tune_sasYaw_kp",   0.3000]; _heli setVariable ["fza_sfmplus_tune_sasYaw_ki",   0.0500]; _heli setVariable ["fza_sfmplus_tune_sasYaw_kd",   0.0250];
+//Attitude hold. CONSERVATIVE BET starting guesses (2026-08-10): the simple-model gains were
+//saturating the +-0.1 clamp and driving a wild pitch/roll oscillation on BET. BET's disc is very
+//responsive (low-inertia roll), and the holds sit ON TOP of the SAS rate damper (which handles
+//the fast rate), so the holds only need to gently trim the slow attitude error. Started WEAK
+//(kp ~4-5x down, kd cut hard - derivative amplifies oscillation on a fast/noisy rotor axis, ki
+//near-zero - integral windup drove the saturation). A weak hold drifts slowly (flyable); tune UP
+//from here via the SCAS tab. If it still oscillates, halve again; if it drifts, raise kp.
+_heli setVariable ["fza_sfmplus_tune_attPitch_kp", 0.0200]; _heli setVariable ["fza_sfmplus_tune_attPitch_ki", 0.0008]; _heli setVariable ["fza_sfmplus_tune_attPitch_kd", 0.0040];
+_heli setVariable ["fza_sfmplus_tune_attRoll_kp",  0.0100]; _heli setVariable ["fza_sfmplus_tune_attRoll_ki",  0.0005]; _heli setVariable ["fza_sfmplus_tune_attRoll_kd",  0.0020];
+//Position + Velocity hold (shared pid_pitch / pid_roll - pos uses setpoint 0, vel uses desired
+//vel). Same conservative cut as attitude hold - same responsive axes, same +-0.1 clamp.
+_heli setVariable ["fza_sfmplus_tune_posPitch_kp", 0.0300]; _heli setVariable ["fza_sfmplus_tune_posPitch_ki", 0.0010]; _heli setVariable ["fza_sfmplus_tune_posPitch_kd", 0.0080];
+_heli setVariable ["fza_sfmplus_tune_posRoll_kp",  0.0150]; _heli setVariable ["fza_sfmplus_tune_posRoll_ki",  0.0010]; _heli setVariable ["fza_sfmplus_tune_posRoll_kd",  0.0060];
+//Heading hold. Yaw is less twitchy (more inertia, firm yaw SAS kp 0.30) - moderate cut only.
+_heli setVariable ["fza_sfmplus_tune_hdg_kp",      0.0300]; _heli setVariable ["fza_sfmplus_tune_hdg_ki",      0.0050]; _heli setVariable ["fza_sfmplus_tune_hdg_kd",      0.0030];
+//Altitude hold (barometric + radar). Collective->climb is slow/well-damped; left near stock.
+_heli setVariable ["fza_sfmplus_tune_bar_kp",      0.0010]; _heli setVariable ["fza_sfmplus_tune_bar_ki",      0.0000]; _heli setVariable ["fza_sfmplus_tune_bar_kd",      0.0008];
+_heli setVariable ["fza_sfmplus_tune_rad_kp",      0.0500]; _heli setVariable ["fza_sfmplus_tune_rad_ki",      0.0001]; _heli setVariable ["fza_sfmplus_tune_rad_kd",      0.0050];
+//PID auto-tuner (Ziegler-Nichols) state - off by default; the PFH only runs when enabled.
+_heli setVariable ["fza_sfmplus_tune_pidAutoOn", false];
+_heli setVariable ["fza_sfmplus_pidAuto_idx",    0];
+_heli setVariable ["fza_sfmplus_pidAuto_phase",  "INIT"];
+_heli setVariable ["fza_sfmplus_pidAuto_t",      0.0];
+_heli setVariable ["fza_sfmplus_pidAuto_status", "PID auto-tune idle"];
 _heli setVariable ["fza_sfmplus_pid_autoPedalSlip",  [1.5000, 0.1000, 0.8000, 0.1000] call fza_fnc_pidCreate];
 _heli setVariable ["fza_sfmPlus_autoPedalHdg",       getDir _heli];
 //Auto pitch
@@ -156,7 +194,7 @@ _heli setVariable ["fza_sfmplus_autoPitchBreakout",  false];
 _heli setVariable ["fza_sfmplus_aero_alpha_deg",     0.0];
 _heli setVariable ["fza_sfmplus_aero_beta_deg",      0.0];
 _heli setVariable ["fza_sfmplus_aero_beta_g",        0.0];
-_heli setVariable ["fza_sfmplus_aero_gamma",         0.0];
+_heli setVariable ["fza_sfmplus_aero_beta_g_prev",   0.0];   //EGI low-pass filter state for the skid/slip (beta_g)
 
 _heli setVariable ["fza_sfmplus_aero_prevVelX",      0.0];
 _heli setVariable ["fza_sfmplus_aero_accelX",        0.0];
@@ -210,3 +248,8 @@ _heli setVariable ["fza_sfmplus_pid_engine",        [[0.7000, 0.0000, 0.0005, 0.
 //force scalar tables (thrust/torque/tail/stab) against the target attitudes and
 //owns yaw balance. Gated by the GUI toggles (on/off, FMC-off, target airspeed).
 [_heli] call fza_sfmplus_fnc_tunerMaster;
+
+//PID auto-tuner (Ziegler-Nichols). Per-frame state machine; only DOES anything while
+//fza_sfmplus_tune_pidAutoOn is true. Tunes the augmentation PID gains automatically by
+//ramping each to its oscillation point. Runs as its own PFH.
+[{ (_this select 0) params ["_heli"]; [_heli] call fza_sfmplus_fnc_tunerPidAuto; }, 0, [_heli]] call CBA_fnc_addPerFrameHandler;

@@ -60,8 +60,13 @@ private _tables =
     ,["fza_sfmplus_tune_stabLiftScalarTable", "Stabilator Lift",    "fn_coreUpdateFlightModel.sqf", "Stabilator lift-scalar arg", 1.0]
     ,["fza_sfmplus_tune_fuseSideScalarTable", "Fuselage Side-Force","fn_fuselageSide.sqf", "_sideForceScalarTable", 1.0]
     ,["fza_sfmplus_tune_finLiftScalarTable",  "Vertical Fin Lift",  "fn_coreUpdateFlightModel.sqf", "Vertical Fin lift-scalar arg", 1.0]
-    ,["fza_sfmplus_tune_rbsPitchTable",        "RBS Pitch Authority","fn_simpleRotorMain.sqf", "_rbsPitchTable", 0.0]
-    ,["fza_sfmplus_tune_rbsRollTable",         "RBS Roll Authority", "fn_simpleRotorMain.sqf", "_rbsRollTable", 0.0]
+    //BET force-output scalars (physics-derived forces multiplied at the output; the master tuner
+    //drives these when in BET mode). Baseline 1.0 (thrust/torque) / 0.0 (tail trim) so save/export
+    //only persist BANDS that were actually tuned. Source = fn_rotorVariables (the seed tables).
+    ,["fza_sfmplus_tune_betMainLiftTable",     "BET Main Thrust",    "fn_rotorVariables.sqf", "betMainLiftTable", 1.0]
+    ,["fza_sfmplus_tune_betMainTorqueTable",   "BET Main Torque",    "fn_rotorVariables.sqf", "betMainTorqueTable", 1.0]
+    ,["fza_sfmplus_tune_betTailLiftTable",     "BET Tail Thrust",    "fn_rotorVariables.sqf", "betTailLiftTable", 1.0]
+    ,["fza_sfmplus_tune_betTailTrimTable",     "BET Tail Airspeed Trim","fn_rotorVariables.sqf", "betTailTrimTable", 0.0]
 ];
 
 [_bands, _tables]

@@ -41,6 +41,11 @@ if (_heli getHitPointDamage _hitPoint < _dmgThreshold && currentPilot _heli == p
 // Reset accumulators before blade loop
 [_heli, "fza_sfmplus_rotorReactionTorque", _rotorIndex, 0.0] call fza_fnc_setArrayVariable;
 [_heli, "fza_sfmplus_rotorThrustAccum",    _rotorIndex, 0.0] call fza_fnc_setArrayVariable;
+// Net FORCE accumulator (model space, per rotor) for the force-log table + the force accumulator
+// (bodyAccel/ball). Summed across every blade element in fn_rotorBlade, registered after the loop.
+// Force is *deltaTime (same convention as the other generators). (No moment accumulator - the log
+// shows the rotor's OWN computed reaction couple, not a re-derived per-element moment.)
+[_heli, "fza_sfmplus_rotorNetForce",  _rotorIndex, [0,0,0]] call fza_fnc_setArrayVariable;
 for "_ei" from 0 to (_numElements - 1) do {
     [_heli, "fza_sfmplus_rotorInducedFlowAccum", _rotorIndex, _ei, 0.0] call fza_fnc_setMultiArrayVariable;
 };
@@ -65,6 +70,7 @@ for "_ei" from 0 to (_numElements - 1) do {
 if (_type == TAIL) then { _beta0 = 0.0; _a1 = 0.0; _b1 = 0.0; };
 
 
+
 private _bladeSpacing = 360.0 / _numBlades;
 for "_bladeIndex" from 0 to (_numBlades - 1) do {
 	private _psi = _rotorAzimuth + (_bladeSpacing * _bladeIndex);
@@ -81,12 +87,24 @@ for "_bladeIndex" from 0 to (_numBlades - 1) do {
 
 	private _tipTwist = _bladeTwist * _dirSign;
 
+	// ROOT INCIDENCE: reference the commanded collective at 75%R (the standard rotor convention -
+	// nominal blade twist = 0 at 75%R), not at the root. Linear twist -> the root sits +0.75*twist
+	// ABOVE the 75%R value, the tip 0.25*twist below. So shift every feather anchor UP by
+	// -_tipTwist*0.75 (= +6.75 deg for the -9 main twist) - the root becomes collective+6.75, 75%R
+	// = collective, tip = collective-2.25. Without this the whole productive span sat ~0.75*twist
+	// BELOW the commanded pitch, stalling the root before making enough thrust/power.
+	// MAIN ROTOR ONLY: the TAIL's collective range (-15..+27) was already calibrated for ROOT-
+	// referenced pitch; adding +6 deg over-pitched it and pushed the right-pedal (more anti-torque)
+	// side PAST the 15.75 deg airfoil stall = near-zero right-pedal authority at hover. Tail keeps
+	// its original root reference. (_tipTwist already carries _dirSign, so this stays sign-consistent.)
+	private _rootIncidence      = if (_type == MAIN) then { -_tipTwist * INC_ANG } else { 0.0 };
+
 	private _a_rootPos          = _pos       vectorAdd  ([_bladeDir vectorMultiply _bladeCutout,          _chordDir, _flapAngle]              call fza_sfmplus_fnc_vectorRotateAroundAxis);
 	private _b_tipPos           = _pos       vectorAdd  ([_bladeDir vectorMultiply _bladeLength,          _chordDir, _flapAngle]              call fza_sfmplus_fnc_vectorRotateAroundAxis);
-	private _c_rootLeadingEdge  = _a_rootPos vectorAdd  ([_chordDir vectorMultiply (_bladeChord * 0.25), _bladeDir, -_featherAngle]              call fza_sfmplus_fnc_vectorRotateAroundAxis);
-	private _d_tipLeadingEdge   = _b_tipPos  vectorAdd  ([_chordDir vectorMultiply (_bladeChord * 0.25), _bladeDir, -(_featherAngle + _tipTwist)] call fza_sfmplus_fnc_vectorRotateAroundAxis);
-	private _e_tipTrailingEdge  = _b_tipPos  vectorDiff ([_chordDir vectorMultiply (_bladeChord * 0.75), _bladeDir, -(_featherAngle + _tipTwist)] call fza_sfmplus_fnc_vectorRotateAroundAxis);
-	private _f_rootTrailingEdge = _a_rootPos vectorDiff ([_chordDir vectorMultiply (_bladeChord * 0.75), _bladeDir, -_featherAngle]              call fza_sfmplus_fnc_vectorRotateAroundAxis);
+	private _c_rootLeadingEdge  = _a_rootPos vectorAdd  ([_chordDir vectorMultiply (_bladeChord * 0.25), _bladeDir, -(_featherAngle + _rootIncidence)]              call fza_sfmplus_fnc_vectorRotateAroundAxis);
+	private _d_tipLeadingEdge   = _b_tipPos  vectorAdd  ([_chordDir vectorMultiply (_bladeChord * 0.25), _bladeDir, -(_featherAngle + _rootIncidence + _tipTwist)] call fza_sfmplus_fnc_vectorRotateAroundAxis);
+	private _e_tipTrailingEdge  = _b_tipPos  vectorDiff ([_chordDir vectorMultiply (_bladeChord * 0.75), _bladeDir, -(_featherAngle + _rootIncidence + _tipTwist)] call fza_sfmplus_fnc_vectorRotateAroundAxis);
+	private _f_rootTrailingEdge = _a_rootPos vectorDiff ([_chordDir vectorMultiply (_bladeChord * 0.75), _bladeDir, -(_featherAngle + _rootIncidence)]              call fza_sfmplus_fnc_vectorRotateAroundAxis);
 
 	// Store this blade's azimuth so the decomposition next frame uses the correct position
 	[_heli, "fza_sfmplus_rotorBladeAzimuth", _rotorIndex, _bladeIndex, _psi] call fza_fnc_setMultiArrayVariable;
@@ -120,10 +138,17 @@ for "_bladeIndex" from 0 to (_numBlades - 1) do {
 	#endif
 };
 
-// Average raw viRaw across blades, lerp toward it once, publish for next frame.
+// Sum the per-element inflow contributions across blades, lerp toward it once, publish for
+// next frame. DO NOT divide by numBlades: fn_rotorBlade accumulates each blade's (T_elem/denom)
+// where denom uses the FULL (all-blade) annulus area, so the blade SUM = T_annulus_total/denom -
+// exactly the annulus momentum balance vi = sqrt(T_total/(2 rho A)). Dividing by numBlades here
+// balanced only ONE blade's thrust against the whole annulus, giving vi = vi_true/sqrt(numBlades)
+// = HALF for the 4-blade rotor -> induced power (and thus shaft power/engine torque) came out ~2x
+// too low (OGE hover read ~38%/engine instead of ~84%). Thrust was unaffected (independent of vi
+// magnitude), which is why only power/torque was wrong.
 private _viAccum = (_heli getVariable "fza_sfmplus_rotorInducedFlowAccum") select _rotorIndex;
 for "_ei" from 0 to (_numElements - 1) do {
-    private _viRawAvg = (_viAccum select _ei) / _numBlades;
+    private _viRawAvg = _viAccum select _ei;
     private _viPrev   = ((_heli getVariable "fza_sfmplus_rotorInducedFlow") select _rotorIndex) select _ei;
     private _viNext   = [_viPrev, _viRawAvg, _inflowAlpha] call BIS_fnc_lerp;
     [_heli, "fza_sfmplus_rotorInducedFlow", _rotorIndex, _ei, _viNext] call fza_fnc_setMultiArrayVariable;
@@ -134,6 +159,18 @@ for "_ei" from 0 to (_numElements - 1) do {
 private _totalPower     = (_heli getVariable "fza_sfmplus_rotorReactionTorque") select _rotorIndex;
 private _reactionTorque = if (_omega > 0.0) then { _totalPower / _omega } else { 0.0 };
 private _reqEngTorque   = if (_gearRatio > 0.0) then { _reactionTorque / _gearRatio } else { 0.0 };
+
+//DIAG (power-vs-collective): main rotor only. kW = total rotor power; thrust = accumulated
+//lift (N); vi = induced velocity at outer element. At full collective OGE this should climb
+//high enough to exceed 2x engine power (~2100 kW) and droop NR. Remove when fixed.
+if (_type == MAIN) then {
+    private _thr = (_heli getVariable "fza_sfmplus_rotorThrustAccum") select _rotorIndex;
+    private _viArr = (_heli getVariable "fza_sfmplus_rotorInducedFlow") select _rotorIndex;
+    systemChat format ["ROTOR kW=%1 thrust=%2N vi=[%3] coll=%4",
+        (_totalPower/1000) toFixed 0, _thr toFixed 0,
+        (_viArr apply {_x toFixed 1}) joinString ",",
+        (_heli getVariable "fza_sfmplus_collectiveOutput") toFixed 2];
+};
 
 // Smooth rotor torque demand before publishing — BET produces frame-to-frame
 // noise that would otherwise couple directly into the transmission and governor.
@@ -154,10 +191,33 @@ private _Jtot = (_Iy + _Itot) * _numBlades;
 
 // Apply rotor drag torque reaction to fuselage — main rotor only.
 // Use the smoothed value so BET noise doesn't shake the airframe.
+private _reactionMoment = [0,0,0];
 if (_type == MAIN) then {
     private _torqueSign = if (_dir == CW) then { 1.0 } else { -1.0 };
-    _heli addTorque (_heli vectorModelToWorld (_uVec vectorMultiply (_tqSmoothed * _gearRatio * _torqueSign * _deltaTime)));
+    //BET TORQUE tuning scalar (yaw knob) - multiplies ONLY this fuselage reaction couple, NOT the
+    //engine load (_totalPower stays physics-true). Airspeed-banded; 1.0 = pure physics. Lets the
+    //master tuner trim BET's yaw independently of thrust.
+    private _velBet   = vectorMagnitude [(_heli getVariable "fza_sfmplus_velModelSpace" select 0), (_heli getVariable "fza_sfmplus_velModelSpace" select 1)];
+    private _torqTbl  = _heli getVariable ["fza_sfmplus_tune_betMainTorqueTable", []];
+    private _torqueScale = if (_torqTbl isEqualTo []) then { 1.0 } else { [_torqTbl, _velBet] call fza_fnc_linearInterp select 1 };
+    _reactionMoment = _uVec vectorMultiply (_tqSmoothed * _gearRatio * _torqueSign * _deltaTime * _torqueScale);
+    _heli addTorque (_heli vectorModelToWorld _reactionMoment);
 };
+
+// Register this rotor's ACTUAL computed values into the force-log table + the force accumulator.
+// FORCE = the summed blade forces actually added to the airframe (_netForce). MOMENT = the
+// rotor's OWN explicitly-computed couple that it actually applies via addTorque (_reactionMoment
+// = the main-rotor reaction torque; [0,0,0] for the tail, whose yaw is the offset THRUST that
+// Arma turns into a moment - not a value the FM computes). NO re-derived r x F: the log must show
+// the FM's real outputs, not a bespoke recomputation (a reversed one previously made the Myaw
+// column disagree with the force and caused wrong diagnoses).
+private _rotorName = if (_type == MAIN) then { "Main Rotor" } else { "Tail Rotor" };
+private _netForce  = (_heli getVariable "fza_sfmplus_rotorNetForce")  select _rotorIndex;
+private _netMoment = _reactionMoment;
+if (fza_sfmplus_forceLogOn) then {
+    [_heli, _rotorName, _netForce, _netMoment] call fza_sfmplus_fnc_forceLog;
+};
+[_heli, _rotorName, _netForce] call fza_sfmplus_fnc_accumForce;
 
 }; // end damage check
 

@@ -188,47 +188,53 @@ private _spdBands = [0.00, 10.29, 20.58, 36.01, 46.30, 51.44, 61.73, 66.88, 72.0
     ] call _fnMake);
 } forEach _spdBands;
 
-// RETREATING BLADE STALL pitch/roll AUTHORITY by airspeed (in pilot-cyclic input units).
-// How much nose-up pitch + roll RBS commands at each airspeed; multiplied by the RBS
-// SEVERITY (airspeed + collective) and added to the pilot moment via the same pitch/roll
-// torque - so pilot authority is untouched but progressively overpowered by RBS. Signed:
-// pitch + = nose DOWN (nose-up RBS is NEGATIVE), roll + = RIGHT roll (left-roll RBS is
-// NEGATIVE - AH-64 RBS rolls left toward the retreating blade). Bands extend past the
-// standard 9 to 160/180/200 kt where RBS really bites. fn_simpleRotorMain reads
-// fza_sfmplus_tune_rbsPitchTable / _rbsRollTable; write-back exports/persists.
-private _rbsBands = [0.00, 10.29, 20.58, 36.01, 46.30, 51.44, 61.73, 66.88, 72.02, 82.30, 92.59, 102.88];
-private _rbsPitchDef = [0,0,0,0,0,0,0,0,0,-0.10,-0.30,-0.60];
-private _rbsRollDef  = [0,0,0,0,0,0,0,0,0,-0.20,-0.60,-1.20];
-{
-    private _band = _x;
-    _spec pushBack ([
-        "Airframe",
-        format ["fza_sfmplus_tune_rbsPitch_%1", _band],
-        format ["RBS pitch @ %1 kt", round (_band * 1.94384)],
-        "Retreating Blade Stall - Pitch (by airspeed)",
-        "dragtable",
-        _rbsPitchDef select _forEachIndex,
-        ["fza_sfmplus_tune_rbsPitchTable", _forEachIndex, _band],
-        ["fn_simpleRotorMain.sqf", format ["// rbsPitchTable row %1 (%2 m/s): %3", _forEachIndex, _band, "%1"]],
-        -3.0, 3.0
-    ] call _fnMake);
-} forEach _rbsBands;
-{
-    private _band = _x;
-    _spec pushBack ([
-        "Airframe",
-        format ["fza_sfmplus_tune_rbsRoll_%1", _band],
-        format ["RBS roll @ %1 kt", round (_band * 1.94384)],
-        "Retreating Blade Stall - Roll (by airspeed)",
-        "dragtable",
-        _rbsRollDef select _forEachIndex,
-        ["fza_sfmplus_tune_rbsRollTable", _forEachIndex, _band],
-        ["fn_simpleRotorMain.sqf", format ["// rbsRollTable row %1 (%2 m/s): %3", _forEachIndex, _band, "%1"]],
-        -3.0, 3.0
-    ] call _fnMake);
-} forEach _rbsBands;
+// AERODYNAMIC DISC FLAPBACK (replaces the retired RBS tables). The simple main rotor tilts the
+// disc by an amount proportional to advance ratio mu = V_fwd/tip speed (dissymmetry of lift ->
+// 90deg precession -> nose-up longitudinal + lateral tilt). These two scalars are the deg-per-
+// unit-mu gains for the longitudinal (nose-up flapback) and lateral tilt. Owns ALL flapback
+// across the envelope now (RBS retired - it was a separate stall model that double-counted).
+// fn_simpleRotorMain reads fza_sfmplus_tune_flapbackLon / _flapbackLat.
+_spec pushBack (["Airframe", "fza_sfmplus_tune_flapbackLon", "Flapback LON (nose-up, deg/mu)", "Disc Flapback", "scalar",
+    40.0, "fza_sfmplus_tune_flapbackLon",
+    ["fn_simpleRotorMain.sqf", "// flapback longitudinal gain (deg per unit advance ratio): %1"], 0.0, 120.0] call _fnMake);
+_spec pushBack (["Airframe", "fza_sfmplus_tune_flapbackLat", "Flapback LAT (deg/mu)", "Disc Flapback", "scalar",
+    10.0, "fza_sfmplus_tune_flapbackLat",
+    ["fn_simpleRotorMain.sqf", "// flapback lateral gain (deg per unit advance ratio): %1"], -60.0, 60.0] call _fnMake);
 
 // MAIN ROTOR THRUST scalar by AIRSPEED band. Calibrates rotor thrust to the real
+// BET FORCE-OUTPUT SCALARS by AIRSPEED band. BET forces are physics-derived; these multiply the
+// OUTPUT so the master tuner can trim BET the same way it trims the simple tables. The master
+// drives these when in BET mode (mapped in fn_tunerMaster); editable/Reset here. 1.0 = pure
+// physics (0.0 for tail trim). fn_rotorBlade reads the lift tables, fn_rotor the torque table.
+{
+    private _band = _x;
+    _spec pushBack (["BET", format ["fza_sfmplus_tune_betMainLift_%1", _band],
+        format ["BET Main thrust @ %1 kt", round (_band * 1.94384)], "BET Main Rotor Thrust (by airspeed)", "dragtable",
+        1.0, ["fza_sfmplus_tune_betMainLiftTable", _forEachIndex, _band],
+        ["fn_rotorVariables.sqf", format ["// betMainLiftTable row %1 (%2 m/s): %3", _forEachIndex, _band, "%1"]], 0.25, 2.0] call _fnMake);
+} forEach _spdBands;
+{
+    private _band = _x;
+    _spec pushBack (["BET", format ["fza_sfmplus_tune_betMainTorque_%1", _band],
+        format ["BET Main torque @ %1 kt", round (_band * 1.94384)], "BET Main Rotor Torque (by airspeed)", "dragtable",
+        1.0, ["fza_sfmplus_tune_betMainTorqueTable", _forEachIndex, _band],
+        ["fn_rotorVariables.sqf", format ["// betMainTorqueTable row %1 (%2 m/s): %3", _forEachIndex, _band, "%1"]], 0.25, 2.0] call _fnMake);
+} forEach _spdBands;
+{
+    private _band = _x;
+    _spec pushBack (["BET", format ["fza_sfmplus_tune_betTailLift_%1", _band],
+        format ["BET Tail thrust @ %1 kt", round (_band * 1.94384)], "BET Tail Rotor Thrust (by airspeed)", "dragtable",
+        1.0, ["fza_sfmplus_tune_betTailLiftTable", _forEachIndex, _band],
+        ["fn_rotorVariables.sqf", format ["// betTailLiftTable row %1 (%2 m/s): %3", _forEachIndex, _band, "%1"]], 0.25, 4.0] call _fnMake);
+} forEach _spdBands;
+{
+    private _band = _x;
+    _spec pushBack (["BET", format ["fza_sfmplus_tune_betTailTrim_%1", _band],
+        format ["BET Tail trim @ %1 kt", round (_band * 1.94384)], "BET Tail Airspeed Trim (by airspeed)", "dragtable",
+        0.0, ["fza_sfmplus_tune_betTailTrimTable", _forEachIndex, _band],
+        ["fn_rotorVariables.sqf", format ["// betTailTrimTable row %1 (%2 m/s): %3", _forEachIndex, _band, "%1"]], -1.0, 1.0] call _fnMake);
+} forEach _spdBands;
+
 // power-required schedule so holding the target collective yields level flight
 // (climb -> 0). The master (VERT axis) drives this in forward flight; hover uses the
 // separate IGE/OGE hover-thrust vars below. Default 1.0. fn_simpleRotorMain reads
@@ -367,40 +373,12 @@ private _rollTgtDef = [-2.5, -2.0, -1.0, -0.6, -0.6, -0.6, -0.6, -0.6, -0.6];
     ] call _fnMake);
 } forEach _spdBands;
 
-// CONTROL-POSITION targets (real flight-test data, normalised to Arma). The master
-// commands these exact cyclic/pedal positions and tunes the forces until the
-// aircraft is trimmed at them. Editable per band. Arma: cyclic fwd+/left+, pedal
-// right+ [-1..1]. Defaults from fn_tunerTargets (the flight-test schedule).
-private _cycPitchDef = [-0.342,-0.271,-0.250,-0.121,-0.013, 0.057, 0.227, 0.321, 0.415];
-private _cycRollDef  = [-0.045, 0.142, 0.133, 0.048, 0.013, 0.006, 0.015, 0.031, 0.052];
-private _pedalDef    = [-0.352,-0.154, 0.044, 0.199, 0.250, 0.246, 0.152, 0.085, 0.015];
-{
-    private _band = _x;
-    _spec pushBack (["Balance", format ["fza_sfmplus_tune_tgtCycP_%1", _band],
-        format ["Cyc pitch tgt @ %1 kt", round (_band * 1.94384)], "Target Cyclic PITCH (fwd+)", "dragtable",
-        (_cycPitchDef select _forEachIndex),
-        ["fza_sfmplus_tune_targetCycPitchTable", _forEachIndex, _band],
-        ["fn_tunerTargets.sqf", format ["// targetCycPitchTable row %1 (%2 m/s): %3", _forEachIndex, _band, "%1"]],
-        -1.0, 1.0] call _fnMake);
-} forEach _spdBands;
-{
-    private _band = _x;
-    _spec pushBack (["Balance", format ["fza_sfmplus_tune_tgtCycR_%1", _band],
-        format ["Cyc roll tgt @ %1 kt", round (_band * 1.94384)], "Target Cyclic ROLL (left+)", "dragtable",
-        (_cycRollDef select _forEachIndex),
-        ["fza_sfmplus_tune_targetCycRollTable", _forEachIndex, _band],
-        ["fn_tunerTargets.sqf", format ["// targetCycRollTable row %1 (%2 m/s): %3", _forEachIndex, _band, "%1"]],
-        -1.0, 1.0] call _fnMake);
-} forEach _spdBands;
-{
-    private _band = _x;
-    _spec pushBack (["Balance", format ["fza_sfmplus_tune_tgtPed_%1", _band],
-        format ["Pedal tgt @ %1 kt", round (_band * 1.94384)], "Target PEDAL (right+)", "dragtable",
-        (_pedalDef select _forEachIndex),
-        ["fza_sfmplus_tune_targetPedalTable", _forEachIndex, _band],
-        ["fn_tunerTargets.sqf", format ["// targetPedalTable row %1 (%2 m/s): %3", _forEachIndex, _band, "%1"]],
-        -1.0, 1.0] call _fnMake);
-} forEach _spdBands;
+// CONTROL-POSITION targets (cyclic pitch/roll, pedal) are CALCULATED, KNOWN flight-test
+// deflection values - they are NOT tunable and must NOT be overridable. They live in a
+// SINGLE SOURCE OF TRUTH (fn_tunerTargets, which seeds targetCycPitchTable /
+// targetCycRollTable / targetPedalTable). Deliberately NOT added to the tuner spec here so
+// the GUI can neither display stale defaults nor let them be edited/clobbered. (Previously
+// duplicated here with OLD absolute values that overrode the correct deflections - removed.)
 
 /////////////////////////////////////////////////////////////////////////////
 // TAB: Mass & Balance
@@ -502,5 +480,44 @@ _spec pushBack (["Balance", "fza_sfmplus_tune_yawRateDamp", "Yaw-Rate Damping (k
 _spec pushBack (["Balance", "fza_sfmplus_tune_yawDampGain", "Yaw Damper Strength (Nm per rad/s)", "Master Auto-Tuner", "scalar",
     20000.0, "fza_sfmplus_tune_yawDampGain",
     ["fn_tunerYawDamper.sqf", "// yaw damper gain: %1"], 0.0, 80000.0] call _fnMake);
+
+/////////////////////////////////////////////////////////////////////////////
+// TAB: SCAS  -  live-tunable augmentation PID gains (SAS dampers + holds).
+// The augmentation functions read these each frame and set[] them onto their
+// PID, so kp/ki/kd can be dialled live while flying (the hold/SAS PIDs were
+// tuned for the SIMPLE model and are wrong for BET). Each row: [tuneVar, default].
+// Range 0 .. 4x default (or a small floor when default is 0). Grouped per PID.
+/////////////////////////////////////////////////////////////////////////////
+// [group, keyBase, kp, ki, kd]
+private _scasPids =
+[
+     ["SAS Damper - Pitch",   "sasPitch", 0.1500, 0.0000, 0.0020]
+    ,["SAS Damper - Roll",    "sasRoll",  0.1000, 0.0000, 0.0020]
+    ,["SAS Damper - Yaw",     "sasYaw",   0.3000, 0.0500, 0.0250]
+    ,["Attitude Hold - Pitch","attPitch", 0.0200, 0.0008, 0.0040]
+    ,["Attitude Hold - Roll", "attRoll",  0.0100, 0.0005, 0.0020]
+    ,["Pos/Vel Hold - Pitch", "posPitch", 0.0300, 0.0010, 0.0080]
+    ,["Pos/Vel Hold - Roll",  "posRoll",  0.0150, 0.0010, 0.0060]
+    ,["Heading Hold",         "hdg",      0.0300, 0.0050, 0.0030]
+    ,["Altitude Hold - Baro", "bar",      0.0010, 0.0000, 0.0008]
+    ,["Altitude Hold - Radar","rad",      0.0500, 0.0001, 0.0050]
+];
+//Master toggle for the ZN PID auto-tuner (fn_tunerPidAuto). Turn ON and walk away - it ramps
+//each augmentation PID to its oscillation point and applies the Ziegler-Nichols gains, one PID
+//at a time, then turns itself off. Watch fza_sfmplus_pidAuto_status for progress.
+_spec pushBack (["SCAS", "fza_sfmplus_tune_pidAutoOn", "** AUTO-TUNE ALL PIDs (Ziegler-Nichols) **", "PID Auto-Tune", "bool",
+    false, "fza_sfmplus_tune_pidAutoOn",
+    ["fn_tunerPidAuto.sqf", "// PID auto-tune enable: %1"]] call _fnMake);
+
+{
+    _x params ["_grp", "_keyBase", "_kp", "_ki", "_kd"];
+    {
+        _x params ["_gain", "_def"];
+        private _var = format ["fza_sfmplus_tune_%1_%2", _keyBase, _gain];
+        private _max = if (_def == 0) then { 0.05 } else { _def * 4.0 };
+        _spec pushBack (["SCAS", _var, format ["%1 %2", _grp, toUpper _gain], _grp, "scalar",
+            _def, _var, ["fn_coreConfig.sqf", format ["// %1 %2: %3", _keyBase, _gain, "%1"]], 0.0, _max] call _fnMake);
+    } forEach [["kp", _kp], ["ki", _ki], ["kd", _kd]];
+} forEach _scasPids;
 
 _spec

@@ -99,17 +99,22 @@ if (_collTgt isEqualTo []) then {
 //Cyclic PITCH position (fwd+).
 private _cycPitchTgt = _heli getVariable ["fza_sfmplus_tune_targetCycPitchTable", []];
 if (_cycPitchTgt isEqualTo []) then {
+    //DEFLECTION from the Flat Pitch neutral index (survey abs - flatPitch). Flat Pitch
+    //cyclic pitch = -0.27, so each survey value has +0.27 added -> true stick deflection
+    //over -1..+1. This is what the tuner drives to (the cyclic offset from neutral), NOT
+    //the old absolute survey position (which was referenced to a zero point that no longer
+    //applies after the force-model rework). 0 kt = 80 ft OGE.
     _cycPitchTgt =
     [
-     [ 0.00, -0.342]   //   0 kt (OGE hover)
-    ,[10.29, -0.271]   //  20 kt
-    ,[20.58, -0.250]   //  40 kt
-    ,[36.01, -0.121]   //  70 kt
-    ,[46.30, -0.013]   //  90 kt
-    ,[51.44,  0.057]   // 100 kt
-    ,[61.73,  0.227]   // 120 kt
-    ,[66.88,  0.321]   // 130 kt
-    ,[72.02,  0.415]   // 140 kt
+     [ 0.00, -0.07]   //   0 kt (OGE hover)
+    ,[10.29,  0.00]   //  20 kt
+    ,[20.58,  0.02]   //  40 kt
+    ,[36.01,  0.15]   //  70 kt
+    ,[46.30,  0.26]   //  90 kt
+    ,[51.44,  0.33]   // 100 kt
+    ,[61.73,  0.50]   // 120 kt
+    ,[66.88,  0.59]   // 130 kt
+    ,[72.02,  0.69]   // 140 kt
     ];
     _heli setVariable ["fza_sfmplus_tune_targetCycPitchTable", _cycPitchTgt];
 };
@@ -117,17 +122,20 @@ if (_cycPitchTgt isEqualTo []) then {
 //Cyclic ROLL position (left+).
 private _cycRollTgt = _heli getVariable ["fza_sfmplus_tune_targetCycRollTable", []];
 if (_cycRollTgt isEqualTo []) then {
+    //DEFLECTION from the Flat Pitch neutral index (survey abs - flatPitch). Flat Pitch
+    //cyclic roll = -0.10, so each survey value has +0.10 added -> true stick deflection
+    //(left+) over -1..+1. 0 kt = 80 ft OGE.
     _cycRollTgt =
     [
-     [ 0.00, -0.045]   //   0 kt (OGE hover)
-    ,[10.29,  0.142]   //  20 kt
-    ,[20.58,  0.133]   //  40 kt
-    ,[36.01,  0.048]   //  70 kt
-    ,[46.30,  0.013]   //  90 kt
-    ,[51.44,  0.006]   // 100 kt
-    ,[61.73,  0.015]   // 120 kt
-    ,[66.88,  0.031]   // 130 kt
-    ,[72.02,  0.052]   // 140 kt
+     [ 0.00,  0.05]   //   0 kt (OGE hover)
+    ,[10.29,  0.24]   //  20 kt
+    ,[20.58,  0.23]   //  40 kt
+    ,[36.01,  0.15]   //  70 kt
+    ,[46.30,  0.11]   //  90 kt
+    ,[51.44,  0.11]   // 100 kt
+    ,[61.73,  0.12]   // 120 kt
+    ,[66.88,  0.13]   // 130 kt
+    ,[72.02,  0.15]   // 140 kt
     ];
     _heli setVariable ["fza_sfmplus_tune_targetCycRollTable", _cycRollTgt];
 };

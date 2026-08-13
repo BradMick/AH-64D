@@ -27,7 +27,7 @@ private _gearRatio     = [ 72.291
 private _flapTimeConst = [ [2.0, 3.0]
                          , [0.5, 0.5]];
 private _inflowAlpha   = [ 0.05
-                         , 0.05];
+                         , 0.01];
 private _delta3        = [ 0.5
                          , 0.5];
 private _airfoilTable  = [ getArray (_sfmPlusConfig >> "airfoilTable02")

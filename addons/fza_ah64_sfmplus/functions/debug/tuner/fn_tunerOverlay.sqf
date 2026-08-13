@@ -131,9 +131,11 @@ private _pfh = [{
         private _t = _heli getVariable [_var, []];
         if (_t isEqualTo []) then { 1.0 } else { [_t, _lookupSpd] call fza_fnc_linearInterp select 1 }
     };
-    private _sMain = ["fza_sfmplus_tune_mainThrustTable"]  call _fnScalar;   // main rotor thrust
-    private _sTail = ["fza_sfmplus_tune_tailThrustTable"]  call _fnScalar;   // tail rotor thrust
-    private _sTorq = ["fza_sfmplus_tune_rtrTqScalarTable"] call _fnScalar;   // main rotor torque
+    //Model-aware: in BET mode the tuner drives the bet* output scalars, not the simple tables.
+    private _isBet = (fza_ah64_sfmPlusRotorModel == 1);
+    private _sMain = [if (_isBet) then { "fza_sfmplus_tune_betMainLiftTable"   } else { "fza_sfmplus_tune_mainThrustTable"  }] call _fnScalar;   // main rotor thrust
+    private _sTail = [if (_isBet) then { "fza_sfmplus_tune_betTailLiftTable"   } else { "fza_sfmplus_tune_tailThrustTable"  }] call _fnScalar;   // tail rotor thrust
+    private _sTorq = [if (_isBet) then { "fza_sfmplus_tune_betMainTorqueTable" } else { "fza_sfmplus_tune_rtrTqScalarTable" }] call _fnScalar;   // main rotor torque
     private _sStab = ["fza_sfmplus_tune_stabLiftScalarTable"] call _fnScalar;// stabilator lift
     private _sFuse = ["fza_sfmplus_tune_fuseSideScalarTable"] call _fnScalar; // fuselage side-force (manual)
     private _sFin  = ["fza_sfmplus_tune_finLiftScalarTable"]  call _fnScalar; // vertical fin lift (manual)
@@ -190,11 +192,13 @@ private _pfh = [{
     //Row 0 = header, rows 1..9 = the 9 airspeed bands. Col 0 = band (kt), cols 1..6
     //= mainThr tailThr torque stabLift fuseSide fin - each table's value at that
     //band. Highlights the band nearest the current speed so you can see what's live.
+    //Model-aware: BET mode shows the bet* output-scalar tables the tuner actually drives; the
+    //shared aero (stab/fuse/fin) are the same for both models.
     private _sclTables = [
-        "fza_sfmplus_tune_mainThrustTable",
-        "fza_sfmplus_tune_tailThrustTable",
-        "fza_sfmplus_tune_tailTrimTable",
-        "fza_sfmplus_tune_rtrTqScalarTable",
+        if (_isBet) then { "fza_sfmplus_tune_betMainLiftTable"   } else { "fza_sfmplus_tune_mainThrustTable"  },
+        if (_isBet) then { "fza_sfmplus_tune_betTailLiftTable"   } else { "fza_sfmplus_tune_tailThrustTable"  },
+        if (_isBet) then { "fza_sfmplus_tune_betTailTrimTable"   } else { "fza_sfmplus_tune_tailTrimTable"    },
+        if (_isBet) then { "fza_sfmplus_tune_betMainTorqueTable" } else { "fza_sfmplus_tune_rtrTqScalarTable" },
         "fza_sfmplus_tune_stabLiftScalarTable",
         "fza_sfmplus_tune_fuseSideScalarTable",
         "fza_sfmplus_tune_finLiftScalarTable"

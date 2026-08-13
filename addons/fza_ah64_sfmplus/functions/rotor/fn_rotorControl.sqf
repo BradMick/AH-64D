@@ -2,43 +2,54 @@
 
 params ["_heli", "_type", "_pitchMin", "_pitchMid", "_pitchMax", "_rollMin", "_rollMid", "_rollMax", "_collMin", "_collMid", "_collMax"];
 
-private _attHoldCycPitchOut     = 0.0;//_heli getVariable "fza_sfmplus_fmcAttHoldCycPitchOut";
-private _collToPitchOut         = 0.0;//_heli getVariable "fza_sfmplus_fmcCollectiveToPitch";
-private _yawToPitchOut          = 0.0;//_heli getVariable "fza_sfmplus_fmcYawToPitch";
-private _sasPitchOut            = 0.0;//_heli getVariable "fza_sfmplus_fmcSasPitchOut";
+//COMMANDED control positions = pilot stick + force-trim reference + SCAS. The pilot inputs
+//(cyclicFwdAft / cyclicLeftRight / pedalLeftRight / collectiveOutput) are ALREADY passed
+//through the hydraulic actuator LAG upstream in fn_getInput (fnc_actuator: crisp when FMC/
+//hydraulics are good, lagged when not), so no servo lag is applied here - that would double it.
+//The SAS terms (SCAS rate/command augmentation) are published FMC-gated in fn_fmc (zeroed on
+//an axis when that axis's FMC is off), so adding them here is safe when FMC is off = 0.
+//Per axis: pilot stick + force-trim reference + SAS (rate damping) + the FMC HOLD output
+//(attitude hold on pitch/roll, heading hold on yaw, altitude hold on collective). The hold and
+//SAS outputs are FMC-gated + primary-hydraulics-gated in fn_fmc (zeroed when their channel/hyd
+//is unavailable), so summing them here is safe (=0 when inactive).
 private _cyclicFwdAft           = _heli getVariable "fza_sfmplus_cyclicFwdAft";
 private _forceTrimPosPitch      = _heli getVariable "fza_ah64_forceTrimPosPitch";
-private _pitchInput             = _attHoldCycPitchOut + _sasPitchOut + _collToPitchOut + _yawToPitchOut + _cyclicFwdAft + _forceTrimPosPitch;
+private _sasPitchOut            = _heli getVariable "fza_sfmplus_fmcSasPitchOut";
+private _attHoldCycPitchOut     = _heli getVariable "fza_sfmplus_fmcAttHoldCycPitchOut";
+private _pitchInput             = _cyclicFwdAft + _forceTrimPosPitch + _sasPitchOut + _attHoldCycPitchOut;
 private _pitchFeather			= 0.0;
 
-private _attHoldCycRollOut      = 0.0;//_heli getVariable "fza_sfmplus_fmcAttHoldCycRollOut";
-private _sasRollOut             = 0.0;//_heli getVariable "fza_sfmplus_fmcSasRollOut";
-private _collToRollOut          = 0.0;//_heli getVariable "fza_sfmplus_fmcCollectiveToRoll";
-private _yawToRollOut           = 0.0;//_heli getVariable "fza_sfmplus_fmcYawToRoll";
 private _cyclicLeftRight        = _heli getVariable "fza_sfmplus_cyclicLeftRight";
 private _forceTrimPosRoll       = _heli getVariable "fza_ah64_forceTrimPosRoll";
-private _rollInput              = _attHoldCycRollOut + _sasRollOut + _collToRollOut + _yawToRollOut + _cyclicLeftRight + _forceTrimPosRoll;
+private _sasRollOut             = _heli getVariable "fza_sfmplus_fmcSasRollOut";
+private _attHoldCycRollOut      = _heli getVariable "fza_sfmplus_fmcAttHoldCycRollOut";
+private _rollInput              = _cyclicLeftRight + _forceTrimPosRoll + _sasRollOut + _attHoldCycRollOut;
 private _rollFeather			= 0.0;
 
-private _hdgHoldPedalYawOut     = 0.0;//_heli getVariable "fza_sfmplus_fmcHdgHoldPedalYawOut";
-private _sasYawOut              = 0.0;//_heli getVariable "fza_sfmplus_fmcSasYawOut";
 private _pedalLeftRight         = _heli getVariable "fza_sfmplus_pedalLeftRight";
 private _forceTrimPosYaw        = _heli getVariable "fza_ah64_forceTrimPosYaw";
-private _yawInput               = _hdgHoldPedalYawOut + _sasYawOut + _pedalLeftRight + _forceTrimPosYaw;
+private _sasYawOut              = _heli getVariable "fza_sfmplus_fmcSasYawOut";
+private _hdgHoldPedalYawOut     = _heli getVariable "fza_sfmplus_fmcHdgHoldPedalYawOut";
+private _yawInput               = _pedalLeftRight + _forceTrimPosYaw + _sasYawOut + _hdgHoldPedalYawOut;
 
-private _altHoldCollOut         = 0.0;//_heli getVariable "fza_sfmplus_fmcAltHoldCollOut";
 private _collectiveOut          = _heli getVariable "fza_sfmplus_collectiveOutput";
+private _altHoldCollOut         = _heli getVariable "fza_sfmplus_fmcAltHoldCollOut";
 private _collInput              = _collectiveOut + _altHoldCollOut;
 private _collFeather            = 0.0;
 
 switch (_type) do {
 	case MAIN: {
 		_pitchFeather  = [-1, 1, _pitchInput, _pitchMin, _pitchMid, _pitchMax] call fza_sfmplus_fnc_linearInterpFromCenter;
-		_rollFeather   = [-1, 1, _rollInput,  _rollMin,  _rollMid, _rollMax]   call fza_sfmplus_fnc_linearInterpFromCenter;
+		_rollFeather   = [-1, 1, _rollInput,  _rollMin,  _rollMid,  _rollMax]  call fza_sfmplus_fnc_linearInterpFromCenter;
 		_collFeather   = linearConversion[ 0, 1, _collInput,  _collMin, _collMax, true];
 	};
 	case TAIL: {
 		_collFeather   = [-1, 1, -_yawInput, _collMin, _collMid, _collMax] call fza_sfmplus_fnc_linearInterpFromCenter;
+		//DIAG (tail thrust sign): is the tail commanding POSITIVE or NEGATIVE pitch at hover?
+		//+collFeather should -> +X (right) thrust. If collFeather is + but Tail Fx is - -> geometry
+		//sign bug. If collFeather is - -> command-side (yawInput/range). Remove when found.
+		systemChat format ["TAIL yawInput=%1 collFeather=%2 (min/mid/max=%3/%4/%5)",
+			_yawInput toFixed 3, _collFeather toFixed 2, _collMin, _collMid, _collMax];
 	};
 };
 

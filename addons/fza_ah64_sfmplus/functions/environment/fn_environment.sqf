@@ -63,20 +63,21 @@ _heli setVariable ["fza_sfmplus_FAT", _temperature];
 _heli setVariable ["fza_sfmplus_rho", _dryAirDensity];
 
 //Wind world-space velocity vector — direction/speed display is handled in getVelocities
-private _windSpeed         = vectorMagnitude wind;
-private _windDirToward     = (windDir + 180) mod 360;
+private _windSpeed   = vectorMagnitude wind;
+private _windDirFrom = (windDir + 180) mod 360;
 
-//Tuner wind override — use a fixed azimuth / speed for repeatable tuning.
-//Speed 0 with the override on effectively turns wind off. Direction is the
-//azimuth the wind blows FROM (matching windDir); +180 gives the "toward" bearing.
 if (_heli getVariable ["fza_sfmplus_tune_windOverride", false]) then {
-    _windSpeed     = (_heli getVariable ["fza_sfmplus_tune_windSpeedKts", 0.0]) * KNOTS_TO_MPS;
-    _windDirToward = ((_heli getVariable ["fza_sfmplus_tune_windDirFrom", 0.0]) + 180) mod 360;
+    _windSpeed   = (_heli getVariable ["fza_sfmplus_tune_windSpeedKts", 0.0]) * KNOTS_TO_MPS;
+    _windDirFrom = (_heli getVariable ["fza_sfmplus_tune_windDirFrom", 0.0]);
 };
 
-private _velWindWorldSpace = [0,0,0];//[_windSpeed * sin _windDirToward, _windSpeed * cos _windDirToward, 0.0];
+_heli setVariable ["fza_sfmplus_windSpeedKts", round (_windSpeed * MPS_TO_KNOTS)];
+_heli setVariable ["fza_sfmplus_windDirFrom",  round _windDirFrom];
+
+private _velWindWorldSpace = [0,0,0];
 
 if (fza_ah64_sfmPlusRotorModel == 0) then {
+    private _windDirToward = (_windDirFrom + 180) mod 360;
     _velWindWorldSpace = [_windSpeed * sin _windDirToward, _windSpeed * cos _windDirToward, 0.0];
 };
 

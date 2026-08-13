@@ -2,9 +2,9 @@ params ["_heli"];
 #include "\fza_ah64_sfmplus\headers\core.hpp"
 
 private _pidHdg        = _heli getVariable "fza_sfmplus_pid_hdgHold";
-//_pidHdg set ["kp", H_KP];
-//_pidHdg set ["ki", H_KI];
-//_pidHdg set ["kd", H_KD];
+_pidHdg set ["kp", _heli getVariable "fza_sfmplus_tune_hdg_kp"];
+_pidHdg set ["ki", _heli getVariable "fza_sfmplus_tune_hdg_ki"];
+_pidHdg set ["kd", _heli getVariable "fza_sfmplus_tune_hdg_kd"];
 
 private _pidTrn        = _heli getVariable "fza_sfmplus_pid_trnCoord";
 //_pidTrn set ["kp", T_KP];

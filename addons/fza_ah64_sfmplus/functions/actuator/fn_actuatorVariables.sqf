@@ -8,3 +8,6 @@ _heli setVariable ["fza_sfmplus_prevLagOutputYaw",   0.0];
 
 _heli setVariable ["fza_sfmplus_prevLagInputRoll",   0.0];
 _heli setVariable ["fza_sfmplus_prevLagOutputRoll",  0.0];
+
+_heli setVariable ["fza_sfmplus_prevLagInputColl",   0.0];
+_heli setVariable ["fza_sfmplus_prevLagOutputColl",  0.0];

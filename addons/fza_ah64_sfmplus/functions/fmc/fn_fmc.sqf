@@ -1,5 +1,6 @@
 params ["_heli"];
 #include "\fza_ah64_sfmplus\headers\core.hpp"
+#include "\fza_ah64_systems\headers\systems.hpp"
 
 private _mechanicalMixing = false;
 
@@ -52,6 +53,22 @@ if (!(_heli getVariable "fza_ah64_fmcCollOn")) then {
     _altHoldCollOut = 0.0;
 };
 
+//PRIMARY HYDRAULICS: the FMC/SCAS operate THROUGH the primary hydraulic system. If primary
+//hydraulics are lost, the FMC/SCAS can no longer function AT ALL - every augmentation output
+//(SAS all axes + the FMC holds incl. collective/altitude) drops to zero, leaving only the raw
+//mechanical control path (which still has its always-on actuator lag). Applies to all axes.
+private _priHydLost = (_heli getHitPointDamage "hit_hyd_pripump") >= SYS_HYD_DMG_THRESH;
+if (_priHydLost) then {
+    _SASPitchOutput     = 0.0;
+    _SASRollOutput      = 0.0;
+    _SASYawOutput       = 0.0;
+
+    _attHoldCycPitchOut = 0.0;
+    _attHoldCycRollOut  = 0.0;
+    _hdgHoldPedalYawOut = 0.0;
+    _altHoldCollOut     = 0.0;
+};
+
 //Control mixing outputs
 _heli setVariable ["fza_sfmplus_fmcCollectiveToPitch",         0.0];//_collToPitchOut];
 _heli setVariable ["fza_sfmplus_fmcYawToPitch",                0.0];//_yawToPitchOut];
@@ -62,11 +79,13 @@ _heli setVariable ["fza_sfmplus_fmcCollectiveAirspeedToYaw",   0.0];//_collAirsp
 //Flight Management Computer (FMC) outputs
 _heli setVariable ["fza_sfmplus_fmcAttHoldCycPitchOut",        _attHoldCycPitchOut];
 _heli setVariable ["fza_sfmplus_fmcAttHoldCycRollOut",         _attHoldCycRollOut];
-_heli setVariable ["fza_sfmplus_fmcHdgHoldPedalYawOut",        0.0];//_hdgHoldPedalYawOut];
+_heli setVariable ["fza_sfmplus_fmcHdgHoldPedalYawOut",        _hdgHoldPedalYawOut];
 _heli setVariable ["fza_sfmplus_fmcAltHoldCollOut",            _altHoldCollOut];
-//Stability Augmentation System (SAS) outputs
-_heli setVariable ["fza_sfmplus_fmcSasPitchOut",               0.0];//_SASPitchOutput];
-_heli setVariable ["fza_sfmplus_fmcSasRollOut",                0.0];//_SASRollOutput];
-_heli setVariable ["fza_sfmplus_fmcSasYawOut",                 0.0];//_SASYawOutput];
+//Stability & Command Augmentation (SCAS) outputs. Each axis's SAS is ALREADY zeroed above
+//when that axis's FMC is off (fmcPitchOn/fmcRollOn/fmcYawOn blocks) - SCAS works through the
+//FMC channel, so no FMC on an axis = no SCAS on that axis. Publishing the FMC-gated values.
+_heli setVariable ["fza_sfmplus_fmcSasPitchOut",               _SASPitchOutput];
+_heli setVariable ["fza_sfmplus_fmcSasRollOut",                _SASRollOutput];
+_heli setVariable ["fza_sfmplus_fmcSasYawOut",                 _SASYawOutput];
 
 //systemChat format ["%1 -- %2 -- %3 -- %4 -- %5", _collToPitchOut toFixed 2, _yawToPitchOut toFixed 2, _collToRollOut toFixed 2, _yawToRollOut toFixed 2, _collToYawOut toFixed 2];

@@ -5,7 +5,23 @@ private _dissymetryOfLift = false;
 private _totalFlapMoment  = 0.0;
 private _totalPower       = (_heli getVariable "fza_sfmplus_rotorReactionTorque") select _rotorIndex;
 
-private _bladeScale = 1.0;
+//BET FORCE-OUTPUT TUNING SCALARS (physics-derived forces, multiplied at the output so the master
+//tuner can trim BET). _bladeScale = the LIFT scalar (-> thrust), airspeed-banded, per rotor
+//(main uses betMainLiftTable, tail uses betTailLiftTable). A SEPARATE _torqueScale (-> reaction
+//couple, applied to _totalPower below) lets thrust and yaw tune independently. Both default 1.0
+//(pure physics). Tail also carries a betTailTrimTable additive term (airspeed trim/reversal),
+//folded into the tail lift scalar. Looked up once here per blade from the aircraft's fwd speed.
+//LIFT scalar only (thrust). The TORQUE scalar is applied to the reaction couple in fn_rotor.
+private _velBet   = vectorMagnitude [(_heli getVariable "fza_sfmplus_velModelSpace" select 0), (_heli getVariable "fza_sfmplus_velModelSpace" select 1)];
+private _isTail   = _rotorIndex == 1;
+private _liftTbl  = _heli getVariable [(if (_isTail) then { "fza_sfmplus_tune_betTailLiftTable" } else { "fza_sfmplus_tune_betMainLiftTable" }), []];
+private _bladeScale = if (_liftTbl isEqualTo []) then { 1.0 } else { [_liftTbl, _velBet] call fza_fnc_linearInterp select 1 };
+//Tail airspeed trim/reversal: additive to the tail LIFT scalar (the ~100kt tail-thrust reversal
+//the simple model dials in via tailTrimTable; BET had no equivalent). Only for the tail rotor.
+if (_isTail) then {
+    private _trimTbl = _heli getVariable ["fza_sfmplus_tune_betTailTrimTable", []];
+    if !(_trimTbl isEqualTo []) then { _bladeScale = _bladeScale + ([_trimTbl, _velBet] call fza_fnc_linearInterp select 1); };
+};
 
 [_heli, "fza_sfmplus_rotorFlapMoment", _rotorIndex, _bladeIndex, 0.0] call fza_fnc_setMultiArrayVariable;
 
@@ -50,7 +66,25 @@ for "_i" from 0 to (_numElements - 1) do {
 	private _up = vectorNormalized (_spanDir vectorCrossProduct _chordLine);
 	if ((_up vectorDotProduct _uVec) < 0.0) then { _up = _up vectorMultiply -1.0; };
 
-	private _localWind   = _relWind vectorAdd _rotRelWind;
+	// AIRFRAME ANGULAR-RATE contribution to the blade's local wind = the velocity this blade
+	// element has because the whole AIRFRAME is rotating (roll/pitch/yaw rate). v = omega_body
+	// x r, where r = element position relative to the CoM. This is the physics that gives a
+	// rotor its ROLL/PITCH RATE DAMPING: when the airframe rolls, the down-going blade sees
+	// MORE upflow and the up-going blade LESS, so lift shifts asymmetrically and the disc flaps
+	// to OPPOSE the roll. Omitting it (as before) left the rotor with ZERO rate damping - a ~1.7
+	// deg disc tilt rolled unchecked to tens of deg/s. All model space (angVelModelSpace and the
+	// positions), so the cross product is frame-consistent. This is real, pure-mechanical damping.
+	private _bodyRate     = _heli getVariable ["fza_sfmplus_angVelModelSpace", [0,0,0]];
+	//Scalar on the rate-damping term. 1.0 = bare physics. Arma derives the airframe's roll/pitch
+	//INERTIA from the p3d mass geometry and it appears too LOW (a ~1deg disc tilt over-rolls), so
+	//the bare-physics rotor damping alone doesn't fully tame the pure-mechanical response. Scaling
+	//this >1 adds the extra rate damping that the missing inertia would otherwise provide - the
+	//honest knob for "compensate for Arma's under-modeled inertia". Tunable; dial for the right
+	//pure-mechanical feel (no SAS). Held in a variable so it can be adjusted without a reload.
+	private _rateDampScalar = _heli getVariable ["fza_sfmplus_rotorRateDampScalar", 1.0];
+	private _bodyRateWind = (_bodyRate vectorCrossProduct (_liftPos vectorDiff (getCenterOfMass _heli))) vectorMultiply _rateDampScalar;
+
+	private _localWind    = _relWind vectorAdd _rotRelWind vectorAdd _bodyRateWind;
 
 	// Freestream axial and lateral for Glauert inflow — freestream only, no rotation.
 	private _vc          = _uVec vectorDotProduct _relWind;
@@ -122,7 +156,9 @@ for "_i" from 0 to (_numElements - 1) do {
 	private _vTangential  = _r * _omega;
 	private _P_induced    = _lift * _vi;
 	private _P_profile    = _drag * _vTangential;
-	_totalPower = _totalPower + (_P_induced + _P_profile) * _bladeScale;
+	//Power stays PHYSICS-TRUE here (drives engine load/governor). The TORQUE tuning scalar is
+	//applied ONLY to the fuselage reaction couple in fn_rotor (the yaw knob), NOT to engine load.
+	_totalPower = _totalPower + (_P_induced + _P_profile);
 
 
 	private _thrustAccum = (_heli getVariable "fza_sfmplus_rotorThrustAccum") select _rotorIndex;
@@ -134,6 +170,16 @@ for "_i" from 0 to (_numElements - 1) do {
 
 	_heli addForce [_heli vectorModelToWorld _liftVector, _liftPos];
 	_heli addForce [_heli vectorModelToWorld _dragVector, _liftPos];
+
+	// Accumulate this element's net FORCE into the per-rotor total (model space, *deltaTime -
+	// same convention as the other generators). This is the ACTUAL applied blade force (the same
+	// _liftVector/_dragVector added to the airframe above). Summed across all elements/blades,
+	// registered in fn_rotor for the force-log + accumulator. The MOMENT is NOT re-derived here
+	// (no bespoke r x F) - fn_rotor logs the rotor's OWN computed moment (the reaction couple it
+	// actually applies via addTorque); the offset blade forces' moment is Arma's to compute.
+	private _elemForce  = _liftVector vectorAdd _dragVector;
+	private _netForce   = (_heli getVariable "fza_sfmplus_rotorNetForce")  select _rotorIndex;
+	[_heli, "fza_sfmplus_rotorNetForce",  _rotorIndex, (_netForce  vectorAdd _elemForce)]  call fza_fnc_setArrayVariable;
 
 
 	#ifdef __A3_DEBUG__

@@ -320,6 +320,9 @@ if (!_hydFailure || _emerHydOn) then {
         //systemChat format ["HOTAS collective! -- %1", (_heli getVariable "fza_sfmplus_collectiveOutput") toFixed 3];
     };
     if (_isPlaying) then {
+        //Hydraulic actuator lag on collective (crisp with FMC/hydraulics good, lagged when not) -
+        //same treatment as cyclic/pedal above.
+        _collectiveValue = [_heli, "collective", _collectiveValue, _inputLagValue] call fza_sfmplus_fnc_actuator;
         _heli setVariable ["fza_sfmplus_collectiveOutput", _collectiveValue];
     };
 };

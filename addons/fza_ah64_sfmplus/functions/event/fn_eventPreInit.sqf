@@ -55,6 +55,25 @@ fza_sfmplus_forceLogOn = false;
     [0, [false, false, false]]
 ] call CBA_fnc_addKeybind;
 
+//PID AUTO-TUNER on/off - toggle the Ziegler-Nichols PID auto-tuner without opening the panel.
+//Flips fza_sfmplus_tune_pidAutoOn on the aircraft; the PID-auto PFH (installed at aircraft init
+//in fn_coreConfig) reads it every frame (rising edge restarts the schedule from PID 0). A hint
+//confirms the new state. Bind a key (e.g. Ctrl+>) under Configure > Controls > Addons (AH-64D).
+["AH-64D", "ToggleFMPidAutoTuner", ["Toggle FM PID Auto-Tuner", "Turns the Ziegler-Nichols PID auto-tuner on/off without opening the panel"],
+    {
+        private _veh = vehicle player;
+        if (_veh isKindOf "fza_ah64base" || {_veh getVariable ["fza_ah64_sfmPlusInitialised", false]}) then {
+            private _on = !(_veh getVariable ["fza_sfmplus_tune_pidAutoOn", false]);
+            _veh setVariable ["fza_sfmplus_tune_pidAutoOn", _on, true];
+            hintSilent parseText format ["<t size='1.4' font='EtelkaMonospacePro' color='%1'>PID Auto-Tune %2</t>",
+                (if (_on) then { "#66ff66" } else { "#ff6666" }), (if (_on) then { "ON" } else { "OFF" })];
+        };
+        false
+    },
+    {false},
+    [0, [false, false, false]]
+] call CBA_fnc_addKeybind;
+
 //private _nonAnalogEvents = ["Activate", "Deactivate"];
 //
 //{

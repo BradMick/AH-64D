@@ -45,6 +45,7 @@ class CfgFunctions
             class tunerBalance {R;};
             class tunerTargets {R;};
             class tunerMaster {R;};
+            class tunerPidAuto {R;};
             class tunerYawDamper {R;};
             class tunerForceTables {R;};
             class tunerOverlay {R;};
@@ -144,6 +145,7 @@ class CfgFunctions
         };
         class utility {
             file = "\fza_ah64_sfmplus\functions";
+            class accumForce {R;};
             class analogHandler {R;};
             class calculateAeroValues {R;};
             class centerTrimMode {R;};
