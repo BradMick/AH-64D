@@ -46,6 +46,8 @@ class CfgFunctions
             class tunerTargets {R;};
             class tunerMaster {R;};
             class tunerPidAuto {R;};
+            class tunerStepTune {R;};
+            class tunerHoldAuto {R;};
             class tunerYawDamper {R;};
             class tunerForceTables {R;};
             class tunerOverlay {R;};

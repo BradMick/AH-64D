@@ -51,6 +51,11 @@ private _attHoldCycRollOut  = 0.0;
 
 //Position hold
 if (_gndSpeed <= POS_HOLD_SPEED_SWITCH) then {
+    //Re-capture the hold datum on the rising edge into pos mode (e.g. decelerating vel->pos) so
+    //the outer loop holds WHERE THE AIRCRAFT SETTLED, not the far-off point where hold engaged.
+    if (_subMode != "pos") then {
+        _heli setVariable ["fza_ah64_attHoldDesiredPos", getPos _heli, true];
+    };
     [_heli, "fza_ah64_attHoldSubMode", "pos"] call fza_fnc_updateNetworkGlobal;
 };
 //Velocity hold
@@ -65,11 +70,42 @@ if (_gndSpeed > VEL_HOLD_SPEED_SWITCH_ACCEL) then {
 };
 
 if (_heli getVariable "fza_ah64_attHoldActive" && !(_heli getVariable "fza_ah64_forceTrimInterupted")) then {
-    //Position hold
+    //Position hold - CASCADED: OUTER position-P loop -> velocity setpoint -> INNER velocity PID.
+    //The inner loop alone only nulls velocity, which leaves a small steady residual -> slow creep.
+    //The outer loop adds a POSITION reference: it drives the model-space position error (captured
+    //datum - current pos) to zero by commanding a small RETURN velocity for the inner loop, so the
+    //aircraft actually holds the POINT (zero drift), like the real pos hold. Outer is pure-P (an
+    //integrator here would double-wind-up with the inner loop). Inner sign convention is UNCHANGED
+    //from the working vel branch (roll setpoint vs -_velX, pitch vs +_velY).
     if (_subMode == "pos") then {
-        private _roll  = [_pidRoll,  _deltaTime, 0.0, -_velX] call fza_fnc_pidRun;
+        //--- OUTER: model-space position error (datum - current), rotated by heading -----------
+        private _desiredPos = _heli getVariable ["fza_ah64_attHoldDesiredPos", getPos _heli];
+        private _dPos = _desiredPos vectorDiff (getPos _heli);
+        private _dwX  = _dPos select 0;
+        private _dwY  = _dPos select 1;
+        private _hdg  = direction _heli;
+        private _errX = (_dwX * cos _hdg) - (_dwY * sin _hdg);   // model X error, right+
+        private _errY = (_dwX * sin _hdg) + (_dwY * cos _hdg);   // model Y error, fwd+
+
+        private _pKp  = _heli getVariable "fza_sfmplus_tune_posOuter_kp";
+        private _pMax = _heli getVariable "fza_sfmplus_tune_posOuter_maxVel";
+        private _pDb  = _heli getVariable "fza_sfmplus_tune_posOuter_db";
+        private _cmdVelX = if (abs _errX < _pDb) then { 0.0 } else { [_pKp * _errX, -_pMax, _pMax] call BIS_fnc_clamp };
+        private _cmdVelY = if (abs _errY < _pDb) then { 0.0 } else { [_pKp * _errY, -_pMax, _pMax] call BIS_fnc_clamp };
+
+        //TUNER INTERLOCK: while the hold auto-tuner is grading the INNER velocity loop, OPEN the
+        //outer loop (command zero velocity) so the tuner rings out pure velocity-to-zero and the
+        //two loops don't fight. Cleared when not tuning -> normal closed cascade returns to point.
+        if (_heli getVariable ["fza_sfmplus_holdAuto_openOuter", false]) then {
+            _cmdVelX = 0.0; _cmdVelY = 0.0;
+        };
+
+        //--- INNER: velocity PID drives measured velocity to the outer's setpoint --------------
+        //Inner measures -_velX (roll) / +_velY (pitch). To command _velX = _cmdVelX the roll
+        //setpoint is -_cmdVelX (matched to the -_velX measure); pitch setpoint is _cmdVelY.
+        private _roll  = [_pidRoll,  _deltaTime, -_cmdVelX, -_velX] call fza_fnc_pidRun;
         _roll          = [_roll,  -1.0, 1.0] call BIS_fnc_clamp;
-        private _pitch = [_pidPitch, _deltaTime, 0.0,  _velY] call fza_fnc_pidRun;
+        private _pitch = [_pidPitch, _deltaTime,  _cmdVelY,  _velY] call fza_fnc_pidRun;
         _pitch         = [_pitch, -1.0, 1.0] call BIS_fnc_clamp;
 
         _attHoldCycPitchOut = _pitch;
@@ -91,10 +127,11 @@ if (_heli getVariable "fza_ah64_attHoldActive" && !(_heli getVariable "fza_ah64_
     if (_subMode == "att") then {
        (_heli getVariable "fza_ah64_attHoldDesiredAtt")
               params ["_setPitch", "_setRoll"];
-        //private _pitchError = [_curPitch - _setPitch] call CBA_fnc_simplifyAngle180;
-        //private _rollError  = [_curRoll  - _setRoll]  call CBA_fnc_simplifyAngle180;
-        private _pitchError = [_curPitch - SET_PITCH] call CBA_fnc_simplifyAngle180;
-        private _rollError  = [_curRoll  - SET_ROLL]  call CBA_fnc_simplifyAngle180;
+        //Hold the CAPTURED attitude (set on hold-enable / by the auto-tuner). The previous
+        //SET_PITCH/SET_ROLL were undefined macros - this branch errored, so att-hold never
+        //worked and could not be auto-tuned. Use the captured setpoint (the intended code).
+        private _pitchError = [_curPitch - _setPitch] call CBA_fnc_simplifyAngle180;
+        private _rollError  = [_curRoll  - _setRoll]  call CBA_fnc_simplifyAngle180;
 
 
         private _roll  = [_pidRoll_att,  _deltaTime, 0.0, _rollError] call fza_fnc_pidRun;

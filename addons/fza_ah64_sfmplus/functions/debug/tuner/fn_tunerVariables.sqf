@@ -325,31 +325,32 @@ _spec pushBack (["Airframe", "fza_sfmplus_tune_ogeThrust", "OGE Hover Thrust (80
     1.0, "fza_sfmplus_tune_ogeThrust",
     ["fn_simpleRotorMain.sqf", "// OGE hover thrust scalar: %1"], 0.5, 1.5] call _fnMake);
 _spec pushBack (["Airframe", "fza_sfmplus_tune_igeColl", "IGE Hover Target Coll (5 ft)", "Hover (IGE / OGE)", "scalar",
-    0.555, "fza_sfmplus_tune_igeColl",
+    0.56, "fza_sfmplus_tune_igeColl",
     ["fn_tunerMaster.sqf", "// IGE hover target collective: %1"], 0.0, 1.0] call _fnMake);
 _spec pushBack (["Airframe", "fza_sfmplus_tune_ogeColl", "OGE Hover Target Coll (80 ft)", "Hover (IGE / OGE)", "scalar",
-    0.640, "fza_sfmplus_tune_ogeColl",
+    0.64, "fza_sfmplus_tune_ogeColl",
     ["fn_tunerMaster.sqf", "// OGE hover target collective: %1"], 0.0, 1.0] call _fnMake);
-// Hover CONTROL-POSITION targets (where to put the cyclic/pedal at the hover). The
-// master drives the controls to these when the matching hover-tune toggle is on, and
-// tunes tail + main thrust to trim there. Arma: cyc fwd+/left+, pedal right+ [-1..1].
+// Hover CONTROL-POSITION targets (where to put the cyclic/pedal at the hover). The master
+// drives the controls to these when the matching hover-tune toggle is on, and tunes tail +
+// main thrust to trim there. Arma: cyc fwd+/left+, pedal right+ [-1..1]. Values are DEFLECTION
+// from Flat Pitch (same reference as the airspeed target tables), from the hover flight survey.
 _spec pushBack (["Airframe", "fza_sfmplus_tune_igeCycPitch", "IGE Cyclic Pitch (fwd+)", "Hover (IGE / OGE)", "scalar",
-    -0.342, "fza_sfmplus_tune_igeCycPitch",
+    -0.07, "fza_sfmplus_tune_igeCycPitch",
     ["fn_tunerMaster.sqf", "// IGE hover cyclic pitch: %1"], -1.0, 1.0] call _fnMake);
 _spec pushBack (["Airframe", "fza_sfmplus_tune_igeCycRoll", "IGE Cyclic Roll (left+)", "Hover (IGE / OGE)", "scalar",
-    -0.045, "fza_sfmplus_tune_igeCycRoll",
+    0.03, "fza_sfmplus_tune_igeCycRoll",
     ["fn_tunerMaster.sqf", "// IGE hover cyclic roll: %1"], -1.0, 1.0] call _fnMake);
 _spec pushBack (["Airframe", "fza_sfmplus_tune_igePedal", "IGE Pedal (right+)", "Hover (IGE / OGE)", "scalar",
-    -0.352, "fza_sfmplus_tune_igePedal",
+    -0.49, "fza_sfmplus_tune_igePedal",
     ["fn_tunerMaster.sqf", "// IGE hover pedal: %1"], -1.0, 1.0] call _fnMake);
 _spec pushBack (["Airframe", "fza_sfmplus_tune_ogeCycPitch", "OGE Cyclic Pitch (fwd+)", "Hover (IGE / OGE)", "scalar",
-    -0.342, "fza_sfmplus_tune_ogeCycPitch",
+    -0.07, "fza_sfmplus_tune_ogeCycPitch",
     ["fn_tunerMaster.sqf", "// OGE hover cyclic pitch: %1"], -1.0, 1.0] call _fnMake);
 _spec pushBack (["Airframe", "fza_sfmplus_tune_ogeCycRoll", "OGE Cyclic Roll (left+)", "Hover (IGE / OGE)", "scalar",
-    -0.045, "fza_sfmplus_tune_ogeCycRoll",
+    0.06, "fza_sfmplus_tune_ogeCycRoll",
     ["fn_tunerMaster.sqf", "// OGE hover cyclic roll: %1"], -1.0, 1.0] call _fnMake);
 _spec pushBack (["Airframe", "fza_sfmplus_tune_ogePedal", "OGE Pedal (right+)", "Hover (IGE / OGE)", "scalar",
-    -0.352, "fza_sfmplus_tune_ogePedal",
+    -0.60, "fza_sfmplus_tune_ogePedal",
     ["fn_tunerMaster.sqf", "// OGE hover pedal: %1"], -1.0, 1.0] call _fnMake);
 
 // Target ROLL attitude (deg, + = right wing down) by AIRSPEED band. This is the
@@ -519,5 +520,14 @@ _spec pushBack (["SCAS", "fza_sfmplus_tune_pidAutoOn", "** AUTO-TUNE ALL PIDs (Z
             _def, _var, ["fn_coreConfig.sqf", format ["// %1 %2: %3", _keyBase, _gain, "%1"]], 0.0, _max] call _fnMake);
     } forEach [["kp", _kp], ["ki", _ki], ["kd", _kd]];
 } forEach _scasPids;
+
+//OUTER position loop (cascaded pos->vel hold). Not a kp/ki/kd triple: a proportional gain, a
+//return-speed cap, and a datum deadband. The inner velocity loop is "Pos/Vel Hold" above.
+_spec pushBack (["SCAS", "fza_sfmplus_tune_posOuter_kp", "Pos Hold Outer - KP (pos->vel)", "Pos Hold - Outer", "scalar",
+    0.2500, "fza_sfmplus_tune_posOuter_kp", ["fn_coreConfig.sqf", "// posOuter kp: %1"], 0.0, 2.0] call _fnMake);
+_spec pushBack (["SCAS", "fza_sfmplus_tune_posOuter_maxVel", "Pos Hold Outer - Max Return Vel (m/s)", "Pos Hold - Outer", "scalar",
+    1.5000, "fza_sfmplus_tune_posOuter_maxVel", ["fn_coreConfig.sqf", "// posOuter maxVel: %1"], 0.0, 10.0] call _fnMake);
+_spec pushBack (["SCAS", "fza_sfmplus_tune_posOuter_db", "Pos Hold Outer - Deadband (m)", "Pos Hold - Outer", "scalar",
+    0.3000, "fza_sfmplus_tune_posOuter_db", ["fn_coreConfig.sqf", "// posOuter db: %1"], 0.0, 3.0] call _fnMake);
 
 _spec

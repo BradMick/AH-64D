@@ -55,17 +55,38 @@ fza_sfmplus_forceLogOn = false;
     [0, [false, false, false]]
 ] call CBA_fnc_addKeybind;
 
-//PID AUTO-TUNER on/off - toggle the Ziegler-Nichols PID auto-tuner without opening the panel.
-//Flips fza_sfmplus_tune_pidAutoOn on the aircraft; the PID-auto PFH (installed at aircraft init
-//in fn_coreConfig) reads it every frame (rising edge restarts the schedule from PID 0). A hint
-//confirms the new state. Bind a key (e.g. Ctrl+>) under Configure > Controls > Addons (AH-64D).
-["AH-64D", "ToggleFMPidAutoTuner", ["Toggle FM PID Auto-Tuner", "Turns the Ziegler-Nichols PID auto-tuner on/off without opening the panel"],
+//SAS AUTO-TUNER on/off - toggle the Ziegler-Nichols SAS rate-damper tuner without opening the
+//panel. Flips fza_sfmplus_tune_pidAutoOn; the SAS-auto PFH (installed at aircraft init in
+//fn_coreConfig) reads it every frame (rising edge restarts from SAS pitch). Run this FIRST to
+//damp the airframe. A hint confirms the state. Bind a key (e.g. Ctrl+>) under Configure >
+//Controls > Addons (AH-64D).
+["AH-64D", "ToggleFMPidAutoTuner", ["Toggle FM SAS Auto-Tuner", "Turns the Ziegler-Nichols SAS rate-damper tuner on/off (run this first)"],
     {
         private _veh = vehicle player;
         if (_veh isKindOf "fza_ah64base" || {_veh getVariable ["fza_ah64_sfmPlusInitialised", false]}) then {
             private _on = !(_veh getVariable ["fza_sfmplus_tune_pidAutoOn", false]);
             _veh setVariable ["fza_sfmplus_tune_pidAutoOn", _on, true];
-            hintSilent parseText format ["<t size='1.4' font='EtelkaMonospacePro' color='%1'>PID Auto-Tune %2</t>",
+            hintSilent parseText format ["<t size='1.4' font='EtelkaMonospacePro' color='%1'>SAS Auto-Tune %2</t>",
+                (if (_on) then { "#66ff66" } else { "#ff6666" }), (if (_on) then { "ON" } else { "OFF" })];
+        };
+        false
+    },
+    {false},
+    [0, [false, false, false]]
+] call CBA_fnc_addKeybind;
+
+//HOLD AUTO-TUNER on/off - toggle the Ziegler-Nichols HOLD PID tuner without opening the panel.
+//Flips fza_sfmplus_tune_holdAutoOn; the hold-auto PFH reads it every frame (rising edge restarts).
+//It tunes the hold PID for whatever submode is LIVE at your ground speed (pos <5kt / vel 5-40kt /
+//att >40kt) - fly the regime you want to tune. Run this AFTER the SAS tuner. Won't run while the
+//SAS tuner is on. Bind a separate key under Configure > Controls > Addons (AH-64D).
+["AH-64D", "ToggleFMHoldAutoTuner", ["Toggle FM Hold PID Auto-Tuner", "Tunes the hold PID for the submode live at your current ground speed (run after SAS)"],
+    {
+        private _veh = vehicle player;
+        if (_veh isKindOf "fza_ah64base" || {_veh getVariable ["fza_ah64_sfmPlusInitialised", false]}) then {
+            private _on = !(_veh getVariable ["fza_sfmplus_tune_holdAutoOn", false]);
+            _veh setVariable ["fza_sfmplus_tune_holdAutoOn", _on, true];
+            hintSilent parseText format ["<t size='1.4' font='EtelkaMonospacePro' color='%1'>HOLD Auto-Tune %2</t>",
                 (if (_on) then { "#66ff66" } else { "#ff6666" }), (if (_on) then { "ON" } else { "OFF" })];
         };
         false

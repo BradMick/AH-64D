@@ -121,7 +121,12 @@ private _pfh = [{
     (_disp displayCtrl 54313) ctrlSetText format ["Coll %1%% (tgt %2%%)", _coll toFixed 0, _tgtC toFixed 0];
     (_disp displayCtrl 54314) ctrlSetText format ["Cyc fwd+ %1 (tgt %2)  left+ %3 (tgt %4)  Ped rgt+ %5 (tgt %6)",
         _cycFA toFixed 2, _tgtCycFA toFixed 2, _cycLR toFixed 2, _tgtCycLR toFixed 2, _ped toFixed 2, _tgtPed toFixed 2];
-    (_disp displayCtrl 54315) ctrlSetText format ["MASTER: %1", _mAxis];
+    //Line 54315: shows the PID AUTO-TUNE per-axis status (SAS or HOLD tuner) WHEN a tuner is
+    //running - the important thing to watch while flying - else the MASTER axis. The status var
+    //is shared by both tuners; it packs all axes + each axis's settle state (n/N or SETTLED).
+    private _pidStat  = _heli getVariable ["fza_sfmplus_pidAuto_status", "PID auto-tune idle"];
+    private _pidOn    = (_heli getVariable ["fza_sfmplus_tune_pidAutoOn", false]) || (_heli getVariable ["fza_sfmplus_tune_holdAutoOn", false]);
+    (_disp displayCtrl 54315) ctrlSetText (if (_pidOn) then { _pidStat } else { format ["MASTER: %1", _mAxis] });
 
     //The FORCE SCALARS the master is actually tuning, at the current speed. These
     //are the outputs of the tuner - what it's modifying on the four main force

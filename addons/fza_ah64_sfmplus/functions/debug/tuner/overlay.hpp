@@ -104,7 +104,7 @@ class RscTitles
             class L2  : L1 { idc = 54312; y = "safeZoneY + 0.1225"; };
             class L3  : L1 { idc = 54313; y = "safeZoneY + 0.1570"; };
             class L4  : L1 { idc = 54314; y = "safeZoneY + 0.1915"; };
-            class L5  : L1 { idc = 54315; y = "safeZoneY + 0.2260"; };
+            class L5  : L1 { idc = 54315; y = "safeZoneY + 0.2260"; sizeEx = 0.022; }; // MASTER + PID auto-tune status; smaller font so the combined line fits
             //SCALARS - single line, smaller font so all 5 scalars fit the width.
             class L6  : L1 { idc = 54316; y = "safeZoneY + 0.2605"; sizeEx = 0.022; };
 

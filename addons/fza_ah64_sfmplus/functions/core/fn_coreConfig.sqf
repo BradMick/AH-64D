@@ -167,16 +167,33 @@ _heli setVariable ["fza_sfmplus_tune_sasYaw_kp",   0.3000]; _heli setVariable ["
 _heli setVariable ["fza_sfmplus_tune_attPitch_kp", 0.0200]; _heli setVariable ["fza_sfmplus_tune_attPitch_ki", 0.0008]; _heli setVariable ["fza_sfmplus_tune_attPitch_kd", 0.0040];
 _heli setVariable ["fza_sfmplus_tune_attRoll_kp",  0.0100]; _heli setVariable ["fza_sfmplus_tune_attRoll_ki",  0.0005]; _heli setVariable ["fza_sfmplus_tune_attRoll_kd",  0.0020];
 //Position + Velocity hold (shared pid_pitch / pid_roll - pos uses setpoint 0, vel uses desired
-//vel). Same conservative cut as attitude hold - same responsive axes, same +-0.1 clamp.
+//vel). At the committed baseline (0.030/0.015): stable but loose (slow drift at a hover). Raising
+//kp to 0.10/0.06 made ENGAGE violent - it slammed cyclic and threw the aircraft into a roll/pitch
+//(strong P response to the velocity present at engage + a big first-frame derivative spike).
+//Reverted to baseline. Firming this up needs the derivative kick handled first, not just more kp.
 _heli setVariable ["fza_sfmplus_tune_posPitch_kp", 0.0300]; _heli setVariable ["fza_sfmplus_tune_posPitch_ki", 0.0010]; _heli setVariable ["fza_sfmplus_tune_posPitch_kd", 0.0080];
 _heli setVariable ["fza_sfmplus_tune_posRoll_kp",  0.0150]; _heli setVariable ["fza_sfmplus_tune_posRoll_ki",  0.0010]; _heli setVariable ["fza_sfmplus_tune_posRoll_kd",  0.0060];
+//OUTER position loop (cascade, in fn_fmcAttitudeHold pos branch). Pure-P: position error (m) ->
+//return-velocity setpoint (m/s) for the inner velocity loop, so pos hold holds the POINT (zero
+//drift) instead of leaving a residual creep. kp gentle, maxVel caps return speed (eases back, no
+//dart), db is a small deadband so it doesn't hunt on the datum. Live-tunable.
+_heli setVariable ["fza_sfmplus_tune_posOuter_kp",     0.2500];   // pos err (m) -> vel setpoint (m/s)
+_heli setVariable ["fza_sfmplus_tune_posOuter_maxVel", 1.5000];   // m/s cap on commanded return speed
+_heli setVariable ["fza_sfmplus_tune_posOuter_db",     0.3000];   // m deadband around the datum
+//Hold auto-tuner interlock: when true, the pos-hold OUTER loop is opened (velocity setpoint 0) so
+//the hold tuner can grade the inner velocity loop cleanly. false = closed cascade (returns to point).
+_heli setVariable ["fza_sfmplus_holdAuto_openOuter", false];
 //Heading hold. Yaw is less twitchy (more inertia, firm yaw SAS kp 0.30) - moderate cut only.
 _heli setVariable ["fza_sfmplus_tune_hdg_kp",      0.0300]; _heli setVariable ["fza_sfmplus_tune_hdg_ki",      0.0050]; _heli setVariable ["fza_sfmplus_tune_hdg_kd",      0.0030];
 //Altitude hold (barometric + radar). Collective->climb is slow/well-damped; left near stock.
 _heli setVariable ["fza_sfmplus_tune_bar_kp",      0.0010]; _heli setVariable ["fza_sfmplus_tune_bar_ki",      0.0000]; _heli setVariable ["fza_sfmplus_tune_bar_kd",      0.0008];
 _heli setVariable ["fza_sfmplus_tune_rad_kp",      0.0500]; _heli setVariable ["fza_sfmplus_tune_rad_ki",      0.0001]; _heli setVariable ["fza_sfmplus_tune_rad_kd",      0.0050];
-//PID auto-tuner (Ziegler-Nichols) state - off by default; the PFH only runs when enabled.
-_heli setVariable ["fza_sfmplus_tune_pidAutoOn", false];
+//PID auto-tuners (Ziegler-Nichols) state - off by default; the PFHs only run when enabled.
+//Two independent tuners share the pidAuto_ ZN scratch state (never on at once): the SAS
+//tuner (pidAutoOn, tunes the 3 rate dampers) and the HOLD tuner (holdAutoOn, tunes the
+//live submode's hold PID). Run SAS first, then holds.
+_heli setVariable ["fza_sfmplus_tune_pidAutoOn",  false];   // SAS tuner toggle
+_heli setVariable ["fza_sfmplus_tune_holdAutoOn", false];   // HOLD tuner toggle
 _heli setVariable ["fza_sfmplus_pidAuto_idx",    0];
 _heli setVariable ["fza_sfmplus_pidAuto_phase",  "INIT"];
 _heli setVariable ["fza_sfmplus_pidAuto_t",      0.0];
@@ -249,7 +266,12 @@ _heli setVariable ["fza_sfmplus_pid_engine",        [[0.7000, 0.0000, 0.0005, 0.
 //owns yaw balance. Gated by the GUI toggles (on/off, FMC-off, target airspeed).
 [_heli] call fza_sfmplus_fnc_tunerMaster;
 
-//PID auto-tuner (Ziegler-Nichols). Per-frame state machine; only DOES anything while
-//fza_sfmplus_tune_pidAutoOn is true. Tunes the augmentation PID gains automatically by
-//ramping each to its oscillation point. Runs as its own PFH.
+//SAS auto-tuner (Ziegler-Nichols). Per-frame state machine; only DOES anything while
+//fza_sfmplus_tune_pidAutoOn is true. Tunes the 3 SAS rate dampers to their oscillation
+//point. Runs as its own PFH.
 [{ (_this select 0) params ["_heli"]; [_heli] call fza_sfmplus_fnc_tunerPidAuto; }, 0, [_heli]] call CBA_fnc_addPerFrameHandler;
+
+//HOLD auto-tuner (Ziegler-Nichols). Only DOES anything while fza_sfmplus_tune_holdAutoOn is
+//true (and the SAS tuner is off). Tunes the hold PID for whatever submode is live at the
+//current ground speed (pos/vel/att). Run this AFTER the SAS tuner. Runs as its own PFH.
+[{ (_this select 0) params ["_heli"]; [_heli] call fza_sfmplus_fnc_tunerHoldAuto; }, 0, [_heli]] call CBA_fnc_addPerFrameHandler;

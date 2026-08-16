@@ -25,11 +25,11 @@ Description:
               disk tilt is a live pilot-input effect and is NOT tuned here.)
       (PITCH/ROLL flapback axes RETIRED - see note above.)
       THRUST (was LONGITUDINAL, forward flight): tune MAIN ROTOR THRUST
-              (fza_sfmplus_tune_mainThrustTable) for level flight (climb -> 0), with the
-              STABILATOR (fza_sfmplus_tune_stabLiftScalarTable) as a gentle longitudinal-
-              trim ASSIST (small kStabAssist share of residual pitch error). Pitch is no
-              longer owned here (the flapback axis owns it), so thrust settles on CLIMB
-              alone.
+              (fza_sfmplus_tune_mainThrustTable) for level flight (climb -> 0). Pitch is
+              owned by the flapback axis, so thrust settles on CLIMB alone. The STABILATOR
+              is NO LONGER tuned by the master loop - it is a fixed hand-tuned aero surface
+              (its scalar table stays editable in the GUI/overlay, but the loop never
+              writes it).
       ROLL  : confirm the roll target is held. Tunes no force and moves no control -
               YOU set the roll; gates on the roll attitude error alone.
       VERT  : HOVER only - tune the IGE/OGE hover thrust var so holding the target
@@ -94,8 +94,8 @@ private _ctx = createHashMapFromArray
     //Watch for hunting/overshoot in sim and back down any that oscillate.
     ["kThrust",   8.0e-4],      // mainThrustTable step per ft/min of climb (VERT hover)
     //THRUST axis (forward flight): main thrust chases CLIMB (climb -> 0). Pitch is owned
-    //by the PITCH(flapback) axis now, so thrust no longer takes a pitch share; the
-    //stabilator only ASSISTS longitudinal trim (kStabAssist, below).
+    //by the PITCH(flapback) axis now, so thrust no longer takes a pitch share. The
+    //stabilator is NOT tuned by the loop (fixed hand-tuned surface).
     ["kThrustCo", 8.0e-4],      // mainThrustTable step per ft/min of climb (THRUST axis)
     //Yaw is tuned against the NET yaw MOMENT (Nm) - what the scalars actually control
     //(rate is its integral; targeting rate saturates/runs away). Gains are table-step
@@ -142,14 +142,13 @@ private _ctx = createHashMapFromArray
     //+pitch torque = nose DOWN). So when the nose sits TOO LOW vs target (err<0, nose
     //below target) we back the authority off toward zero (less negative); when the nose
     //is too HIGH (err>0) we deepen it (more negative). kFlapback is a table-step per deg
-    //of pitch error. Stabilator co-assists here (kStabAssist) for longitudinal trim.
+    //of pitch error. (Stabilator is NOT tuned by the loop - fixed hand-tuned surface.)
     ["kFlapback",  1.65e-2],    // rbsPitchTable step per deg of pitch error
     //ROLL(RBS roll) axis: the RBS roll authority table (rbsRollTable) is tuned against the
     //ROLL-ATTITUDE error while the cyclic roll sits at its flight-test position. Mirror of
     //kFlapback but per deg of ROLL error. Sign is derived at the tuning step (case 2) from
     //how rbsRollTable feeds _momentY in fn_simpleRotorMain.
     ["kRoll",      1.65e-2],    // rbsRollTable step per deg of roll error
-    ["kStabAssist",1.1e-2],     // stabLiftScalarTable step per deg (gentle longitudinal assist)
 
     //Pitch/roll position hold is supplied externally (FMC pos hold); no gains here.
     //When yaw is not the active axis the pedal is FROZEN (not re-driven), so there is
@@ -278,7 +277,7 @@ private _ctx = createHashMapFromArray
     //to the flight-test forward position and tunes the flapback/RBS pitch authority so the
     //ship holds target pitch across the whole envelope (the nose wants to pitch up the
     //entire time; the pilot counters with forward cyclic). THRUST (case 1) then tunes main
-    //thrust for level flight (climb -> 0), with the stab co-assisting. ROLL (case 2) is NOT
+    //thrust for level flight (climb -> 0); the stabilator is NOT tuned. ROLL (case 2) is NOT
     //in the sequence yet - its balancing mechanism isn't built, so it would hang the tuner
     //(see seqOrder note above). Rebuild + reset the walk index only on a mode change so
     //seqIdx never desyncs from the array it indexes.
@@ -311,7 +310,7 @@ private _ctx = createHashMapFromArray
     //control position while its force scalar is tuned so the ship trims there. The
     //aircraft is kept stable meanwhile by the EXTERNAL position hold (FMC pos hold);
     //this function no longer runs its own hold.
-    private _axisNow  = _ctx get "axis";   // 0 VERT/THRUST, 1 LONGITUDINAL(stab assist), 2 ROLL, 3 YAW, 4 PITCH(flapback)
+    private _axisNow  = _ctx get "axis";   // 0 VERT/THRUST, 1 THRUST(climb, no stab), 2 ROLL, 3 YAW, 4 PITCH(flapback)
     private _curPitch = (_heli call BIS_fnc_getPitchBank) select 0;
     private _curRoll  = (_heli call BIS_fnc_getPitchBank) select 1;
     //Target ATTITUDE (deg) - the force tuning uses these as its error signal (tune
@@ -323,7 +322,7 @@ private _ctx = createHashMapFromArray
     //envelope-wide nose-up), then tunes the flapback authority so the ship holds target
     //pitch there. In hover, use the IGE/OGE hover cyclic-pitch position.
     private _tgtCycPitch = if (_hoverState != "") then {
-        _heli getVariable [(if (_hoverState == "IGE") then { "fza_sfmplus_tune_ige" } else { "fza_sfmplus_tune_oge" }) + "CycPitch", -0.342]
+        _heli getVariable [(if (_hoverState == "IGE") then { "fza_sfmplus_tune_ige" } else { "fza_sfmplus_tune_oge" }) + "CycPitch", -0.07]
     } else {
         [_heli getVariable ["fza_sfmplus_tune_targetCycPitchTable", [[0,0]]], _lookupSpd] call fza_fnc_linearInterp select 1
     };
@@ -331,7 +330,7 @@ private _ctx = createHashMapFromArray
     //this position (the lateral cyclic the pilot holds), then tunes the RBS roll authority
     //so the ship holds target roll there. In hover, use the IGE/OGE hover cyclic-roll pos.
     private _tgtCycRoll = if (_hoverState != "") then {
-        _heli getVariable [(if (_hoverState == "IGE") then { "fza_sfmplus_tune_ige" } else { "fza_sfmplus_tune_oge" }) + "CycRoll", -0.045]
+        _heli getVariable [(if (_hoverState == "IGE") then { "fza_sfmplus_tune_ige" } else { "fza_sfmplus_tune_oge" }) + "CycRoll", 0.06]
     } else {
         [_heli getVariable ["fza_sfmplus_tune_targetCycRollTable", [[0,0]]], _lookupSpd] call fza_fnc_linearInterp select 1
     };
@@ -341,7 +340,7 @@ private _ctx = createHashMapFromArray
     //band. (Cyclic pitch/roll targets are NOT used - YOU fly pitch/roll; the tuner
     //never moves the cyclic.)
     private _tgtPed = if (_hoverState != "") then {
-        _heli getVariable [(if (_hoverState == "IGE") then { "fza_sfmplus_tune_ige" } else { "fza_sfmplus_tune_oge" }) + "Pedal", -0.352]
+        _heli getVariable [(if (_hoverState == "IGE") then { "fza_sfmplus_tune_ige" } else { "fza_sfmplus_tune_oge" }) + "Pedal", -0.60]
     } else {
         [_heli getVariable ["fza_sfmplus_tune_targetPedalTable", [[0,0]]], _lookupSpd] call fza_fnc_linearInterp select 1
     };
@@ -441,8 +440,8 @@ private _ctx = createHashMapFromArray
             if (_hoverState != "") then {
                 _axisName = format ["VERT (%1 hover): tuning THRUST", _hoverState];
                 _tgtColl = if (_hoverState == "IGE")
-                    then { _heli getVariable ["fza_sfmplus_tune_igeColl", 0.555] }
-                    else { _heli getVariable ["fza_sfmplus_tune_ogeColl", 0.640] };
+                    then { _heli getVariable ["fza_sfmplus_tune_igeColl", 0.56] }
+                    else { _heli getVariable ["fza_sfmplus_tune_ogeColl", 0.64] };
             } else {
                 _axisName = "VERT: tuning MAIN THRUST";
                 _tgtColl = [_heli getVariable ["fza_sfmplus_tune_targetCollTable", [[0,1]]], _lookupSpd] call fza_fnc_linearInterp select 1;
@@ -479,20 +478,17 @@ private _ctx = createHashMapFromArray
             };
         };
         case 1: {   //THRUST (was LONGITUDINAL): tune MAIN THRUST for level flight
-            //(climb -> 0), with the STABILATOR as a gentle longitudinal-trim ASSIST. The
-            //PITCH TARGET is no longer owned here - the PITCH(flapback) axis (case 4) owns
-            //pitch trim envelope-wide (cyclic driven to the flight-test position + flapback
-            //authority tuned to hold target pitch). So thrust here serves CLIMB only; the
-            //stab takes only a SMALL share of any residual pitch error (kStabAssist) to help
-            //longitudinal trim without fighting the flapback axis for pitch authority.
-            //Settle on CLIMB (primary); pitch is a soft second-error at a loose tolerance
-            //since the flapback axis is responsible for holding it precisely.
-            _axisName = "THRUST: tuning MAIN THRUST (climb -> 0), stab assists";
+            //(climb -> 0). The PITCH TARGET is owned by the PITCH(flapback) axis (case 4),
+            //which drives the cyclic to the flight-test position + tunes flapback authority to
+            //hold target pitch. So thrust here serves CLIMB only. The STABILATOR is NO LONGER
+            //tuned by the master loop - it is a fixed hand-tuned aero surface; the tuner must
+            //not touch stabLiftScalarTable (removed to stop it fighting the flapback axis for
+            //pitch authority and drifting the stab scalar). Settle on CLIMB alone.
+            _axisName = "THRUST: tuning MAIN THRUST (climb -> 0)";
             private _climbErr = _heli getVariable ["fza_sfmplus_velClimb", 0.0];   // ft/min
             _err  = _climbErr;                          // ft/min (PRIMARY)
             _tol  = _ctx get "tClimb";
-            private _pitchErr = _curPitch - _tgtPitch;  // deg, + = nose too high (assist only)
-            _scalarName = "thrust+stab";
+            _scalarName = "thrust";
 
             //MAIN THRUST vs climb: +climb -> reduce thrust.
             if ((abs _climbErr) >= _tol) then {
@@ -505,18 +501,7 @@ private _ctx = createHashMapFromArray
             } else {
                 _scalarVal = ((_heli getVariable [_varMainThrust, _bands apply {[_x,1.0]}]) select _bestIdx) select 1;
             };
-
-            //STAB LIFT assist: +err (nose high) -> more stab (down) lift lowers nose.
-            //Small step (kStabAssist) so it trims longitudinally without stealing pitch
-            //authority from the flapback axis. Only nudges when pitch is out of tol.
-            if ((abs _pitchErr) >= (_ctx get "tPitch")) then {
-                private _ts = _heli getVariable ["fza_sfmplus_tune_stabLiftScalarTable", _bands apply {[_x,1.0]}];
-                private _vs = ((_ts select _bestIdx) select 1) + ((_ctx get "kStabAssist") * _pitchErr * _dt * _tuneRate);
-                _vs = [_vs,0.2,3.0] call BIS_fnc_clamp;
-                _ts set [_bestIdx, [(_ts select _bestIdx) select 0, _vs]];
-                _heli setVariable ["fza_sfmplus_tune_stabLiftScalarTable", _ts];
-            };
-            //Settle on CLIMB alone (primary); pitch is owned by the flapback axis.
+            //Settle on CLIMB alone (primary); pitch is owned by the flapback axis, stab is fixed.
         };
         case 3: {   //YAW: pedal trim is driven to the flight-test position + frozen
             //(above). Drive the NET yaw moment -> 0 at that pedal position.

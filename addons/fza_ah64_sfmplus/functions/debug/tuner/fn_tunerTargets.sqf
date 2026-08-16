@@ -106,7 +106,7 @@ if (_cycPitchTgt isEqualTo []) then {
     //applies after the force-model rework). 0 kt = 80 ft OGE.
     _cycPitchTgt =
     [
-     [ 0.00, -0.07]   //   0 kt (OGE hover)
+     [ 0.00, -0.07]   //   0 kt (80 ft OGE hover)
     ,[10.29,  0.00]   //  20 kt
     ,[20.58,  0.02]   //  40 kt
     ,[36.01,  0.15]   //  70 kt
@@ -114,7 +114,7 @@ if (_cycPitchTgt isEqualTo []) then {
     ,[51.44,  0.33]   // 100 kt
     ,[61.73,  0.50]   // 120 kt
     ,[66.88,  0.59]   // 130 kt
-    ,[72.02,  0.69]   // 140 kt
+    ,[72.02,  0.68]   // 140 kt
     ];
     _heli setVariable ["fza_sfmplus_tune_targetCycPitchTable", _cycPitchTgt];
 };
@@ -127,7 +127,7 @@ if (_cycRollTgt isEqualTo []) then {
     //(left+) over -1..+1. 0 kt = 80 ft OGE.
     _cycRollTgt =
     [
-     [ 0.00,  0.05]   //   0 kt (OGE hover)
+     [ 0.00,  0.06]   //   0 kt (80 ft OGE hover)
     ,[10.29,  0.24]   //  20 kt
     ,[20.58,  0.23]   //  40 kt
     ,[36.01,  0.15]   //  70 kt
@@ -145,15 +145,15 @@ private _pedalTgt = _heli getVariable ["fza_sfmplus_tune_targetPedalTable", []];
 if (_pedalTgt isEqualTo []) then {
     _pedalTgt =
     [
-     [ 0.00, -0.352]   //   0 kt (OGE hover)
-    ,[10.29, -0.154]   //  20 kt
-    ,[20.58,  0.044]   //  40 kt
-    ,[36.01,  0.199]   //  70 kt
-    ,[46.30,  0.250]   //  90 kt
-    ,[51.44,  0.246]   // 100 kt
-    ,[61.73,  0.152]   // 120 kt
-    ,[66.88,  0.085]   // 130 kt
-    ,[72.02,  0.015]   // 140 kt
+     [ 0.00, -0.60]   //   0 kt (80 ft OGE hover)
+    ,[10.29, -0.41]   //  20 kt
+    ,[20.58, -0.21]   //  40 kt
+    ,[36.01, -0.05]   //  70 kt
+    ,[46.30,  0.00]   //  90 kt
+    ,[51.44, -0.01]   // 100 kt
+    ,[61.73, -0.10]   // 120 kt
+    ,[66.88, -0.17]   // 130 kt
+    ,[72.02, -0.01]   // 140 kt
     ];
     _heli setVariable ["fza_sfmplus_tune_targetPedalTable", _pedalTgt];
 };
@@ -173,16 +173,17 @@ private _fnHoverTgt = {
     _v
 };
 
-//IGE hover (~5 ft): less collective in ground effect; controls near the OGE hover set.
-["fza_sfmplus_tune_igeColl",     0.555] call _fnHoverTgt;   // collective 0..1
-["fza_sfmplus_tune_igeCycPitch",-0.342] call _fnHoverTgt;   // cyclic fwd+
-["fza_sfmplus_tune_igeCycRoll",  -0.045] call _fnHoverTgt;  // cyclic left+
-["fza_sfmplus_tune_igePedal",    -0.352] call _fnHoverTgt;  // pedal right+
+//IGE hover (~5 ft): less collective in ground effect. Cyclic/pedal are DEFLECTION from Flat
+//Pitch (same reference as the airspeed tables above), from the 5 ft IGE flight-test survey.
+["fza_sfmplus_tune_igeColl",     0.56] call _fnHoverTgt;   // collective 0..1
+["fza_sfmplus_tune_igeCycPitch",-0.07] call _fnHoverTgt;   // cyclic fwd+ (deflection)
+["fza_sfmplus_tune_igeCycRoll",  0.03] call _fnHoverTgt;   // cyclic left+ (deflection)
+["fza_sfmplus_tune_igePedal",   -0.49] call _fnHoverTgt;   // pedal right+ (deflection)
 
-//OGE hover (~80 ft): the band-0 flight-test hover positions.
-["fza_sfmplus_tune_ogeColl",     0.637] call _fnHoverTgt;   // collective 0..1
-["fza_sfmplus_tune_ogeCycPitch",-0.342] call _fnHoverTgt;   // cyclic fwd+
-["fza_sfmplus_tune_ogeCycRoll",  -0.045] call _fnHoverTgt;  // cyclic left+
-["fza_sfmplus_tune_ogePedal",    -0.352] call _fnHoverTgt;  // pedal right+
+//OGE hover (~80 ft): the band-0 flight-test hover positions (80 ft OGE survey, deflection).
+["fza_sfmplus_tune_ogeColl",     0.64] call _fnHoverTgt;   // collective 0..1
+["fza_sfmplus_tune_ogeCycPitch",-0.07] call _fnHoverTgt;   // cyclic fwd+ (deflection)
+["fza_sfmplus_tune_ogeCycRoll",  0.06] call _fnHoverTgt;   // cyclic left+ (deflection)
+["fza_sfmplus_tune_ogePedal",   -0.60] call _fnHoverTgt;   // pedal right+ (deflection)
 
 [_pitchTgt, _rollTgt, _collTgt, _cycPitchTgt, _cycRollTgt, _pedalTgt]
