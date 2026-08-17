@@ -81,9 +81,7 @@ _heli setVariable ["fza_sfmplus_fmcAttHoldCycPitchOut",        _attHoldCycPitchO
 _heli setVariable ["fza_sfmplus_fmcAttHoldCycRollOut",         _attHoldCycRollOut];
 _heli setVariable ["fza_sfmplus_fmcHdgHoldPedalYawOut",        _hdgHoldPedalYawOut];
 _heli setVariable ["fza_sfmplus_fmcAltHoldCollOut",            _altHoldCollOut];
-//Stability & Command Augmentation (SCAS) outputs. Each axis's SAS is ALREADY zeroed above
-//when that axis's FMC is off (fmcPitchOn/fmcRollOn/fmcYawOn blocks) - SCAS works through the
-//FMC channel, so no FMC on an axis = no SCAS on that axis. Publishing the FMC-gated values.
+//Stability Augmentation System
 _heli setVariable ["fza_sfmplus_fmcSasPitchOut",               _SASPitchOutput];
 _heli setVariable ["fza_sfmplus_fmcSasRollOut",                _SASRollOutput];
 _heli setVariable ["fza_sfmplus_fmcSasYawOut",                 _SASYawOutput];

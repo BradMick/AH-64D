@@ -29,12 +29,12 @@ private _wasOn = _heli getVariable ["fza_sfmplus_pidAuto_wasOn", false];
 
 //Rising edge: reset every axis's step-tune state so a re-run starts fresh.
 if (_on && !_wasOn) then {
-    private _fields = ["errSm","winT","cross","prevSgn","startMag","underT","settled"];
+    private _fields = ["stage","errSm","winT","cross","ampMax","prevSgn","startMag","underT","settled","Ku"];
     {
         private _sk = format ["fza_sfmplus_step_%1_", _x];
         { _heli setVariable [_sk + _x, nil]; } forEach _fields;   // inner _x = field name
     } forEach ["sasPitch","sasRoll","sasYaw"];
-    _heli setVariable ["fza_sfmplus_pidAuto_status", "SAS AUTO-TUNE: fly normally - watching pitch/roll/yaw"];
+    _heli setVariable ["fza_sfmplus_pidAuto_status", "SAS AUTO-TUNE: staged P->D->I - fly normally"];
 };
 _heli setVariable ["fza_sfmplus_pidAuto_wasOn", _on];
 
@@ -46,25 +46,27 @@ if (_dt <= 0.0) exitWith {};
 //Body rates (rad/s): [pitch, roll, yaw].
 private _pqr = _heli getVariable ["fza_sfmplus_angVelModelSpace", [0,0,0]];
 
-//Per-axis config for the CONTINUOUS grader: [band, evalWindow, upStep, downStep, gMin, gMax, settleTime]
-//  band      - body rate (rad/s) below which the axis is "quiet" (~1.7 deg/s = 0.03 rad/s).
-//  evalWindow- seconds of live signal graded per gain decision.
-//  upStep/downStep - gentle up (x1.02), fast down (x0.92) so it backs off hard when oscillating.
-//  gMin/gMax - safe SAS kp range. settleTime - continuous s under band to call it settled.
+//Per-axis config for the STAGED P->D->I tuner. cfg = [band, evalWindow, kpStart, kpStep, kpMax,
+//  kdStep, kdMax, kiStep, kiMax, oscAmp, settleTime]
+//  band   - body rate (rad/s) below which the axis is "quiet" (~1.7 deg/s = 0.03 rad/s).
+//  kpStart/kpStep/kpMax - P ramp: start, per-window step, ceiling.
+//  kdStep/kdMax - D ramp (damps the oscillation P found). kiStep/kiMax - I ramp (zeros error);
+//  SAS is a rate damper so I stays SMALL. oscAmp - amplitude (rad/s) that counts as oscillation.
+//Each axis: [key, errorSignal, kpVar, kiVar, kdVar, cfg]
 private _axes =
 [
-     ["sasPitch", (_pqr # 0), "fza_sfmplus_tune_sasPitch_kp", [0.03, 1.0, 1.02, 0.92, 0.02, 0.60, 3.0]]
-    ,["sasRoll",  (_pqr # 1), "fza_sfmplus_tune_sasRoll_kp",  [0.03, 1.0, 1.02, 0.92, 0.02, 0.60, 3.0]]
-    ,["sasYaw",   (_pqr # 2), "fza_sfmplus_tune_sasYaw_kp",   [0.03, 1.0, 1.02, 0.92, 0.05, 0.80, 3.0]]
+     ["sasPitch", (_pqr # 0), "fza_sfmplus_tune_sasPitch_kp", "fza_sfmplus_tune_sasPitch_ki", "fza_sfmplus_tune_sasPitch_kd", [0.03, 1.0, 0.02, 0.02, 0.60, 0.004, 0.10, 0.001, 0.02, 0.06, 3.0]]
+    ,["sasRoll",  (_pqr # 1), "fza_sfmplus_tune_sasRoll_kp",  "fza_sfmplus_tune_sasRoll_ki",  "fza_sfmplus_tune_sasRoll_kd",  [0.03, 1.0, 0.02, 0.02, 0.60, 0.004, 0.10, 0.001, 0.02, 0.06, 3.0]]
+    ,["sasYaw",   (_pqr # 2), "fza_sfmplus_tune_sasYaw_kp",   "fza_sfmplus_tune_sasYaw_ki",   "fza_sfmplus_tune_sasYaw_kd",   [0.03, 1.0, 0.05, 0.02, 0.80, 0.005, 0.10, 0.002, 0.05, 0.06, 3.0]]
 ];
 
-//Run the passive step-tune engine for each axis this frame; collect a status line each.
+//Run the staged PID tuner for each axis this frame; collect a status line each.
 private _statuses = [];
 private _nSettled = 0;
 {
-    _x params ["_key", "_err", "_gainVar", "_cfg"];
+    _x params ["_key", "_err", "_kpVar", "_kiVar", "_kdVar", "_cfg"];
     private _sk = format ["fza_sfmplus_step_%1_", _key];
-    private _s  = [_heli, _sk, _gainVar, _err, _dt, _cfg, _key] call fza_sfmplus_fnc_tunerStepTune;
+    private _s  = [_heli, _sk, _kpVar, _kiVar, _kdVar, _err, _dt, _cfg, _key] call fza_sfmplus_fnc_tunerStepTune;
     _statuses pushBack _s;
     if (_heli getVariable [_sk + "settled", false]) then { _nSettled = _nSettled + 1; };
 } forEach _axes;

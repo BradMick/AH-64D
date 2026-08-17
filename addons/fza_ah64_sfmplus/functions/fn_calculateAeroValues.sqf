@@ -52,18 +52,20 @@ private _beta_deg    = if ((vectorMagnitude _totVel) == 0.0) then { 0.0; } else 
 //ball right), and the display driver moves the marker RIGHT on POSITIVE beta_g. So beta_g
 //tracks bodyAccelX's sign DIRECTLY (no negation): left bank -> negative -> marker left;
 //right bank -> positive -> marker right.
+/*
 private _bodyAccel   = _heli getVariable ["fza_sfmplus_bodyAccel", [0,0,0]];
 private _beta_g      = (_bodyAccel # 0) / GRAVITY;
 private _k           = 0.05;
 private _betaGPrev   = _heli getVariable ["fza_sfmplus_aero_beta_g_prev", 0.0];
 _beta_g              = _betaGPrev + ((_beta_g - _betaGPrev) * _k);
+*/
 
 //systemChat format ["beta_g=%1 bodyAccelX=%2 bodyAccelY=%3 gravX=%4", _beta_g toFixed 3, (_bodyAccel # 0) toFixed 3, (_bodyAccel # 1) toFixed 3, _gravX toFixed 3];
-/*
+
 private _turnRate  = if (_totVelY == 0.0) then { 0.0 } else { (GRAVITY * (tan _curRoll)) / _totVelY };
 _beta_g            = (_totVelY * _turnRate) / GRAVITY; //_betaGPrev + ((_beta_g - _betaGPrev) * _k);
 systemChat format ["beta_g=%1 bodyAccelX=%2 bodyAccelY=%3 gravX=%4", _beta_g toFixed 3, (_bodyAccel # 0) toFixed 3, (_bodyAccel # 1) toFixed 3, _gravX toFixed 3];
-*/
+
 
 _heli setVariable ["fza_sfmplus_aero_alpha_deg",   _alpha_deg, true];
 _heli setVariable ["fza_sfmplus_aero_beta_deg",    _beta_deg,  true];

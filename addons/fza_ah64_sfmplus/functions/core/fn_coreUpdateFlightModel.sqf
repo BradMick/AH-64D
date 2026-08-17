@@ -80,15 +80,15 @@ if (fza_ah64_sfmPlusRotorModel == 1) then {
  ,1.0                   //tipWidthScalar    
  ,(_heli getVariable ["fza_sfmplus_tune_finLiftScalarTable",
  [
-  [ 0.00, 1.000]   // 0-90 kt tuned; 100-140 extrapolated (fin lift keeps ramping with speed)
- ,[10.29, 1.213]
- ,[20.58, 1.425]
- ,[36.01, 1.638]
- ,[46.30, 1.850]
- ,[51.44, 1.912]
- ,[61.73, 2.058]
- ,[66.88, 2.127]
- ,[72.02, 2.193]
+  [ 0.00, 2.1]   // master-tuned: flat 2.1 across all bands
+ ,[10.29, 2.1]
+ ,[20.58, 2.1]
+ ,[36.01, 2.1]
+ ,[46.30, 2.1]
+ ,[51.44, 2.1]
+ ,[61.73, 2.1]
+ ,[66.88, 2.1]
+ ,[72.02, 2.1]
  ]])
  ,false
  ,"Vertical Fin" ] call fza_sfmplus_fnc_wing;

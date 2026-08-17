@@ -117,15 +117,15 @@ private _rtrTorqueScalarTable = _heli getVariable ["fza_sfmplus_tune_rtrTqScalar
 if (_rtrTorqueScalarTable isEqualTo []) then {
     _rtrTorqueScalarTable =
     [
-     [ 0.00, 0.585]   // fixed hover-tuned reference, carried across all bands
-    ,[10.29, 0.585]
-    ,[20.58, 0.585]
-    ,[36.01, 0.585]
-    ,[46.30, 0.585]
-    ,[51.44, 0.585]
-    ,[61.73, 0.585]
-    ,[66.88, 0.585]
-    ,[72.02, 0.585]
+     [ 0.00, 0.60962]   // fixed hover-tuned reference, carried across all bands
+    ,[10.29, 0.60962]
+    ,[20.58, 0.60962]
+    ,[36.01, 0.60962]
+    ,[46.30, 0.60962]
+    ,[51.44, 0.60962]
+    ,[61.73, 0.60962]
+    ,[66.88, 0.60962]
+    ,[72.02, 0.60962]
     ];
     _heli setVariable ["fza_sfmplus_tune_rtrTqScalarTable", _rtrTorqueScalarTable];
 };

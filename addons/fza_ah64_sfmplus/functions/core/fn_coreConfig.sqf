@@ -170,19 +170,52 @@ _heli setVariable ["fza_sfmplus_tune_attRoll_kp",  0.0100]; _heli setVariable ["
 //vel). At the committed baseline (0.030/0.015): stable but loose (slow drift at a hover). Raising
 //kp to 0.10/0.06 made ENGAGE violent - it slammed cyclic and threw the aircraft into a roll/pitch
 //(strong P response to the velocity present at engage + a big first-frame derivative spike).
-//Reverted to baseline. Firming this up needs the derivative kick handled first, not just more kp.
-_heli setVariable ["fza_sfmplus_tune_posPitch_kp", 0.0300]; _heli setVariable ["fza_sfmplus_tune_posPitch_ki", 0.0010]; _heli setVariable ["fza_sfmplus_tune_posPitch_kd", 0.0080];
-_heli setVariable ["fza_sfmplus_tune_posRoll_kp",  0.0150]; _heli setVariable ["fza_sfmplus_tune_posRoll_ki",  0.0010]; _heli setVariable ["fza_sfmplus_tune_posRoll_kd",  0.0060];
-//OUTER position loop (cascade, in fn_fmcAttitudeHold pos branch). Pure-P: position error (m) ->
-//return-velocity setpoint (m/s) for the inner velocity loop, so pos hold holds the POINT (zero
-//drift) instead of leaving a residual creep. kp gentle, maxVel caps return speed (eases back, no
-//dart), db is a small deadband so it doesn't hunt on the datum. Live-tunable.
-_heli setVariable ["fza_sfmplus_tune_posOuter_kp",     0.2500];   // pos err (m) -> vel setpoint (m/s)
-_heli setVariable ["fza_sfmplus_tune_posOuter_maxVel", 1.5000];   // m/s cap on commanded return speed
-_heli setVariable ["fza_sfmplus_tune_posOuter_db",     0.3000];   // m deadband around the datum
-//Hold auto-tuner interlock: when true, the pos-hold OUTER loop is opened (velocity setpoint 0) so
-//the hold tuner can grade the inner velocity loop cleanly. false = closed cascade (returns to point).
-_heli setVariable ["fza_sfmplus_holdAuto_openOuter", false];
+//Pos-hold PID gains. The hold output is HARD-CLAMPED to +-0.1 (the SAS-servo mechanical limit,
+//lines ~172) and must operate WITHIN it - it should use only a FRACTION of 0.1 for normal drift and
+//NEVER saturate. Size so a small drift (~1-2 m) makes a fraction of the authority: kp*posErr, e.g.
+//Position/velocity hold VELOCITY-NULL gains (pid_roll/pid_pitch). These null velocity smoothly and
+//stay under the +-0.1 servo limit - the base of the pos hold and the whole vel hold. Kept gentle.
+_heli setVariable ["fza_sfmplus_tune_posPitch_kp", 0.0300]; _heli setVariable ["fza_sfmplus_tune_posPitch_ki", 0.0000]; _heli setVariable ["fza_sfmplus_tune_posPitch_kd", 0.0600];
+_heli setVariable ["fza_sfmplus_tune_posRoll_kp",  0.0150]; _heli setVariable ["fza_sfmplus_tune_posRoll_ki",  0.0000]; _heli setVariable ["fza_sfmplus_tune_posRoll_kd",  0.0600];
+//Position INTEGRAL (pos hold only): slow, bounded integral of POSITION error biasing the velocity
+//setpoint to trim the residual drift the velocity-null loop leaves (type-0 -> type-1). posIntKp =
+//integral gain (auto-tuned). posIntClamp = anti-windup ceiling on the velocity-setpoint bias (m/s):
+//kept TINY - near the loop's real working range (~0.01-0.02 m/s) so it can NEVER rail the +-0.1 servo
+//or fight the velocity loop. The old 0.6 ceiling was ~60x too big and wound to its rail. posIntX/Y are
+//the live accumulators (reset when the hold disengages).
+_heli setVariable ["fza_sfmplus_tune_posIntKp",    0.0200];
+_heli setVariable ["fza_sfmplus_tune_posIntClamp", 0.0720];
+_heli setVariable ["fza_sfmplus_posIntX",          0.0];
+_heli setVariable ["fza_sfmplus_posIntY",          0.0];
+
+//Master-tuned lateral CoM offset (m). Baked from the tuner export.
+_heli setVariable ["fza_sfmplus_tune_comOffsetX",  0.1];
+
+//ONE-TIME strip of stale PID gains from the PERSISTED tuner profile. The saved profile overlays the
+//seeds on load, so a PID the auto-tuner had driven to a bad value (e.g. posPitch_kp 0.10 that
+//saturated the servo) persisted across respawns. This clears ONLY the PID-gain keys (ending
+//_kp/_ki/_kd, plus posInt*) ONCE - guarded by a bump flag - so after the one-time clear, normal
+//Save/Load work again and GOOD tuned PIDs you save WILL persist. Bump the flag number to force
+//another one-time clear later. Force-tables + other entries are never touched.
+private _pidWipeFlag = "fza_sfmplus_pidWipeDone_v1";
+if !(profileNamespace getVariable [_pidWipeFlag, false]) then {
+    private _saved = profileNamespace getVariable ["fza_sfmplus_tuner", []];
+    if (_saved isEqualType [] && {count _saved > 0}) then {
+        private _kept = _saved select {
+            _x params ["_k"];
+            private _suffix = _k select [count _k - 3];
+            private _isPid = (_suffix in ["_kp","_ki","_kd"]) || {(_k find "fza_sfmplus_tune_posInt") >= 0};
+            !_isPid
+        };
+        profileNamespace setVariable ["fza_sfmplus_tuner", _kept];
+    };
+    profileNamespace setVariable [_pidWipeFlag, true];
+    saveProfileNamespace;
+};
+//Hold submode LOCK: "" = auto (speed-driven pos/vel/att). Set to "pos"/"vel"/"att" by keybind to
+//PIN the submode regardless of speed, so a tuning run can't be kicked out of its submode if the
+//aircraft goes haywire and you fly it back through a speed band. fn_fmcAttitudeHold honors it.
+_heli setVariable ["fza_ah64_attHoldSubModeLock", ""];
 //Heading hold. Yaw is less twitchy (more inertia, firm yaw SAS kp 0.30) - moderate cut only.
 _heli setVariable ["fza_sfmplus_tune_hdg_kp",      0.0300]; _heli setVariable ["fza_sfmplus_tune_hdg_ki",      0.0050]; _heli setVariable ["fza_sfmplus_tune_hdg_kd",      0.0030];
 //Altitude hold (barometric + radar). Collective->climb is slow/well-damped; left near stock.

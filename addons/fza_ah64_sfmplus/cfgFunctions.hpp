@@ -48,6 +48,7 @@ class CfgFunctions
             class tunerPidAuto {R;};
             class tunerStepTune {R;};
             class tunerHoldAuto {R;};
+            class holdChainLog {R;};
             class tunerYawDamper {R;};
             class tunerForceTables {R;};
             class tunerOverlay {R;};

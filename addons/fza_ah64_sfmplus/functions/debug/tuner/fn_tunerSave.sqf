@@ -31,8 +31,15 @@ private _saved = [];
     private _default = _x get "default";
     private _value   = _values getOrDefault [_key, _default];
 
-    //Store only non-default values.
-    if (!(_value isEqualTo _default)) then {
+    //PID gains are ALWAYS persisted (even at default) so the saved file always contains the FULL
+    //pos/att/hdg/bar/rad/sas PID set - the export is a complete snapshot of every hold's tuning, not
+    //just the axes that happened to be tuned this run. Everything else keeps the "non-default only"
+    //rule so FM scalars/toggles stay a small footprint and new mod defaults still take effect for
+    //untouched params. PID key = ends in _kp/_ki/_kd, plus the posInt gain/clamp keys.
+    private _suffix = _key select [count _key - 3];
+    private _isPid  = (_suffix in ["_kp","_ki","_kd"]) || {(_key find "fza_sfmplus_tune_posInt") >= 0};
+
+    if (_isPid || {!(_value isEqualTo _default)}) then {
         _saved pushBack [_key, _value];
     };
 } forEach _spec;

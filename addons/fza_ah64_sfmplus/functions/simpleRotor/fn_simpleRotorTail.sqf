@@ -93,15 +93,15 @@ private _rtrThrustScalarTable = _heli getVariable ["fza_sfmplus_tune_tailThrustT
 if (_rtrThrustScalarTable isEqualTo []) then {
     _rtrThrustScalarTable =
     [
-     [ 0.00, 0.26]   // flat constant across all bands (OGE thrust point; fin-offload does the rest)
-    ,[10.29, 0.26]
-    ,[20.58, 0.26]
-    ,[36.01, 0.26]
-    ,[46.30, 0.26]
-    ,[51.44, 0.26]
-    ,[61.73, 0.26]
-    ,[66.88, 0.26]
-    ,[72.02, 0.26]
+     [ 0.00, 0.136906]   // flat constant across all bands (OGE thrust point; fin-offload does the rest)
+    ,[10.29, 0.136906]
+    ,[20.58, 0.136906]
+    ,[36.01, 0.136906]
+    ,[46.30, 0.136906]
+    ,[51.44, 0.136906]
+    ,[61.73, 0.136906]
+    ,[66.88, 0.136906]
+    ,[72.02, 0.136906]
     ];
     _heli setVariable ["fza_sfmplus_tune_tailThrustTable", _rtrThrustScalarTable];
 };

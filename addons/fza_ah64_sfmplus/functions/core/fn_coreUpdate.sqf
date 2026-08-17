@@ -45,6 +45,11 @@ if (isAutoHoverOn _heli) then {
 [_heli] call fza_sfmplus_fnc_getConnectedAxes;
 [_heli] call fza_sfmplus_fnc_getInput;
 
+//Hold/SAS chain debug logger - one line per frame to diag_log while the HOLD auto-tuner is running
+//(fza_sfmplus_tune_holdAutoOn). Runs after fmc (holds+SAS) so it captures this frame's full chain.
+//No-op when the hold tuner is off - no separate toggle.
+[_heli] call fza_sfmplus_fnc_holdChainLog;
+
 //
 [_heli] call fza_sfmplus_fnc_calculateAeroValues;
 

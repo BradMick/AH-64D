@@ -495,6 +495,7 @@ private _scasPids =
      ["SAS Damper - Pitch",   "sasPitch", 0.1500, 0.0000, 0.0020]
     ,["SAS Damper - Roll",    "sasRoll",  0.1000, 0.0000, 0.0020]
     ,["SAS Damper - Yaw",     "sasYaw",   0.3000, 0.0500, 0.0250]
+    //Cascade seeds (new meanings): attitude kp = deg/s per deg; velocity kp = deg per m/s.
     ,["Attitude Hold - Pitch","attPitch", 0.0200, 0.0008, 0.0040]
     ,["Attitude Hold - Roll", "attRoll",  0.0100, 0.0005, 0.0020]
     ,["Pos/Vel Hold - Pitch", "posPitch", 0.0300, 0.0010, 0.0080]
@@ -521,13 +522,11 @@ _spec pushBack (["SCAS", "fza_sfmplus_tune_pidAutoOn", "** AUTO-TUNE ALL PIDs (Z
     } forEach [["kp", _kp], ["ki", _ki], ["kd", _kd]];
 } forEach _scasPids;
 
-//OUTER position loop (cascaded pos->vel hold). Not a kp/ki/kd triple: a proportional gain, a
-//return-speed cap, and a datum deadband. The inner velocity loop is "Pos/Vel Hold" above.
-_spec pushBack (["SCAS", "fza_sfmplus_tune_posOuter_kp", "Pos Hold Outer - KP (pos->vel)", "Pos Hold - Outer", "scalar",
-    0.2500, "fza_sfmplus_tune_posOuter_kp", ["fn_coreConfig.sqf", "// posOuter kp: %1"], 0.0, 2.0] call _fnMake);
-_spec pushBack (["SCAS", "fza_sfmplus_tune_posOuter_maxVel", "Pos Hold Outer - Max Return Vel (m/s)", "Pos Hold - Outer", "scalar",
-    1.5000, "fza_sfmplus_tune_posOuter_maxVel", ["fn_coreConfig.sqf", "// posOuter maxVel: %1"], 0.0, 10.0] call _fnMake);
-_spec pushBack (["SCAS", "fza_sfmplus_tune_posOuter_db", "Pos Hold Outer - Deadband (m)", "Pos Hold - Outer", "scalar",
-    0.3000, "fza_sfmplus_tune_posOuter_db", ["fn_coreConfig.sqf", "// posOuter db: %1"], 0.0, 3.0] call _fnMake);
+//Position-integral trim (pos hold only). posIntKp is AUTO-TUNED (I-only trim in the hold tuner);
+//posIntClamp is the fixed tiny anti-windup ceiling (m/s) - keep it small so it can't rail the servo.
+_spec pushBack (["SCAS", "fza_sfmplus_tune_posIntKp", "Pos Hold - Position Integral Gain", "Pos Hold", "scalar",
+    0.0050, "fza_sfmplus_tune_posIntKp", ["fn_coreConfig.sqf", "// posIntKp: %1"], 0.0, 0.02] call _fnMake);
+_spec pushBack (["SCAS", "fza_sfmplus_tune_posIntClamp", "Pos Hold - Integral Clamp (m/s)", "Pos Hold", "scalar",
+    0.0200, "fza_sfmplus_tune_posIntClamp", ["fn_coreConfig.sqf", "// posIntClamp: %1"], 0.0, 0.10] call _fnMake);
 
 _spec
