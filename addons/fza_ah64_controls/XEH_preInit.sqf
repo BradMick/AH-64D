@@ -121,14 +121,12 @@ private _projName = "AH-64D Official Project";
     2
 ] call CBA_fnc_addSetting;
 
-[
-    "fza_ah64_sfmPlusAutoPitch",
-    "CHECKBOX",
-    [(localize "STR_FZA_AH64_SETTINGS_KEYBOARD_AUTO_PITCH"), (localize "STR_FZA_AH64_SETTINGS_KEYBOARD_AUTO_PITCH_INFO")],
-    [_projName, "Flight model"],
-    [true],
-    2
-] call CBA_fnc_addSetting;
+//NOTE: there is deliberately no "Auto Pitch"/"Auto Roll" setting here. Keyboard auto-attitude is
+//intrinsic to the CASUAL flight model - always on there, always off on REALISTIC - so the realism
+//setting above is its only gate and every consumer tests that directly. The old Auto Pitch
+//checkbox was both redundant (the assist was already gated on casual, so it did nothing on
+//realistic) and a trap: it defaulted ON while the pitch-SAS gate keyed off the checkbox alone, so
+//a realistic pilot who left it ticked lost pitch SAS to an assist that never ran.
 
 [
     "fza_ah64_sfmPlusMouseAsJoystick",

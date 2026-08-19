@@ -353,7 +353,12 @@ if !(_value) then {
             _heli setVariable ["fza_ah64_attHoldDesiredVel",      [_curVelX, _curVelY],  true];
             _heli setVariable ["fza_ah64_attHoldDesiredAtt",      [_curPitch, _curRoll], true];
             _heli setVariable ["fza_ah64_hdgHoldDesiredHdg",      getDir _heli,          true];
-            _heli setVariable ["fza_ah64_hdgHoldDesiredSideslip", fza_ah64_sideslip,     true];
+            //Sideslip setpoint is ZERO - a centred ball IS aerodynamic trim, which is what the
+            //heading hold's yaw/trn sub-modes are for. This used to capture fza_ah64_sideslip (the
+            //GAUGE global) on force-trim, which is wrong now that the loop measures
+            //fza_sfmplus_aero_beta_g: the two are different units (clamped gauge deflection vs
+            //lateral g), so the setpoint and measurement would not be comparable.
+            _heli setVariable ["fza_ah64_hdgHoldDesiredSideslip", 0.0,                   true];
             [_heli] call fza_sfmplus_fnc_fmcForceTrimSet;
 
             [_heli] call fza_sfmplus_fnc_centerTrimMode;

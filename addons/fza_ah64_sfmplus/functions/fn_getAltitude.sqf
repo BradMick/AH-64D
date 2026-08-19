@@ -23,10 +23,11 @@ params ["_heli"];
 private _barAlt  = _heli getVariable "fza_sfmplus_PA";
 _barAlt = [_barAlt, 0.0, 20000] call bis_fnc_clamp;
 
-private _radAlt = getPos _heli # 2 * SCALE_METERS_FEET;
+private _radAltRaw = getPos _heli # 2 * SCALE_METERS_FEET;
+private _radAlt    = _radAltRaw;
 if (_radAlt > 50) then {
     _radAlt = round (_radAlt / 10) * 10;
 };
 _radAlt     = [_radAlt, 0.0, 1420.0] call bis_fnc_clamp;
 
-[_barAlt, _radAlt];
+[_barAlt, _radAlt, _radAltRaw];

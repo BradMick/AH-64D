@@ -503,6 +503,12 @@ private _scasPids =
     ,["Heading Hold",         "hdg",      0.0300, 0.0050, 0.0030]
     ,["Altitude Hold - Baro", "bar",      0.0010, 0.0000, 0.0008]
     ,["Altitude Hold - Radar","rad",      0.0500, 0.0001, 0.0050]
+    //AUTO-PEDAL, one PID per REGIME. Each grades a DIFFERENT error in DIFFERENT units, so the
+    //gain scales are not comparable to each other: Hover = deg of heading error, Nose-to-Tail =
+    //deg of kinematic sideslip, Aero Trim = g of lateral accel (small number -> much larger kp).
+    ,["Auto Pedal - Hover Hdg",  "apHdg",  0.1000, 0.0050, 0.0500]
+    ,["Auto Pedal - Nose/Tail",  "apNtt",  0.0300, 0.0080, 0.0100]
+    ,["Auto Pedal - Aero Trim",  "apAero", 6.6700, 0.5000, 0.4000]
 ];
 //Master toggle for the ZN PID auto-tuner (fn_tunerPidAuto). Turn ON and walk away - it ramps
 //each augmentation PID to its oscillation point and applies the Ziegler-Nichols gains, one PID
@@ -510,6 +516,17 @@ private _scasPids =
 _spec pushBack (["SCAS", "fza_sfmplus_tune_pidAutoOn", "** AUTO-TUNE ALL PIDs (Ziegler-Nichols) **", "PID Auto-Tune", "bool",
     false, "fza_sfmplus_tune_pidAutoOn",
     ["fn_tunerPidAuto.sqf", "// PID auto-tune enable: %1"]] call _fnMake);
+//HOLD auto-tuner (fn_tunerHoldAuto): tunes the hold PID for whichever submode is live at your
+//current speed. Run AFTER the SAS tuner. Lock the submode while it runs.
+_spec pushBack (["SCAS", "fza_sfmplus_tune_holdAutoOn", "** AUTO-TUNE HOLDS (live submode) **", "PID Auto-Tune", "bool",
+    false, "fza_sfmplus_tune_holdAutoOn",
+    ["fn_tunerHoldAuto.sqf", "// HOLD auto-tune enable: %1"]] call _fnMake);
+//AUTO-PEDAL auto-tuner (fn_tunerPedalAuto): tunes whichever of the three pedal regimes is live -
+//hover heading / nose-to-tail below 50ft / aero trim above 50ft. Fly each regime to tune it.
+//Run AFTER the SAS tuner (yaw SAS is the inner loop underneath the auto-pedal).
+_spec pushBack (["SCAS", "fza_sfmplus_tune_pedalAutoOn", "** AUTO-TUNE PEDALS (live regime) **", "PID Auto-Tune", "bool",
+    false, "fza_sfmplus_tune_pedalAutoOn",
+    ["fn_tunerPedalAuto.sqf", "// pedal auto-tune enable: %1"]] call _fnMake);
 
 {
     _x params ["_grp", "_keyBase", "_kp", "_ki", "_kd"];

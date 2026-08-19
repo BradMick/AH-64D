@@ -119,13 +119,35 @@ private _pfh = [{
     (_disp displayCtrl 54311) ctrlSetText format ["Speed %1 kt   climb %2 fpm   yawRate %3 deg/s   yawAccel %4 deg/s2", _spdKt, round _climb, _yawRate toFixed 2, _yawAccelS toFixed 2];
     (_disp displayCtrl 54312) ctrlSetText format ["Pitch %1 (tgt %2)   Roll %3 (tgt %4)", _curP toFixed 1, _tgtP toFixed 1, _curR toFixed 1, _tgtR toFixed 1];
     (_disp displayCtrl 54313) ctrlSetText format ["Coll %1%% (tgt %2%%)", _coll toFixed 0, _tgtC toFixed 0];
-    (_disp displayCtrl 54314) ctrlSetText format ["Cyc fwd+ %1 (tgt %2)  left+ %3 (tgt %4)  Ped rgt+ %5 (tgt %6)",
-        _cycFA toFixed 2, _tgtCycFA toFixed 2, _cycLR toFixed 2, _tgtCycLR toFixed 2, _ped toFixed 2, _tgtPed toFixed 2];
+    //AUTO-PEDAL live state appended to the pedal line: which regime owns the pedals right now, how
+    //much of the command it owns, the error IT is acting on (units differ per regime - deg for
+    //hdg/ntt, g for aero) and the pedal output it is producing. This is what tells you at a glance
+    //whether the auto-pedal is actually doing something, and which PID to tune if it is not.
+    private _apStr = "";
+    if (fza_ah64_sfmPlusAutoPedal) then {
+        private _apReg = _heli getVariable ["fza_sfmplus_autoPedalRegime",    "hdg"];
+        private _apWgt = _heli getVariable ["fza_sfmplus_autoPedalRegimeWgt", 0.0];
+        private _apOut = _heli getVariable ["fza_sfmplus_autoPedalOut",       0.0];
+        private _apErr = switch (_apReg) do {
+            case "ntt":  { _heli getVariable ["fza_sfmplus_autoPedalNttErr",  0.0] };
+            case "aero": { _heli getVariable ["fza_sfmplus_autoPedalAeroErr", 0.0] };
+            default      { _heli getVariable ["fza_sfmplus_autoPedalHdgErr",  0.0] };
+        };
+        private _apUnit = if (_apReg == "aero") then { "g" } else { "deg" };
+        _apStr = format ["   AP[%1 %2%3] err %4%5 out %6",
+            toUpper _apReg, round (_apWgt * 100), "%", _apErr toFixed 3, _apUnit, _apOut toFixed 3];
+    } else {
+        _apStr = "   AP[OFF]";
+    };
+    (_disp displayCtrl 54314) ctrlSetText format ["Cyc fwd+ %1 (tgt %2)  left+ %3 (tgt %4)  Ped rgt+ %5 (tgt %6)%7",
+        _cycFA toFixed 2, _tgtCycFA toFixed 2, _cycLR toFixed 2, _tgtCycLR toFixed 2, _ped toFixed 2, _tgtPed toFixed 2, _apStr];
     //Line 54315: shows the PID AUTO-TUNE per-axis status (SAS or HOLD tuner) WHEN a tuner is
     //running - the important thing to watch while flying - else the MASTER axis. The status var
     //is shared by both tuners; it packs all axes + each axis's settle state (n/N or SETTLED).
     private _pidStat  = _heli getVariable ["fza_sfmplus_pidAuto_status", "PID auto-tune idle"];
-    private _pidOn    = (_heli getVariable ["fza_sfmplus_tune_pidAutoOn", false]) || (_heli getVariable ["fza_sfmplus_tune_holdAutoOn", false]);
+    private _pidOn    = (_heli getVariable ["fza_sfmplus_tune_pidAutoOn",   false])
+                     || (_heli getVariable ["fza_sfmplus_tune_holdAutoOn",  false])
+                     || (_heli getVariable ["fza_sfmplus_tune_pedalAutoOn", false]);
     (_disp displayCtrl 54315) ctrlSetText (if (_pidOn) then { _pidStat } else { format ["MASTER: %1", _mAxis] });
 
     //The FORCE SCALARS the master is actually tuning, at the current speed. These

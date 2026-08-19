@@ -39,6 +39,20 @@ private _sasYawOutput   = 0.0;
 //holds). Authority 20% pitch, 10% roll/yaw. FMC-axis + primary-hydraulics gating in fn_fmc.
 //Tune firmness per axis via the SAS PID kp (fn_coreConfig) - roll is the twitchy low-inertia one.
 
+//SAS RUNS ON EVERY AXIS, ALWAYS - including when keyboard auto-attitude owns pitch and roll.
+//
+//An earlier version stood SAS down on those axes, on the reasoning that auto-attitude "owns" them.
+//That was wrong and it made the auto-attitude loop oscillate violently: the two do DIFFERENT jobs
+//and are complementary, not competing. SAS damps RATE (setpoint 0 on body rate, +-10-20% servo);
+//auto-attitude commands ATTITUDE. An attitude loop with no rate damping underneath it has nothing
+//opposing the overshoot it creates, so it hunts - and raising its gains to fix the sluggishness
+//just made the hunt violent. Rate damping under an attitude loop is the standard arrangement and
+//is exactly what lets the outer loop carry useful gain without ringing.
+//
+//SAS is also the cheaper of the two to leave running: it is a small, bounded, always-stabilising
+//term that cannot fight an attitude command (it only ever opposes RATE, and a deliberate attitude
+//change simply carries a little more input to sustain its rate).
+
 //ROLL: proportional rate damping - oppose actual roll rate.
 private _roll  = [_pidSASRoll, _deltaTime, 0.0, _angVelY] call fza_fnc_pidRun;
 _roll          = [_roll,  -0.1, 0.1] call BIS_fnc_clamp;   // 10% SAS-servo authority (roll)
@@ -50,14 +64,10 @@ private _yaw   = [_pidSASYaw, _deltaTime, 0.0, _angVelZ] call fza_fnc_pidRun;
 _yaw           = [_yaw, -0.1, 0.1] call BIS_fnc_clamp;   // 10% SAS-servo authority (yaw)
 _sasYawOutput  = _yaw;
 
-//PITCH: proportional rate damping - oppose actual pitch rate. Disabled when auto pitch owns the axis.
-if (!fza_ah64_sfmPlusAutoPitch) then {
-    private _pitch = [_pidSASPitch, _deltaTime, 0.0, _angVelX] call fza_fnc_pidRun;
-    _pitch         = [_pitch, -0.2, 0.2] call BIS_fnc_clamp;   // 20% SAS-servo authority (pitch)
-    _sasPitchOutput = _pitch;
-} else {
-    [_pidSASPitch] call fza_fnc_pidReset;
-};
+//PITCH: proportional rate damping - oppose actual pitch rate. Runs always (see the note above).
+private _pitch = [_pidSASPitch, _deltaTime, 0.0, _angVelX] call fza_fnc_pidRun;
+_pitch         = [_pitch, -0.2, 0.2] call BIS_fnc_clamp;   // 20% SAS-servo authority (pitch)
+_sasPitchOutput = _pitch;
 
 //systemChat format ["Pitch SAS = %1 -- Roll SAS = %2", _SASPitchOutput, _SASRollOutput];
 //systemChat format ["_cyclicFwdAft = %1 -- _cyclicLeftRight = %2 -- _pedalLeftRight = %3", _heli getVariable "fza_sfmplus_cyclicFwdAft" toFixed 2, _heli getVariable "fza_sfmplus_cyclicLeftRight" toFixed 2, _heli getVariable "fza_sfmplus_pedalLeftRight" toFixed 2];

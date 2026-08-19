@@ -21,29 +21,27 @@ params ["_heli"];
 
 if (!local _heli) exitWith {};
 
-private _fs0            = 6.40;
+private _fs0            = 6.4;
 
-private _armCPG         = [ 0.00, 4.312];
-private _armPLT         = [ 0.00, 2.760];
-private _armFwdFuelCell = [ 0.00, 2.542];
-private _armAmmoBay     = [ 0.00, 0.944];
-private _armAftFuelCell = [ 0.00,-0.077];
+private _fwdCg          = 1.117;
+private _aftCg          = 0.964;
 
-private _armStation01   = [-2.16, 1.345];
-private _armStation02   = [-1.50, 1.345];
-private _armStation03   = [ 1.50, 1.345];
-private _armStation04   = [ 2.16, 1.345];
+private _armCPG         = [ 0.000, 4.312];
+private _armPLT         = [ 0.000, 2.760];
+private _armFwdFuelCell = [ 0.000, 2.542];
+private _armAmmoBay     = [ 0.000, 0.944];
+private _armAftFuelCell = [ 0.000,-0.077];
+
+private _armStation01   = [-2.160, 1.345];
+private _armStation02   = [-1.500, 1.345];
+private _armStation03   = [ 1.500, 1.345];
+private _armStation04   = [ 2.160, 1.345];
 
 private _curMass   = 0;
 private _curMom    = 0;
 private _emptyMass = 0;
 private _emptyMom  = 0;
 
-//Empty mass + moment come from config. The config moment is expressed in CG-SPACE (arm
-//from FS0: emptyMom/emptyMass = ~5.28 m = ~208 in, near the aft CG limit). But the payload
-//arms below are in MODEL space (distance from the model origin), and setCenterOfMass wants
-//MODEL space - so convert the empty moment to model space: model_arm = _fs0 - cgSpaceArm,
-//i.e. _emptyMom_model = _emptyMass*_fs0 - _emptyMom_cfg. (Payload arms are NOT converted.)
 if (_heli animationPhase "fcr_enable" == 1) then {
     _emptyMass = _heli getVariable "fza_sfmplus_emptyMassFCR";
     _emptyMom  = (_emptyMass * _fs0) - (_heli getVariable "fza_sfmplus_emptyMomFCR");
@@ -52,7 +50,6 @@ if (_heli animationPhase "fcr_enable" == 1) then {
     _emptyMom  = (_emptyMass * _fs0) - (_heli getVariable "fza_sfmplus_emptyMomNonFCR");
 };
 
-//Crew. Arms are MODEL space (distance from model origin) - use directly, no conversion.
 private _cpgMass     = 113.4;   //kg - 250lbs
 private _cpgMom      = _cpgMass * (_armCPG select 1);
 
@@ -115,13 +112,24 @@ private _comOffX = _heli getVariable ["fza_sfmplus_tune_comOffsetX", 0.0];
 private _comOffY = _heli getVariable ["fza_sfmplus_tune_comOffsetY", 0.0];
 private _comOffZ = _heli getVariable ["fza_sfmplus_tune_comOffsetZ", 0.0];
 
-if (fza_ah64_sfmplusRealismSetting == REALISTIC) then {
-    _heli setCenterOfMass [_curLatCG + _comOffX, _curLongCG + _comOffY, -1.34 + _comOffZ];
+private _comDatum = boundingCenter _heli;
+//systemChat format ["Datum [%1, %2, %3 ]", (_comDatum select 0) toFixed 3, (_comDatum select 1) toFixed 3, (_comDatum select 2) toFixed 3];
+
+//if (fza_ah64_sfmplusRealismSetting == REALISTIC) then {
+    _heli setCenterOfMass [
+        _curLatCG  + _comOffX - (_comDatum select 0),
+        _curLongCG + _comOffY - (_comDatum select 1),
+                   + _comOffZ - (_comDatum select 2)
+    ];
+/*
 } else {
     _heli setCenterOfMass [ 0.0 + _comOffX, _curLongCG + _comOffY, -1.34 + _comOffZ];
 };
+*/
 //systemChat format ["Total Mass = %1 lbs (%2 kg) -- Total Moment = %3 -- Long CG = %4 in -- Lat CG = %5 in", (_curMass * 2.20462) toFixed 1, _curMass toFixed 1, _curLongMom toFixed 3, (_curLongCG * 39.3701) toFixed 1, (_curLatCG * 39.3701) toFixed 1];
 //systemChat format ["Center of Mass = %1", getCenterOfMass _heli];
+
+private _curCom = (getCenterOfMass _heli) vectorAdd _comDatum;
 
 //_curMass = 4535;//8165;
 //Tuner gross weight override - bypasses the computed mass when enabled
@@ -129,6 +137,7 @@ if (_heli getVariable ["fza_sfmplus_tune_gwtOverride", false]) then {
     _curMass = _heli getVariable ["fza_sfmplus_tune_gwtValue", _curMass];
 };
 _heli setMass _curMass;
+//systemChat format ["_curMass %1 - _boundingBoxReal = %2 - _boundingCenter = %3", (getMass _heli) toFixed 0, boundingBoxReal [_heli, "Geometry"], boundingCenter _heli];
 
 _heli setVariable ["fza_sfmplus_GWT", _curMass,   true];
 _heli setVariable ["fza_sfmplus_CG",  _curLongCG, true];
@@ -138,14 +147,14 @@ private _vecX = [5.0, 0.0, 0.0];
 private _vecY = [0.0, 5.0, 0.0];
 private _vecZ = [0.0, 0.0, 5.0];
 
-//Draw the force vector
 private _heliCoM = getCenterOfMass _heli;
 
 [_heli, _heliCoM, _heliCoM vectorAdd _vecX, "red"]   call fza_fnc_debugDrawLine;
 [_heli, _heliCoM, _heliCoM vectorAdd _vecY, "green"] call fza_fnc_debugDrawLine;
 [_heli, _heliCoM, _heliCoM vectorAdd _vecZ, "blue"]  call fza_fnc_debugDrawLine;
 
-[_heli, [0.0,1.295,-10], [0.0,1.295, 10], "blue"]  call fza_fnc_debugDrawLine;
-[_heli, [0.0,1.142,-10], [0.0,1.142, 10], "blue"]  call fza_fnc_debugDrawLine;
+[_heli, [0.0, _fs0   - (_comDatum select 1),-5], [0.0, _fs0   - (_comDatum select 1), 5], "green"]  call fza_fnc_debugDrawLine;
+[_heli, [0.0, _fwdCg - (_comDatum select 1),-5], [0.0, _fwdCg - (_comDatum select 1), 5], "red"]  call fza_fnc_debugDrawLine;
+[_heli, [0.0, _aftCg - (_comDatum select 1),-5], [0.0, _aftCg - (_comDatum select 1), 5], "red"]  call fza_fnc_debugDrawLine;
 
 #endif

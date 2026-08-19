@@ -45,11 +45,6 @@ switch (_type) do {
 	};
 	case TAIL: {
 		_collFeather   = [-1, 1, -_yawInput, _collMin, _collMid, _collMax] call fza_sfmplus_fnc_linearInterpFromCenter;
-		//DIAG (tail thrust sign): is the tail commanding POSITIVE or NEGATIVE pitch at hover?
-		//+collFeather should -> +X (right) thrust. If collFeather is + but Tail Fx is - -> geometry
-		//sign bug. If collFeather is - -> command-side (yawInput/range). Remove when found.
-		systemChat format ["TAIL yawInput=%1 collFeather=%2 (min/mid/max=%3/%4/%5)",
-			_yawInput toFixed 3, _collFeather toFixed 2, _collMin, _collMid, _collMax];
 	};
 };
 

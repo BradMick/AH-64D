@@ -163,8 +163,34 @@ private _rtrRPMInducedThrustScalar = _inputRPM / _rtrRPMTrimVal;
 private _airDensityThrustScalar    = _dryAirDensity / ISA_STD_DAY_AIR_DENSITY;
 //Additional thrust gained from increasing forward airspeed
 private _deltaPos                  = _rtrPos vectorDiff _heliCom;
-private _velY                      = _heli getVariable "fza_sfmplus_velModelSpace" select 1;
-private _velZ                      = _heli getVariable "fza_sfmplus_velModelSpace" select 2;
+
+//HUB-LOCAL VELOCITY. velModelSpace is the velocity of the CG, but the tail hub sits ~7 m AFT of
+//it - so whenever the aircraft rotates, the hub is moving through the air at a different velocity
+//than the CG is. The rigid-body relation is:
+//
+//      v_hub = v_cg + (omega x r)        r = hub position relative to the CG (_deltaPos)
+//
+//Without the (omega x r) term the tail rotor is fed the CG's velocity, which is WRONG in exactly
+//the way that matters here: _velX drives _inducedVelocityScalar below, and that scalar MULTIPLIES
+//the entire thrust output. So a yaw rate produced a thrust error PROPORTIONAL TO THAT YAW RATE -
+//a feedback path, and one with the sign structure that sustains an oscillation instead of damping
+//it. That is a physics error in the model, not something any controller gain could fix, which is
+//why tuning the heading-hold PID never settled it.
+//
+//At a 7 m arm the lateral term is r_yaw * 6.98: small in trimmed flight (~0.19 m/s at 1.5 deg/s)
+//but growing directly with yaw rate, so it feeds itself once a divergence starts.
+//
+//CROSS-PRODUCT ORDER: written (r x omega), NOT the textbook (omega x r). Verified against the
+//physical case rather than the formula: with the nose yawing RIGHT about a CG ~7 m forward of the
+//tail, the TAIL swings LEFT, so the hub's lateral velocity must be NEGATIVE. (omega x r) gives
+//+0.29 m/s there and (r x omega) gives -0.29, so this model's angVelModelSpace uses the opposite
+//handedness to the standard convention. Match the aircraft, not the textbook.
+private _angVel                    = _heli getVariable ["fza_sfmplus_angVelModelSpace", [0,0,0]];
+private _velRot                    = _deltaPos vectorCrossProduct _angVel;
+private _velHub                    = (_heli getVariable "fza_sfmplus_velModelSpace") vectorAdd _velRot;
+
+private _velY                      = _velHub select 1;
+private _velZ                      = _velHub select 2;
 private _velWindY                  = _heli getVariable "fza_sfmplus_velWindModelSpace" select 1;
 private _velWindX                  = _heli getVariable "fza_sfmplus_velWindModelSpace" select 0;
 if (_velWindY < 0.0) then {
@@ -172,15 +198,15 @@ if (_velWindY < 0.0) then {
 };
 private _velYZ                     = vectorMagnitude [_velY + _velWindY, _velZ] min VEL_VNE;
 private _airspeedVelocityScalar    = (1 + (_velYZ / VEL_VBE)) ^ (_rtrAirspeedVelocityMod);
-//Induced flow handler
-private _velX                      = _heli getVariable "fza_sfmplus_velModelSpace" select 0;
-_velX = _velX * sin (_heli getVariable "fza_sfmplus_aero_beta_deg");
+//Induced flow handler - lateral flow through the disk, at the HUB.
+private _velX                      = _velHub select 0;
+_velX = _velX;// * sin (_heli getVariable "fza_sfmplus_aero_beta_deg");
 _velX = _velX + _velWindX;
 
 private _inducedVelocityScalar     = 1.0;
-if (_velX < -VEL_VRS && _velYZ < VEL_ETL) then { 
+if (_velX < -VEL_VRS && _velYZ < VEL_ETL) then {
     _inducedVelocityScalar = 0.0;
-} else { 
+} else {
     _inducedVelocityScalar = 1 - (_velX / VEL_VRS);
 };
 //Finally, multiply all the scalars above to arrive at the final thrust scalar
@@ -215,19 +241,21 @@ private _outTq     = [0.0, 0.0, 0.0];
 if ([vectorMagnitude _thrustVector] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _thrustVector] call fza_sfmplus_fnc_isINF) then { _thrustVector = [0.0, 0.0, 0.0]; };
 
 if (_tailRtrDamage < 0.85 && _IGBDamage < SYS_IGB_DMG_THRESH && _TGBDamage < SYS_TGB_DMG_THRESH) then {
-    if (currentPilot _heli == player) then {     
-        if ( fza_ah64_sfmplusRealismSetting == REALISTIC) then {
+    if (currentPilot _heli == player) then {
+        //if ( fza_ah64_sfmplusRealismSetting == REALISTIC) then {
             //Tail rotor thrust
             _heli addForce [_heli vectorModelToWorld _thrustVector, _rtrPos];
             //Tail rotor torque
-            _moment set [1, (_moment select 1) * TEST];
+            //_moment set [1, (_moment select 1) * TEST];
             _heli addTorque (_heli vectorModelToWorld _moment);
+        /*
         } else {
             //Tail rotor thrust
             _heli addForce [_heli vectorModelToWorld _thrustVector, _heliCom];
             //Tail rotor torque
             _heli addTorque (_heli vectorModelToWorld _moment);
         };
+        */
         //Net-force accumulator (ALWAYS on): total applied tail force this frame, model
         //space, post-deltaTime (getAccelerations undoes dt). Feeds body accel.
         [_heli, "Tail Rotor", _thrustVector] call fza_sfmplus_fnc_accumForce;
@@ -253,7 +281,7 @@ hintsilent format ["v0.7 testing
                     \nRotor Omega = %1
                     \nBlade Tip Vel = %2
                     \nRotor Power Req = %3 kW
-                    \nRotor Torque = %4 Nm 
+                    \nRotor Torque = %4 Nm
                     \nE1 Tq = %5 % E2 Tq = %6 %
                     \nVelZ = %7
                     \nInduced Vel Scalar = %8

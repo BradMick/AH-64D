@@ -29,8 +29,7 @@ if (!(player in _heli)) exitWith {};
 private _beta_g = _heli getVariable "fza_sfmplus_aero_beta_g";
 
 //Display sensitivity: the marker reaches FULL deflection (+-1) at beta_g = +-_fullScaleG.
-//Larger = LESS sensitive (takes more lateral g to move the ball). Was 0.15 (full-scale at
-//0.15 g), which over-reacted to small pedal inputs; 0.30 halves the sensitivity so it takes
-//a real skid to peg and coordinated-flight jitter (~0.02-0.03 g) stays a subtle nudge.
-private _fullScaleG = 0.30;
+//Larger = LESS sensitive (takes more lateral g to move the ball). 0.15 g = full-scale: the ball
+//pegs at 0.15 g lateral and the deflection is capped there via the clamp below.
+private _fullScaleG = 0.15;
 fza_ah64_sideslip = [_beta_g / _fullScaleG, -1.0, 1.0] call BIS_fnc_clamp;

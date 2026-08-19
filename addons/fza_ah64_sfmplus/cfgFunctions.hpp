@@ -1,8 +1,24 @@
-#ifdef __A3_DEBUG__
+// recompile = 1 UNCONDITIONALLY - this is what makes -filePatching work.
+//
+// This was previously gated behind `#ifdef __A3_DEBUG__`, which is DEAD CODE under HEMTT:
+// __A3_DEBUG__ is one of HEMTT's "runtime macros", hardcoded to the value 0 in a lookup
+// the #ifdef existence check never consults (libs/preprocessor/src/defines.rs). It cannot
+// be defined - there is no project.toml key, no CLI flag, and no per-command scoping - so
+// the #else branch always won and every function was built with recompile = 0.
+//
+// With recompile = 0 the engine compiles each function once and caches it forever, so a
+// patched .sqf on disk is never re-read: file patching appears completely broken even with
+// -filePatching enabled, correct addon junctions, and bytecode stripped from the PBO. There
+// is no error; edits are simply ignored.
+//
+// Cost of leaving this on for release: effectively nothing. Without -filePatching there is
+// no loose file to find, so the engine compiles the PBO's copy once at mission start exactly
+// as it did before. This mirrors how CBA/ACE handle their dev-recompile switch (a runtime
+// gate rather than a rapify-time define), adapted to a CfgFunctions-based project.
+//
+// NOTE: file patching only overrides paths that already exist in the built PBO - adding a
+// BRAND NEW .sqf still requires a rebuild.
 #define R recompile = 1
-#else
-#define R recompile = 0
-#endif
 
 class CfgFunctions
 {
@@ -48,6 +64,8 @@ class CfgFunctions
             class tunerPidAuto {R;};
             class tunerStepTune {R;};
             class tunerHoldAuto {R;};
+            class tunerPedalAuto {R;};
+            class forceDumpLog {R;};
             class holdChainLog {R;};
             class tunerYawDamper {R;};
             class tunerForceTables {R;};

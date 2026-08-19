@@ -6,7 +6,15 @@ if (isGamePaused || CBA_missionTime < 0.1) exitWith {};
 
 //Reset the tuner force/moment log at the top of the frame (no-op unless the
 //Forces readout is enabled) so it captures exactly this frame's contributions.
+//forceLogReset PUBLISHES the previous frame's completed accumulation first, so the
+//published snapshot is whole and stable at this point in the frame.
 [_heli] call fza_sfmplus_fnc_forceLogReset;
+
+//CSV dump of every force generator + the full live-tuner state to the .rpt, for analysing a
+//divergence frame by frame after the fact. Reads the snapshot forceLogReset just published, so
+//it must run HERE - immediately after it, before the generators start overwriting the live log.
+//No-op unless fza_sfmplus_tune_forceDumpOn is set.
+[_heli] call fza_sfmplus_fnc_forceDumpLog;
 
 if (fza_ah64_sfmPlusRotorModel == 1) then {
     // Blade Element Theory rotor model
@@ -77,7 +85,7 @@ if (fza_ah64_sfmPlusRotorModel == 1) then {
  ,0.95                  //chord
  ,1.4                   //sweep
  ,0.0                   //twist
- ,1.0                   //tipWidthScalar    
+ ,1.0                   //tipWidthScalar
  ,(_heli getVariable ["fza_sfmplus_tune_finLiftScalarTable",
  [
   [ 0.00, 2.1]   // master-tuned: flat 2.1 across all bands
@@ -125,3 +133,10 @@ if (fza_ah64_sfmPlusRotorModel == 1) then {
 //Optional yaw-rate damper (Balance-panel toggle) - applies an opposing yaw torque
 //to decay a standing precession, and logs it as its own "Yaw Damper" generator.
 [_heli] call fza_sfmplus_fnc_tunerYawDamper;
+
+//NOTE on frame order (not currently acted on, recorded because it is real):
+//XEH_preInit runs fza_sfmplus_fnc_coreUpdate BEFORE fza_sfmplus_fnc_coreUpdateFlightModel, and
+//getAccelerations is called from coreUpdate. So the accelerometer sums the force accumulator one
+//frame late - it reads what the generators wrote on the PREVIOUS pass. At 25-30 fps that is ~35 ms,
+//which blurs a transient but is far too small to put a steady-state ball on the wrong side, so it
+//is NOT the cause of the slip-indicator problems. Worth tidying, not worth blaming.

@@ -3,7 +3,7 @@ Function: fza_sfmplus_fnc_coreUpdate
 
 Description:
     Updates all of the modules core functions.
-    
+
 Parameters:
     _heli - The helicopter to get information from [Unit].
 
@@ -30,7 +30,7 @@ private _config      = configOf _heli;
 [_heli] call fza_sfmplus_fnc_getDeltaTime;
 
 if (isAutoHoverOn _heli) then {
-    _heli action ["AutoHoverCancel", _heli];  
+    _heli action ["AutoHoverCancel", _heli];
 };
 
 //Environment
@@ -72,9 +72,15 @@ if (isAutoHoverOn _heli) then {
 //Damage
 [_heli] call fza_sfmplus_fnc_damageApply;
 
-if (fza_ah64_sfmPlusFmDebug) then { 
+if (fza_ah64_sfmPlusFmDebug) then {
     hintSilent format [
-    "_cyclicFwdAft = %1
+    "HOV set X/Y = %48 / %49
+    \nHOV vel X/Y = %50 / %51
+    \nHOV out R/P = %52 / %53
+    \nHOV int R/P = %54 / %55
+    \nwPos/wVel/wAtt = %45
+    \n--------------------
+    \n_cyclicFwdAft = %1
     \n_cyclicLeftRight = %2
     \n_pedalYaw = %3
     \n_collectiveOuput = %4
@@ -122,8 +128,9 @@ if (fza_ah64_sfmPlusFmDebug) then {
     \nPitch = %38 Roll = %39
     \nYaw = %41  Sideslip = %40
     \n--------------------
-    \nAutoPitch = %42 PitchActive = %43
-    \nAPTarget = %44
+    \nAutoAtt = %42
+    \nPitchActive = %43 APTarget = %44
+    \nRollActive = %46  ARTarget = %47
     ",
     _heli getVariable "fza_sfmplus_cyclicFwdAft" toFixed 3,                    //1
     _heli getVariable "fza_sfmplus_cyclicLeftRight" toFixed 3,                 //2
@@ -150,10 +157,15 @@ if (fza_ah64_sfmPlusFmDebug) then {
     _heli getVariable "fza_sfmplus_fmcAltHoldCollOut" toFixed 3,              //23
     _heli getVariable "fza_ah64_forceTrimPosPitch" toFixed 3,                 //24
     _heli getVariable "fza_ah64_forceTrimPosRoll" toFixed 3,                  //25
-    _heli getVariable "fza_ah64_forceTrimPosYaw" toFixed 3,                 //26
-    getCenterOfMass _heli select 0 toFixed 3,                                 //27
-    getCenterOfMass _heli select 1 toFixed 3,                                 //28
-    getCenterOfMass _heli select 2 toFixed 3,                                 //29
+    _heli getVariable "fza_ah64_forceTrimPosYaw" toFixed 3,                   //26
+    //Report the CoM in SURVEYED space - the frame the user measured in Object Builder and typed
+    //into the arms - not the engine's shifted frame. setCenterOfMass was handed the surveyed CG
+    //with boundingCenter subtracted, so adding it back here undoes that and the readout matches
+    //what the user expects to see (e.g. 1.201 against surveyed CG limits of 1.117 / 0.944, rather
+    //than the shifted 1.926 which means nothing to them).
+    ((getCenterOfMass _heli) vectorAdd (boundingCenter _heli)) select 0 toFixed 3,   //27
+    ((getCenterOfMass _heli) vectorAdd (boundingCenter _heli)) select 1 toFixed 3,   //28
+    ((getCenterOfMass _heli) vectorAdd (boundingCenter _heli)) select 2 toFixed 3,   //29
     ((_heli getVariable "fza_sfmplus_GWT") * 2.20462) toFixed 0,              //30
     _heli getVariable "fza_ah64_attHoldActive",                               //31
     _heli getVariable "fza_ah64_attHoldSubMode",                              //32
@@ -166,9 +178,23 @@ if (fza_ah64_sfmPlusFmDebug) then {
     _heli call BIS_fnc_getPitchBank select 1 toFixed 2,                       //39
     _heli getVariable "fza_sfmplus_aero_beta_deg" toFixed 2,                  //40
     ([player getRelDir _heli] call CBA_fnc_simplifyAngle180) toFixed 2,       //41
-    fza_ah64_sfmPlusAutoPitch,                                                //42
+    fza_ah64_sfmplusRealismSetting != REALISTIC,                              //42
     _heli getVariable "fza_sfmplus_autoPitchActive",                          //43
-    _heli getVariable "fza_sfmplus_autoPitchTarget" toFixed 1                 //44
+    _heli getVariable "fza_sfmplus_autoPitchTarget" toFixed 1,                //44
+    format ["%1 / %2 / %3",
+        (_heli getVariable ["fza_sfmplus_autoAttWPos", 0.0]) toFixed 2,
+        (_heli getVariable ["fza_sfmplus_autoAttWVel", 0.0]) toFixed 2,
+        (_heli getVariable ["fza_sfmplus_autoAttWAtt", 0.0]) toFixed 2],       //45
+    _heli getVariable "fza_sfmplus_autoRollActive",                           //46
+    _heli getVariable "fza_sfmplus_autoRollTarget" toFixed 1,                 //47
+    (_heli getVariable ["fza_sfmplus_dbgHovSetX", 0.0]) toFixed 3,            //48
+    (_heli getVariable ["fza_sfmplus_dbgHovSetY", 0.0]) toFixed 3,            //49
+    (_heli getVariable ["fza_sfmplus_dbgHovVelX", 0.0]) toFixed 3,            //50
+    (_heli getVariable ["fza_sfmplus_dbgHovVelY", 0.0]) toFixed 3,            //51
+    (_heli getVariable ["fza_sfmplus_dbgHovOutR", 0.0]) toFixed 3,            //52
+    (_heli getVariable ["fza_sfmplus_dbgHovOutP", 0.0]) toFixed 3,            //53
+    (_heli getVariable ["fza_sfmplus_dbgHovIntR", 0.0]) toFixed 3,            //54
+    (_heli getVariable ["fza_sfmplus_dbgHovIntP", 0.0]) toFixed 3             //55
     ];
 };
 
@@ -197,11 +223,11 @@ hintsilent format ["v0.11
                     \nColl Pos = %11
                     \nEng FF = %12
                     \nEngine Base NG = %13",
-                    _heli getVariable "fza_sfmplus_engPctNG" select 0, 
-                    _heli getVariable "fza_sfmplus_engPctTQ" select 0, 
+                    _heli getVariable "fza_sfmplus_engPctNG" select 0,
+                    _heli getVariable "fza_sfmplus_engPctTQ" select 0,
                     _heli getVariable "fza_sfmplus_engTGT" select 0,
-                    _heli getVariable "fza_sfmplus_engPctNG" select 1, 
-                    _heli getVariable "fza_sfmplus_engPctTQ" select 1, 
+                    _heli getVariable "fza_sfmplus_engPctNG" select 1,
+                    _heli getVariable "fza_sfmplus_engPctTQ" select 1,
                     _heli getVariable "fza_sfmplus_engTGT" select 1,
                     _heli getVariable "fza_sfmplus_engState",
                     _heli getVariable "fza_sfmplus_isSingleEng",

@@ -16,10 +16,19 @@ Examples:
 Author:
     BradMick
 ---------------------------------------------------------------------------- */
+#include "\fza_ah64_sfmplus\headers\core.hpp"
+
 params ["_heli"];
 
 private _deltaTime  = _heli getVariable "fza_sfmplus_deltaTime";
 if (_deltaTime < 0.0001) exitWith {};
+
+private _worldVel_prev = _heli getVariable "fza_sfmplus_velWorldSpaceNoWind_prev";
+private _worldVel      = _heli getVariable "fza_sfmplus_velWorldSpaceNoWind";
+private _worldAccel    = (_worldVel vectorDiff _worldVel_prev) vectorMultiply (1 / _deltaTime);
+
+_heli setVariable ["fza_sfmplus_worldAccel", _worldAccel];
+_heli setVariable ["fza_sfmplus_velWorldSpaceNoWind_prev", _worldVel];
 
 private _velX_prev  = _heli getVariable "fza_sfmplus_velX_prev";
 private _accelX     = _heli getVariable "fza_sfmplus_accelX";
@@ -81,36 +90,75 @@ private _forceMap  = _heli getVariable ["fza_sfmplus_forceAccum", createHashMap]
 private _netForce  = [0,0,0];
 { _netForce = _netForce vectorAdd _y; } forEach _forceMap;
 private _mass      = getMass _heli;
-//Gravity projected into the body frame via the mod's own rotation (pitch + roll).
-//fza_sfmplus_fnc_vectorRotate signature: [inVec, pitch, roll, yaw]. Sign target (validated
-//vs the two-bank reference): left bank -> gravBodyX NEGATIVE (~-5.3), right bank -> POSITIVE
-//(~+5.9). If this rotation's convention comes out flipped, negate _curRoll here.
-//fza_sfmplus_fnc_vectorRotate uses the OPPOSITE roll-sign convention to BIS_fnc_rotateVector3D
-//(verified in-sim: at a left-roll hover, BIS gave gravX -0.30 but this fn gave +0.30). Negate
-//roll so gravBodyX matches the validated sign: left bank -> NEGATIVE, right bank -> POSITIVE.
-(_heli call BIS_fnc_getPitchBank) params ["_curPitch", "_curRoll"];
-private _gravBody  = [[0.0, 0.0, -9.806], _curPitch, -_curRoll, 0.0] call fza_sfmplus_fnc_vectorRotate;
 
-//LATERAL CENTRIPETAL term (turn acceleration) - the piece that CANCELS the gravity lateral
-//component in a coordinated turn so the ball centers instead of pegging to the low side.
-//The full transport cross-product vPQR x vUVW has lateral (X) component = (q*w - r*v):
-//  vPQR = [p roll, q pitch, r yaw] (angVelModelSpace), vUVW = [u lat, v fwd, w vert] (velModelSpace).
-//We take ONLY the -r*v piece (yaw rate * FORWARD velocity) = the centripetal turn term.
-//We deliberately EXCLUDE the q*w piece (pitch rate * VERTICAL velocity) - that was the
-//climb/descent-driven artifact that swung the ball on a collective change. Vertical excluded.
-//SIGN (verify in-sim): must SUBTRACT so a coordinated turn nulls gravBodyX. If a coordinated
-//turn pegs the ball HARDER instead of centering, flip the sign of _centripetalX.
-private _vPQR      = _heli getVariable ["fza_sfmplus_angVelModelSpace", [0,0,0]];
-private _vUVW      = _heli getVariable ["fza_sfmplus_velModelSpace", [0,0,0]];
-private _r         = _vPQR # 2;   // yaw rate (rad/s)
-private _vFwd      = _vUVW # 1;   // forward velocity (m/s)
-private _centripetalX = -(_r * _vFwd);
+//SPECIFIC FORCE, COMPUTED IN THE WORLD FRAME AND ONLY THEN ROTATED TO BODY.
+//
+//This ordering matters and is where the previous attempts went wrong. Rotating the force sum to
+//world and immediately back to body is an IDENTITY - it returns the body vector you started with,
+//so nothing is gained. The lateral force that a banked rotor produces exists in the WORLD frame;
+//converting straight back to body removes it again.
+//
+//An accelerometer measures (applied force / mass) MINUS gravity, and that subtraction has to
+//happen in the world frame where gravity is a fixed [0,0,-g]. Only the RESULT gets rotated into
+//body axes for display. Do the subtraction in body axes instead and the gravity term no longer
+//lines up with the force term once the aircraft is banked - which is exactly the failure the logs
+//kept showing: predicted +3.78 vs actual -3.48, same magnitude, opposite sign.
+private _forceMapW = _heli getVariable ["fza_sfmplus_forceAccumWorld", createHashMap];
+private _netForceW = [0,0,0];
+{ _netForceW = _netForceW vectorAdd _y; } forEach _forceMapW;
+//GRAVITY, in the WORLD frame. It is a fixed [0,0,-g] here - no attitude maths, no sign convention
+//to get wrong - and the subtraction happens in world BEFORE the result is rotated into body axes.
+//That ordering is what makes it hold at any attitude: in a banked turn the tilted thrust and
+//gravity cancel laterally in the world frame, so the body projection comes out near zero.
+private _gravWorld = [0.0, 0.0, -9.806];
+
+//LATERAL CENTRIPETAL term - REMOVED. It was added so a coordinated turn would null gravBodyX and
+//centre the ball instead of pegging it to the low side, but measurement showed it DOUBLE-COUNTS
+//and then dominates the whole signal.
+//
+//Why it double-counts: a real accelerometer measures SPECIFIC FORCE. In a coordinated turn the
+//centripetal acceleration is already present in the aircraft's actual lateral force (netForce),
+//so adding -(r*vFwd) on top counts the same physics twice.
+//
+//Measured in cruise (2214 logged frames, 60-104 kt) - see the FORCEDUMP analysis:
+//    centripetal -(r*v) : rms 0.746, max 3.22, corr with bodyAccelX = +0.887
+//    gravity lateral    : rms 0.303, max 1.06, corr with bodyAccelX = -0.053
+//The term was ~2.5x larger than gravity and essentially WAS the ball reading. At cruise vFwd is
+//~49 m/s, so even 1 deg/s of yaw contributes ~0.86 m/s^2 - swamping the real side force.
+//
+//The practical symptom: the ball tracked YAW RATE, not lateral force (corr yawRate->betaG -0.587,
+//while pedal->betaG was -0.014, i.e. NO relationship). Pushing pedal to centre the ball generates
+//yaw rate, which moved the ball further - so it could not be trimmed to zero at all.
+//
+//bodyAccel is now net force / mass + body-frame gravity, which is what an accelerometer actually
+//reads. If coordinated turns peg the ball to the low side again, do NOT reinstate this at full
+//strength - scale it down, or fix the underlying side force instead.
+//SPECIFIC FORCE, in WORLD, then rotated to body for display.
+//
+//  a_world = netForceWorld/mass + gravityWorld      <- both terms in the same frame
+//  a_body  = project a_world onto the body axes     <- rotation only, no translation
+//
+//In a coordinated turn the tilted rotor thrust and gravity cancel laterally IN THE WORLD FRAME, so
+//the projection into body comes out near zero and the ball centres. In level flight the rotor is
+//vertical, thrust cancels gravity, and the lateral projection is again zero. Both cases fall out of
+//the same expression with no special-casing, no tilt reconstruction and no scale factor.
 private _bodyAccel = if (_mass > 0.0) then {
-    private _acc = (_netForce vectorMultiply (1.0 / (_mass * _deltaTime))) vectorAdd _gravBody;
-    _acc set [0, (_acc # 0) + _centripetalX];   // add lateral centripetal to X only
-    _acc
+    private _aWorld = (_netForceW vectorMultiply (1.0 / (_mass * _deltaTime))) vectorAdd _gravWorld;
+    private _dirB   = vectorDir _heli;
+    private _upB    = vectorUp  _heli;
+    private _rightB = _dirB vectorCrossProduct _upB;
+    [
+        _aWorld vectorDotProduct _rightB,
+        _aWorld vectorDotProduct _dirB,
+        _aWorld vectorDotProduct _upB
+    ]
 } else { [0,0,0] };
 _heli setVariable ["fza_sfmplus_bodyAccel", _bodyAccel];
 
 //Clear for next frame (self-registering entries are re-written by whichever generators run).
-_heli setVariable ["fza_sfmplus_forceAccum", createHashMap];
+//Both maps must be cleared together or the world mirror keeps stale entries from generators that
+//stop running (e.g. a rotor that goes offline), and the accelerometer would read forces that are
+//no longer being applied.
+_heli setVariable ["fza_sfmplus_forceAccum",      createHashMap];
+_heli setVariable ["fza_sfmplus_forceAccum",      createHashMap];
+_heli setVariable ["fza_sfmplus_forceAccumWorld", createHashMap];

@@ -72,7 +72,7 @@ private _rtrGndEffTable =
 ,[ 8618, 0.310]
 ,[ 9525, 0.509]
 ];
-private _rtrThrustScalarTable_min = 
+private _rtrThrustScalarTable_min =
 [
  [    0, 0.032]
 ,[ 2000, 0.052]
@@ -80,7 +80,7 @@ private _rtrThrustScalarTable_min =
 ,[ 6000, 0.041]
 ,[ 8000, 0.045]
 ];
-private _rtrThrustScalarTable_max = 
+private _rtrThrustScalarTable_max =
 [
  [    0, 1.168]
 ,[ 2000, 1.422]
@@ -88,7 +88,7 @@ private _rtrThrustScalarTable_max =
 ,[ 6000, 2.132]
 ,[ 8000, 2.561]
 ];
-private _rtrTipLossTable = 
+private _rtrTipLossTable =
 [
  [ 6804, 1.108]
 ,[ 7711, 1.050]
@@ -96,7 +96,7 @@ private _rtrTipLossTable =
 ,[ 8618, 0.958]
 ,[ 9525, 0.890]
 ];
-private _velocityThrustExponentTable = 
+private _velocityThrustExponentTable =
 [
  [ 0.00, 0.000]
 ,[10.29, 0.209]
@@ -165,7 +165,7 @@ private _Itot = _Icm + _md2;
 private _Jtot = (_Iy + _Itot) * _rtrNumBlades;
 [_heli, "fza_sfmplus_rtrMoi", 0, _Jtot, true] call fza_fnc_setArrayVariable;
 
-//Thrust produced 
+//Thrust produced
 private _bladePitch_cur                = _bladePitch_min + (_bladePitch_max - _bladePitch_min) * _fmcCollOut;
 private _rtrThrustScalar_min           = [_rtrThrustScalarTable_min, _altitude] call fza_fnc_linearInterp select 1;
 private _bladePitchInducedThrustScalar = _rtrThrustScalar_min + ((1 - _rtrThrustScalar_min) / _bladePitch_max)  * _bladePitch_cur;
@@ -207,7 +207,7 @@ if (_velZ < -_vrsVelMin && _velXY < VEL_ETL) then {
 
     private _denom = linearConversion[-7.62, -19.30, _velZ, _vrsVel, 3.81, true];
     _inducedVelocityScalar = if(_vrsVel == 0.0) then { 1.0; } else { 1 - (_velZ / _denom); };
-    
+
     //systemChat format ["_denom = %1", _denom];
 };
 
@@ -228,7 +228,7 @@ if (_isOnGnd) then { _velXYNoWind = 0.0; };
 private _profilePowerCollectiveScalar = [_fmcCollOut / _profile_max, 0.0, 1.0] call BIS_fnc_clamp;
 private _profile_cur                  = (_profile_min + (((_profile_max * _profilePowerCollectiveScalar) - _profile_min) / VEL_VNE) * _velXYNoWind);
 
-private _inducedPowerVelocityScalarTable = 
+private _inducedPowerVelocityScalarTable =
 [
  [ 0.00, 1.202]
 ,[10.29, 0.970]
@@ -240,11 +240,11 @@ private _inducedPowerVelocityScalarTable =
 ,[66.88, 0.867]
 ,[69.96, 0.861]
 ,[72.02, 0.899]
-];  
+];
 private _inducedPowerVelocityScalar = ([_inducedPowerVelocityScalarTable, _velXYNoWind] call fza_fnc_linearInterp) select 1;
 _inducedPowerVelocityScalar         = _inducedPowerVelocityScalar * _fmcCollOut;
 
-private _inducedPowerCollectiveCorrectionTable = 
+private _inducedPowerCollectiveCorrectionTable =
 [
  [ 0.00, 0.649]
 ,[10.29, 0.591]
@@ -310,10 +310,10 @@ private _eng2TQ        = _heli getVariable "fza_sfmplus_engPctTQ" select 1;
 private _engPctTQ      = _eng1TQ max _eng2TQ;
 private _isSingleEng   = _heli getVariable "fza_sfmplus_isSingleEng";
 
-private _cruiseTqTable = 
+private _cruiseTqTable =
 [
  [ 0.00, 0.94]
-,[ 2.57, 0.93] 
+,[ 2.57, 0.93]
 ,[ 5.14, 0.90]
 ,[ 7.72, 0.87]
 ,[10.29, 0.82]
@@ -438,13 +438,14 @@ if (currentPilot _heli == player) then {
         if ([vectorMagnitude _moment] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _moment] call fza_sfmplus_fnc_isINF) then { _moment = [0.0, 0.0, 0.0]; };
 
         //Main rotor torque
-        private _moment = [0.0, 0.0, 0.0];
-        if (fza_ah64_sfmplusRealismSetting == REALISTIC) then {
+        //private _moment = [0.0, 0.0, 0.0];
+        //if (fza_ah64_sfmplusRealismSetting == REALISTIC) then {
             //Main rotor thrust
             _heli addForce  [_heli vectorModelToWorld _thrustVector, _rtrPos];
             //Main rotor torque
-            _moment = [_momentX, _momentY, _momentZ];
+            private _moment = [_momentX, _momentY, _momentZ];
             _heli addTorque (_heli vectorModelToWorld _moment);
+        /*
         } else {
             //Main rotor thrust
             _heli addForce  [_heli vectorModelToWorld _thrustVector, _heliCom];
@@ -452,7 +453,7 @@ if (currentPilot _heli == player) then {
             _moment = [_momentX, _momentY, 0.0];
             _heli addTorque (_heli vectorModelToWorld _moment);
         };
-
+        */
         //Net-force accumulator (ALWAYS on): this generator's total applied force this
         //frame, model space, post-deltaTime (getAccelerations undoes dt). Feeds body accel.
         [_heli, "Main Rotor", _thrustVector] call fza_sfmplus_fnc_accumForce;
@@ -517,7 +518,7 @@ if (cameraView == "INTERNAL") then {
             setCustomSoundController[_heli, "CustomSoundController4", 1.8];
     } else {
         setCustomSoundController[_heli, "CustomSoundController4", 0.0];
-    };   
+    };
     //Camera shake effect >160kts
     if (_vel2d >= 82.30) then {
             enableCamShake true;
@@ -546,7 +547,7 @@ if (cameraView == "INTERNAL") then {
                 hintSilent parseText format ["<t size='1.5' font='EtelkaMonospacePro' color='#99ffffff'>Entering VRS Condition!</t>"];
             };
         };
-        //2933 fpm to 3867 
+        //2933 fpm to 3867
         if (_velZ <= -(_vrsVelMax * 0.60) && _velZ > -(_vrsVelMax * 0.80)) then {
             enableCamShake true;
             setCamShakeParams [0.0, 0.5, 0.0, 0.5, true];
@@ -607,7 +608,7 @@ hintsilent format ["v0.7 testing
                     \nRotor Omega = %1
                     \nBlade Tip Vel = %2
                     \nRotor Power Req = %3 kW
-                    \nRotor Torque = %4 Nm 
+                    \nRotor Torque = %4 Nm
                     \nE1 Tq = %5 % E2 Tq = %6 %
                     \nVelZ = %7
                     \nInduced Vel Scalar = %8

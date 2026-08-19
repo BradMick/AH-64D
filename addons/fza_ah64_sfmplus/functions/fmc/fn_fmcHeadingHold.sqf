@@ -20,8 +20,27 @@ private _pedalTrim     = _heli getVariable "fza_ah64_forceTrimPosYaw";
 private _curHdg        = getDir _heli;
 private _desiredHdg    = _heli getVariable "fza_ah64_hdgHoldDesiredHdg";
 private _hdgError      = [_curHdg - _desiredHdg] call CBA_fnc_simplifyAngle180;
+//SIDESLIP ERROR - drive the TRIM BALL to centre. The ball is fza_sfmplus_aero_beta_g (lateral
+//specific force in g, from fn_calculateAeroValues via bodyAccel); when it is zero the aircraft is
+//in aerodynamic trim, which is exactly what this loop is for.
+//
+//This previously read the GLOBAL fza_ah64_sideslip, which is the GAUGE signal and wrong here on
+//two counts:
+//  1. it is CLAMPED to +-1 at 0.15 g, so past that the controller goes blind - it sees a constant
+//     maxed-out error however hard the aircraft is actually skidding, and the loop just pins its
+//     output (measured: _hdgHoldPedalYawOut sat at exactly -0.100, the clamp, in cruise)
+//  2. fn_avionicsSlipIndicator exits early unless the PLAYER is aboard, so for an AI Apache it is
+//     whatever stale value was left there by another aircraft
+//The auto-pedal was already moved off the gauge onto beta_g for these same reasons.
+//
+//No CBA_fnc_simplifyAngle180 either: beta_g is a g-load, not an angle in degrees, so wrapping it
+//to +-180 is meaningless (the gauge value was being wrapped as though it were an angle).
+//ERROR SENSE: (actual - desired), the SAME form this always used. The two consumers below then
+//apply their own sense - "trn" passes it as the measurement against setpoint 0, "yaw" passes it as
+//the setpoint against measurement 0, which negates it. Those two branch signs are VALIDATED; do
+//not change them, and do not negate here either, or the "yaw" branch double-negates.
 private _desiredSlip   = _heli getVariable "fza_ah64_hdgHoldDesiredSideslip";
-private _sideslipError = [fza_ah64_sideslip - _desiredSlip] call CBA_fnc_simplifyAngle180;
+private _sideslipError = (_heli getVariable ["fza_sfmplus_aero_beta_g", 0.0]) - _desiredSlip;
 private _subMode       = _heli getVariable "fza_ah64_hdgHoldSubMode";
 private _attSubMode    = _heli getVariable "fza_ah64_attHoldSubMode";
 private _hdgOutput     = 0.0;
@@ -31,7 +50,7 @@ private _output        = 0.0;
 
 private _onGnd         = [_heli] call fza_sfmplus_fnc_onGround;
 //Breakout values expand as the aircraft goes faster to provide good pedal response
-//at a hover. The expanded range is meant to de-sensitize the pedals in order to 
+//at a hover. The expanded range is meant to de-sensitize the pedals in order to
 //prevent disengaging the heading hold mode during cruise flight
 private _breakoutValue = 0.0;
 if (_attSubMode == "pos") then {
@@ -66,6 +85,13 @@ if (   _onGnd
     if (_heli getVariable "fza_ah64_hdgHoldActive" isNotEqualTo true) then {
         _heli setVariable ["fza_ah64_hdgHoldActive", true, true];
         _heli setVariable ["fza_ah64_hdgHoldDesiredHdg", getDir _heli, true];
+        //Clear the PIDs on ENGAGE. Capturing the heading alone is not enough: the integrators
+        //still hold whatever they accumulated before the mode dropped out (a pedal breakout, a
+        //force-trim interrupt, sitting on the ground), and that lands on the pedals as a kick the
+        //instant the hold re-engages.
+        [_pidHdg] call fza_fnc_pidReset;
+        [_pidTrn] call fza_fnc_pidReset;
+        [_pidYaw] call fza_fnc_pidReset;
     };
 };
 //Finally, if the heading hold is active, perform the required functions
@@ -96,11 +122,18 @@ if (_heli getVariable "fza_ah64_hdgHoldActive") then {
         }
     };
 
-    //On transition: reset outgoing PID; capture heading when returning to hdg
+    //On transition: reset outgoing PID; capture heading when returning to hdg.
+    //NOTE "trn" and "yaw" SHARE _pidTrn, so switching between those two must also clear it -
+    //otherwise the incoming mode inherits the outgoing one's wound-up integrator and jumps on
+    //the first frame. Resetting the OUTGOING mode covers that (both branches hit _pidTrn), but
+    //the incoming one is reset explicitly too so a first-ever entry starts clean rather than
+    //from whatever the PID was seeded with.
     if (_subMode != _targetSubMode) then {
         if (_subMode == "hdg") then { [_pidHdg] call fza_fnc_pidReset; };
         if (_subMode == "trn" || _subMode == "yaw") then { [_pidTrn] call fza_fnc_pidReset; };
         if (_subMode == "aut") then { [_pidYaw] call fza_fnc_pidReset; };
+        if (_targetSubMode == "hdg") then { [_pidHdg] call fza_fnc_pidReset; };
+        if (_targetSubMode == "trn" || _targetSubMode == "yaw") then { [_pidTrn] call fza_fnc_pidReset; };
         if (_targetSubMode == "hdg") then {
             _heli setVariable ["fza_ah64_hdgHoldDesiredHdg", getDir _heli, true];
         };
@@ -118,6 +151,8 @@ if (_heli getVariable "fza_ah64_hdgHoldActive") then {
         _trnOutput = [_trnOutput, -1.0, 1.0] call BIS_fnc_clamp;
     };
     if (_subMode == "yaw") then {
+        //SIGN IS INTENTIONAL AND VALIDATED - do not "unify" it with the "trn" branch above.
+        //The two branches deliberately use opposite error senses.
         _yawOutput = [_pidTrn, _deltaTime, _sideslipError, 0.0] call fza_fnc_pidRun;
         _yawOutput = [_yawOutput, -1.0, 1.0] call BIS_fnc_clamp;
     };
