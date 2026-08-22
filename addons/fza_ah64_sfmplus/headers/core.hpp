@@ -59,6 +59,7 @@
 #define ATT_HOLD_BREAKOUT_VALUE       0.20//0.09
 
 #define CENTER_TRIM_VAL               0.05
+#define BETA_G_TAU                    0.30
 
 //Keyboard auto-attitude (CASUAL only - gated purely on fza_ah64_sfmplusRealismSetting; it is
 //intrinsic to the casual flight model, not an independently switchable option).

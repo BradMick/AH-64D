@@ -99,6 +99,10 @@ class CfgFunctions
             class fmcHoldModesDisable {R;};
             class fmcSAS {R;};
         };
+        class prestonAi {
+            file = "\fza_ah64_sfmplus\functions\prestonAi";
+            class prestonPilot {R;};
+        };
         class fuselage {
             file = "\fza_ah64_sfmplus\functions\fuselage";
             class fuselage {R;};
@@ -166,7 +170,6 @@ class CfgFunctions
         };
         class utility {
             file = "\fza_ah64_sfmplus\functions";
-            class accumForce {R;};
             class analogHandler {R;};
             class calculateAeroValues {R;};
             class centerTrimMode {R;};

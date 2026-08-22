@@ -27,7 +27,6 @@ private _vecRight = [[1.0, 0.0, 0.0], _pitch, _roll, _yaw] call fza_fnc_rotateVe
 private _vecFwd   = [[0.0, 1.0, 0.0], _pitch, _roll, _yaw] call fza_fnc_rotateVector;
 private _vecUp    = [[0.0, 0.0, 1.0], _pitch, _roll, _yaw] call fza_fnc_rotateVector;
 
-private _accForce = [0,0,0];
 
 for "_i" from 0 to (_count - 1) do {
     private _verts = _coords select _i;
@@ -72,7 +71,6 @@ for "_i" from 0 to (_count - 1) do {
     _heli addTorque (_heli vectorModelToWorld _moment);
 
     //Accumulate this panel's force into the component total.
-    _accForce = _accForce vectorAdd _force;
 
     //Tuner force readout: log the component's own _force and _moment verbatim.
     if (fza_sfmplus_forceLogOn) then {
@@ -88,5 +86,3 @@ for "_i" from 0 to (_count - 1) do {
     [_heli, _d, _a, "white"] call fza_fnc_debugDrawLine;
     #endif
 };
-//Net-force accumulator (ALWAYS on): write this component's summed panel force once.
-[_heli, "Fuselage Front", _accForce] call fza_sfmplus_fnc_accumForce;

@@ -143,6 +143,11 @@ class RscTitles
             //row so the scalars-by-band header/rows sit clearly beneath it.
             class L18 : L1 { idc = 54328; y = "safeZoneY + 0.7495"; };
 
+            //TRIM BALL decomposition - exactly the terms that produce beta_g, so the ball can be
+            //read as a sum of its parts instead of a single opaque number. Smaller font: it is a
+            //wide line (force term + gravity term + resultant + ball).
+            class L19 : L1 { idc = 54329; y = "safeZoneY + 0.7845"; sizeEx = 0.022; };
+
             //--- SCALARS-by-band table (header + 9 airspeed bands) ----------------
             //Header row sits clearly BELOW the Net Nm line, with a gap.
             SCLROW(0,"safeZoneY + 0.8145")   // header: band mainThr tailThr tailTrim torque stabLift fuseSide fin

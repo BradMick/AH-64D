@@ -63,7 +63,15 @@ if (_on && !_wasOn) then {
         + ",sMainThr,sTailThr,sTorque,sStabLift,sFuseSide,sFin,sTilt"
         + ",bodyAccX,bodyAccY,bodyAccZ,accX,accY,accZ"
         + ",velX,velY,velZ,pRate,qRate,rRate"
-        + ",betaG,betaDeg,hdgSub,hdgActive,attSub,gwt,getMass";
+        + ",betaG,betaDeg,hdgSub,hdgActive,attSub,gwt,getMass"
+        //Trim-ball decomposition: kinematic and gravity terms separately, plus their sum (m/s2,
+        //projected on model-right). Shows WHY the ball is where it is - attitude vs genuine slip.
+        + ",ballKin,ballGrav,ballSum"
+        //Hover hold internals: commanded vs actual velocity, PID output and integral per axis,
+        //plus the regime weights. Shows whether the loop is asking for the right thing and
+        //whether the integral is railed.
+        + ",hovSetX,hovSetY,hovVelX,hovVelY,hovOutR,hovOutP,hovIntR,hovIntP,wPos,wVel,wAtt"
+        ;
     diag_log _hdr;
 };
 _heli setVariable ["fza_sfmplus_forceDump_wasOn", _on];
@@ -174,9 +182,10 @@ _row = _row + format [",%1,%2,%3,%4,%5,%6",
     [_angVel # 0, 5] call _f2, [_angVel # 1, 5] call _f2, [_angVel # 2, 5] call _f2];
 
 //--- SLIP + MODES -----------------------------------------------------------------------
-//Log BOTH mass sources. getMass logged 0.000 for the player's aircraft while the tuner correctly
-//showed 18001 lb - and bodyAccel divides by getMass, so if it really is zero there the whole
-//accelerometer signal is suspect. Logging both makes it obvious which one is lying.
+//Log BOTH mass sources. RESOLVED 2026-08-20: getMass is fine - it logged 8165.0, exactly matching
+//fza_sfmplus_GWT, across 4072 frames. The earlier 0.000 reading was a logging artefact, not a bad
+//mass. Kept as two columns anyway: bodyAccel divides by getMass, so if they ever diverge again the
+//accelerometer signal is immediately suspect.
 _row = _row + format [",%1,%2,%3,%4,%5,%6,%7",
     [_heli getVariable ["fza_sfmplus_aero_beta_g",   0], 5] call _f2,
     [_heli getVariable ["fza_sfmplus_aero_beta_deg", 0], 3] call _f2,
@@ -185,5 +194,25 @@ _row = _row + format [",%1,%2,%3,%4,%5,%6,%7",
     _heli getVariable ["fza_ah64_attHoldSubMode", "?"],
     [_heli getVariable ["fza_sfmplus_GWT", 0], 1] call _f2,
     [getMass _heli, 1] call _f2];
+
+//--- TRIM BALL DECOMPOSITION ------------------------------------------------------------
+//[kinematic, gravity, sum] - m/s2, projected on the model-right axis the ball reads.
+private _bt = _heli getVariable ["fza_sfmplus_ballTerms", [0,0,0]];
+_row = _row + format [",%1,%2,%3",
+    [_bt # 0, 4] call _f2, [_bt # 1, 4] call _f2, [_bt # 2, 4] call _f2];
+
+//--- HOVER HOLD INTERNALS ---------------------------------------------------------------
+_row = _row + format [",%1,%2,%3,%4,%5,%6,%7,%8,%9,%10,%11",
+    [_heli getVariable ["fza_sfmplus_dbgHovSetX", 0], 4] call _f2,
+    [_heli getVariable ["fza_sfmplus_dbgHovSetY", 0], 4] call _f2,
+    [_heli getVariable ["fza_sfmplus_dbgHovVelX", 0], 4] call _f2,
+    [_heli getVariable ["fza_sfmplus_dbgHovVelY", 0], 4] call _f2,
+    [_heli getVariable ["fza_sfmplus_dbgHovOutR", 0], 4] call _f2,
+    [_heli getVariable ["fza_sfmplus_dbgHovOutP", 0], 4] call _f2,
+    [_heli getVariable ["fza_sfmplus_dbgHovIntR", 0], 4] call _f2,
+    [_heli getVariable ["fza_sfmplus_dbgHovIntP", 0], 4] call _f2,
+    [_heli getVariable ["fza_sfmplus_autoAttWPos", 0], 3] call _f2,
+    [_heli getVariable ["fza_sfmplus_autoAttWVel", 0], 3] call _f2,
+    [_heli getVariable ["fza_sfmplus_autoAttWAtt", 0], 3] call _f2];
 
 diag_log _row;

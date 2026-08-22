@@ -242,24 +242,19 @@ if ([vectorMagnitude _thrustVector] call fza_sfmplus_fnc_isNAN || [vectorMagnitu
 
 if (_tailRtrDamage < 0.85 && _IGBDamage < SYS_IGB_DMG_THRESH && _TGBDamage < SYS_TGB_DMG_THRESH) then {
     if (currentPilot _heli == player) then {
-        //if ( fza_ah64_sfmplusRealismSetting == REALISTIC) then {
+        if ( fza_ah64_sfmplusRealismSetting == REALISTIC) then {
             //Tail rotor thrust
             _heli addForce [_heli vectorModelToWorld _thrustVector, _rtrPos];
             //Tail rotor torque
             //_moment set [1, (_moment select 1) * TEST];
             _heli addTorque (_heli vectorModelToWorld _moment);
-        /*
+
         } else {
             //Tail rotor thrust
             _heli addForce [_heli vectorModelToWorld _thrustVector, _heliCom];
             //Tail rotor torque
             _heli addTorque (_heli vectorModelToWorld _moment);
         };
-        */
-        //Net-force accumulator (ALWAYS on): total applied tail force this frame, model
-        //space, post-deltaTime (getAccelerations undoes dt). Feeds body accel.
-        [_heli, "Tail Rotor", _thrustVector] call fza_sfmplus_fnc_accumForce;
-
         //Tuner force readout
         if (fza_sfmplus_forceLogOn) then {
             [_heli, "Tail Rotor", _thrustVector, _moment] call fza_sfmplus_fnc_forceLog;

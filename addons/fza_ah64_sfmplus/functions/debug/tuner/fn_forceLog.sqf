@@ -18,10 +18,19 @@ Description:
         M.y = moment about Y (forward)-> ROLL  moment
         M.z = moment about Z (up)     -> YAW   moment
 
-    Note: pass the RAW per-second force (not the *deltaTime version the engine
-    addForce call uses) so the readout is in Newtons, comparable across
-    generators regardless of frame time. Generators typically build force then
-    multiply by _deltaTime for addForce; log the pre-deltaTime value.
+    UNITS - IMPULSE (force * deltaTime), the SAME vector handed to addForce. Not raw
+    Newtons.
+
+    addForce takes newton-seconds (PxForceMode::eIMPULSE), so the impulse is what the
+    aircraft actually receives - measuring anything else means measuring a number the
+    physics never saw. Everything downstream (the force table, the accumulator, the
+    accelerometer) works in these units, and gravity is expressed the same way
+    (mass * 9.806 * deltaTime) so it can be summed with them directly.
+
+    (This note previously asked for pre-deltaTime Newtons, but no generator ever passed
+    them - every one passed the post-dt vector. The documentation was wrong, not the
+    code. Readouts are therefore in impulse, and are smaller than Newtons by dt: at
+    ~30 fps a 3000 N thrust logs as ~100.)
 
     forceLog is a DUMB STORE. It accepts the force and moment a component has
     already calculated and records them. It does NOT compute or derive anything -
@@ -30,8 +39,9 @@ Description:
 Parameters:
     _heli   - The aircraft [Object].
     _name   - Short generator label [String] (e.g. "Tail Rotor", "Right Wing").
-    _force  - The component's force vector, model space [Array] [X, Y, Z].
-    _moment - The component's moment vector, model space [Array] [pitch, roll, yaw].
+    _force  - The component's IMPULSE (force * deltaTime), model space [Array] [X, Y, Z].
+    _moment - The component's ANGULAR IMPULSE (torque * deltaTime), model space
+              [Array] [pitch, roll, yaw].
 
 Returns:
     Nothing.

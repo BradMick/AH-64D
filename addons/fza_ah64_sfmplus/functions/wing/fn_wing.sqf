@@ -30,7 +30,6 @@ private _D_wingRootTrailingEdge = [];
 private _airfoilTable           = [];
 private _liftScalar             = 1.0;
 
-private _accForce               = [0,0,0];
 
 if (_isStab) then {
     private _stabDamage = _heli getHitPointDamage "hit_stabilator";
@@ -208,9 +207,6 @@ for "_j" from 0 to (_numElements - 1) do {
     private _force  = _liftVector vectorAdd _dragVector;
     private _moment = _force vectorCrossProduct _fromAeroCenterToCOM;
 
-    //Accumulate this element's force into the surface total (net-force accumulator).
-    _accForce = _accForce vectorAdd _force;
-
     _heli addTorque (_heli vectorModelToWorld _moment);
 
     //Tuner force readout: log the element's own _force and _moment verbatim.
@@ -218,11 +214,6 @@ for "_j" from 0 to (_numElements - 1) do {
     if (fza_sfmplus_forceLogOn && _forceLogName != "") then {
         [_heli, _forceLogName, _force, _moment] call fza_sfmplus_fnc_forceLog;
     };
-};
-//Net-force accumulator (ALWAYS on): write this surface's summed element force once,
-//keyed by its name. post-deltaTime; getAccelerations undoes dt. Feeds body accel.
-if (_forceLogName != "") then {
-    [_heli, _forceLogName, _accForce] call fza_sfmplus_fnc_accumForce;
 };
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Debug                /////////////////////////////////////////////////////////////////////

@@ -217,7 +217,6 @@ private _netMoment = _reactionMoment;
 if (fza_sfmplus_forceLogOn) then {
     [_heli, _rotorName, _netForce, _netMoment] call fza_sfmplus_fnc_forceLog;
 };
-[_heli, _rotorName, _netForce] call fza_sfmplus_fnc_accumForce;
 
 }; // end damage check
 

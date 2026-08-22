@@ -177,6 +177,8 @@ private _pfh = [{
     //NET + net-moment line. Numbers RIGHT-aligned (left-pad) so columns line up.
     private _log  = _heli getVariable ["fza_sfmplus_forceLogPublished", createHashMap];
     private _gens = ["Main Rotor","Tail Rotor","Right Wing","Left Wing","Vertical Fin","Stabilator","Fuselage Front","Fuselage Side","Fuselage Top","Yaw Damper"];
+    //NET_Fx is not zero in a trimmed hover - the aircraft hangs left-side-low, so it is the term
+    //cancelling the tilted rotor's world-lateral component.
     private _netF = [0,0,0]; private _netM = [0,0,0];
     { private _e = _log getOrDefault [_x, [[0,0,0],[0,0,0]]]; _netF = _netF vectorAdd (_e select 0); _netM = _netM vectorAdd (_e select 1); } forEach _gens;
 
@@ -291,6 +293,16 @@ private _pfh = [{
     (_disp displayCtrl 54328) ctrlSetText format ["Net Nm: roll %1  pitch %2  yaw %3    |    Crab %4 deg    yawRate %5 deg/s",
         round (_netM select 1), round (_netM select 0), round (_netM select 2),
         _crab toFixed 1, _yawRate toFixed 2];
+
+    //Trim ball: kin = what the aircraft is doing, grav = bank projection, sum = lateral
+    //specific force. Big grav + small kin means attitude; both large and opposing means a
+    //coordinated turn; big kin alone means slip.
+    private _bt = _heli getVariable ["fza_sfmplus_ballTerms", [0,0,0]];
+    private _bg = _heli getVariable ["fza_sfmplus_aero_beta_g", 0];
+    (_disp displayCtrl 54329) ctrlSetText format [
+        "TRIM BALL  kin %1  + grav %2  = sum %3 m/s2   ->  raw %4 g   ball %5 g",
+        (_bt # 0) toFixed 3, (_bt # 1) toFixed 3, (_bt # 2) toFixed 3,
+        ((_bt # 2) / 9.806) toFixed 3, _bg toFixed 3];
 
 }, 0.2] call CBA_fnc_addPerFrameHandler;
 uiNamespace setVariable ["fza_sfmplus_tunerOverlayPfh", _pfh];
