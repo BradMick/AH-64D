@@ -211,8 +211,8 @@ _row = _row + format [",%1,%2,%3,%4,%5,%6,%7,%8,%9,%10,%11",
     [_heli getVariable ["fza_sfmplus_dbgHovOutP", 0], 4] call _f2,
     [_heli getVariable ["fza_sfmplus_dbgHovIntR", 0], 4] call _f2,
     [_heli getVariable ["fza_sfmplus_dbgHovIntP", 0], 4] call _f2,
-    [_heli getVariable ["fza_sfmplus_autoAttWPos", 0], 3] call _f2,
-    [_heli getVariable ["fza_sfmplus_autoAttWVel", 0], 3] call _f2,
-    [_heli getVariable ["fza_sfmplus_autoAttWAtt", 0], 3] call _f2];
+    [_heli getVariable ["fza_sfmplus_prestonWPos", 0], 3] call _f2,
+    [_heli getVariable ["fza_sfmplus_prestonWVel", 0], 3] call _f2,
+    [_heli getVariable ["fza_sfmplus_prestonWAtt", 0], 3] call _f2];
 
 diag_log _row;

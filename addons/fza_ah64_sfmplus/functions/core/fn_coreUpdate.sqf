@@ -45,6 +45,11 @@ if (isAutoHoverOn _heli) then {
 [_heli] call fza_sfmplus_fnc_getConnectedAxes;
 [_heli] call fza_sfmplus_fnc_getInput;
 
+//Preston Pilot AI. MUST run here, not from fn_getInput: that function exits early unless the
+//PLAYER is flying, so an AI Apache would never reach it. Runs after getInput so a human's inputs
+//are already published when there is one.
+[_heli] call fza_sfmplus_fnc_preston;
+
 //Hold/SAS chain debug logger - one line per frame to diag_log while the HOLD auto-tuner is running
 //(fza_sfmplus_tune_holdAutoOn). Runs after fmc (holds+SAS) so it captures this frame's full chain.
 //No-op when the hold tuner is off - no separate toggle.
@@ -179,14 +184,14 @@ if (fza_ah64_sfmPlusFmDebug) then {
     _heli getVariable "fza_sfmplus_aero_beta_deg" toFixed 2,                  //40
     ([player getRelDir _heli] call CBA_fnc_simplifyAngle180) toFixed 2,       //41
     fza_ah64_sfmplusRealismSetting != REALISTIC,                              //42
-    _heli getVariable "fza_sfmplus_autoPitchActive",                          //43
-    _heli getVariable "fza_sfmplus_autoPitchTarget" toFixed 1,                //44
+    _heli getVariable "fza_sfmplus_prestonPitchActive",                          //43
+    _heli getVariable "fza_sfmplus_prestonPitchTarget" toFixed 1,                //44
     format ["%1 / %2 / %3",
-        (_heli getVariable ["fza_sfmplus_autoAttWPos", 0.0]) toFixed 2,
-        (_heli getVariable ["fza_sfmplus_autoAttWVel", 0.0]) toFixed 2,
-        (_heli getVariable ["fza_sfmplus_autoAttWAtt", 0.0]) toFixed 2],       //45
-    _heli getVariable "fza_sfmplus_autoRollActive",                           //46
-    _heli getVariable "fza_sfmplus_autoRollTarget" toFixed 1,                 //47
+        (_heli getVariable ["fza_sfmplus_prestonWPos", 0.0]) toFixed 2,
+        (_heli getVariable ["fza_sfmplus_prestonWVel", 0.0]) toFixed 2,
+        (_heli getVariable ["fza_sfmplus_prestonWAtt", 0.0]) toFixed 2],       //45
+    _heli getVariable "fza_sfmplus_prestonRollActive",                           //46
+    _heli getVariable "fza_sfmplus_prestonRollTarget" toFixed 1,                 //47
     (_heli getVariable ["fza_sfmplus_dbgHovSetX", 0.0]) toFixed 3,            //48
     (_heli getVariable ["fza_sfmplus_dbgHovSetY", 0.0]) toFixed 3,            //49
     (_heli getVariable ["fza_sfmplus_dbgHovVelX", 0.0]) toFixed 3,            //50

@@ -161,9 +161,13 @@ _heli setVariable ["fza_sfmplus_pid_sas_yaw",        [0.3000, 0.0500, 0.0250, 0.
 //ki * clamp. Sized so that product is ~0.15 - the standing pedal a hover holds against torque.
 _heli setVariable ["fza_sfmplus_pid_autoPedalHdg",   [0.1000, 0.0050, 0.0500, 30.000] call fza_fnc_pidCreate];
 _heli setVariable ["fza_sfmplus_pid_autoPedalNtt",   [0.0300, 0.0080, 0.0100, 18.750] call fza_fnc_pidCreate];
-//AERO kp is per-G, scaled so full-scale slip (0.15g) gives full pedal. kd is small - beta_g is
-//already filtered, so derivative action on it is mostly lag.
-_heli setVariable ["fza_sfmplus_pid_autoPedalAero",  [6.6700, 0.5000, 0.4000, 0.3000] call fza_fnc_pidCreate];
+//AERO kp is per-G. NOT scaled for full-scale slip: at kp 6.67 (full pedal at 0.15g) the measured
+//straight-and-level betaG noise of 0.025g alone commanded 0.17 of pedal every frame, so the loop
+//chased noise - ftPed jitter was 30x the hover channel's and yaw reversed sign every ~10 frames.
+//Real cruise skid is a few thousandths of a g, so proportional action must be gentle and the
+//integral carries the standing trim. kd is small - beta_g is already filtered, so derivative
+//action on it is mostly lag.
+_heli setVariable ["fza_sfmplus_pid_autoPedalAero",  [1.5000, 0.5000, 0.4000, 0.3000] call fza_fnc_pidCreate];
 
 //LIVE-TUNABLE augmentation gains. The fmc functions read these each frame and set[] them onto
 //their PID, so the tuner can dial kp/ki/kd while flying. Seeded from the pidCreate values above.
@@ -195,7 +199,9 @@ _heli setVariable ["fza_sfmplus_tune_comOffsetX",  0.1];
 //ONE-TIME strip of stale PID gains from the persisted tuner profile, guarded by a bump flag: the
 //profile overlays the seeds on load, so a badly auto-tuned PID would survive respawns. Clears only
 //the _kp/_ki/_kd and posInt* keys; force tables are untouched. Bump the flag to clear again.
-private _pidWipeFlag = "fza_sfmplus_pidWipeDone_v3";
+//v4: apAero_kp 6.67 -> 1.5 (it was chasing measurement noise). A profile saved before this holds
+//the old gain and would overlay the new seed on load.
+private _pidWipeFlag = "fza_sfmplus_pidWipeDone_v4";
 if !(profileNamespace getVariable [_pidWipeFlag, false]) then {
     private _saved = profileNamespace getVariable ["fza_sfmplus_tuner", []];
     if (_saved isEqualType [] && {count _saved > 0}) then {
@@ -220,7 +226,7 @@ _heli setVariable ["fza_sfmplus_tune_hdg_kp",      0.0300]; _heli setVariable ["
 //onto the three PIDs every frame, so the SCAS tab / fn_tunerPedalAuto can dial them live.
 _heli setVariable ["fza_sfmplus_tune_apHdg_kp",    0.1000]; _heli setVariable ["fza_sfmplus_tune_apHdg_ki",    0.0050]; _heli setVariable ["fza_sfmplus_tune_apHdg_kd",    0.0500];
 _heli setVariable ["fza_sfmplus_tune_apNtt_kp",    0.0300]; _heli setVariable ["fza_sfmplus_tune_apNtt_ki",    0.0080]; _heli setVariable ["fza_sfmplus_tune_apNtt_kd",    0.0100];
-_heli setVariable ["fza_sfmplus_tune_apAero_kp",   6.6700]; _heli setVariable ["fza_sfmplus_tune_apAero_ki",   0.5000]; _heli setVariable ["fza_sfmplus_tune_apAero_kd",   0.4000];
+_heli setVariable ["fza_sfmplus_tune_apAero_kp",   1.5000]; _heli setVariable ["fza_sfmplus_tune_apAero_ki",   0.5000]; _heli setVariable ["fza_sfmplus_tune_apAero_kd",   0.4000];
 //Altitude hold (barometric + radar). Collective->climb is slow/well-damped; left near stock.
 _heli setVariable ["fza_sfmplus_tune_bar_kp",      0.0010]; _heli setVariable ["fza_sfmplus_tune_bar_ki",      0.0000]; _heli setVariable ["fza_sfmplus_tune_bar_kd",      0.0008];
 _heli setVariable ["fza_sfmplus_tune_rad_kp",      0.0500]; _heli setVariable ["fza_sfmplus_tune_rad_ki",      0.0001]; _heli setVariable ["fza_sfmplus_tune_rad_kd",      0.0050];
@@ -248,50 +254,8 @@ _heli setVariable ["fza_sfmplus_autoPedalNttErr",    0.0];     //deg, kinematic 
 _heli setVariable ["fza_sfmplus_autoPedalAeroErr",   0.0];     //g,   lateral accel
 _heli setVariable ["fza_sfmplus_autoPedalOut",       0.0];     //blended pedal output
 _heli setVariable ["fza_sfmplus_autoPedalPrevOut",   0.0];     //pilot-feet filter state (rate limit + lag)
-//Auto pitch (keyboard auto-attitude; see the AUTO_ATT_* block in core.hpp)
-//Error is in DEGREES. Runs with no rate damping underneath it on pitch, so raise kp in small
-//steps (0.02) and only alongside kd. kd is deliberately large relative to kp - it is what stops
-//the overshoot - and dCoef is lifted off the 0.3 default so the filter does not remove that lead.
-_heli setVariable ["fza_sfmplus_pid_autoPitch",      [0.1200, 0.0200, 0.1000, 5.0000] call fza_fnc_pidCreate];
-(_heli getVariable "fza_sfmplus_pid_autoPitch") set ["dCoef", 0.5];
-_heli setVariable ["fza_sfmplus_autoPitchActive",    true];
-_heli setVariable ["fza_sfmplus_autoPitchTarget",    -6.0];
-//Auto roll. ki is the term that matters - it absorbs the airframe's standing right-roll offset,
-//which a rate-damping SAS cannot do. Roll is the LOW-INERTIA axis so it needs less gain than
-//pitch, not more: a quicker axis reaches the same rate on less input.
-_heli setVariable ["fza_sfmplus_pid_autoRoll",       [0.0700, 0.0200, 0.0900, 5.0000] call fza_fnc_pidCreate];
-(_heli getVariable "fza_sfmplus_pid_autoRoll") set ["dCoef", 0.5];
-_heli setVariable ["fza_sfmplus_autoRollActive",     true];
-_heli setVariable ["fza_sfmplus_autoRollTarget",     0.0];
-//Auto hover (HOVER regime of auto-attitude). Error is GROUND VELOCITY in m/s, not attitude.
-//ki carries the standing cyclic offset that holds the hover. Pitch needs a larger offset than
-//roll (CG sits aft), so the asymmetric ki_clamp is deliberate; 1.00 rails the integral.
-_heli setVariable ["fza_sfmplus_pid_autoHoverX",     [0.0600, 0.2200, 0.0500, 0.2500] call fza_fnc_pidCreate];
-_heli setVariable ["fza_sfmplus_pid_autoHoverY",     [0.0700, 0.2500, 0.0600, 0.5500] call fza_fnc_pidCreate];
-(_heli getVariable "fza_sfmplus_pid_autoHoverX") set ["dCoef", 0.5];
-(_heli getVariable "fza_sfmplus_pid_autoHoverY") set ["dCoef", 0.5];
-//VEL regime (transition): ROLL nulls lateral drift, PITCH holds forward velocity. Same error
-//units as the hover PIDs. The lateral channel stops the hands and the auto-pedal's feet fighting
-//over a drifting velocity vector.
-_heli setVariable ["fza_sfmplus_pid_autoVelX",       [0.0500, 0.0400, 0.1000, 1.0000] call fza_fnc_pidCreate];
-_heli setVariable ["fza_sfmplus_pid_autoVelY",       [0.1000, 0.0200, 0.1200, 1.0000] call fza_fnc_pidCreate];
-(_heli getVariable "fza_sfmplus_pid_autoVelX") set ["dCoef", 0.5];
-(_heli getVariable "fza_sfmplus_pid_autoVelY") set ["dCoef", 0.5];
-_heli setVariable ["fza_sfmplus_autoVelCmdFwd",      0.0];   //commanded forward velocity (m/s)
-//Pilot HANDS filter state (lag + rate limit on the blended cyclic output). Re-seeded to the live
-//trim position on breakout so the machine pilot resumes from where the stick actually is.
-_heli setVariable ["fza_sfmplus_autoAttPrevPitch",   0.0];
-_heli setVariable ["fza_sfmplus_autoAttPrevRoll",    0.0];
-_heli setVariable ["fza_sfmplus_autoAttBreakout",    false];
-_heli setVariable ["fza_sfmplus_autoHoverDatum",     getPos _heli];   //world-space position datum
-_heli setVariable ["fza_sfmplus_autoHoverIntX",      0.0];            //position-error integral (right)
-_heli setVariable ["fza_sfmplus_autoHoverIntY",      0.0];            //position-error integral (fwd)
-//PRE-SEEDED hover integrals so the first pickup already carries the standing forward cyclic the
-//aft CG needs; starting from zero it pitches back and drifts aft while the loop catches up.
-//Overwritten by the learned values once the aircraft holds a steady hover.
-_heli setVariable ["fza_sfmplus_autoHoverLearnedIntX", 0.0];
-_heli setVariable ["fza_sfmplus_autoHoverLearnedIntY", 0.5500];
-_heli setVariable ["fza_sfmplus_autoHoverWeight",    0.0];            //live blend weight (0=att, 1=hover)
+//Preston Pilot AI (machine pilot) - PIDs, targets and filter state.
+[_heli] call fza_sfmplus_fnc_prestonVariables;
 
 //Aerodynamic State Variables
 _heli setVariable ["fza_sfmplus_aero_alpha_deg",     0.0];

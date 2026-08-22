@@ -101,7 +101,10 @@ class CfgFunctions
         };
         class prestonAi {
             file = "\fza_ah64_sfmplus\functions\prestonAi";
+            class preston {R;};
+            class prestonPedal {R;};
             class prestonPilot {R;};
+            class prestonVariables {R;};
         };
         class fuselage {
             file = "\fza_ah64_sfmplus\functions\fuselage";

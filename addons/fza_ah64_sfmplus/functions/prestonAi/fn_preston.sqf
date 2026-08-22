@@ -2,21 +2,29 @@
 Function: fza_sfmplus_fnc_preston
 
 Description:
-    Preston Pilot AI module entry. Owns the machine pilot's control outputs and
-    publishes them for fn_getInput to consume.
+    Preston Pilot AI module entry. Preston is the PILOT for aircraft no human is
+    flying - Arma's AI cannot drive this flight model (it moves aircraft
+    kinematically and exposes no control demand to SQF), so for an AI Apache
+    Preston is the only thing on the controls.
 
-    Currently the hands (cyclic, fn_prestonPilot). The feet (auto-pedal) still
+    Called from fn_coreUpdate, NOT fn_getInput - that function exits early unless
+    the player is flying, so an AI aircraft would never reach it.
+
+    Currently the HANDS (cyclic, fn_prestonPilot). The FEET (auto-pedal) still
     live in fn_getInput and will move here.
 
-    GATED OFF while the FMC holds are being tuned - see PRESTON_ENABLED below.
+    STILL TO BUILD: the outer guidance loop. Preston is an INNER loop - it takes a
+    desired state (position / velocity / attitude) and works the controls to hold
+    it. Something must turn Arma's navigation goals (expectedDestination,
+    waypointPosition, flyInHeight, waypointSpeed) into those setpoints, or an AI
+    Apache simply holds station where it spawned.
 
 Parameters:
     _heli - The helicopter to get information from [Unit].
 
 Returns:
-    Nothing. Outputs are published as object variables:
-        fza_sfmplus_prestonCycPitchOut / ...RollOut  - cyclic, or nil when idle
-        fza_sfmplus_prestonActive                    - is Preston flying
+    Nothing. Outputs are published as object variables; fn_prestonPilot writes
+    force-trim directly.
 
 Examples:
     ...
@@ -28,7 +36,10 @@ params ["_heli"];
 #include "\fza_ah64_sfmplus\headers\core.hpp"
 
 //DISABLED while the FMC holds are tuned. Remove the `false && ` to re-enable.
-private _active = false && {fza_ah64_sfmplusRealismSetting != REALISTIC};
+//
+//WHEN RE-ENABLED this becomes "no human is flying": AI aircraft always, and a CPG-crewed aircraft
+//until the CPG takes the controls. It is NOT the casual-realism check it started as.
+private _active = false && {!isPlayer (currentPilot _heli)};
 
 if (!_active) exitWith {
     //Idle: clear the flags so the readouts do not report Preston as flying.
@@ -42,5 +53,19 @@ if (!_active) exitWith {
 
 _heli setVariable ["fza_sfmplus_prestonActive", true];
 
-//HANDS - the cyclic. Reads the pilot's keys as commands and writes force-trim.
-[_heli] call fza_sfmplus_fnc_prestonPilot;
+private _deltaTime = _heli getVariable "fza_sfmplus_deltaTime";
+
+//HANDS - the cyclic. Writes force-trim, which is the only path to the rotor when Preston flies.
+//The three input arguments are the COMMAND channel (what to achieve, not where to put the stick).
+//With no human aboard they are zero; the guidance loop will drive them once it exists.
+[_heli, _deltaTime, 0.0, 0.0, false] call fza_sfmplus_fnc_prestonPilot;
+
+//FEET - the pedals. Skipped when the PLAYER already has the auto-pedal option on, because
+//fn_getInput has run it for this frame already and running it twice would double-integrate.
+if (!fza_ah64_sfmPlusAutoPedal) then {
+    private _kbPedal      = _heli getVariable ["fza_sfmplus_kbPedalLeftRight", 0.0];
+    private _pedal        = _heli getVariable ["fza_sfmplus_pedalLeftRight",   0.0];
+    //Same hover -> nose-to-tail handover speed fn_getInput uses: ~24kts GS.
+    private _yawSwitchVel = 5.14444 * 2.4;
+    [_heli, _deltaTime, _pedal, _kbPedal, _yawSwitchVel] call fza_sfmplus_fnc_prestonPedal;
+};

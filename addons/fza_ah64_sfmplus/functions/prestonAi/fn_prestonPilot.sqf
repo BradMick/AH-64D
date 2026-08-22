@@ -12,7 +12,7 @@ Description:
         ATT (cruise)     - hold the swept attitude target
 
     Independent of the FMC holds, which are realistic-only. Constants are the
-    AUTO_ATT_* block in core.hpp.
+    AUTO_ATT_* block in core.hpp; state is seeded by fn_prestonVariables.
 
 Parameters:
     _heli             - The helicopter [Object].
@@ -32,47 +32,47 @@ Author:
 
 params ["_heli", "_deltaTime", "_cyclicFwdAft", "_cyclicLeftRight", "_kbStickyInterupt"];
 
-//This function only runs when Preston owns the cyclic, so the internal gates are always true.
-private _autoAtt = true;
+//fn_preston has already decided Preston is flying, so the internal gates are always true.
+private _active = true;
 
 //  wPos : 1 below 5kt -> 0 by 15kt.                    "stopped, so hold position"
 //  wFast: 0 below 45kt -> 1 above 55kt.                "fast enough for attitude"
 //  wHigh: 0 below 40ft -> 1 above 60ft.                "high enough for attitude"
 //ATT requires BOTH fast AND high (min = logical AND) - the same LOW-OR-SLOW rule the auto-pedal
 //uses. Whatever is left after POS and ATT have taken their share belongs to VEL.
-private _autoAttWPos = 0.0;
-private _autoAttWVel = 0.0;
-private _autoAttWAtt = 0.0;
+private _wPos = 0.0;
+private _wVel = 0.0;
+private _wAtt = 0.0;
 //Ground velocity in MODEL space (X = right+, Y = forward+), wind excluded - this is what the POS
 //and VEL regimes null. velModelSpaceNoWind is the same signal the FMC position hold uses.
-private _autoAttVelX = 0.0;
-private _autoAttVelY = 0.0;
-private _autoAttGS   = 0.0;
-private _autoAttAGL  = 0.0;
-if (_autoAtt) then {
-    _autoAttGS = (_heli getVariable "fza_sfmplus_gndSpeed") * KNOTS_TO_MPS;
+private _velX = 0.0;
+private _velY = 0.0;
+private _gndSpd   = 0.0;
+private _agl  = 0.0;
+if (_active) then {
+    _gndSpd = (_heli getVariable "fza_sfmplus_gndSpeed") * KNOTS_TO_MPS;
     //RAW radar altitude (3rd return), not the displayed one - the displayed value is rounded to
     //10ft above 50ft, which would turn this blend into a staircase as the aircraft bobs.
     ([_heli] call fza_sfmplus_fnc_getAltitude) params ["", "", "_aaRadAlt"];
-    _autoAttAGL = _aaRadAlt;
+    _agl = _aaRadAlt;
 
     (_heli getVariable "fza_sfmplus_velModelSpaceNoWind") params ["_aaVelX", "_aaVelY"];
-    _autoAttVelX = _aaVelX;
-    _autoAttVelY = _aaVelY;
+    _velX = _aaVelX;
+    _velY = _aaVelY;
 
-    _autoAttWPos = 1.0 - (linearConversion [AUTO_ATT_POS_SPD_LO, AUTO_ATT_POS_SPD_HI, _autoAttGS, 0.0, 1.0, true]);
-    private _wFast = linearConversion [AUTO_ATT_ATT_SPD_LO, AUTO_ATT_ATT_SPD_HI, _autoAttGS,  0.0, 1.0, true];
-    private _wHigh = linearConversion [AUTO_ATT_ATT_AGL_LO, AUTO_ATT_ATT_AGL_HI, _autoAttAGL, 0.0, 1.0, true];
+    _wPos = 1.0 - (linearConversion [AUTO_ATT_POS_SPD_LO, AUTO_ATT_POS_SPD_HI, _gndSpd, 0.0, 1.0, true]);
+    private _wFast = linearConversion [AUTO_ATT_ATT_SPD_LO, AUTO_ATT_ATT_SPD_HI, _gndSpd,  0.0, 1.0, true];
+    private _wHigh = linearConversion [AUTO_ATT_ATT_AGL_LO, AUTO_ATT_ATT_AGL_HI, _agl, 0.0, 1.0, true];
     //ATT takes its share of whatever POS has left; VEL gets the remainder.
-    _autoAttWAtt = (1.0 - _autoAttWPos) * (_wFast min _wHigh);
-    _autoAttWVel = 1.0 - _autoAttWPos - _autoAttWAtt;
+    _wAtt = (1.0 - _wPos) * (_wFast min _wHigh);
+    _wVel = 1.0 - _wPos - _wAtt;
 
-    _heli setVariable ["fza_sfmplus_autoAttWPos", _autoAttWPos];
-    _heli setVariable ["fza_sfmplus_autoAttWVel", _autoAttWVel];
-    _heli setVariable ["fza_sfmplus_autoAttWAtt", _autoAttWAtt];
+    _heli setVariable ["fza_sfmplus_prestonWPos", _wPos];
+    _heli setVariable ["fza_sfmplus_prestonWVel", _wVel];
+    _heli setVariable ["fza_sfmplus_prestonWAtt", _wAtt];
 };
 
-if (_autoAtt) then {
+if (_active) then {
     //PILOT AUTHORITY - same contract as the auto-pedal: the auto modes never fight an input, they
     //only restore equilibrium once the pilot lets go. A live key commands the regime directly,
     //suspends the hover position loop with its integral frozen, and on release re-captures the
@@ -82,12 +82,12 @@ if (_autoAtt) then {
     if ((abs _cyclicFwdAft)    > AUTO_ATT_KEY_DEADBAND) then { _pitchKey = _cyclicFwdAft;    };
     if ((abs _cyclicLeftRight) > AUTO_ATT_KEY_DEADBAND) then { _rollKey  = _cyclicLeftRight; };
     private _cyclicBreakout     = (_pitchKey != 0.0) || (_rollKey != 0.0);
-    private _prevCyclicBreakout = _heli getVariable ["fza_sfmplus_autoAttBreakout", false];
+    private _prevCyclicBreakout = _heli getVariable ["fza_sfmplus_prestonBreakout", false];
     //Release capture: on the falling edge of the breakout, the datum becomes wherever we are now.
     if (_prevCyclicBreakout && !_cyclicBreakout) then {
-        _heli setVariable ["fza_sfmplus_autoHoverDatum", getPos _heli];
-        _heli setVariable ["fza_sfmplus_autoHoverIntX",  0.0];
-        _heli setVariable ["fza_sfmplus_autoHoverIntY",  0.0];
+        _heli setVariable ["fza_sfmplus_prestonHoverDatum", getPos _heli];
+        _heli setVariable ["fza_sfmplus_prestonHoverIntX",  0.0];
+        _heli setVariable ["fza_sfmplus_prestonHoverIntY",  0.0];
     };
     //HANDS RE-SEED, same as the auto-pedal does for the feet: while the pilot is on the cyclic,
     //FREEZE the hands filter at the current trim position. Without this the filter state goes
@@ -95,20 +95,20 @@ if (_autoAtt) then {
     //it was left rather than moving on from where the stick actually is - a visible lurch at
     //exactly the moment the pilot hands control back.
     if (_cyclicBreakout) then {
-        _heli setVariable ["fza_sfmplus_autoAttPrevPitch", _heli getVariable ["fza_ah64_forceTrimPosPitch", 0.0]];
-        _heli setVariable ["fza_sfmplus_autoAttPrevRoll",  _heli getVariable ["fza_ah64_forceTrimPosRoll",  0.0]];
+        _heli setVariable ["fza_sfmplus_prestonPrevPitch", _heli getVariable ["fza_ah64_forceTrimPosPitch", 0.0]];
+        _heli setVariable ["fza_sfmplus_prestonPrevRoll",  _heli getVariable ["fza_ah64_forceTrimPosRoll",  0.0]];
     };
-    _heli setVariable ["fza_sfmplus_autoAttBreakout", _cyclicBreakout];
+    _heli setVariable ["fza_sfmplus_prestonBreakout", _cyclicBreakout];
 
     /////////////////////////////////////////////////////////////////////////////////////////
     // ATTITUDE REGIME - hold the swept pitch/roll target. Runs every frame regardless of the
     // blend weight so its PIDs never see a discontinuity; the weight only decides how much of
     // its output reaches the cyclic.
     /////////////////////////////////////////////////////////////////////////////////////////
-    private _pidAutoPitch    = _heli getVariable "fza_sfmplus_pid_autoPitch";
-    private _pidAutoRoll     = _heli getVariable "fza_sfmplus_pid_autoRoll";
-    private _autoPitchTarget = _heli getVariable "fza_sfmplus_autoPitchTarget";
-    private _autoRollTarget  = _heli getVariable "fza_sfmplus_autoRollTarget";
+    private _pidAutoPitch    = _heli getVariable "fza_sfmplus_pid_prestonPitch";
+    private _pidAutoRoll     = _heli getVariable "fza_sfmplus_pid_prestonRoll";
+    private _pitchTarget = _heli getVariable "fza_sfmplus_prestonPitchTarget";
+    private _rollTarget  = _heli getVariable "fza_sfmplus_prestonRollTarget";
     (_heli call BIS_fnc_getPitchBank) params ["_curPitch", "_curRoll"];
 
     //ENVELOPE. The keyboard technique is to MASH the key until the target hits the limit, so these
@@ -120,12 +120,12 @@ if (_autoAtt) then {
     //expands both to 30 and bypasses the nose-down gates.
     private _pitchUpLimit = AUTO_ATT_PITCH_UP_LIMIT;
     //Nose-down: speed schedule first (5 -> 10 deg), then the height gate opens it toward 15.
-    private _dnBySpeed    = linearConversion [AUTO_ATT_PITCH_DN_SPD_LO, AUTO_ATT_PITCH_DN_SPD_HI, _autoAttGS, AUTO_ATT_PITCH_DN_LIMIT_GND, AUTO_ATT_PITCH_DN_LIMIT_LOW, true];
-    private _dnByHeight   = linearConversion [AUTO_ATT_PITCH_GND_AGL, AUTO_ATT_ATT_AGL_HI, _autoAttAGL, 0.0, 1.0, true];
+    private _dnBySpeed    = linearConversion [AUTO_ATT_PITCH_DN_SPD_LO, AUTO_ATT_PITCH_DN_SPD_HI, _gndSpd, AUTO_ATT_PITCH_DN_LIMIT_GND, AUTO_ATT_PITCH_DN_LIMIT_LOW, true];
+    private _dnByHeight   = linearConversion [AUTO_ATT_PITCH_GND_AGL, AUTO_ATT_ATT_AGL_HI, _agl, 0.0, 1.0, true];
     private _pitchDnLimit = _dnBySpeed + ((AUTO_ATT_PITCH_DN_LIMIT_HI - _dnBySpeed) * _dnByHeight);
     //Within GND_AGL of the ground the ground clamp is absolute (no speed credit) - this is what
     //stops a fast, low pass from unlocking nose-down authority right above the deck.
-    if (_autoAttAGL <= AUTO_ATT_PITCH_GND_AGL) then { _pitchDnLimit = AUTO_ATT_PITCH_DN_LIMIT_GND; };
+    if (_agl <= AUTO_ATT_PITCH_GND_AGL) then { _pitchDnLimit = AUTO_ATT_PITCH_DN_LIMIT_GND; };
     if (_kbStickyInterupt) then {
         _pitchUpLimit = AUTO_ATT_PITCH_LIMIT_EXP;
         _pitchDnLimit = AUTO_ATT_PITCH_LIMIT_EXP;
@@ -136,22 +136,22 @@ if (_autoAtt) then {
     //Bank for the target turn rate at the current speed: bank = atan(V * omega / g), omega in
     //rad/s. Below ETL this collapses toward zero (no meaningful turn at a hover), so a floor keeps
     //some roll authority for repositioning; the hard cap bounds the top end at high speed.
-    private _rateBank   = atan ((_autoAttGS * (_turnRate * (pi / 180.0))) / 9.806);
+    private _rateBank   = atan ((_gndSpd * (_turnRate * (pi / 180.0))) / 9.806);
     private _rollLimit  = [(_rateBank max AUTO_ATT_TURN_MIN_BANK), 0.0, _rollCap] call BIS_fnc_clamp;
 
     //PITCH target sweep - PERSISTS on release (pitch attitude selects airspeed). The target is
     //only ever MOVED, never snapped, so it stays continuous across press and release alike.
     if (_pitchKey != 0.0) then {
         //Forward cyclic (+) commands nose DOWN, so the target moves negative.
-        _autoPitchTarget = _autoPitchTarget - (_pitchKey * AUTO_ATT_PITCH_RATE * _deltaTime);
-        _heli setVariable ["fza_sfmplus_autoPitchTarget", _autoPitchTarget];
+        _pitchTarget = _pitchTarget - (_pitchKey * AUTO_ATT_PITCH_RATE * _deltaTime);
+        _heli setVariable ["fza_sfmplus_prestonPitchTarget", _pitchTarget];
     };
     //Clamp EVERY frame, not only while the key is down: the nose-down limit MOVES with height and
     //speed, so a 15 deg dive that was legal at 200ft has to be walked back as the aircraft
     //descends through 50ft - and releasing the override has to bring an expanded target back
     //inside. Asymmetric: -down for nose low, +up for nose high.
-    _autoPitchTarget = [_autoPitchTarget, -_pitchDnLimit, _pitchUpLimit] call BIS_fnc_clamp;
-    _heli setVariable ["fza_sfmplus_autoPitchTarget", _autoPitchTarget];
+    _pitchTarget = [_pitchTarget, -_pitchDnLimit, _pitchUpLimit] call BIS_fnc_clamp;
+    _heli setVariable ["fza_sfmplus_prestonPitchTarget", _pitchTarget];
 
     //ROLL target sweep - DECAYS to wings-level on release (kills the standing right roll).
     //SIGN: _cyclicLeftRight is built as (heliCyclicLeftOut - heliCyclicRightOut) - but that name
@@ -160,23 +160,23 @@ if (_autoAtt) then {
     //reports bank RIGHT-positive. The two senses AGREE, so the key is ADDED, not subtracted.
     //Subtracting it inverted the commanded bank in the ATT regime while pitch stayed correct.
     if (_rollKey != 0.0) then {
-        _autoRollTarget = _autoRollTarget + (_rollKey * AUTO_ATT_ROLL_RATE * _deltaTime);
+        _rollTarget = _rollTarget + (_rollKey * AUTO_ATT_ROLL_RATE * _deltaTime);
     } else {
         //A RATE decay (not a snap, not an exponential) keeps the roll-out predictable and
         //identical from any bank.
         private _levelStep = AUTO_ATT_ROLL_LEVEL_RATE * _deltaTime;
-        if ((abs _autoRollTarget) <= _levelStep) then {
-            _autoRollTarget = 0.0;
+        if ((abs _rollTarget) <= _levelStep) then {
+            _rollTarget = 0.0;
         } else {
-            _autoRollTarget = _autoRollTarget - (_levelStep * ([1, -1] select (_autoRollTarget < 0.0)));
+            _rollTarget = _rollTarget - (_levelStep * ([1, -1] select (_rollTarget < 0.0)));
         };
     };
     //Clamp EVERY frame (as with pitch). The roll limit MOVES with airspeed, so a bank that was
     //legal at 140kt is outside the envelope once the aircraft slows - holding the key must not
     //keep it there. The decay path is clamped too so releasing the expand key while banked hard
     //walks the target back inside rather than stranding it.
-    _autoRollTarget = [_autoRollTarget, -_rollLimit, _rollLimit] call BIS_fnc_clamp;
-    _heli setVariable ["fza_sfmplus_autoRollTarget", _autoRollTarget];
+    _rollTarget = [_rollTarget, -_rollLimit, _rollLimit] call BIS_fnc_clamp;
+    _heli setVariable ["fza_sfmplus_prestonRollTarget", _rollTarget];
 
     //SIGN - matches fn_fmcAttitudeHold's "att" branch: pidRun gives (setpoint - measurement), so
     //passing (target, current) then negating makes the command (current - target). Without the
@@ -188,17 +188,17 @@ if (_autoAtt) then {
     //regime seamless, since it picks up from the attitude the aircraft already has.
     private _attPitchOut = 0.0;
     private _attRollOut  = 0.0;
-    if (_autoAttWAtt > 0.0) then {
-        _attPitchOut = [_pidAutoPitch, _deltaTime, _autoPitchTarget, _curPitch] call fza_fnc_pidRun;
+    if (_wAtt > 0.0) then {
+        _attPitchOut = [_pidAutoPitch, _deltaTime, _pitchTarget, _curPitch] call fza_fnc_pidRun;
         _attPitchOut = -([_attPitchOut, -1.0, 1.0] call BIS_fnc_clamp);
-        _attRollOut  = [_pidAutoRoll,  _deltaTime, _autoRollTarget,  _curRoll]  call fza_fnc_pidRun;
+        _attRollOut  = [_pidAutoRoll,  _deltaTime, _rollTarget,  _curRoll]  call fza_fnc_pidRun;
         _attRollOut  = -([_attRollOut,  -1.0, 1.0] call BIS_fnc_clamp);
     } else {
         //Not in cruise: slave the target to actual and hold the PIDs reset.
-        _autoPitchTarget = _curPitch;
-        _autoRollTarget  = _curRoll;
-        _heli setVariable ["fza_sfmplus_autoPitchTarget", _autoPitchTarget];
-        _heli setVariable ["fza_sfmplus_autoRollTarget",  _autoRollTarget];
+        _pitchTarget = _curPitch;
+        _rollTarget  = _curRoll;
+        _heli setVariable ["fza_sfmplus_prestonPitchTarget", _pitchTarget];
+        _heli setVariable ["fza_sfmplus_prestonRollTarget",  _rollTarget];
         [_pidAutoPitch] call fza_fnc_pidReset;
         [_pidAutoRoll]  call fza_fnc_pidReset;
     };
@@ -210,21 +210,21 @@ if (_autoAtt) then {
     //SIGN: from fn_fmcAttitudeHold "vel" - roll measures -velX, pitch +velY, output AS-IS.
     private _velPitchOut = 0.0;
     private _velRollOut  = 0.0;
-    if (_autoAttWVel > 0.0) then {
-        private _pidVelX = _heli getVariable "fza_sfmplus_pid_autoVelX";
-        private _pidVelY = _heli getVariable "fza_sfmplus_pid_autoVelY";
+    if (_wVel > 0.0) then {
+        private _pidVelX = _heli getVariable "fza_sfmplus_pid_prestonVelX";
+        private _pidVelY = _heli getVariable "fza_sfmplus_pid_prestonVelY";
 
         //Keys command a ground velocity. Lateral setpoint is ZERO unless the pilot is actively
         //asking for drift - the whole point of this regime is that sideward velocity is the
         //enemy. Forward setpoint is swept by the pitch key and PERSISTS, so the machine pilot
         //accelerates to a commanded speed and holds it.
-        private _velCmdFwd = _heli getVariable ["fza_sfmplus_autoVelCmdFwd", 0.0];
+        private _velCmdFwd = _heli getVariable ["fza_sfmplus_prestonVelCmdFwd", 0.0];
         if (_pitchKey != 0.0) then {
             //Forward cyclic (+) = accelerate forward.
             _velCmdFwd = _velCmdFwd + (_pitchKey * AUTO_ATT_VEL_ACCEL_RATE * _deltaTime);
             _velCmdFwd = [_velCmdFwd, -AUTO_ATT_VEL_CMD_LIMIT, AUTO_ATT_VEL_CMD_LIMIT] call BIS_fnc_clamp;
         };
-        _heli setVariable ["fza_sfmplus_autoVelCmdFwd", _velCmdFwd];
+        _heli setVariable ["fza_sfmplus_prestonVelCmdFwd", _velCmdFwd];
         //Lateral setpoint lives in the NEGATED frame (matching fn_fmcAttitudeHoldEnable, which
         //stores velX * -1.0) and is passed plain against the -velX measurement.
         //key +LEFT -> drift left -> velX negative -> negated frame: positive.
@@ -237,16 +237,16 @@ if (_autoAtt) then {
         private _vLeadY = [(_heli getVariable ["fza_sfmplus_accelY", 0.0]) * AUTO_ATT_ACCEL_LEAD,
                            -AUTO_ATT_ACCEL_LEAD_CLAMP, AUTO_ATT_ACCEL_LEAD_CLAMP] call BIS_fnc_clamp;
 
-        _velRollOut  = [_pidVelX, _deltaTime, ( _velCmdLat), (-(_autoAttVelX + _vLeadX))] call fza_fnc_pidRun;
+        _velRollOut  = [_pidVelX, _deltaTime, ( _velCmdLat), (-(_velX + _vLeadX))] call fza_fnc_pidRun;
         _velRollOut  = [_velRollOut,  -1.0, 1.0] call BIS_fnc_clamp;
-        _velPitchOut = [_pidVelY, _deltaTime, ( _velCmdFwd), ( _autoAttVelY + _vLeadY)] call fza_fnc_pidRun;
+        _velPitchOut = [_pidVelY, _deltaTime, ( _velCmdFwd), ( _velY + _vLeadY)] call fza_fnc_pidRun;
         _velPitchOut = [_velPitchOut, -1.0, 1.0] call BIS_fnc_clamp;
     } else {
-        [_heli getVariable "fza_sfmplus_pid_autoVelX"] call fza_fnc_pidReset;
-        [_heli getVariable "fza_sfmplus_pid_autoVelY"] call fza_fnc_pidReset;
+        [_heli getVariable "fza_sfmplus_pid_prestonVelX"] call fza_fnc_pidReset;
+        [_heli getVariable "fza_sfmplus_pid_prestonVelY"] call fza_fnc_pidReset;
         //Seed the commanded forward velocity to actual, so entering VEL from either side starts
         //from what the aircraft is already doing instead of snapping to a stale command.
-        _heli setVariable ["fza_sfmplus_autoVelCmdFwd", _autoAttVelY];
+        _heli setVariable ["fza_sfmplus_prestonVelCmdFwd", _velY];
     };
 
     /////////////////////////////////////////////////////////////////////////////////////////
@@ -262,9 +262,9 @@ if (_autoAtt) then {
     /////////////////////////////////////////////////////////////////////////////////////////
     private _hovPitchOut = 0.0;
     private _hovRollOut  = 0.0;
-    if (_autoAttWPos > 0.0) then {
-        private _pidHovX = _heli getVariable "fza_sfmplus_pid_autoHoverX";
-        private _pidHovY = _heli getVariable "fza_sfmplus_pid_autoHoverY";
+    if (_wPos > 0.0) then {
+        private _pidHovX = _heli getVariable "fza_sfmplus_pid_prestonHoverX";
+        private _pidHovY = _heli getVariable "fza_sfmplus_pid_prestonHoverY";
 
         //Commanded reposition velocity. A hovering pilot does not command an attitude, they
         //command a DRIFT - "slide left a bit". Key -> ground velocity setpoint, in m/s.
@@ -277,14 +277,14 @@ if (_autoAtt) then {
         _setVelX = [_setVelX, -AUTO_ATT_HOVER_VEL_LIMIT, AUTO_ATT_HOVER_VEL_LIMIT] call BIS_fnc_clamp;
         _setVelY = [_setVelY, -AUTO_ATT_HOVER_VEL_LIMIT, AUTO_ATT_HOVER_VEL_LIMIT] call BIS_fnc_clamp;
 
-        private _iX = _heli getVariable ["fza_sfmplus_autoHoverIntX", 0.0];
-        private _iY = _heli getVariable ["fza_sfmplus_autoHoverIntY", 0.0];
+        private _iX = _heli getVariable ["fza_sfmplus_prestonHoverIntX", 0.0];
+        private _iY = _heli getVariable ["fza_sfmplus_prestonHoverIntY", 0.0];
 
         //Position integral runs ONLY when the pilot is off the cyclic. While they are flying it
         //the datum is meaningless (they are deliberately leaving it), so the integral is frozen -
         //not reset - and the datum is re-captured on release by the breakout handler above.
         if (!_cyclicBreakout) then {
-            private _datum = _heli getVariable ["fza_sfmplus_autoHoverDatum", getPos _heli];
+            private _datum = _heli getVariable ["fza_sfmplus_prestonHoverDatum", getPos _heli];
             private _dPos  = _datum vectorDiff (getPos _heli);
             private _hdg   = direction _heli;
             //World -> model space position error: X = right+, Y = forward+.
@@ -313,8 +313,8 @@ if (_autoAtt) then {
             //faster the commanded return, up to the cap.
             _iX = [_posErrX * AUTO_ATT_HOVER_POS_PKP, -AUTO_ATT_HOVER_POS_PCLAMP, AUTO_ATT_HOVER_POS_PCLAMP] call BIS_fnc_clamp;
             _iY = [_posErrY * AUTO_ATT_HOVER_POS_PKP, -AUTO_ATT_HOVER_POS_PCLAMP, AUTO_ATT_HOVER_POS_PCLAMP] call BIS_fnc_clamp;
-            _heli setVariable ["fza_sfmplus_autoHoverIntX", _iX];
-            _heli setVariable ["fza_sfmplus_autoHoverIntY", _iY];
+            _heli setVariable ["fza_sfmplus_prestonHoverIntX", _iX];
+            _heli setVariable ["fza_sfmplus_prestonHoverIntY", _iY];
 
             //Off the cyclic the setpoint is purely the position-recovery bias. NEGATE the lateral
             //one: _iX comes from _posErrX in RAW model space (+X right), and the roll channel
@@ -335,8 +335,8 @@ if (_autoAtt) then {
                           -AUTO_ATT_ACCEL_LEAD_CLAMP, AUTO_ATT_ACCEL_LEAD_CLAMP] call BIS_fnc_clamp;
         private _leadY = [(_heli getVariable ["fza_sfmplus_accelY", 0.0]) * AUTO_ATT_ACCEL_LEAD,
                           -AUTO_ATT_ACCEL_LEAD_CLAMP, AUTO_ATT_ACCEL_LEAD_CLAMP] call BIS_fnc_clamp;
-        private _predVelX = _autoAttVelX + _leadX;
-        private _predVelY = _autoAttVelY + _leadY;
+        private _predVelX = _velX + _leadX;
+        private _predVelY = _velY + _leadY;
 
         _hovRollOut  = [_pidHovX, _deltaTime, ( _setVelX), (-_predVelX)] call fza_fnc_pidRun;
         _hovRollOut  = [_hovRollOut,  -1.0, 1.0] call BIS_fnc_clamp;
@@ -347,18 +347,18 @@ if (_autoAtt) then {
         //crucially the next PICKUP) can seed straight to it instead of climbing from near zero.
         //Only trusted when the aircraft is actually holding station on BOTH axes - otherwise the
         //integral is mid-transient and remembering it would bake in the error.
-        if ((abs _autoAttVelX) < AUTO_ATT_HOVER_SEED_LEARN_VEL
-         && (abs _autoAttVelY) < AUTO_ATT_HOVER_SEED_LEARN_VEL) then {
-            _heli setVariable ["fza_sfmplus_autoHoverLearnedIntX", _pidHovX get "integral"];
-            _heli setVariable ["fza_sfmplus_autoHoverLearnedIntY", _pidHovY get "integral"];
+        if ((abs _velX) < AUTO_ATT_HOVER_SEED_LEARN_VEL
+         && (abs _velY) < AUTO_ATT_HOVER_SEED_LEARN_VEL) then {
+            _heli setVariable ["fza_sfmplus_prestonLearnedIntX", _pidHovX get "integral"];
+            _heli setVariable ["fza_sfmplus_prestonLearnedIntY", _pidHovY get "integral"];
         };
 
         //DIAGNOSTIC - publish the hover loop's internals so the actual numbers can be read in the
         //debug hint instead of inferred from behaviour. Remove once this loop is settled.
         _heli setVariable ["fza_sfmplus_dbgHovSetX",  _setVelX];
         _heli setVariable ["fza_sfmplus_dbgHovSetY",  _setVelY];
-        _heli setVariable ["fza_sfmplus_dbgHovVelX",  _autoAttVelX];
-        _heli setVariable ["fza_sfmplus_dbgHovVelY",  _autoAttVelY];
+        _heli setVariable ["fza_sfmplus_dbgHovVelX",  _velX];
+        _heli setVariable ["fza_sfmplus_dbgHovVelY",  _velY];
         _heli setVariable ["fza_sfmplus_dbgHovOutR",  _hovRollOut];
         _heli setVariable ["fza_sfmplus_dbgHovOutP",  _hovPitchOut];
         _heli setVariable ["fza_sfmplus_dbgHovIntR",  _pidHovX get "integral"];
@@ -367,9 +367,9 @@ if (_autoAtt) then {
         //Regime not in play. Keep the datum under the aircraft so the first frame back in hover
         //does not lurch, and clear the POSITION-recovery bias (that is a function of where the
         //datum is, and the datum just moved).
-        _heli setVariable ["fza_sfmplus_autoHoverDatum", getPos _heli];
-        _heli setVariable ["fza_sfmplus_autoHoverIntX",  0.0];
-        _heli setVariable ["fza_sfmplus_autoHoverIntY",  0.0];
+        _heli setVariable ["fza_sfmplus_prestonHoverDatum", getPos _heli];
+        _heli setVariable ["fza_sfmplus_prestonHoverIntX",  0.0];
+        _heli setVariable ["fza_sfmplus_prestonHoverIntY",  0.0];
 
         //SEED the velocity PIDs' integrators rather than zeroing them. A hover needs a standing
         //cyclic offset and the integral carries it, so starting from zero means winding up from
@@ -378,8 +378,8 @@ if (_autoAtt) then {
         //fraction of current trim before anything has been learned. Divided by ki because pidRun
         //multiplies it back. SEED_FRACTION < 1 because kp supplies most of the settled trim, not
         //the integral.
-        private _pidHovXr = _heli getVariable "fza_sfmplus_pid_autoHoverX";
-        private _pidHovYr = _heli getVariable "fza_sfmplus_pid_autoHoverY";
+        private _pidHovXr = _heli getVariable "fza_sfmplus_pid_prestonHoverX";
+        private _pidHovYr = _heli getVariable "fza_sfmplus_pid_prestonHoverY";
         [_pidHovXr] call fza_fnc_pidReset;
         [_pidHovYr] call fza_fnc_pidReset;
 
@@ -389,8 +389,8 @@ if (_autoAtt) then {
         private _seedFrac = AUTO_ATT_HOVER_SEED_FRAC;
         private _seedX = if (_kiX > 0.0) then { -(_heli getVariable ["fza_ah64_forceTrimPosRoll",  0.0]) * _seedFrac / _kiX } else { 0.0 };
         private _seedY = if (_kiY > 0.0) then {  (_heli getVariable ["fza_ah64_forceTrimPosPitch", 0.0]) * _seedFrac / _kiY } else { 0.0 };
-        private _learnedX = _heli getVariable ["fza_sfmplus_autoHoverLearnedIntX", -9999];
-        private _learnedY = _heli getVariable ["fza_sfmplus_autoHoverLearnedIntY", -9999];
+        private _learnedX = _heli getVariable ["fza_sfmplus_prestonLearnedIntX", -9999];
+        private _learnedY = _heli getVariable ["fza_sfmplus_prestonLearnedIntY", -9999];
         if (_learnedX != -9999) then { _seedX = _learnedX; };
         if (_learnedY != -9999) then { _seedY = _learnedY; };
         //Never seed outside the anti-windup clamp, or the first frame would start already railed.
@@ -404,14 +404,14 @@ if (_autoAtt) then {
     // BLEND + OUTPUT. Weighted mix of the three regimes (the weights sum to 1), then slewed
     // into force-trim so even a step in PID output reaches the swashplate as a ramp.
     /////////////////////////////////////////////////////////////////////////////////////////
-    private _pitchGoal = (_hovPitchOut * _autoAttWPos) + (_velPitchOut * _autoAttWVel) + (_attPitchOut * _autoAttWAtt);
-    private _rollGoal  = (_hovRollOut  * _autoAttWPos) + (_velRollOut  * _autoAttWVel) + (_attRollOut  * _autoAttWAtt);
+    private _pitchGoal = (_hovPitchOut * _wPos) + (_velPitchOut * _wVel) + (_attPitchOut * _wAtt);
+    private _rollGoal  = (_hovRollOut  * _wPos) + (_velRollOut  * _wVel) + (_attRollOut  * _wAtt);
 
     //PILOT HANDS: lag THEN rate-limit, exactly as the auto-pedal models the feet (see the
     //AUTO_ATT_CYCLIC_* note in core.hpp for why that order and not the reverse). This replaces the
     //old plain lerp-into-trim, which was a single smoothing stage with no rate limit.
-    private _pitchPrev = _heli getVariable ["fza_sfmplus_autoAttPrevPitch", 0.0];
-    private _rollPrev  = _heli getVariable ["fza_sfmplus_autoAttPrevRoll",  0.0];
+    private _pitchPrev = _heli getVariable ["fza_sfmplus_prestonPrevPitch", 0.0];
+    private _rollPrev  = _heli getVariable ["fza_sfmplus_prestonPrevRoll",  0.0];
     private _lagCoef   = [(_deltaTime / AUTO_ATT_CYCLIC_TAU), 0.0, 1.0] call BIS_fnc_clamp;
     private _maxStep   = AUTO_ATT_CYCLIC_RATE * _deltaTime;
 
@@ -423,13 +423,13 @@ if (_autoAtt) then {
     private _rollStep  = [_rollLag - _rollPrev, -_maxStep, _maxStep] call BIS_fnc_clamp;
     private _rollTrim  = [_rollPrev + _rollStep, -1.0, 1.0] call BIS_fnc_clamp;
 
-    _heli setVariable ["fza_sfmplus_autoAttPrevPitch", _pitchTrim];
-    _heli setVariable ["fza_sfmplus_autoAttPrevRoll",  _rollTrim];
+    _heli setVariable ["fza_sfmplus_prestonPrevPitch", _pitchTrim];
+    _heli setVariable ["fza_sfmplus_prestonPrevRoll",  _rollTrim];
     _heli setVariable ["fza_ah64_forceTrimPosPitch",   _pitchTrim, true];
     _heli setVariable ["fza_ah64_forceTrimPosRoll",    _rollTrim,  true];
 
-    _heli setVariable ["fza_sfmplus_autoPitchActive", true];
-    _heli setVariable ["fza_sfmplus_autoRollActive",  true];
+    _heli setVariable ["fza_sfmplus_prestonPitchActive", true];
+    _heli setVariable ["fza_sfmplus_prestonRollActive",  true];
 };
 
 //Preston owns the cyclic, so the raw stick is ZEROED - otherwise a held key adds unbounded control
