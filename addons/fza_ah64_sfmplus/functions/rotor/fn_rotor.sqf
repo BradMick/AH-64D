@@ -97,7 +97,7 @@ for "_bladeIndex" from 0 to (_numBlades - 1) do {
 	// referenced pitch; adding +6 deg over-pitched it and pushed the right-pedal (more anti-torque)
 	// side PAST the 15.75 deg airfoil stall = near-zero right-pedal authority at hover. Tail keeps
 	// its original root reference. (_tipTwist already carries _dirSign, so this stays sign-consistent.)
-	private _rootIncidence      = if (_type == MAIN) then { -_tipTwist * INC_ANG } else { 0.0 };
+	private _rootIncidence      = if (_type == MAIN) then { -_tipTwist * 0.5 } else { 0.0 };
 
 	private _a_rootPos          = _pos       vectorAdd  ([_bladeDir vectorMultiply _bladeCutout,          _chordDir, _flapAngle]              call fza_sfmplus_fnc_vectorRotateAroundAxis);
 	private _b_tipPos           = _pos       vectorAdd  ([_bladeDir vectorMultiply _bladeLength,          _chordDir, _flapAngle]              call fza_sfmplus_fnc_vectorRotateAroundAxis);
