@@ -1,27 +1,14 @@
 params ["_heli"];
 #include "\fza_ah64_sfmplus\headers\core.hpp"
 
-//Live-tunable gains (read + set[] each frame so the PID auto-tuner / SCAS tab can dial them live).
 //pos/vel use pid_roll/pid_pitch (posRoll/posPitch gains); att uses pid_roll_att/pid_pitch_att (attRoll/attPitch).
 //Roll
 private _pidRoll      = _heli getVariable "fza_sfmplus_pid_roll";
-_pidRoll set ["kp", _heli getVariable "fza_sfmplus_tune_posRoll_kp"];
-_pidRoll set ["ki", _heli getVariable "fza_sfmplus_tune_posRoll_ki"];
-_pidRoll set ["kd", _heli getVariable "fza_sfmplus_tune_posRoll_kd"];
 private _pidRoll_att  = _heli getVariable "fza_sfmplus_pid_roll_att";
-_pidRoll_att set ["kp", _heli getVariable "fza_sfmplus_tune_attRoll_kp"];
-_pidRoll_att set ["ki", _heli getVariable "fza_sfmplus_tune_attRoll_ki"];
-_pidRoll_att set ["kd", _heli getVariable "fza_sfmplus_tune_attRoll_kd"];
 
 //Pitch
 private _pidPitch     = _heli getVariable "fza_sfmplus_pid_pitch";
-_pidPitch set ["kp", _heli getVariable "fza_sfmplus_tune_posPitch_kp"];
-_pidPitch set ["ki", _heli getVariable "fza_sfmplus_tune_posPitch_ki"];
-_pidPitch set ["kd", _heli getVariable "fza_sfmplus_tune_posPitch_kd"];
 private _pidPitch_att = _heli getVariable "fza_sfmplus_pid_pitch_att";
-_pidPitch_att set ["kp", _heli getVariable "fza_sfmplus_tune_attPitch_kp"];
-_pidPitch_att set ["ki", _heli getVariable "fza_sfmplus_tune_attPitch_ki"];
-_pidPitch_att set ["kd", _heli getVariable "fza_sfmplus_tune_attPitch_kd"];
 
 //Position & Velocity hold
 private _subMode  = _heli getVariable "fza_ah64_attHoldSubMode";
@@ -90,8 +77,8 @@ if (_heli getVariable "fza_ah64_attHoldActive" && !(_heli getVariable "fza_ah64_
         private _posErrX = ((_dPos # 0) * cos _hdg) - ((_dPos # 1) * sin _hdg);
         private _posErrY = ((_dPos # 0) * sin _hdg) + ((_dPos # 1) * cos _hdg);
 
-        private _posIkp    = _heli getVariable ["fza_sfmplus_tune_posIntKp",    0.0050];
-        private _posIclamp = _heli getVariable ["fza_sfmplus_tune_posIntClamp", 0.0200];
+        private _posIkp    = 0.0050;
+        private _posIclamp = 0.0200;
         private _iX = (_heli getVariable ["fza_sfmplus_posIntX", 0.0]) + (_posErrX * _deltaTime * _posIkp);
         private _iY = (_heli getVariable ["fza_sfmplus_posIntY", 0.0]) + (_posErrY * _deltaTime * _posIkp);
         _iX = [_iX, -_posIclamp, _posIclamp] call BIS_fnc_clamp;
@@ -110,10 +97,6 @@ if (_heli getVariable "fza_ah64_attHoldActive" && !(_heli getVariable "fza_ah64_
         _attHoldCycRollOut  = _roll;
 
         //Publish pos-branch internals for the hold-chain logger.
-        _heli setVariable ["fza_sfmplus_dbgPosErrX", _posErrX];
-        _heli setVariable ["fza_sfmplus_dbgPosErrY", _posErrY];
-        _heli setVariable ["fza_sfmplus_dbgDampRoll",  _iX];
-        _heli setVariable ["fza_sfmplus_dbgDampPitch", _iY];
     };
     //Velocity hold
     if (_subMode == "vel") then {

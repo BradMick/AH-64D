@@ -35,16 +35,19 @@ _heli setVariable ["fza_sfmplus_isSingleEng",           false];
 
 //Outputs
 _heli setVariable ["fza_sfmplus_engFF",                 [0.0, 0.0]];
-_heli setVariable ["fza_sfmplus_engBaseNG",             [0.0, 0.0]];
 _heli setVariable ["fza_sfmplus_engPctNG",              [0.0, 0.0]];
+//SEEDS REQUIRED even though nothing READS these: fza_fnc_setArrayVariable does
+//`+(_heli getVariable _name)` then `set`, so the array must already exist or it
+//throws "Type Number, expected Array". Written per-engine by fn_engine.
+_heli setVariable ["fza_sfmplus_engBaseNG",             [0.0, 0.0]];
+_heli setVariable ["fza_sfmplus_engBaseTGT",            [0.0, 0.0]];
+_heli setVariable ["fza_sfmplus_engBaseOilPSI",         [0.0, 0.0]];
+_heli setVariable ["fza_sfmplus_engTrimTq",             [0.0, 0.0]];
 _heli setVariable ["fza_sfmplus_engPctNP",              [0.0, 0.0]];
 _heli setVariable ["fza_sfmplus_engPctTQ",              [0.0, 0.0]];
-_heli setVariable ["fza_sfmplus_engBaseTGT",            [0.0, 0.0]];
 _heli setVariable ["fza_sfmplus_engTGT",                [0.0, 0.0]];
-_heli setVariable ["fza_sfmplus_engBaseOilPSI",         [0.0, 0.0]];
 _heli setVariable ["fza_sfmplus_engOilPSI",             [0.0, 0.0]];
 
 _heli setVariable ["fza_sfmplus_engOutputTq",           [0.0, 0.0]];
-_heli setVariable ["fza_sfmplus_engTrimTq",             [0.0, 0.0]];
 
 _heli setVariable ["fza_sfmplus_randomTq",              [0.0, 0.0, 0.0, 0.0]];

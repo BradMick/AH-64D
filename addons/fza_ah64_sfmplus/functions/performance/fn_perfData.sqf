@@ -147,7 +147,6 @@ private _cruiseTable_FAT = [[    -40, _intCruiseTable0 # 1, _intCruiseTable0 # 2
                             [     40, _intCruiseTable4 # 1, _intCruiseTable4 # 2, _intCruiseTable4 # 3, _intCruiseTable4 # 4, _intCruiseTable4 #5, _intCruiseTable4 # 6]];
 private _cruiseTable = [_cruiseTable_FAT, _fat] call fza_fnc_linearInterp;
 //Set cruise table
-_heli setVariable ["fza_sfmplus_cruiseTable", _cruiseTable];
 /////////////////////////////////////////////////////////////////////////////////////////////
 // TAS Data         /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////

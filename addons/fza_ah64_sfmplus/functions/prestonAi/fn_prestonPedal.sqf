@@ -45,20 +45,9 @@ if (_yawBreakoutVal < -0.01 || _yawBreakoutVal > 0.01) then {
     _yawBreakout = true;
 };
 
-//LIVE-TUNABLE gains: pull the tune vars onto each PID every frame so the SCAS tab and the
-//auto-pedal auto-tuner (fn_tunerPedalAuto) can dial these while flying. Seeded in fn_coreConfig.
 private _pidAutoPedalHdg  = _heli getVariable "fza_sfmplus_pid_autoPedalHdg";
-_pidAutoPedalHdg  set ["kp", _heli getVariable "fza_sfmplus_tune_apHdg_kp"];
-_pidAutoPedalHdg  set ["ki", _heli getVariable "fza_sfmplus_tune_apHdg_ki"];
-_pidAutoPedalHdg  set ["kd", _heli getVariable "fza_sfmplus_tune_apHdg_kd"];
 private _pidAutoPedalNtt  = _heli getVariable "fza_sfmplus_pid_autoPedalNtt";
-_pidAutoPedalNtt  set ["kp", _heli getVariable "fza_sfmplus_tune_apNtt_kp"];
-_pidAutoPedalNtt  set ["ki", _heli getVariable "fza_sfmplus_tune_apNtt_ki"];
-_pidAutoPedalNtt  set ["kd", _heli getVariable "fza_sfmplus_tune_apNtt_kd"];
 private _pidAutoPedalAero = _heli getVariable "fza_sfmplus_pid_autoPedalAero";
-_pidAutoPedalAero set ["kp", _heli getVariable "fza_sfmplus_tune_apAero_kp"];
-_pidAutoPedalAero set ["ki", _heli getVariable "fza_sfmplus_tune_apAero_ki"];
-_pidAutoPedalAero set ["kd", _heli getVariable "fza_sfmplus_tune_apAero_kd"];
 
 private _hdgOut        = 0.0;
 private _yawOutput     = 0.0;
@@ -69,7 +58,6 @@ private _hdgError      = 0.0;
 //Heading capture. The setpoint is re-captured only while the pilot is actually on the pedals
 //(yaw breakout) - NOT every frame above 5kts as it used to be. Re-capturing continuously pinned
 //_hdgError to exactly zero at any speed above a hover, which both removed heading hold from the
-//5-24kt band AND fed the auto-tuner a structurally-zero error it would happily declare "settled".
 //Above the breakout the pedals are the pilot's; the heading PID re-engages against the heading
 //held at release (see the release-capture below).
 if (_yawBreakout) then {
@@ -168,8 +156,6 @@ private _step      = [_pedalLag - _pedalPrev, -_maxStep, _maxStep] call BIS_fnc_
 _yawOutput         = [_pedalPrev + _step, -1.0, 1.0] call BIS_fnc_clamp;
 _heli setVariable ["fza_sfmplus_autoPedalPrevOut", _yawOutput];
 
-//Publish the dominant regime, its weight and the PID errors for the auto-tuner and overlay.
-//The weight matters because fn_tunerPedalAuto only grades when one regime clearly owns the
 //pedals - mid-transition all three contribute and the response is unattributable.
 private _regime = "hdg";
 private _wDom   = _wHdg;
@@ -178,7 +164,6 @@ if (_wAero > _wDom) then { _regime = "aero"; _wDom = _wAero; };
 
 _heli setVariable ["fza_sfmplus_autoPedalRegime",    _regime];
 _heli setVariable ["fza_sfmplus_autoPedalRegimeWgt", _wDom];
-//Publish the SAME error each PID is fed (not the raw beta), so the auto-tuner grades exactly
 //what the loop is acting on.
 _heli setVariable ["fza_sfmplus_autoPedalHdgErr",    _hdgError];
 _heli setVariable ["fza_sfmplus_autoPedalNttErr",    _nttError];

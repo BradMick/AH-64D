@@ -81,7 +81,6 @@ private _dirB   = vectorDir _heli;
 private _upB    = vectorUp  _heli;
 private _rightB = _dirB vectorCrossProduct _upB;
 
-//Trim ball decomposition for the tuner: kinematic term, bank term, sum.
 private _kLat = _worldAccelF vectorDotProduct _rightB;
 private _gLat = [0.0, 0.0, GRAVITY] vectorDotProduct _rightB;
 _heli setVariable ["fza_sfmplus_ballTerms", [_kLat, _gLat, _kLat + _gLat]];

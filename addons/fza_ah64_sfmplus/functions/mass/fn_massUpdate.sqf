@@ -107,10 +107,9 @@ _curLongCG  = _curLongMom / _curMass;
 _curLatMom  = _stn1LatMom + _stn2LatMom + _stn3LatMom + _stn4LatMom;
 _curLatCG   = _curLatMom / _curMass;
 
-//Tuner center of mass offsets (default 0.0 - no change)
-private _comOffX = _heli getVariable ["fza_sfmplus_tune_comOffsetX", 0.0];
-private _comOffY = _heli getVariable ["fza_sfmplus_tune_comOffsetY", 0.0];
-private _comOffZ = _heli getVariable ["fza_sfmplus_tune_comOffsetZ", 0.0];
+private _comOffX = 0.0;
+private _comOffY = 0.0;
+private _comOffZ = 0.0;
 
 private _comDatum = boundingCenter _heli;
 //systemChat format ["Datum [%1, %2, %3 ]", (_comDatum select 0) toFixed 3, (_comDatum select 1) toFixed 3, (_comDatum select 2) toFixed 3];
@@ -132,9 +131,8 @@ private _comDatum = boundingCenter _heli;
 private _curCom = (getCenterOfMass _heli) vectorAdd _comDatum;
 
 //_curMass = 4535;//8165;
-//Tuner gross weight override - bypasses the computed mass when enabled
-if (_heli getVariable ["fza_sfmplus_tune_gwtOverride", false]) then {
-    _curMass = _heli getVariable ["fza_sfmplus_tune_gwtValue", _curMass];
+if (false) then {
+    _curMass = _curMass;
 };
 _heli setMass _curMass;
 //systemChat format ["_curMass %1 - _boundingBoxReal = %2 - _boundingCenter = %3", (getMass _heli) toFixed 0, boundingBoxReal [_heli, "Geometry"], boundingCenter _heli];

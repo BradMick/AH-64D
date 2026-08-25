@@ -21,26 +21,22 @@ private _coords         = _heli getVariable "fza_sfmplus_fuselageSide";
 
 //Fuselage side-force scalar vs airspeed. The fuselage produces a physical side
 //force (and thus a yaw moment) when the aircraft flies crabbed - this scalar
-//lets the tuner dial that side-force per airspeed so the tail-trim requirement
 //is realistic. Source array is the single source of truth: publish into the live
-//tuner var when unset so editing here + reloading takes effect, and the master /
 //write-back read & write this same var.
-private _sideForceScalarTable = _heli getVariable ["fza_sfmplus_tune_fuseSideScalarTable", []];
-if (_sideForceScalarTable isEqualTo []) then {
-    _sideForceScalarTable =
-    [
-     [ 0.00, 1.000]
-    ,[10.29, 1.000]
-    ,[20.58, 1.000]
-    ,[36.01, 1.000]
-    ,[46.30, 1.000]
-    ,[51.44, 1.000]
-    ,[61.73, 1.000]
-    ,[66.88, 1.000]
-    ,[72.02, 1.000]
-    ];
-    _heli setVariable ["fza_sfmplus_tune_fuseSideScalarTable", _sideForceScalarTable];
-};
+private _sideForceScalarTable =
+[
+ [ 0.00, 1.000]
+,[10.29, 1.000]
+,[20.58, 1.000]
+,[36.01, 1.000]
+,[46.30, 1.000]
+,[51.44, 1.000]
+,[61.73, 1.000]
+,[66.88, 1.000]
+,[72.02, 1.000]
+];
+//Published for the force overlay readout - the array above is the source of truth.
+_heli setVariable ["fza_sfmplus_fuseSideTable", _sideForceScalarTable];
 //Interpolate at the current 2D airspeed (m/s).
 private _fuseSpd = vectorMagnitude [
     (_heli getVariable ["fza_sfmplus_velModelSpace", [0,0,0]]) select 0,
@@ -142,7 +138,6 @@ for "_i" from 0 to (_count - 1) do {
 
     _heli addTorque (_heli vectorModelToWorld _moment);
 
-    //Tuner force readout: log the component's own _force and _moment verbatim.
     if (fza_sfmplus_forceLogOn) then {
         [_heli, "Fuselage Side", _force, _moment] call fza_sfmplus_fnc_forceLog;
     };

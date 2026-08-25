@@ -114,7 +114,6 @@ for "_i" from 0 to (_count - 1) do {
 
     _heli addTorque (_heli vectorModelToWorld _moment);
 
-    //Tuner force readout: log the component's own _force and _moment verbatim.
     if (fza_sfmplus_forceLogOn) then {
         [_heli, "Fuselage Top", _force, _moment] call fza_sfmplus_fnc_forceLog;
     };

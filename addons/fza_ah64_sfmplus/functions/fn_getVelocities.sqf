@@ -31,7 +31,7 @@ private _velWindWorldSpaceY  = _velWindWorldSpace select 1;
 //NOT re-derived here. Only the world-space wind VECTOR is used below, to rotate into model
 //space for the airspeed calculation.
 private _hdg                 = direction _heli;
-    
+
 private _velWindModelSpaceX  = (_velWindWorldSpaceX * cos _hdg) - (_velWindWorldSpaceY * sin _hdg);
 private _velWindModelSpaceY  = (_velWindWorldSpaceX * sin _hdg) + (_velWindWorldSpaceY * cos _hdg);
 private _velWindModelSpace   = [_velWindModelSpaceX, _velWindModelSpaceY, 0.0];
@@ -94,5 +94,4 @@ _heli setVariable ["fza_sfmplus_velWorldSpace",       _velWorldSpace];
 _heli setVariable ["fza_sfmplus_velWorldSpaceNoWind", _velWorldSpaceNoWind];
 _heli setVariable ["fza_sfmplus_velClimb",            _velClimb];
 _heli setVariable ["fza_sfmplus_angVelModelSpace",    _angVelModelSpace];
-_heli setVariable ["fza_sfmplus_angVelWorldSpace",    _angVelWorldSpace];
 //windDirFrom / windSpeedKts are published by fn_environment (single source of truth).

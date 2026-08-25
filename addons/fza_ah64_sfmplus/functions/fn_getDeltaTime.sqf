@@ -29,6 +29,5 @@ _previousTime        = _currentTime;
 _deltaTime           = _deltaTime * accTime;
 _deltaTime           = _deltaTime min 0.1;
 
-_heli setVariable ["fza_sfmplus_currentTime",  _currentTime];
 _heli setVariable ["fza_sfmplus_previousTime", _previousTime];
 _heli setVariable ["fza_sfmplus_deltaTime",    _deltaTime];

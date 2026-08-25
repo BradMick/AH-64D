@@ -196,9 +196,8 @@ if (_type == MAIN) then {
     private _torqueSign = if (_dir == CW) then { 1.0 } else { -1.0 };
     //BET TORQUE tuning scalar (yaw knob) - multiplies ONLY this fuselage reaction couple, NOT the
     //engine load (_totalPower stays physics-true). Airspeed-banded; 1.0 = pure physics. Lets the
-    //master tuner trim BET's yaw independently of thrust.
     private _velBet   = vectorMagnitude [(_heli getVariable "fza_sfmplus_velModelSpace" select 0), (_heli getVariable "fza_sfmplus_velModelSpace" select 1)];
-    private _torqTbl  = _heli getVariable ["fza_sfmplus_tune_betMainTorqueTable", []];
+    private _torqTbl  = [];
     private _torqueScale = if (_torqTbl isEqualTo []) then { 1.0 } else { [_torqTbl, _velBet] call fza_fnc_linearInterp select 1 };
     _reactionMoment = _uVec vectorMultiply (_tqSmoothed * _gearRatio * _torqueSign * _deltaTime * _torqueScale);
     _heli addTorque (_heli vectorModelToWorld _reactionMoment);

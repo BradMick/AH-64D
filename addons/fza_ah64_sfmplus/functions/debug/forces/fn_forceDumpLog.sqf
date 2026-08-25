@@ -26,7 +26,7 @@ Description:
         response - bodyAccel XYZ (specific force), kinematic accel XYZ, velocity, body rates
         slip     - beta_g (trim ball) and beta_deg (kinematic sideslip)
 
-    Gated on fza_sfmplus_tune_forceDumpOn. NOTE it reads fza_sfmplus_forceLogPublished, the same
+    Gated on fza_sfmplus_forceDumpOn. NOTE it reads fza_sfmplus_forceLogPublished, the same
     snapshot the overlay uses, so fza_sfmplus_forceLogOn must also be on for the data to exist.
 
     Grep the .rpt for "FORCEDUMP" and pull it into a spreadsheet. Header emitted on the rising edge.
@@ -40,7 +40,7 @@ Author:
 params ["_heli"];
 if (isNull _heli) exitWith {};
 
-private _on    = _heli getVariable ["fza_sfmplus_tune_forceDumpOn", false];
+private _on    = false;
 private _wasOn = _heli getVariable ["fza_sfmplus_forceDump_wasOn", false];
 
 private _gens = [
@@ -121,25 +121,21 @@ if (_gndSpd > 2.0) then {
 
 //--- ATTITUDE + TARGETS -----------------------------------------------------------------
 (_heli call BIS_fnc_getPitchBank) params ["_curP", "_curR"];
-private _tgtKt     = _heli getVariable ["fza_sfmplus_tune_masterTargetKt", 0];
-private _lookupSpd = if (_tgtKt >= 5.0) then { _tgtKt / 1.94384 } else { _gndSpd };
+//Scalar tables are looked up at the LIVE ground speed. (Target-attitude/control columns are
+private _lookupSpd = _gndSpd;
+private _tgtP = 0; private _tgtR = 0; private _tgtC = 0;
+private _tgtCycFA = 0; private _tgtCycLR = 0; private _tgtPed = 0;
 private _fnTbl = {
     params ["_var"];
     private _t = _heli getVariable [_var, []];
     if (_t isEqualTo []) then { 0.0 } else { [_t, _lookupSpd] call fza_fnc_linearInterp select 1 }
 };
-private _tgtP = ["fza_sfmplus_tune_targetPitchTable"] call _fnTbl;
-private _tgtR = ["fza_sfmplus_tune_targetRollTable"]  call _fnTbl;
 
 //--- CONTROLS + TARGETS -----------------------------------------------------------------
 private _coll  = (_heli getVariable ["fza_sfmplus_collectiveOutput", 0]) * 100;
 private _cycFA =  _heli getVariable ["fza_sfmplus_cyclicFwdAft", 0];
 private _cycLR =  _heli getVariable ["fza_sfmplus_cyclicLeftRight", 0];
 private _ped   =  _heli getVariable ["fza_sfmplus_pedalLeftRight", 0];
-private _tgtC     = (["fza_sfmplus_tune_targetCollTable"]     call _fnTbl) * 100;
-private _tgtCycFA =  ["fza_sfmplus_tune_targetCycPitchTable"] call _fnTbl;
-private _tgtCycLR =  ["fza_sfmplus_tune_targetCycRollTable"]  call _fnTbl;
-private _tgtPed   =  ["fza_sfmplus_tune_targetPedalTable"]    call _fnTbl;
 
 _row = _row + format [",%1,%2,%3,%4,%5",
     [_spdKt, 1] call _f2, [_climb, 0] call _f2,
@@ -156,14 +152,13 @@ _row = _row + format [",%1,%2,%3",
     [_heli getVariable ["fza_ah64_forceTrimPosRoll",  0], 4] call _f2,
     [_heli getVariable ["fza_ah64_forceTrimPosYaw",   0], 4] call _f2];
 
-//--- FORCE SCALARS (what the master tuner is driving) -----------------------------------
 private _isBet = (fza_ah64_sfmPlusRotorModel == 1);
-private _sMain = [if (_isBet) then { "fza_sfmplus_tune_betMainLiftTable"   } else { "fza_sfmplus_tune_mainThrustTable"  }] call _fnTbl;
-private _sTail = [if (_isBet) then { "fza_sfmplus_tune_betTailLiftTable"   } else { "fza_sfmplus_tune_tailThrustTable"  }] call _fnTbl;
-private _sTorq = [if (_isBet) then { "fza_sfmplus_tune_betMainTorqueTable" } else { "fza_sfmplus_tune_rtrTqScalarTable" }] call _fnTbl;
-private _sStab = ["fza_sfmplus_tune_stabLiftScalarTable"] call _fnTbl;
-private _sFuse = ["fza_sfmplus_tune_fuseSideScalarTable"] call _fnTbl;
-private _sFin  = ["fza_sfmplus_tune_finLiftScalarTable"]  call _fnTbl;
+private _sMain = [if (_isBet) then { "fza_sfmplus_betMainLiftTable"   } else { "fza_sfmplus_mainThrustTable"  }] call _fnTbl;
+private _sTail = [if (_isBet) then { "fza_sfmplus_betTailLiftTable"   } else { "fza_sfmplus_tailThrustTable"  }] call _fnTbl;
+private _sTorq = [if (_isBet) then { "fza_sfmplus_betMainTorqueTable" } else { "fza_sfmplus_rtrTqTable" }] call _fnTbl;
+private _sStab = ["fza_sfmplus_stabLiftTable"] call _fnTbl;
+private _sFuse = ["fza_sfmplus_fuseSideTable"] call _fnTbl;
+private _sFin  = ["fza_sfmplus_finLiftTable"]  call _fnTbl;
 private _sTilt =  _heli getVariable ["fza_ah64_forceTrimPosRoll", 0.0];
 _row = _row + format [",%1,%2,%3,%4,%5,%6,%7",
     [_sMain, 4] call _f2, [_sTail, 4] call _f2, [_sTorq, 4] call _f2, [_sStab, 4] call _f2,

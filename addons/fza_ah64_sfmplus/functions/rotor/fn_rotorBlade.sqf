@@ -6,7 +6,6 @@ private _totalFlapMoment  = 0.0;
 private _totalPower       = (_heli getVariable "fza_sfmplus_rotorReactionTorque") select _rotorIndex;
 
 //BET FORCE-OUTPUT TUNING SCALARS (physics-derived forces, multiplied at the output so the master
-//tuner can trim BET). _bladeScale = the LIFT scalar (-> thrust), airspeed-banded, per rotor
 //(main uses betMainLiftTable, tail uses betTailLiftTable). A SEPARATE _torqueScale (-> reaction
 //couple, applied to _totalPower below) lets thrust and yaw tune independently. Both default 1.0
 //(pure physics). Tail also carries a betTailTrimTable additive term (airspeed trim/reversal),
@@ -14,12 +13,12 @@ private _totalPower       = (_heli getVariable "fza_sfmplus_rotorReactionTorque"
 //LIFT scalar only (thrust). The TORQUE scalar is applied to the reaction couple in fn_rotor.
 private _velBet   = vectorMagnitude [(_heli getVariable "fza_sfmplus_velModelSpace" select 0), (_heli getVariable "fza_sfmplus_velModelSpace" select 1)];
 private _isTail   = _rotorIndex == 1;
-private _liftTbl  = _heli getVariable [(if (_isTail) then { "fza_sfmplus_tune_betTailLiftTable" } else { "fza_sfmplus_tune_betMainLiftTable" }), []];
+private _liftTbl  = _heli getVariable [(if (_isTail) then { "fza_sfmplus_betTailLiftTable" } else { "fza_sfmplus_betMainLiftTable" }), []];
 private _bladeScale = if (_liftTbl isEqualTo []) then { 1.0 } else { [_liftTbl, _velBet] call fza_fnc_linearInterp select 1 };
 //Tail airspeed trim/reversal: additive to the tail LIFT scalar (the ~100kt tail-thrust reversal
 //the simple model dials in via tailTrimTable; BET had no equivalent). Only for the tail rotor.
 if (_isTail) then {
-    private _trimTbl = _heli getVariable ["fza_sfmplus_tune_betTailTrimTable", []];
+    private _trimTbl = [];
     if !(_trimTbl isEqualTo []) then { _bladeScale = _bladeScale + ([_trimTbl, _velBet] call fza_fnc_linearInterp select 1); };
 };
 

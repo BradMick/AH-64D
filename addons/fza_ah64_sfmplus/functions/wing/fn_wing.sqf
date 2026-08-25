@@ -209,7 +209,6 @@ for "_j" from 0 to (_numElements - 1) do {
 
     _heli addTorque (_heli vectorModelToWorld _moment);
 
-    //Tuner force readout: log the element's own _force and _moment verbatim.
     //Accumulates per surface name across the element loop.
     if (fza_sfmplus_forceLogOn && _forceLogName != "") then {
         [_heli, _forceLogName, _force, _moment] call fza_sfmplus_fnc_forceLog;

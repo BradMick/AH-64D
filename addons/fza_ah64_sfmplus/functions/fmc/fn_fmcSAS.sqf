@@ -1,19 +1,9 @@
 params ["_heli"];
 #include "\fza_ah64_sfmplus\headers\core.hpp"
 
-//Live-tunable gains (dialled from the tuner GUI, SCAS tab). Read + set[] each frame.
 private _pidSASPitch = _heli getVariable "fza_sfmplus_pid_sas_pitch";
-_pidSASPitch set ["kp", _heli getVariable "fza_sfmplus_tune_sasPitch_kp"];
-_pidSASPitch set ["ki", _heli getVariable "fza_sfmplus_tune_sasPitch_ki"];
-_pidSASPitch set ["kd", _heli getVariable "fza_sfmplus_tune_sasPitch_kd"];
 private _pidSASRoll  = _heli getVariable "fza_sfmplus_pid_sas_roll";
-_pidSASRoll set ["kp", _heli getVariable "fza_sfmplus_tune_sasRoll_kp"];
-_pidSASRoll set ["ki", _heli getVariable "fza_sfmplus_tune_sasRoll_ki"];
-_pidSASRoll set ["kd", _heli getVariable "fza_sfmplus_tune_sasRoll_kd"];
 private _pidSASYaw   = _heli getVariable "fza_sfmplus_pid_sas_yaw";
-_pidSASYaw set ["kp", _heli getVariable "fza_sfmplus_tune_sasYaw_kp"];
-_pidSASYaw set ["ki", _heli getVariable "fza_sfmplus_tune_sasYaw_ki"];
-_pidSASYaw set ["kd", _heli getVariable "fza_sfmplus_tune_sasYaw_kd"];
 
 ((_heli getVariable "fza_sfmplus_angVelModelSpace"))
     params [

@@ -4,13 +4,7 @@ params ["_heli"];
 private _deltaTime  = _heli getVariable "fza_sfmplus_deltaTime";
 private _gndSpeed   = (_heli getVariable "fza_sfmplus_gndSpeed") * KNOTS_TO_MPS;
 private _pidRadAlt  = _heli getVariable "fza_sfmplus_pid_radHold";
-_pidRadAlt set ["kp", _heli getVariable "fza_sfmplus_tune_rad_kp"];
-_pidRadAlt set ["ki", _heli getVariable "fza_sfmplus_tune_rad_ki"];
-_pidRadAlt set ["kd", _heli getVariable "fza_sfmplus_tune_rad_kd"];
 private _pidBarAlt  = _heli getVariable "fza_sfmplus_pid_barHold";
-_pidBarAlt set ["kp", _heli getVariable "fza_sfmplus_tune_bar_kp"];
-_pidBarAlt set ["ki", _heli getVariable "fza_sfmplus_tune_bar_ki"];
-_pidBarAlt set ["kd", _heli getVariable "fza_sfmplus_tune_bar_kd"];
 private _curAltAGL  = ASLToAGL getPosASL _heli # 2;
 private _subMode    = _heli getVariable "fza_ah64_altHoldSubMode";
 private _desiredAlt = _heli getVariable "fza_ah64_altHoldDesiredAlt";
@@ -23,7 +17,7 @@ private _output     = 0.0;
 
 //If the total torque exceeds 98%, de-activate altitude hold and don't allow its
 //activation until it it is below 98%
-if (_tq >= 0.98) then { 
+if (_tq >= 0.98) then {
     [_heli, "fza_ah64_altHoldActive", false] call fza_fnc_updateNetworkGlobal;
     [_pidRadAlt] call fza_fnc_pidReset;
     [_pidBarAlt] call fza_fnc_pidReset;

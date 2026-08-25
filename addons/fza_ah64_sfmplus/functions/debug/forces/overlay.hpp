@@ -2,7 +2,7 @@
     AH-64D Flight Model Tuner - non-blocking DATA OVERLAY (RscTitles / cutRsc).
 
     Display-only layer: renders on screen, player keeps FULL flight control.
-    Updated each frame by fza_sfmplus_fnc_tunerOverlay.
+    Updated each frame by fza_sfmplus_fnc_forceOverlay.
 
     The forces TABLE is a STATIC grid of cells (cutRsc layers cannot create
     controls at runtime, so every cell is defined here). IDC scheme for the grid:
@@ -47,16 +47,16 @@ class RscText;
 
 class RscTitles
 {
-    class fza_sfmplus_tunerOverlay
+    class fza_sfmplus_forceOverlay
     {
         idd          = 54300;
         movingEnable = 1;       // non-blocking: player retains flight inputs
         duration     = 1e11;
         fadein       = 0;
         fadeout      = 0;
-        name         = "fza_sfmplus_tunerOverlay";
-        onLoad       = "uiNamespace setVariable ['fza_sfmplus_tunerOverlay', _this select 0];";
-        onUnload     = "uiNamespace setVariable ['fza_sfmplus_tunerOverlay', displayNull];";
+        name         = "fza_sfmplus_forceOverlay";
+        onLoad       = "uiNamespace setVariable ['fza_sfmplus_forceOverlay', _this select 0];";
+        onUnload     = "uiNamespace setVariable ['fza_sfmplus_forceOverlay', displayNull];";
 
         class controls
         {

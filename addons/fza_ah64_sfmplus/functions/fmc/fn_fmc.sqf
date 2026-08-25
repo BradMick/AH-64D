@@ -74,8 +74,6 @@ _heli setVariable ["fza_sfmplus_fmcCollectiveToPitch",         0.0];//_collToPit
 _heli setVariable ["fza_sfmplus_fmcYawToPitch",                0.0];//_yawToPitchOut];
 _heli setVariable ["fza_sfmplus_fmcCollectiveToRoll",          0.0];//_collToRollOut];
 _heli setVariable ["fza_sfmplus_fmcYawToRoll",                 0.0];//_yawToRollOut];
-_heli setVariable ["fza_sfmplus_fmcCollectiveToYaw",           0.0];//_collToYawOut];
-_heli setVariable ["fza_sfmplus_fmcCollectiveAirspeedToYaw",   0.0];//_collAirspeedToYawOut];
 //Flight Management Computer (FMC) outputs
 _heli setVariable ["fza_sfmplus_fmcAttHoldCycPitchOut",        _attHoldCycPitchOut];
 _heli setVariable ["fza_sfmplus_fmcAttHoldCycRollOut",         _attHoldCycRollOut];

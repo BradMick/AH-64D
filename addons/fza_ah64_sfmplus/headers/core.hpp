@@ -289,7 +289,10 @@
 //             0.35 = a full pedal sweep takes ~3s, an unhurried but purposeful correction.
 //  TAU      - first-order lag time constant (s). Rolls off the high-frequency content the PID
 //             produces from a noisy lateral-g signal. Larger = smoother/lazier feet.
-#define AUTOPEDAL_AERO_DEADBAND_G     0.010
+//DEADBAND 0.010 -> 0.004. The loop stops correcting inside the deadband, so it sets the floor on
+//how well the ball can be centred - at 0.010 g a visible offset was left standing. 0.004 is below
+//the ball's own resolution but still above the frame-to-frame noise floor.
+#define AUTOPEDAL_AERO_DEADBAND_G     0.004
 #define AUTOPEDAL_NTT_DEADBAND_DEG    0.750
 #define AUTOPEDAL_PEDAL_RATE          0.350
 #define AUTOPEDAL_PEDAL_TAU           0.450

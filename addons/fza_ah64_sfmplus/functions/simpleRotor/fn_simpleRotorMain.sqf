@@ -111,49 +111,41 @@ private _velocityThrustExponentTable =
 
 private _vrsScalarExponent      = 0.3;
 //Main rotor yaw-torque scalar vs airspeed. This source array is the single source
-//of truth for the default: publish it into the live tuner var when unset so
-//editing it here + reloading takes effect (tuner/balancer read & write this var).
-private _rtrTorqueScalarTable = _heli getVariable ["fza_sfmplus_tune_rtrTqScalarTable", []];
-if (_rtrTorqueScalarTable isEqualTo []) then {
-    _rtrTorqueScalarTable =
-    [
-     [ 0.00, 0.60962]   // fixed hover-tuned reference, carried across all bands
-    ,[10.29, 0.60962]
-    ,[20.58, 0.60962]
-    ,[36.01, 0.60962]
-    ,[46.30, 0.60962]
-    ,[51.44, 0.60962]
-    ,[61.73, 0.60962]
-    ,[66.88, 0.60962]
-    ,[72.02, 0.60962]
-    ];
-    _heli setVariable ["fza_sfmplus_tune_rtrTqScalarTable", _rtrTorqueScalarTable];
-};
+private _rtrTorqueScalarTable =
+[
+ [ 0.00, 1.00]   // fixed hover-tuned reference, carried across all bands
+,[10.29, 1.00]
+,[20.58, 1.00]
+,[36.01, 1.00]
+,[46.30, 1.00]
+,[51.44, 1.00]
+,[61.73, 1.00]
+,[66.88, 1.00]
+,[72.02, 1.00]
+];
+//Published for the force overlay/dump readout only - the array above is the source of truth.
+_heli setVariable ["fza_sfmplus_rtrTqTable", _rtrTorqueScalarTable];
 //Main-rotor thrust scalar vs airspeed (distinct from the TAIL authority table).
 //This source array is the single source of truth for the default: publish it into
-//the live tuner var when unset, so editing it here + reloading takes effect (the
-//tuner/balancer then read and write this same var).
-private _rtrThrustScalarTable = _heli getVariable ["fza_sfmplus_tune_mainThrustTable", []];
-if (_rtrThrustScalarTable isEqualTo []) then {
-    _rtrThrustScalarTable =
-    [
-     [ 0.00, 1.164]   // 0-90 kt tuned; 100-140 extrapolated from that trend
-    ,[10.29, 1.059]
-    ,[20.58, 0.953]
-    ,[36.01, 0.848]
-    ,[46.30, 0.889]
-    ,[51.44, 0.890]
-    ,[61.73, 0.947]
-    ,[66.88, 0.990]
-    ,[72.02, 1.043]
-    ];
-    _heli setVariable ["fza_sfmplus_tune_mainThrustTable", _rtrThrustScalarTable];
-};
+private _rtrThrustScalarTable =
+[
+ [ 0.00, 1.164]   // 0-90 kt tuned; 100-140 extrapolated from that trend
+,[10.29, 1.059]
+,[20.58, 0.953]
+,[36.01, 0.848]
+,[46.30, 0.889]
+,[51.44, 0.890]
+,[61.73, 0.947]
+,[66.88, 0.990]
+,[72.02, 1.043]
+];
+//Published for the force overlay/dump readout only - the array above is the source of truth.
+_heli setVariable ["fza_sfmplus_mainThrustTable", _rtrThrustScalarTable];
 
 private _isOnGnd                = [_heli] call fza_sfmplus_fnc_onGround;
 
-private _pitchTorqueScalar      = _heli getVariable ["fza_sfmplus_tune_pitchTqScalar", 2.50 * 1.3];
-private _rollTorqueScalar       = _heli getVariable ["fza_sfmplus_tune_rollTqScalar", 0.75 * 1.3];
+private _pitchTorqueScalar      = 2.50 * 1.3;
+private _rollTorqueScalar       = 0.75 * 1.3;
 
 private _baseThrust             = 102306;  //N - max gross weight (kg) * gravity (9.806 m/s)
 
@@ -300,7 +292,7 @@ private _heightAGL     = _rtrHeightAGL  + (ASLToAGL getPosASL _heli # 2);
 private _rtrDiam       = _bladeRadius * 2;
 
 private _rtrGndEffScalar = ([_rtrGndEffTable, _heli getVariable "fza_sfmplus_GWT"] call fza_fnc_linearInterp) select 1;
-_rtrGndEffScalar         = _rtrGndEffScalar * (_heli getVariable ["fza_sfmplus_tune_gndEffScalar", 1.0]);
+_rtrGndEffScalar         = _rtrGndEffScalar * (1.0);
 private _gndEffScalar  = (1 - (_heightAGL / _rtrDiam)) * _rtrGndEffScalar;
 _gndEffScalar          = [_gndEffScalar, 0.0, 1.0] call BIS_fnc_clamp;
 private _gndEffThrust  = _rtrThrust * _gndEffScalar;
@@ -360,8 +352,8 @@ if ([_totThrust] call fza_sfmplus_fnc_isNAN || [_totThrust] call fza_sfmplus_fnc
 //5 ft, OGE at 80 ft) so ground effect gets its own tuned thrust at each height.
 private _rtrThrustScalar = [_rtrThrustScalarTable, _velXY] call fza_fnc_linearInterp select 1;
 if (_velXY < 2.6) then {   // < ~5 kt = hover
-    private _igeThr = _heli getVariable ["fza_sfmplus_tune_igeThrust", 1.0];
-    private _ogeThr = _heli getVariable ["fza_sfmplus_tune_ogeThrust", 1.0];
+    private _igeThr = 1.0;
+    private _ogeThr = 1.0;
     private _aglFt  = (ASLToAGL getPosASL _heli # 2) * 3.28084;
     //Linear blend: 5 ft -> IGE value, 80 ft -> OGE value, clamped outside.
     private _f      = [(_aglFt - 5.0) / 75.0, 0.0, 1.0] call BIS_fnc_clamp;
@@ -410,20 +402,10 @@ if (currentPilot _heli == player) then {
     private _mainRtrDamage = _heli getHitPointDamage "HitHRotor";
 
     if (_mainRtrDamage < 0.99) then {
-        //AERODYNAMIC DISC FLAPBACK (approximates the rotor H-force coupling BET has and this
-        //model lacked - the reason the SIMPLE model crabbed the WRONG way, see the crab memory).
-        //In forward flight dissymmetry of lift tilts the disc: via 90deg gyroscopic precession a
-        //rolling forcing (advancing-blade extra lift) becomes a LONGITUDINAL flap-back (nose-up),
-        //plus a LATERAL disc tilt. Approximated from ADVANCE RATIO mu = V_fwd / tip speed. Adding
-        //this speed-dependent tilt to the thrust vector gives the disc a lateral in-plane hub
-        //force independent of pilot roll -> lateral imbalance now forces a CRAB (like BET) instead
-        //of a bank. kFlapLon/kFlapLat are tuning constants: dial to the real crab-vs-speed curve
-        //(~0 crab at 20-40kt, ~2.5-3deg by 90kt). Tilt angles are in DEGREES (same as the *6.0
-        //cyclic terms). SIGN of the LATERAL term is the trap - VERIFY in-sim (a wrong lateral sign
         //flips the crab direction); flapback (longitudinal, nose-up) is the well-understood one.
         private _advanceRatio = if (_bladeTipVel > 1.0) then { _velY / _bladeTipVel } else { 0.0 };
-        private _kFlapLon     = _heli getVariable ["fza_sfmplus_tune_flapbackLon",  0.0];  // deg per unit mu, nose-up flapback
-        private _kFlapLat     = _heli getVariable ["fza_sfmplus_tune_flapbackLat", 10.0];  // deg per unit mu, lateral tilt (sign TBD in-sim)
+        private _kFlapLon     = 0.0;  // deg per unit mu, nose-up flapback
+        private _kFlapLat     = 10.0;  // deg per unit mu, lateral tilt (sign TBD in-sim)
         private _flapLon      = _kFlapLon * _advanceRatio;
         private _flapLat      = _kFlapLat * _advanceRatio;
 
@@ -435,24 +417,24 @@ if (currentPilot _heli == player) then {
         #endif
 
         if ([vectorMagnitude _thrustVector] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _thrustVector] call fza_sfmplus_fnc_isINF) then { _thrustVector = [0.0, 0.0, 0.0]; };
-        if ([vectorMagnitude _moment] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _moment] call fza_sfmplus_fnc_isINF) then { _moment = [0.0, 0.0, 0.0]; };
 
         //Main rotor torque
         private _moment = [0.0, 0.0, 0.0];
         if (fza_ah64_sfmplusRealismSetting == REALISTIC) then {
             //Main rotor thrust
             _heli addForce  [_heli vectorModelToWorld _thrustVector, _rtrPos];
-            //Main rotor torque
-            private _moment = [_momentX, _momentY, _momentZ];
+            //Main rotor torque. NO `private` here - it would shadow the outer _moment, so the
+            _moment = [_momentX, _momentY, _momentZ];
+            if ([vectorMagnitude _moment] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _moment] call fza_sfmplus_fnc_isINF) then { _moment = [0.0, 0.0, 0.0]; };
             _heli addTorque (_heli vectorModelToWorld _moment);
         } else {
             //Main rotor thrust
             _heli addForce  [_heli vectorModelToWorld _thrustVector, _heliCom];
-            //Main rotor to
+            //Main rotor torque - yaw deliberately zeroed in casual (no torque reaction to fight).
             _moment = [_momentX, _momentY, 0.0];
+            if ([vectorMagnitude _moment] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _moment] call fza_sfmplus_fnc_isINF) then { _moment = [0.0, 0.0, 0.0]; };
             _heli addTorque (_heli vectorModelToWorld _moment);
         };
-        //Tuner force readout: log the exact locals the component computed and
         //prints - _thrustZ and _moment - verbatim.
         if (fza_sfmplus_forceLogOn) then {
             [_heli, "Main Rotor", _thrustVector, _moment] call fza_sfmplus_fnc_forceLog;
@@ -462,7 +444,6 @@ if (currentPilot _heli == player) then {
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Rotor Effects        /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
-/*
 if (cameraView == "INTERNAL") then {
     //Camera shake effect for ETL (16 to 24 knots)
     if (_velXYNoWind > 8.23 && _velXYNoWind < 12.35 && !_isOnGnd) then {
@@ -587,7 +568,7 @@ if (cameraView == "INTERNAL") then {
         setCustomSoundController[_heli, "CustomSoundController4", 0.0];
     };
 };
-*/
+
 #ifdef __A3_DEBUG__
 [_heli, _rtrPos, _rtrPos vectorAdd _axisX,        "red"]   call fza_fnc_debugDrawLine;
 [_heli, _rtrPos, _rtrPos vectorAdd _axisY,        "green"] call fza_fnc_debugDrawLine;

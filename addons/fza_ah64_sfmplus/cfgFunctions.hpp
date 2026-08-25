@@ -48,28 +48,9 @@ class CfgFunctions
             class damageApply {R;};
         };
         class debug {
-            file = "\fza_ah64_sfmplus\functions\debug\tuner";
-            class tunerVariables {R;};
-            class tunerApply {R;};
-            class tunerSetValue {R;};
-            class tunerLoad {R;};
-            class tunerSave {R;};
-            class tunerExport {R;};
-            class tunerGui {R;};
-            class tunerBuildRows {R;};
-            class tunerInterpolate {R;};
-            class tunerBalance {R;};
-            class tunerTargets {R;};
-            class tunerMaster {R;};
-            class tunerPidAuto {R;};
-            class tunerStepTune {R;};
-            class tunerHoldAuto {R;};
-            class tunerPedalAuto {R;};
+            file = "\fza_ah64_sfmplus\functions\debug\forces";
             class forceDumpLog {R;};
-            class holdChainLog {R;};
-            class tunerYawDamper {R;};
-            class tunerForceTables {R;};
-            class tunerOverlay {R;};
+            class forceOverlay {R;};
             class forceLog {R;};
             class forceLogReset {R;};
         };
@@ -84,7 +65,6 @@ class CfgFunctions
         class environment {
             file = "\fza_ah64_sfmplus\functions\environment";
             class environment {R;};
-            class environmentVariables {R;};
         };
         class fmc  {
             file = "\fza_ah64_sfmplus\functions\fmc";
@@ -162,7 +142,6 @@ class CfgFunctions
         class simpleRotor {
             file = "\fza_ah64_sfmplus\functions\simpleRotor";
             class simpleRotorMain {R;};
-            class simpleRotorNewtRaphSolver {R;};
             class simpleRotorTail {R;};
             class simpleRotorVariables {R;};
         };

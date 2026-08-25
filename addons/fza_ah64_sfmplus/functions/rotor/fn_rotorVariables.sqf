@@ -59,15 +59,13 @@ _heli setVariable ["fza_sfmplus_rotorNetForce",       [[0,0,0], [0,0,0]]];
 // snap-back (the rotor over-damps and fights the return to center). Tunable live.
 _heli setVariable ["fza_sfmplus_rotorRateDampScalar", 0.1];
 // BET FORCE-OUTPUT TUNING SCALARS (per airspeed band). BET forces are physics-derived; these
-// multiply the OUTPUT so the master tuner can trim BET the way it trims the simple model's
 // tables. 1.0 = pure physics. LIFT scalar -> thrust; TORQUE scalar -> the reaction couple (yaw),
 // SPLIT so thrust and yaw tune independently. Applied in fn_rotorBlade (lift) / fn_rotor (torque).
-// Bands match the master tuner's _bands. Main rotor + tail rotor each get their own.
 private _betBands = [0.00, 10.29, 20.58, 36.01, 46.30, 51.44, 61.73, 66.88, 72.02];
-_heli setVariable ["fza_sfmplus_tune_betMainLiftTable",   _betBands apply {[_x, 1.0]}];  // main thrust
-_heli setVariable ["fza_sfmplus_tune_betMainTorqueTable", _betBands apply {[_x, 1.0]}];  // main yaw torque
-_heli setVariable ["fza_sfmplus_tune_betTailLiftTable",   _betBands apply {[_x, 1.0]}];  // tail thrust
-_heli setVariable ["fza_sfmplus_tune_betTailTrimTable",   _betBands apply {[_x, 0.0]}];  // tail airspeed trim/reversal (added to tail thrust scalar)
+_heli setVariable ["fza_sfmplus_betMainLiftTable",   _betBands apply {[_x, 1.0]}];  // main thrust
+_heli setVariable ["fza_sfmplus_betMainTorqueTable", _betBands apply {[_x, 1.0]}];  // main yaw torque
+_heli setVariable ["fza_sfmplus_betTailLiftTable",   _betBands apply {[_x, 1.0]}];  // tail thrust
+_heli setVariable ["fza_sfmplus_betTailTrimTable",   _betBands apply {[_x, 0.0]}];  // tail airspeed trim/reversal (added to tail thrust scalar)
 // Fixed-frame flap coefficients (degrees) — updated each frame from decomposed blade moments
 _heli setVariable ["fza_sfmplus_rotorBeta0",       [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]]; // collective coning
 _heli setVariable ["fza_sfmplus_rotorA1",          [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]]; // longitudinal disc tilt

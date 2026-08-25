@@ -1,9 +1,9 @@
 /* ----------------------------------------------------------------------------
-Function: fza_sfmplus_fnc_tunerOverlay
+Function: fza_sfmplus_fnc_forceOverlay
 
 Description:
     Toggles and drives the non-blocking data overlay (RscTitles
-    fza_sfmplus_tunerOverlay). Unlike the main tuner dialog, this lets you FLY
+    fza_sfmplus_forceOverlay). Unlike the main tuner dialog, this lets you FLY
     while watching the live balancer / master-tuner output. Call with no / "toggle"
     to flip it; it installs a per-frame handler that refreshes the text lines from
     the same variables the tuner GUI reads.
@@ -19,29 +19,28 @@ Author:
 ---------------------------------------------------------------------------- */
 params [["_mode", "toggle"]];
 
-private _open = !(isNull (uiNamespace getVariable ["fza_sfmplus_tunerOverlay", displayNull]));
+private _open = !(isNull (uiNamespace getVariable ["fza_sfmplus_forceOverlay", displayNull]));
 private _want = switch (_mode) do { case "on": {true}; case "off": {false}; default { !_open } };
 
 if (!_want) exitWith {
     //Close: remove the layer and the PFH, and stop the force log (the master
-    //auto-tuner re-enables it itself while it is nulling yaw, so this only turns
     //off the overlay-driven logging).
-    "fza_sfmplus_tunerOverlay" cutText ["", "PLAIN"];
+    "fza_sfmplus_forceOverlay" cutText ["", "PLAIN"];
     fza_sfmplus_forceLogOn = false;
-    private _p = uiNamespace getVariable ["fza_sfmplus_tunerOverlayPfh", -1];
-    if (_p >= 0) then { [_p] call CBA_fnc_removePerFrameHandler; uiNamespace setVariable ["fza_sfmplus_tunerOverlayPfh", -1]; };
+    private _p = uiNamespace getVariable ["fza_sfmplus_forceOverlayPfh", -1];
+    if (_p >= 0) then { [_p] call CBA_fnc_removePerFrameHandler; uiNamespace setVariable ["fza_sfmplus_forceOverlayPfh", -1]; };
 };
 
 //Open the overlay layer.
-"fza_sfmplus_tunerOverlay" cutRsc ["fza_sfmplus_tunerOverlay", "PLAIN", 0, false];
+"fza_sfmplus_forceOverlay" cutRsc ["fza_sfmplus_forceOverlay", "PLAIN", 0, false];
 
 //Guard against stacking a second refresh PFH if already open.
-private _existing = uiNamespace getVariable ["fza_sfmplus_tunerOverlayPfh", -1];
+private _existing = uiNamespace getVariable ["fza_sfmplus_forceOverlayPfh", -1];
 if (_existing >= 0) exitWith {};
 
 //Refresh loop.
 private _pfh = [{
-    private _disp = uiNamespace getVariable ["fza_sfmplus_tunerOverlay", displayNull];
+    private _disp = uiNamespace getVariable ["fza_sfmplus_forceOverlay", displayNull];
     if (isNull _disp) exitWith {};
     private _heli = vehicle player;
     if (isNull _heli) exitWith {};
@@ -51,17 +50,16 @@ private _pfh = [{
     private _spdKt = round (_spd * 1.94384);
 
     //Targets are read at the COMMANDED speed (masterTargetKt), NOT the live
-    //speed. The whole point of the tuner is to tune to known table data at a
     //fixed commanded speed; interpolating against a drifting live speed makes
     //the targets move and the system never settles. Falls back to live speed
     //only when no speed is commanded (masterTargetKt == 0 => auto).
-    private _tgtKt     = _heli getVariable ["fza_sfmplus_tune_masterTargetKt", 0];
+    private _tgtKt     = 0;
     private _lookupSpd = if (_tgtKt >= 5.0) then { _tgtKt / 1.94384 } else { _spd };
 
     //Attitude vs target (pinned to commanded speed).
     (_heli call BIS_fnc_getPitchBank) params ["_curP", "_curR"];
-    private _tgtP = [_heli getVariable ["fza_sfmplus_tune_targetPitchTable", [[0,0]]], _lookupSpd] call fza_fnc_linearInterp select 1;
-    private _tgtR = [_heli getVariable ["fza_sfmplus_tune_targetRollTable",  [[0,0]]], _lookupSpd] call fza_fnc_linearInterp select 1;
+    private _tgtP = [[[0,0]], _lookupSpd] call fza_fnc_linearInterp select 1;
+    private _tgtR = [[[0,0]], _lookupSpd] call fza_fnc_linearInterp select 1;
 
     //Controls.
     private _coll  = (_heli getVariable ["fza_sfmplus_collectiveOutput", 0.0]) * 100;
@@ -73,20 +71,20 @@ private _pfh = [{
     //Target control positions. At a hover (explicit IGE/OGE mode) show the dedicated
     //hover targets; otherwise the airspeed-banded flight-test positions.
     private _hovMode = "";
-    if (_heli getVariable ["fza_sfmplus_tune_hoverIGE", false]) then { _hovMode = "IGE"; }
-    else { if (_heli getVariable ["fza_sfmplus_tune_hoverOGE", false]) then { _hovMode = "OGE"; }; };
+    if (false) then { _hovMode = "IGE"; }
+    else { if (false) then { _hovMode = "OGE"; }; };
     private _tgtC = 0.0; private _tgtCycFA = 0.0; private _tgtCycLR = 0.0; private _tgtPed = 0.0;
     if (_hovMode != "") then {
-        private _pfx = if (_hovMode == "IGE") then { "fza_sfmplus_tune_ige" } else { "fza_sfmplus_tune_oge" };
+        private _pfx = if (_hovMode == "IGE") then { "fza_sfmplus_ige" } else { "fza_sfmplus_oge" };
         _tgtC     = (_heli getVariable [_pfx + "Coll",     0.637]) * 100;
         _tgtCycFA =  _heli getVariable [_pfx + "CycPitch",-0.342];
         _tgtCycLR =  _heli getVariable [_pfx + "CycRoll",  -0.045];
         _tgtPed   =  _heli getVariable [_pfx + "Pedal",    -0.352];
     } else {
-        _tgtC     = ([_heli getVariable ["fza_sfmplus_tune_targetCollTable",     [[0,0]]], _lookupSpd] call fza_fnc_linearInterp select 1) * 100;
-        _tgtCycFA =  [_heli getVariable ["fza_sfmplus_tune_targetCycPitchTable", [[0,0]]], _lookupSpd] call fza_fnc_linearInterp select 1;
-        _tgtCycLR =  [_heli getVariable ["fza_sfmplus_tune_targetCycRollTable",  [[0,0]]], _lookupSpd] call fza_fnc_linearInterp select 1;
-        _tgtPed   =  [_heli getVariable ["fza_sfmplus_tune_targetPedalTable",    [[0,0]]], _lookupSpd] call fza_fnc_linearInterp select 1;
+        _tgtC     = ([[[0,0]], _lookupSpd] call fza_fnc_linearInterp select 1) * 100;
+        _tgtCycFA =  [[[0,0]], _lookupSpd] call fza_fnc_linearInterp select 1;
+        _tgtCycLR =  [[[0,0]], _lookupSpd] call fza_fnc_linearInterp select 1;
+        _tgtPed   =  [[[0,0]], _lookupSpd] call fza_fnc_linearInterp select 1;
     };
     private _climb = _heli getVariable ["fza_sfmplus_velClimb", 0.0];
 
@@ -113,7 +111,6 @@ private _pfh = [{
     //(it is otherwise only enabled on the Forces tab).
     fza_sfmplus_forceLogOn = true;
 
-    private _mAxis = _heli getVariable ["fza_sfmplus_master_axis", "off"];
 
     //Summary lines.
     (_disp displayCtrl 54311) ctrlSetText format ["Speed %1 kt   climb %2 fpm   yawRate %3 deg/s   yawAccel %4 deg/s2", _spdKt, round _climb, _yawRate toFixed 2, _yawAccelS toFixed 2];
@@ -141,31 +138,19 @@ private _pfh = [{
     };
     (_disp displayCtrl 54314) ctrlSetText format ["Cyc fwd+ %1 (tgt %2)  left+ %3 (tgt %4)  Ped rgt+ %5 (tgt %6)%7",
         _cycFA toFixed 2, _tgtCycFA toFixed 2, _cycLR toFixed 2, _tgtCycLR toFixed 2, _ped toFixed 2, _tgtPed toFixed 2, _apStr];
-    //Line 54315: shows the PID AUTO-TUNE per-axis status (SAS or HOLD tuner) WHEN a tuner is
-    //running - the important thing to watch while flying - else the MASTER axis. The status var
-    //is shared by both tuners; it packs all axes + each axis's settle state (n/N or SETTLED).
-    private _pidStat  = _heli getVariable ["fza_sfmplus_pidAuto_status", "PID auto-tune idle"];
-    private _pidOn    = (_heli getVariable ["fza_sfmplus_tune_pidAutoOn",   false])
-                     || (_heli getVariable ["fza_sfmplus_tune_holdAutoOn",  false])
-                     || (_heli getVariable ["fza_sfmplus_tune_pedalAutoOn", false]);
-    (_disp displayCtrl 54315) ctrlSetText (if (_pidOn) then { _pidStat } else { format ["MASTER: %1", _mAxis] });
-
-    //The FORCE SCALARS the master is actually tuning, at the current speed. These
-    //are the outputs of the tuner - what it's modifying on the four main force
-    //generators. Read at the commanded speed so they match the band being tuned.
+    //Per-band force scalars at the current speed.
     private _fnScalar = {
         params ["_var"];
         private _t = _heli getVariable [_var, []];
         if (_t isEqualTo []) then { 1.0 } else { [_t, _lookupSpd] call fza_fnc_linearInterp select 1 }
     };
-    //Model-aware: in BET mode the tuner drives the bet* output scalars, not the simple tables.
     private _isBet = (fza_ah64_sfmPlusRotorModel == 1);
-    private _sMain = [if (_isBet) then { "fza_sfmplus_tune_betMainLiftTable"   } else { "fza_sfmplus_tune_mainThrustTable"  }] call _fnScalar;   // main rotor thrust
-    private _sTail = [if (_isBet) then { "fza_sfmplus_tune_betTailLiftTable"   } else { "fza_sfmplus_tune_tailThrustTable"  }] call _fnScalar;   // tail rotor thrust
-    private _sTorq = [if (_isBet) then { "fza_sfmplus_tune_betMainTorqueTable" } else { "fza_sfmplus_tune_rtrTqScalarTable" }] call _fnScalar;   // main rotor torque
-    private _sStab = ["fza_sfmplus_tune_stabLiftScalarTable"] call _fnScalar;// stabilator lift
-    private _sFuse = ["fza_sfmplus_tune_fuseSideScalarTable"] call _fnScalar; // fuselage side-force (manual)
-    private _sFin  = ["fza_sfmplus_tune_finLiftScalarTable"]  call _fnScalar; // vertical fin lift (manual)
+    private _sMain = [if (_isBet) then { "fza_sfmplus_betMainLiftTable"   } else { "fza_sfmplus_mainThrustTable"  }] call _fnScalar;   // main rotor thrust
+    private _sTail = [if (_isBet) then { "fza_sfmplus_betTailLiftTable"   } else { "fza_sfmplus_tailThrustTable"  }] call _fnScalar;   // tail rotor thrust
+    private _sTorq = [if (_isBet) then { "fza_sfmplus_betMainTorqueTable" } else { "fza_sfmplus_rtrTqTable" }] call _fnScalar;   // main rotor torque
+    private _sStab = ["fza_sfmplus_stabLiftTable"] call _fnScalar;// stabilator lift
+    private _sFuse = ["fza_sfmplus_fuseSideTable"] call _fnScalar; // fuselage side-force (manual)
+    private _sFin  = ["fza_sfmplus_finLiftTable"]  call _fnScalar; // vertical fin lift (manual)
     //LIVE rotor disk roll-tilt: disk tilt is now a pilot-input effect, driven by the
     //cyclic ROLL trim (forceTrimPosRoll) that tilts the thrust vector. Show that live
     //value (+ = disk tilted right) rather than the retired base-tilt table.
@@ -221,16 +206,15 @@ private _pfh = [{
     //Row 0 = header, rows 1..9 = the 9 airspeed bands. Col 0 = band (kt), cols 1..6
     //= mainThr tailThr torque stabLift fuseSide fin - each table's value at that
     //band. Highlights the band nearest the current speed so you can see what's live.
-    //Model-aware: BET mode shows the bet* output-scalar tables the tuner actually drives; the
     //shared aero (stab/fuse/fin) are the same for both models.
     private _sclTables = [
-        if (_isBet) then { "fza_sfmplus_tune_betMainLiftTable"   } else { "fza_sfmplus_tune_mainThrustTable"  },
-        if (_isBet) then { "fza_sfmplus_tune_betTailLiftTable"   } else { "fza_sfmplus_tune_tailThrustTable"  },
-        if (_isBet) then { "fza_sfmplus_tune_betTailTrimTable"   } else { "fza_sfmplus_tune_tailTrimTable"    },
-        if (_isBet) then { "fza_sfmplus_tune_betMainTorqueTable" } else { "fza_sfmplus_tune_rtrTqScalarTable" },
-        "fza_sfmplus_tune_stabLiftScalarTable",
-        "fza_sfmplus_tune_fuseSideScalarTable",
-        "fza_sfmplus_tune_finLiftScalarTable"
+        if (_isBet) then { "fza_sfmplus_betMainLiftTable"   } else { "fza_sfmplus_mainThrustTable"  },
+        if (_isBet) then { "fza_sfmplus_betTailLiftTable"   } else { "fza_sfmplus_tailThrustTable"  },
+        if (_isBet) then { "fza_sfmplus_betTailTrimTable"   } else { "fza_sfmplus_tailTrimTable"    },
+        if (_isBet) then { "fza_sfmplus_betMainTorqueTable" } else { "fza_sfmplus_rtrTqTable" },
+        "fza_sfmplus_stabLiftTable",
+        "fza_sfmplus_fuseSideTable",
+        "fza_sfmplus_finLiftTable"
     ];
     private _sclHdrs  = ["mainThr","tailThr","tailTrim","torque","stabLift","fuseSide","fin"];
     private _sclBands = [0.00, 10.29, 20.58, 36.01, 46.30, 51.44, 61.73, 66.88, 72.02];
@@ -305,4 +289,4 @@ private _pfh = [{
         ((_bt # 2) / 9.806) toFixed 3, _bg toFixed 3];
 
 }, 0.2] call CBA_fnc_addPerFrameHandler;
-uiNamespace setVariable ["fza_sfmplus_tunerOverlayPfh", _pfh];
+uiNamespace setVariable ["fza_sfmplus_forceOverlayPfh", _pfh];

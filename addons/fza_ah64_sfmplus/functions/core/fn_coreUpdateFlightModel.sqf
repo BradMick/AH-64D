@@ -4,16 +4,8 @@ params ["_heli"];
 
 if (isGamePaused || CBA_missionTime < 0.1) exitWith {};
 
-//Reset the tuner force/moment log at the top of the frame (no-op unless the
-//Forces readout is enabled) so it captures exactly this frame's contributions.
-//forceLogReset PUBLISHES the previous frame's completed accumulation first, so the
-//published snapshot is whole and stable at this point in the frame.
-[_heli] call fza_sfmplus_fnc_forceLogReset;
 
-//CSV dump of every force generator + the full live-tuner state to the .rpt, for analysing a
-//divergence frame by frame after the fact. Reads the snapshot forceLogReset just published, so
-//it must run HERE - immediately after it, before the generators start overwriting the live log.
-//No-op unless fza_sfmplus_tune_forceDumpOn is set.
+[_heli] call fza_sfmplus_fnc_forceLogReset;
 [_heli] call fza_sfmplus_fnc_forceDumpLog;
 
 if (fza_ah64_sfmPlusRotorModel == 1) then {
@@ -76,6 +68,7 @@ if (fza_ah64_sfmPlusRotorModel == 1) then {
  ]
  ,false
  ,"Left Wing" ] call fza_sfmplus_fnc_wing;
+
 //Vertical fin
 [ _heli
  ,[0.0, -7.45, -0.75]   //pos
@@ -86,18 +79,18 @@ if (fza_ah64_sfmPlusRotorModel == 1) then {
  ,1.4                   //sweep
  ,0.0                   //twist
  ,1.0                   //tipWidthScalar
- ,(_heli getVariable ["fza_sfmplus_tune_finLiftScalarTable",
- [
-  [ 0.00, 2.1]   // master-tuned: flat 2.1 across all bands
- ,[10.29, 2.1]
- ,[20.58, 2.1]
- ,[36.01, 2.1]
- ,[46.30, 2.1]
- ,[51.44, 2.1]
- ,[61.73, 2.1]
- ,[66.88, 2.1]
- ,[72.02, 2.1]
- ]])
+ ,
+[
+  [ 0.00, 1.000]
+ ,[10.29, 1.000]
+ ,[20.58, 1.000]
+ ,[36.01, 1.000]
+ ,[46.30, 1.000]
+ ,[51.44, 1.000]
+ ,[61.73, 1.000]
+ ,[66.88, 1.000]
+ ,[72.02, 1.000]
+ ]
  ,false
  ,"Vertical Fin" ] call fza_sfmplus_fnc_wing;
 
@@ -111,32 +104,18 @@ if (fza_ah64_sfmPlusRotorModel == 1) then {
  ,0.0
  ,0.0
  ,1.0
- ,(_heli getVariable ["fza_sfmplus_tune_stabLiftScalarTable",
- [
-  [ 0.00, 1.000]   // 0-90 kt tuned; 100-140 extrapolated (stab download ramps with speed)
- ,[10.29, 1.074]
- ,[20.58, 1.148]
- ,[36.01, 1.222]
- ,[46.30, 1.296]
- ,[51.44, 1.317]
- ,[61.73, 1.368]
- ,[66.88, 1.392]
- ,[72.02, 1.415]
- ]])
+ ,
+[
+  [ 0.00, 1.000]
+ ,[10.29, 1.000]
+ ,[20.58, 1.000]
+ ,[36.01, 1.000]
+ ,[46.30, 1.000]
+ ,[51.44, 1.000]
+ ,[61.73, 1.000]
+ ,[66.88, 1.000]
+ ,[72.02, 1.000]
+ ]
  ,true
  ,"Stabilator"
  ] call fza_sfmplus_fnc_wing;
-
-//Force-balance trim - applied last so it adjusts the net of every generator.
-[_heli] call fza_sfmplus_fnc_tunerBalance;
-
-//Optional yaw-rate damper (Balance-panel toggle) - applies an opposing yaw torque
-//to decay a standing precession, and logs it as its own "Yaw Damper" generator.
-[_heli] call fza_sfmplus_fnc_tunerYawDamper;
-
-//NOTE on frame order (not currently acted on, recorded because it is real):
-//XEH_preInit runs fza_sfmplus_fnc_coreUpdate BEFORE fza_sfmplus_fnc_coreUpdateFlightModel, and
-//getAccelerations is called from coreUpdate. So the accelerometer sums the force accumulator one
-//frame late - it reads what the generators wrote on the PREVIOUS pass. At 25-30 fps that is ~35 ms,
-//which blurs a transient but is far too small to put a steady-state ball on the wrong side, so it
-//is NOT the cause of the slip-indicator problems. Worth tidying, not worth blaming.

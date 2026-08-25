@@ -45,7 +45,6 @@ private _alpha       = if (_dt > 0.0 && {_dt < 1.0}) then { 1.0 - (exp (-_dt / B
 private _beta_g_prev = _heli getVariable "fza_sfmplus_aero_beta_g_prev";
 private _beta_g      = _beta_g_prev + ((_beta_g_raw - _beta_g_prev) * _alpha);
 
-_heli setVariable ["fza_sfmplus_aero_alpha_deg",   _alpha_deg, true];
 _heli setVariable ["fza_sfmplus_aero_beta_deg",    _beta_deg,  true];
 _heli setVariable ["fza_sfmplus_aero_beta_g",      _beta_g,    true];
 _heli setVariable ["fza_sfmplus_aero_beta_g_prev", _beta_g,    true];
