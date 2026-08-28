@@ -170,17 +170,6 @@ for "_i" from 0 to (_numElements - 1) do {
 	_heli addForce [_heli vectorModelToWorld _liftVector, _liftPos];
 	_heli addForce [_heli vectorModelToWorld _dragVector, _liftPos];
 
-	// Accumulate this element's net FORCE into the per-rotor total (model space, *deltaTime -
-	// same convention as the other generators). This is the ACTUAL applied blade force (the same
-	// _liftVector/_dragVector added to the airframe above). Summed across all elements/blades,
-	// registered in fn_rotor for the force-log + accumulator. The MOMENT is NOT re-derived here
-	// (no bespoke r x F) - fn_rotor logs the rotor's OWN computed moment (the reaction couple it
-	// actually applies via addTorque); the offset blade forces' moment is Arma's to compute.
-	private _elemForce  = _liftVector vectorAdd _dragVector;
-	private _netForce   = (_heli getVariable "fza_sfmplus_rotorNetForce")  select _rotorIndex;
-	[_heli, "fza_sfmplus_rotorNetForce",  _rotorIndex, (_netForce  vectorAdd _elemForce)]  call fza_fnc_setArrayVariable;
-
-
 	#ifdef __A3_DEBUG__
 	[_heli, _liftPos, _liftPos vectorAdd (_liftVector vectorMultiply (1.0 / 30.0)), "green"] call fza_fnc_debugDrawLine;
 	[_heli, _liftPos, _liftPos vectorAdd (_dragVector vectorMultiply (1.0 / 30.0)), "red"]   call fza_fnc_debugDrawLine;

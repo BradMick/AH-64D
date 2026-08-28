@@ -1,7 +1,7 @@
 #include "\fza_ah64_sfmplus\headers\core.hpp"
 #include "\fza_ah64_systems\headers\systems.hpp"
 
-params ["_heli","_wingPos","_pitch","_roll","_span","_chord","_sweep","_twist","_tipWidthScalar","_wingLiftScalarTable",["_isStab", false],["_forceLogName", ""]];
+params ["_heli","_wingPos","_pitch","_roll","_span","_chord","_sweep","_twist","_tipWidthScalar","_wingLiftScalarTable",["_isStab", false]];
 
 if (!local _heli) exitWith {};
 
@@ -208,11 +208,6 @@ for "_j" from 0 to (_numElements - 1) do {
     private _moment = _force vectorCrossProduct _fromAeroCenterToCOM;
 
     _heli addTorque (_heli vectorModelToWorld _moment);
-
-    //Accumulates per surface name across the element loop.
-    if (fza_sfmplus_forceLogOn && _forceLogName != "") then {
-        [_heli, _forceLogName, _force, _moment] call fza_sfmplus_fnc_forceLog;
-    };
 };
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Debug                /////////////////////////////////////////////////////////////////////

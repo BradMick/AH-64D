@@ -4,10 +4,6 @@ params ["_heli"];
 
 if (isGamePaused || CBA_missionTime < 0.1) exitWith {};
 
-
-[_heli] call fza_sfmplus_fnc_forceLogReset;
-[_heli] call fza_sfmplus_fnc_forceDumpLog;
-
 if (fza_ah64_sfmPlusRotorModel == 1) then {
     // Blade Element Theory rotor model
     [_heli] call fza_sfmplus_fnc_rotorUpdate;
@@ -42,8 +38,7 @@ if (fza_ah64_sfmPlusRotorModel == 1) then {
  ,[66.88, 1.000]
  ,[72.02, 1.000]
  ]
- ,false
- ,"Right Wing" ] call fza_sfmplus_fnc_wing;
+ ,false ] call fza_sfmplus_fnc_wing;
 //Left Wing
 [ _heli
  ,[-1.5,1.9,-1.4]
@@ -66,8 +61,7 @@ if (fza_ah64_sfmPlusRotorModel == 1) then {
  ,[66.88, 1.000]
  ,[72.02, 1.000]
  ]
- ,false
- ,"Left Wing" ] call fza_sfmplus_fnc_wing;
+ ,false ] call fza_sfmplus_fnc_wing;
 
 //Vertical fin
 [ _heli
@@ -91,8 +85,7 @@ if (fza_ah64_sfmPlusRotorModel == 1) then {
  ,[66.88, 1.000]
  ,[72.02, 1.000]
  ]
- ,false
- ,"Vertical Fin" ] call fza_sfmplus_fnc_wing;
+ ,false ] call fza_sfmplus_fnc_wing;
 
 //Stabilator
 [ _heli
@@ -117,5 +110,4 @@ if (fza_ah64_sfmPlusRotorModel == 1) then {
  ,[72.02, 1.000]
  ]
  ,true
- ,"Stabilator"
  ] call fza_sfmplus_fnc_wing;

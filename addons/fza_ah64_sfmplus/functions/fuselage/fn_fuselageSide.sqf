@@ -138,10 +138,6 @@ for "_i" from 0 to (_count - 1) do {
 
     _heli addTorque (_heli vectorModelToWorld _moment);
 
-    if (fza_sfmplus_forceLogOn) then {
-        [_heli, "Fuselage Side", _force, _moment] call fza_sfmplus_fnc_forceLog;
-    };
-
     #ifdef __A3_DEBUG__
     //Draw the wing
     [_heli, _a, _b, "red"]   call fza_fnc_debugDrawLine;

@@ -435,10 +435,6 @@ if (currentPilot _heli == player) then {
             if ([vectorMagnitude _moment] call fza_sfmplus_fnc_isNAN || [vectorMagnitude _moment] call fza_sfmplus_fnc_isINF) then { _moment = [0.0, 0.0, 0.0]; };
             _heli addTorque (_heli vectorModelToWorld _moment);
         };
-        //prints - _thrustZ and _moment - verbatim.
-        if (fza_sfmplus_forceLogOn) then {
-            [_heli, "Main Rotor", _thrustVector, _moment] call fza_sfmplus_fnc_forceLog;
-        };
     };
 };
 /////////////////////////////////////////////////////////////////////////////////////////////

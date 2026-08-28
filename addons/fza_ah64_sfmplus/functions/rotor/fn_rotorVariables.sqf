@@ -51,9 +51,6 @@ _heli setVariable ["fza_sfmplus_rotorInducedFlowAccum", [[0.0,0.0,0.0,0.0]
 _heli setVariable ["fza_sfmplus_rotorReactionTorque", [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]];
 // Accumulated rotor thrust (N) per rotor — sum of all element lift across all blades this frame
 _heli setVariable ["fza_sfmplus_rotorThrustAccum",    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]];
-// Net rotor FORCE and MOMENT (model space) per rotor — summed across every blade element for
-// the force-log table + the force accumulator (bodyAccel/ball). One [x,y,z] vector per rotor.
-_heli setVariable ["fza_sfmplus_rotorNetForce",       [[0,0,0], [0,0,0]]];
 // Rotor rate-damping scalar (roll/pitch RATE damping from the airframe angular-velocity term
 // in fn_rotorBlade). 0.1 tuned in-sim: anything much higher caused an aggressive, noticeable
 // snap-back (the rotor over-damps and fights the return to center). Tunable live.

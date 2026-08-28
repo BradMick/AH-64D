@@ -72,11 +72,6 @@ for "_i" from 0 to (_count - 1) do {
 
     //Accumulate this panel's force into the component total.
 
-    if (fza_sfmplus_forceLogOn) then {
-        [_heli, "Fuselage Front", _force, _moment] call fza_sfmplus_fnc_forceLog;
-    };
-
-
     #ifdef __A3_DEBUG__
     //Draw the wing
     [_heli, _a, _b, "red"]   call fza_fnc_debugDrawLine;

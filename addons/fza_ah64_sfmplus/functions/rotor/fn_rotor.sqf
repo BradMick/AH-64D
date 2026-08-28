@@ -41,11 +41,6 @@ if (_heli getHitPointDamage _hitPoint < _dmgThreshold && currentPilot _heli == p
 // Reset accumulators before blade loop
 [_heli, "fza_sfmplus_rotorReactionTorque", _rotorIndex, 0.0] call fza_fnc_setArrayVariable;
 [_heli, "fza_sfmplus_rotorThrustAccum",    _rotorIndex, 0.0] call fza_fnc_setArrayVariable;
-// Net FORCE accumulator (model space, per rotor) for the force-log table + the force accumulator
-// (bodyAccel/ball). Summed across every blade element in fn_rotorBlade, registered after the loop.
-// Force is *deltaTime (same convention as the other generators). (No moment accumulator - the log
-// shows the rotor's OWN computed reaction couple, not a re-derived per-element moment.)
-[_heli, "fza_sfmplus_rotorNetForce",  _rotorIndex, [0,0,0]] call fza_fnc_setArrayVariable;
 for "_ei" from 0 to (_numElements - 1) do {
     [_heli, "fza_sfmplus_rotorInducedFlowAccum", _rotorIndex, _ei, 0.0] call fza_fnc_setMultiArrayVariable;
 };
@@ -201,20 +196,6 @@ if (_type == MAIN) then {
     private _torqueScale = if (_torqTbl isEqualTo []) then { 1.0 } else { [_torqTbl, _velBet] call fza_fnc_linearInterp select 1 };
     _reactionMoment = _uVec vectorMultiply (_tqSmoothed * _gearRatio * _torqueSign * _deltaTime * _torqueScale);
     _heli addTorque (_heli vectorModelToWorld _reactionMoment);
-};
-
-// Register this rotor's ACTUAL computed values into the force-log table + the force accumulator.
-// FORCE = the summed blade forces actually added to the airframe (_netForce). MOMENT = the
-// rotor's OWN explicitly-computed couple that it actually applies via addTorque (_reactionMoment
-// = the main-rotor reaction torque; [0,0,0] for the tail, whose yaw is the offset THRUST that
-// Arma turns into a moment - not a value the FM computes). NO re-derived r x F: the log must show
-// the FM's real outputs, not a bespoke recomputation (a reversed one previously made the Myaw
-// column disagree with the force and caused wrong diagnoses).
-private _rotorName = if (_type == MAIN) then { "Main Rotor" } else { "Tail Rotor" };
-private _netForce  = (_heli getVariable "fza_sfmplus_rotorNetForce")  select _rotorIndex;
-private _netMoment = _reactionMoment;
-if (fza_sfmplus_forceLogOn) then {
-    [_heli, _rotorName, _netForce, _netMoment] call fza_sfmplus_fnc_forceLog;
 };
 
 }; // end damage check

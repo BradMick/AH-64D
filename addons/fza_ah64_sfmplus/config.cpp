@@ -13,4 +13,3 @@ class CfgPatches
 
 #include "CfgFunctions.hpp"
 #include "extendedEventHandlers.hpp"
-#include "functions\debug\forces\overlay.hpp"

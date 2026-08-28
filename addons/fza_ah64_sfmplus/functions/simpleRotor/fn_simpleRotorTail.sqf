@@ -189,9 +189,6 @@ if (_tailRtrDamage < 0.85 && _IGBDamage < SYS_IGB_DMG_THRESH && _TGBDamage < SYS
             _moment set [1, 0];
             _heli addTorque (_heli vectorModelToWorld _moment);
         };
-        if (fza_sfmplus_forceLogOn) then {
-            [_heli, "Tail Rotor", _thrustVector, _moment] call fza_sfmplus_fnc_forceLog;
-        };
     };
 };
 

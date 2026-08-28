@@ -47,13 +47,6 @@ class CfgFunctions
             file = "\fza_ah64_sfmplus\functions\damage";
             class damageApply {R;};
         };
-        class debug {
-            file = "\fza_ah64_sfmplus\functions\debug\forces";
-            class forceDumpLog {R;};
-            class forceOverlay {R;};
-            class forceLog {R;};
-            class forceLogReset {R;};
-        };
         class engine {
             file = "\fza_ah64_sfmplus\functions\engine";
             class engine  {R;};
