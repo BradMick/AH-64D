@@ -274,6 +274,65 @@ The core must fly correctly with **no** layers present. §3.3's defaults already
 
 `fza_ah64_helisim` becomes simply the first pack — the AH-64 loses its privileged status and is validated by the same contract as any third-party aircraft. **That is the real test of the framework:** if building the AH-64 pack requires touching Core, the boundary is wrong.
 
+### Core is a passive library; the pack is the executable
+
+**Core owns no lifecycle.** It exports functions and nothing else — no event handlers, no update loop, no `isKindOf` guards, no vehicle discovery. Core is told *"here is the aircraft configuration"* and it crunches the numbers. It has no notion of which aircraft, or that a particular aircraft exists at all.
+
+**The pack drives everything.** It owns the scheduler and calls Core each tick. This inverts the earlier draft of Phase 2, which had Core registering its own update loop — wrong under this model. Core never schedules itself.
+
+**Why not make Core the runner?** A runner needs an opinion about lifecycle: how to discover vehicles, when to guard, what tick rate to impose. The moment Core holds that opinion it stops being airframe-agnostic. The evidence is in the current code — the only things resisting portability today are precisely the lifecycle bits (`fza_ah64base` guards, the GetIn EH). Making Core the runner means adding more of them.
+
+The cost is per-pack boilerplate. That is solvable without giving Core a lifecycle: ship a template pack, or have Core export an optional scheduling helper a pack *may* call. Opt-in convenience, never mandatory lifecycle.
+
+### Noted: Core as a DLL
+
+The ideal expression of "this is a function library" is a native extension — a DLL cannot hold a lifecycle, cannot reach for `configOf`, and cannot accumulate global state, so the boundary is enforced by the linker instead of by discipline. ACE ships extensions for comparable numeric work, so there is precedent.
+
+Not now, for five reasons:
+
+1. **Per-call overhead.** `callExtension` marshals strings. Core runs many force calculations per frame (blade elements, fuselage panels, PID loops), so it would mean either many crossings per frame or one large serialize/deserialize round trip.
+2. **No engine access.** A DLL cannot call `setMass`, `setCenterOfMass`, `addForce`, or read `getHitPointDamage`/`animationSourcePhase`. SQF stays in the loop regardless — gather in SQF, cross, cross back, apply in SQF.
+3. **Config is engine-side.** The authoring model is CfgVehicles data, which a DLL cannot read. All cached values would have to be marshalled across at setup, and the config surface kept in sync with the DLL surface by hand.
+4. **Distribution.** x64 DLL plus a Linux `.so` for servers, antivirus friction, extension whitelisting — real cost for a modder-facing product.
+5. **Debuggability.** It forfeits file patching. The `recompile = 1` work in `cfgFunctions.hpp` exists precisely so flight-model code can be iterated live; a compile-link-restart cycle while the FM is still being tuned is a significant regression.
+
+**The architecture survives without it.** What a DLL would enforce — no lifecycle, no global state, inputs in / numbers out — is enforced here by the §9 verification gate instead: no `isKindOf`, no airframe symbols, no self-registration in Core.
+
+**Write Core as if it were a DLL.** Functions take explicit inputs and return values; nothing reaches for `configOf` or vehicle variables mid-computation. That is the "told the config" fix generalised. Kept to, a future port becomes mechanical rather than a rewrite. Functions can be converted to this style incrementally as they are touched — it does not need to happen up front.
+
+One shape a pack can take — illustrative, not a required layout:
+
+```
+xxx_helisim/
+  config/       aircraft BMKHS_HeliSim data; cfgVehicles binding; EH registration
+  functions/    setup / shutdown; tick drivers; aircraft-specific update logic
+  XEH_*         lifecycle entry
+```
+
+The pack decides its own tick granularity — per-frame, fixed-step, slow, or any mix. That is a scheduling choice Core has no opinion on, which bears on decision #3: rather than Core mandating per-frame or fixed-step, it exposes entry points and the pack calls them how it likes.
+
+The only parts that are actually contract are: the pack supplies the config, the pack opts the vehicle in, and the pack calls Core. Directory names and file splits are the designer's business.
+
+### "Told the config" — where Core falls short today
+
+Core does not currently get *handed* a config; it goes and finds one. `configOf _heli` appears in **15 places** across `fn_coreConfig`, `fn_coreUpdate`, `fn_getInput`, the engine, fuselage, rotor, wing and performance functions. That hardcodes an assumption: the config lives on the aircraft's own vehicle class, under `BMKHS_HeliSim`.
+
+The caching pattern is already correct, though — `fn_coreConfig.sqf` reads config **once** and caches 110 values into vehicle variables, and the per-frame functions read those variables rather than config. So the expensive part of "told the config" is done; only the lookup leaks.
+
+The fix is small and belongs with the pack boundary: `bmkhs_fnc_coreConfig` takes the config path as a parameter, the pack passes it, and the remaining 14 direct `configOf` reads either receive it or read the already-cached variables. That lets a pack keep its config wherever it likes — the aircraft class, a separate class, or several classes composed — instead of Core dictating the location.
+
+### Core's entry points already fit this shape
+
+Core exports the right four functions today; they are simply called from `fza_ah64_controls` instead of from a pack:
+
+| Core function | Called from today | Pack equivalent |
+|---|---|---|
+| `bmkhs_fnc_init` + `bmkhs_fnc_coreConfig` | `controls/fn_eventInit.sqf:35,40` | `fnc_setup` |
+| `bmkhs_fnc_coreUpdate` + `bmkhs_fnc_coreUpdateFlightModel` | `controls/XEH_preInit.sqf:245` | `fnc_perFrame` |
+| `bmkhs_fnc_eventGetIn` | Core's own `extendedEventHandlers.hpp` | pack EH |
+
+**Core is already nearly a pure library.** The only lifecycle inside it is the GetIn event handler registration and the two `fza_ah64base` guards in `fn_analogHandler.sqf:2` / `fn_nonAnalogHandler.sqf:2`. All three move to the pack; `fn_eventPreInit.sqf` sets two globals and is otherwise dead commented code.
+
 ### What the pack provides
 
 1. **The config class** — `class BMKHS { class Rotors {...}; class Engines {...}; ... }` per §0.5, on the aircraft's vehicle class.

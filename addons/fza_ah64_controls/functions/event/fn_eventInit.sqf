@@ -32,12 +32,11 @@ params["_heli"];
 [_heli] call fza_hellfire_fnc_init;
 [_heli] call fza_ihadss_fnc_init;
 [_heli] call fza_light_fnc_init;
-[_heli] call bmkhs_fnc_init;
 [_heli] call fza_wca_fnc_init;
 [_heli] spawn fza_weapons_fnc_init;
 
 //flight setup
-[_heli] call bmkhs_fnc_coreConfig;
+[_heli] call fza_ah64_helisim_fnc_setup;
 [_heli] call fza_systems_fnc_coreVariables;
 
 if (!(isNil "fza_ah64_noinit")) exitWith {};

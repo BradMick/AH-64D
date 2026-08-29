@@ -24,7 +24,6 @@ class CfgVehicles {
         #include "cfgVehicles\itcAir.hpp"
         #include "cfgVehicles\markerLights.hpp"
         #include "cfgVehicles\reflectors.hpp"
-        #include "cfgVehicles\sfmplus.hpp"
         #include "cfgVehicles\sounds.hpp"
         #include "cfgVehicles\soundsExt.hpp"
         #include "cfgVehicles\textureSources.hpp"
@@ -95,7 +94,7 @@ class CfgVehicles {
         ace_vehicle_damage_hullFireProb             = 0;
         ace_vehicle_damage_turretDetonationProb     = 0.2;
         ace_vehicle_damage_turretFireProb           = 0;
-        
+
         allowTabLock             = 0;
         armor                    = 600;
         attenuationEffectType    = "HeliAttenuation";
@@ -267,7 +266,7 @@ class CfgVehicles {
         };
     };
 
-    
+
     class fza_ah64d_b1: fza_ah64base {
         side            = 1;
         scope           = 2;

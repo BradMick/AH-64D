@@ -16,9 +16,10 @@ Examples:
 Author:
     BradMick
 ---------------------------------------------------------------------------- */
-params ["_heli"];
+params ["_heli", ["_config", configNull]];
 
-private _config = configOf _heli >> "BMKHS_HeliSim";
+//Caller supplies the config; fall back to the vehicle class for legacy callers
+if (isNull _config) then { _config = configOf _heli >> "BMKHS_HeliSim"; };
 bmkhs_movingAverageSize = 10;
 bmkhs_liftLossTimer     = 0;
 
