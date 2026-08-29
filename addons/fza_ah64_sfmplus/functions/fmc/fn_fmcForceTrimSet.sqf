@@ -36,7 +36,7 @@ if (!_autoAttOwns) then {
 private _curPedalLeftRight  = (_heli getVariable "fza_sfmplus_pedalLeftRight");
 private _prevPedalLeftRight = _heli getVariable "fza_ah64_forceTrimPosYaw";
 private _pedalTrimVal       = [_curPedalLeftRight, _prevPedalLeftRight] call fza_sfmplus_fnc_getInterpInput;
-if (fza_ah64_sfmplusSpringlessPedals || fza_ah64_sfmPlusKeyboardStickyYaw) then {
+if (fza_ah64_sfmPlusSpringlessPedals || fza_ah64_sfmPlusKeyboardStickyYaw) then {
     _heli setVariable ["fza_ah64_forceTrimPosYaw", 0.0];
 } else {
     _heli setVariable ["fza_ah64_forceTrimPosYaw", _pedalTrimVal, true];

@@ -56,7 +56,7 @@ for "_i" from 0 to (_count - 1) do {
     #ifdef __A3_DEBUG__
     [_heli, _e, _e vectorAdd _chordLine, "white"] call fza_fnc_debugDrawLine;
 	[_heli, _e, _e vectorAdd _up,	 	 "white"] call fza_fnc_debugDrawLine;
-	[_heli, _e, _e vectorAdd _right,     "white"] call fza_fnc_debugDrawline;
+	[_heli, _e, _e vectorAdd _right,     "white"] call fza_fnc_debugDrawLine;
     #endif
 
     private _velModelSpace    = (_heli getVariable "fza_sfmplus_velModelSpace")    vectorMultiply -1.0;

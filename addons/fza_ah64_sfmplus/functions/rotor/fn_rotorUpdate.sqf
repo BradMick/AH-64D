@@ -63,7 +63,7 @@ private _collMax       = [ 19
                          , 27];
 private _animSource    = [ "rotorH"
                          , "rotorV"];
-private _hitPoint      = [ "HitHRotor"
+private _hitPoint      = [ "hithrotor"
                          , "hitvrotor"];
 private _dmgThreshold  = [ 0.99
                          , 0.85];

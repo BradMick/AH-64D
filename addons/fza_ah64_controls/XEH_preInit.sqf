@@ -254,15 +254,6 @@ fza_ah64_eachFrameHandler = addMissionEventHandler["EachFrame", {
     [0] call fza_fnc_coreEachFrameScheduler;
 }];
 
-//fixedUpdated handler
-//fza_ah64_currentTime        = 0.0;
-//fza_ah64_deltaTime          = 0.0;
-//fza_ah64_previousTime       = 0.0;
-//fza_ah64_accumulator        = 0.0;
-//fza_ah64_fixedUpdateHandler = addMissionEventHandler["EachFrame", {
-//    [0] call fza_fnc_coreFixedUpdateScheduler;
-//}];
-
 #define OVERRIDE_ACTION(actn) \
     addUserActionEventHandler [actn, "Activate", {[actn, true] call fza_fnc_coreControlHandle}]; \
     addUserActionEventHandler [actn, "Deactivate", {[actn, false] call fza_fnc_coreControlHandle}];

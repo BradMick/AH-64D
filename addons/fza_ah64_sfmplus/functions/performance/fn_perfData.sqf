@@ -20,7 +20,7 @@ Author:
 params ["_heli"];
 #include "\fza_ah64_sfmplus\headers\core.hpp"
 
-private _config    = configOf _heli >> "fza_sfmplus";
+private _config    = configOf _heli >> "Fza_SfmPlus";
 private _curGWT_kg = _heli getVariable "fza_sfmplus_GWT";
 private _pa        = _heli getVariable "fza_sfmplus_PA";
 private _fat       = _heli getVariable "fza_sfmplus_FAT";

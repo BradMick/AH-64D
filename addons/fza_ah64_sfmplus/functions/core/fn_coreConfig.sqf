@@ -18,7 +18,7 @@ Author:
 ---------------------------------------------------------------------------- */
 params ["_heli"];
 
-private _config = configOf _heli >> "fza_sfmplus";
+private _config = configOf _heli >> "Fza_SfmPlus";
 fza_sfmplus_movingAverageSize = 10;
 fza_sfmplus_liftLossTimer     = 0;
 

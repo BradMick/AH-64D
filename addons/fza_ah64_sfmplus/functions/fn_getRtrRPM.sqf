@@ -22,11 +22,11 @@ params ["_heli"];
 private _deltaTime = _heli getVariable "fza_sfmplus_deltaTime";
 private _rtrRPM    = _heli getVariable "fza_sfmplus_rtrRPM";
 
-private _mainRtrDamage  = _heli getHitPointDamage "HitHRotor";
+private _mainRtrDamage  = _heli getHitPointDamage "hithrotor";
 if (_mainRtrDamage == 1.0) then {
     _rtrRPM = 0.0;
 } else {
-    //(_heli getVariable "fza_sfmplus_engPctNP") 
+    //(_heli getVariable "fza_sfmplus_engPctNP")
     //params ["_e1Np", "_e2Np"];
 //
     //if (_e1Np == 0.0 && _e2Np == 0.0) then {

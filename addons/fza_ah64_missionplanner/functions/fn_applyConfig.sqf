@@ -823,7 +823,7 @@ if !(_heli isKindOf "Helicopter") exitWith {false};
                         params [["_args", []]];
                         _args params ["_heli", "_curRatio", "_targetRatio", "_noSrcStatus"];
                         _heli setFuel _targetRatio;
-                        [_heli] call fza_sfmplus_fnc_fuelSet;
+                        [_heli] call fza_fuel_fnc_fuelSet;
                         systemChat "Mission Planner: fuel loaded.";
                         _noSrcStatus set [1, true]; _noSrcStatus set [0, true];
                     },
@@ -833,7 +833,7 @@ if !(_heli isKindOf "Helicopter") exitWith {false};
                         private _partial = if (_total > 0) then { _elapsed / _total } else { 0 };
                         if (_partial > 0.01) then {
                             _heli setFuel (_curRatio + ((_targetRatio - _curRatio) * _partial)) min 1;
-                            [_heli] call fza_sfmplus_fnc_fuelSet;
+                            [_heli] call fza_fuel_fnc_fuelSet;
                         };
                         _noSrcStatus set [1, false]; _noSrcStatus set [0, true];
                     },
@@ -900,7 +900,7 @@ if !(_heli isKindOf "Helicopter") exitWith {false};
                     params [["_args", []]];
                     _args params ["_heli", "_curRatio", "_targetRatio", "_source", "_srcFuel", "_srcCap", "_litres", "_status"];
                     _heli setFuel _targetRatio;
-                    [_heli] call fza_sfmplus_fnc_fuelSet;
+                    [_heli] call fza_fuel_fnc_fuelSet;
                     if (_srcCap != -10) then {
                         [_source, (_srcFuel - _litres) max 0] call ace_refuel_fnc_setFuel;
                     };
@@ -916,7 +916,7 @@ if !(_heli isKindOf "Helicopter") exitWith {false};
                     private _partialLitres = _litres * _partial;
                     if (_partial > 0.01) then {
                         _heli setFuel _partialRatio;
-                        [_heli] call fza_sfmplus_fnc_fuelSet;
+                        [_heli] call fza_fuel_fnc_fuelSet;
                         if (_srcCap != -10) then {
                             [_source, (_srcFuel - _partialLitres) max 0] call ace_refuel_fnc_setFuel;
                         };
@@ -945,7 +945,7 @@ if !(_heli isKindOf "Helicopter") exitWith {false};
                     params [["_args", []]];
                     _args params ["_heli", "_curRatio", "_targetRatio", "_defuelStatus", "_liters"];
                     _heli setFuel _targetRatio;
-                    [_heli] call fza_sfmplus_fnc_fuelSet;
+                    [_heli] call fza_fuel_fnc_fuelSet;
                     systemChat format ["Mission Planner: defueled %1 L.", round _liters];
                     _defuelStatus set [1, true]; _defuelStatus set [0, true];
                 },
@@ -955,7 +955,7 @@ if !(_heli isKindOf "Helicopter") exitWith {false};
                     private _partial = if (_total > 0) then { _elapsed / _total } else { 0 };
                     if (_partial > 0.01) then {
                         _heli setFuel (_curRatio + ((_targetRatio - _curRatio) * _partial)) max 0;
-                        [_heli] call fza_sfmplus_fnc_fuelSet;
+                        [_heli] call fza_fuel_fnc_fuelSet;
                     };
                     _defuelStatus set [1, false]; _defuelStatus set [0, true];
                 },
