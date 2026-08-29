@@ -10,7 +10,7 @@ Parameters:
 Returns:
     2d array, an array for each active WCA entry in thee format
         [_type, _mpd, _ufd]
-    
+
     * _type - either WCA_CAUTION, WCA_WARNING or WCA_ADVISORY
     * _mpd - the texture to be used by the MPD
     * _ufd - the texture to be used by the UFD
@@ -23,7 +23,7 @@ Examples:
 
     // Helicoper with an engine fire and the rotor brake on
     _data = [_heli] call fza_fnc_coreGetWCAs
-    // _data = [[WCA_WARNING, "\fza_ah64_model\tex\MPD\E1Fire.paa"], 
+    // _data = [[WCA_WARNING, "\fza_ah64_model\tex\MPD\E1Fire.paa"],
     ---
 
 Author:
@@ -32,7 +32,7 @@ Author:
 #include "\fza_ah64_controls\headers\wcaConstants.h"
 #include "\fza_ah64_controls\headers\systemConstants.h"
 #include "\fza_ah64_systems\headers\systems.hpp"
-#include "\fza_ah64_sfmplus\headers\core.hpp"
+#include "\bmkhs_helisim\headers\core.hpp"
 #include "\fza_ah64_fuel\headers\fuelConstants.hpp"
 #include "\fza_ah64_ase\headers\ase.h"
 
@@ -54,9 +54,9 @@ private _activeCaut = _heli getVariable "fza_ah64_activeCaut";
 private _activeWarn = _heli getVariable "fza_ah64_activeWarn";
 private _acBusOn    = _heli getVariable "fza_systems_acBusOn";
 private _dcBusOn    = _heli getVariable "fza_systems_dcBusOn";
-///////////////////////////////////////////////////////////////////////////////////////////// 
+/////////////////////////////////////////////////////////////////////////////////////////////
 // System States    /////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////// 
+/////////////////////////////////////////////////////////////////////////////////////////////
 private _playCautAudio = false;
 //--APU
 private _apuBtnOn    = _heli getVariable "fza_systems_apuBtnOn";
@@ -72,23 +72,23 @@ private _gen2Damage  = _heli getHitPointDamage "hit_elec_generator2";
 private _rect1Damage = _heli getHitPointDamage "hit_elec_rectifier1";
 private _rect2Damage = _heli getHitPointDamage "hit_elec_rectifier2";
 //--Engine 1
-private _eng1PwrLvrState = _heli getVariable "fza_sfmplus_engPowerLeverState" select 0;
-private _eng1Ng          = _heli getVariable "fza_sfmplus_engPctNG" select 0;
-private _eng1Np          = _heli getVariable "fza_sfmplus_engPctNP" select 0;
-private _eng1State       = _heli getVariable "fza_sfmplus_engState" select 0;
+private _eng1PwrLvrState = _heli getVariable "bmkhs_engPowerLeverState" select 0;
+private _eng1Ng          = _heli getVariable "bmkhs_engPctNG" select 0;
+private _eng1Np          = _heli getVariable "bmkhs_engPctNP" select 0;
+private _eng1State       = _heli getVariable "bmkhs_engState" select 0;
 //--Engine 2
-private _eng2PwrLvrState = _heli getVariable "fza_sfmplus_engPowerLeverState" select 1;
-private _eng2Ng          = _heli getVariable "fza_sfmplus_engPctNG" select 1;
-private _eng2Np          = _heli getVariable "fza_sfmplus_engPctNP" select 1;
-private _eng2State       = _heli getVariable "fza_sfmplus_engState" select 1;
+private _eng2PwrLvrState = _heli getVariable "bmkhs_engPowerLeverState" select 1;
+private _eng2Ng          = _heli getVariable "bmkhs_engPctNG" select 1;
+private _eng2Np          = _heli getVariable "bmkhs_engPctNP" select 1;
+private _eng2State       = _heli getVariable "bmkhs_engState" select 1;
 //--Rotor RPM
 private _pwrLvrAtfly     = false;
-private _onGnd           = [_heli] call fza_sfmplus_fnc_onGround;
+private _onGnd           = [_heli] call bmkhs_fnc_onGround;
 if (_eng1PwrLvrState == "FLY" || _eng2PwrLvrState == "FLY") then {
-    _pwrLvrAtFly = true; 
+    _pwrLvrAtFly = true;
 };
 
-private _rtrRPM     = [_heli] call fza_sfmplus_fnc_getRtrRPM;
+private _rtrRPM     = [_heli] call bmkhs_fnc_getRtrRPM;
 //--Transmission
 private _xmsnDamage = _heli getHitPointDamage "hit_drives_transmission";
 //--Tail rotor & Intermediate gearboxes
@@ -113,23 +113,23 @@ private _utilLevel_pct       = _heli getVariable "fza_systems_utilLevel_pct";
 private _msnEquipState       = _heli getVariable "fza_ah64_ase_msnEquipPwr";
 
 private _pylonMagazines = getPylonMagazines _heli;
-private _fwdFuelMass = _heli getVariable ["fza_sfmplus_fwdFuelMass", 0];
-private _aftFuelMass = _heli getVariable ["fza_sfmplus_aftFuelMass", 0];
-private _auxTank1FuelMass = _heli getVariable ["fza_sfmplus_stn1FuelMass", 0];
-private _auxTank2FuelMass = _heli getVariable ["fza_sfmplus_stn2FuelMass", 0];
-private _auxTank3FuelMass = _heli getVariable ["fza_sfmplus_stn3FuelMass", 0];
-private _auxTank4FuelMass = _heli getVariable ["fza_sfmplus_stn4FuelMass", 0];
+private _fwdFuelMass = _heli getVariable ["bmkhs_fwdFuelMass", 0];
+private _aftFuelMass = _heli getVariable ["bmkhs_aftFuelMass", 0];
+private _auxTank1FuelMass = _heli getVariable ["bmkhs_stn1FuelMass", 0];
+private _auxTank2FuelMass = _heli getVariable ["bmkhs_stn2FuelMass", 0];
+private _auxTank3FuelMass = _heli getVariable ["bmkhs_stn3FuelMass", 0];
+private _auxTank4FuelMass = _heli getVariable ["bmkhs_stn4FuelMass", 0];
 
 
-///////////////////////////////////////////////////////////////////////////////////////////// 
+/////////////////////////////////////////////////////////////////////////////////////////////
 // WARNINGS         /////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////// 
+/////////////////////////////////////////////////////////////////////////////////////////////
 
 //--APU Warnings
 if (_heli getVariable "fza_ah64_apu_fire") then {
     ([_heli, _activeWarn, "APU FIRE", "", FIRE_PRIORITY, "fza_ah64_APU_fire", 3] call fza_wca_fnc_wcaAddWarning)
         params ["_wcaAddWarning"];
-    
+
     _wcas pushBack _wcaAddWarning;
 } else {
     [_activeWarn, "APU FIRE"] call fza_wca_fnc_wcaDelWarning;
@@ -139,7 +139,7 @@ if (_heli getVariable "fza_ah64_apu_fire") then {
 if (_eng1Ng < 0.63 && _eng1PwrLvrState == "FLY") then {
     ([_heli, _activeWarn, "ENGINE 1 OUT", "ENG1 OUT", ENG_OUT_PRIORITY, "fza_ah64_engine_1_out", 3] call fza_wca_fnc_wcaAddWarning)
         params ["_wcaAddWarning"];
-    
+
     _wcas pushBack _wcaAddWarning;
 } else {
     [_activeWarn, "ENGINE 1 OUT"] call fza_wca_fnc_wcaDelWarning;
@@ -148,7 +148,7 @@ if (_eng1Ng < 0.63 && _eng1PwrLvrState == "FLY") then {
 if (_heli getVariable "fza_ah64_e1_fire") then {
     ([_heli, _activeWarn, "ENGINE 1 FIRE", "", FIRE_PRIORITY, "fza_ah64_engine_1_fire", 3] call fza_wca_fnc_wcaAddWarning)
         params ["_wcaAddWarning"];
-    
+
     _wcas pushBack _wcaAddWarning;
 } else {
     [_activeWarn, "ENGINE 1 FIRE"] call fza_wca_fnc_wcaDelWarning;
@@ -157,7 +157,7 @@ if (_heli getVariable "fza_ah64_e1_fire") then {
 if (_eng1Np >= 1.15) then {
     ([_heli, _activeWarn, "ENG1 OVSP", "ENG1 OVSP", OVRSPD_PRIORITY, "fza_ah64_engine_1_overspeed", 3] call fza_wca_fnc_wcaAddWarning)
         params ["_wcaAddWarning"];
-    
+
     _wcas pushBack _wcaAddWarning;
 } else {
     [_activeWarn, "ENG1 OVSP"] call fza_wca_fnc_wcaDelWarning;
@@ -166,7 +166,7 @@ if (_eng1Np >= 1.15) then {
 if (_eng2Ng < 0.63 && _eng2PwrLvrState == "FLY") then {
     ([_heli, _activeWarn, "ENGINE 2 OUT", "ENG2 OUT", ENG_OUT_PRIORITY, "fza_ah64_engine_2_out", 3] call fza_wca_fnc_wcaAddWarning)
         params ["_wcaAddWarning"];
-    
+
     _wcas pushBack _wcaAddWarning;
 } else {
     [_activeWarn, "ENGINE 2 OUT"] call fza_wca_fnc_wcaDelWarning;
@@ -175,7 +175,7 @@ if (_eng2Ng < 0.63 && _eng2PwrLvrState == "FLY") then {
 if (_heli getVariable "fza_ah64_e2_fire") then {
     ([_heli, _activeWarn, "ENGINE 2 FIRE", "", FIRE_PRIORITY, "fza_ah64_engine_2_fire", 3] call fza_wca_fnc_wcaAddWarning)
         params ["_wcaAddWarning"];
-    
+
     _wcas pushBack _wcaAddWarning;
 } else {
     [_activeWarn, "ENGINE 2 FIRE"] call fza_wca_fnc_wcaDelWarning;
@@ -189,7 +189,7 @@ if (_heli getVariable "fza_ah64_aft_deck_fire") then {
 if (_eng2Np >= 1.15) then {
     ([_heli, _activeWarn, "ENG2 OVSP", "ENG2 OVSP", OVRSPD_PRIORITY, "fza_ah64_engine_2_overspeed", 3] call fza_wca_fnc_wcaAddWarning)
         params ["_wcaAddWarning"];
-    
+
     _wcas pushBack _wcaAddWarning;
 } else {
     [_activeWarn, "ENG2 OVSP"] call fza_wca_fnc_wcaDelWarning;
@@ -198,7 +198,7 @@ if (_eng2Np >= 1.15) then {
 if (!_onGnd && (_rtrRPM < 0.95)) then {
     ([_heli, _activeWarn, "LOW ROTOR RPM", "LOW RTR", RTR_RPM_PRIORITY, "fza_ah64_rotor_rpm_low", 3] call fza_wca_fnc_wcaAddWarning)
         params ["_wcaAddWarning"];
-    
+
     _wcas pushBack _wcaAddWarning;
 } else {
     [_activeWarn, "LOW ROTOR RPM"] call fza_wca_fnc_wcaDelWarning;
@@ -211,7 +211,7 @@ if (!_onGnd && (_rtrRPM < 0.95)) then {
 if (_rtrRPM > 1.06) then {
     ([_heli, _activeWarn, "HIGH ROTOR RPM", "HIGH RTR", RTR_RPM_PRIORITY, "fza_ah64_rotor_rpm_high", 3] call fza_wca_fnc_wcaAddWarning)
         params ["_wcaAddWarning"];
-    
+
     _wcas pushBack _wcaAddWarning;
 } else {
     [_activeWarn, "HIGH ROTOR RPM"] call fza_wca_fnc_wcaDelWarning;
@@ -224,7 +224,7 @@ if (_rtrRPM > 1.06) then {
 if (_priHydPumpDamage >= SYS_HYD_DMG_THRESH && _utilHydPumpDamage >= SYS_HYD_DMG_THRESH) then {
     ([_heli, _activeWarn, "HYD FAILURE", "HYD FAIL", HYD_FAIL_PRIORITY, "fza_ah64_hydraulic_failure", 3] call fza_wca_fnc_wcaAddWarning)
         params ["_wcaAddWarning"];
-    
+
     _wcas pushBack _wcaAddWarning;
 } else {
     [_activeWarn, "HYD FAILURE"] call fza_wca_fnc_wcaDelWarning;
@@ -232,14 +232,14 @@ if (_priHydPumpDamage >= SYS_HYD_DMG_THRESH && _utilHydPumpDamage >= SYS_HYD_DMG
 if (_priHydPSI < SYS_MIN_HYD_PSI && _utilLevel_pct < SYS_HYD_MIN_LVL) then {
     ([_heli, _activeWarn, "TAIL ROTOR HYD", "TAIL RTR", HYD_FAIL_PRIORITY, "fza_ah64_tail_rotor_hydraulic_failure", 3] call fza_wca_fnc_wcaAddWarning)
         params ["_wcaAddWarning"];
-    
+
     _wcas pushBack _wcaAddWarning;
 } else {
     [_activeWarn, "TAIL ROTOR HYD"] call fza_wca_fnc_wcaDelWarning;
 };
-///////////////////////////////////////////////////////////////////////////////////////////// 
+/////////////////////////////////////////////////////////////////////////////////////////////
 // CAUTIONS         /////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////// 
+/////////////////////////////////////////////////////////////////////////////////////////////
 //--Generator 1 Fail
 if (_gen1Damage >= SYS_GEN_DMG_THRESH) then {
     ([_heli, _activeCaut, "GENERATOR 1 FAIL", "GEN1 FAIL", _playCautAudio] call fza_wca_fnc_wcaAddCaution)
@@ -467,9 +467,9 @@ if ((!_dcBusOn || _heli getHitPointDamage "hit_msnEquip_irJam" >= SYS_ASE_DMG_TH
 } else {
     [_activeCaut, "IRJAM FAIL"] call fza_wca_fnc_wcaDelCaution;
 };
-///////////////////////////////////////////////////////////////////////////////////////////// 
+/////////////////////////////////////////////////////////////////////////////////////////////
 // ADVISORIES       /////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////// 
+/////////////////////////////////////////////////////////////////////////////////////////////
 
 if  (_heli getVariable "fza_mpd_verMisMatch") then {
     _wcas pushBack [WCA_ADVISORY, "VERSION MISMATCH", "VERS MISM"];
@@ -528,7 +528,7 @@ if (_heli getVariable "fza_ah64_altHoldActive") then {
 if (_heli getVariable "fza_ah64_rtrbrake") then {
     _wcas pushBack [WCA_ADVISORY, "ROTOR BRAKE ON", "RTR BRK ON"];
 };
-//--FCR 
+//--FCR
 if (_fcrState#0 == FCR_MODE_FAULT) then {
     _wcas pushBack [WCA_ADVISORY, "FCR FAULT", "FCR FAULT"];
 };

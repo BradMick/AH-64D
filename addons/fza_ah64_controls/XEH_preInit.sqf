@@ -1,5 +1,5 @@
 private _projName = "AH-64D Official Project";
-#include "\fza_ah64_sfmplus\headers\core.hpp"
+#include "\bmkhs_helisim\headers\core.hpp"
 
 // ── Control Input Visualiser ──────────────────────────────────────────────────
 [
@@ -41,7 +41,7 @@ private _projName = "AH-64D Official Project";
 ] call CBA_fnc_addSetting;
 
 [
-    "fza_ah64_sfmplusRealismSetting",
+    "bmkhs_helisimRealismSetting",
     "LIST",
     [(localize "STR_FZA_AH64_SETTINGS_HELISIM_REALISM"), (localize "STR_FZA_AH64_SETTINGS_HELISIM_REALISM_INFO")],
     [_projName, "Flight model"],
@@ -50,7 +50,7 @@ private _projName = "AH-64D Official Project";
 ] call CBA_fnc_addSetting;
 
 [
-    "fza_sfmplus_cyclicCenterTrimMode",
+    "bmkhs_cyclicCenterTrimMode",
     "CHECKBOX",
     [(localize "STR_FZA_AH64_SETTINGS_CYCLIC_CENTER_TRIM_MODE"), (localize "STR_FZA_AH64_SETTINGS_CYCLIC_CENTER_TRIM_MODE_INFO")],
     [_projName, "Flight model"],
@@ -59,7 +59,7 @@ private _projName = "AH-64D Official Project";
 ] call CBA_fnc_addSetting;
 
 [
-    "fza_sfmplus_pedalCenterTrimMode",
+    "bmkhs_pedalCenterTrimMode",
     "CHECKBOX",
     [(localize "STR_FZA_AH64_SETTINGS_PEDAL_CENTER_TRIM_MODE"), (localize "STR_FZA_AH64_SETTINGS_PEDAL_CENTER_TRIM_MODE_INFO")],
     [_projName, "Flight model"],
@@ -147,7 +147,7 @@ private _projName = "AH-64D Official Project";
 ] call CBA_fnc_addSetting;
 
 [
-    "fza_ah64_sfmplusEnvironment",
+    "bmkhs_helisimEnvironment",
     "LIST",
     [(localize "STR_FZA_AH64_SETTINGS_ENVIRONMENT"), (localize "STR_FZA_AH64_SETTINGS_ENVIRONMENT_INFO")],
     [_projName, "Flight model"],
@@ -242,7 +242,7 @@ fza_ah64_tadsFOVs = [
 //Scheduler arrays
 fza_ah64_draw3Darray      = [fza_ihadss_fnc_controller, fza_fnc_weaponTurretAim, fza_fcr_fnc_controller, fza_fnc_avionicsSlipIndicator, fza_ase_fnc_aseManager, fza_wca_fnc_update, fza_fire_fnc_update, fza_ufd_fnc_update, fza_dms_fnc_routeData, fza_fnc_ctrlVisUpdate];
 fza_ah64_draw3DarraySlow  = [fza_fnc_weaponPylonCheckValid, fza_fnc_fireHandleRearm, fza_cannon_fnc_update, fza_systems_fnc_repair];
-fza_ah64_eachFrameArray   = [fza_mpd_fnc_update, fza_ihadss_fnc_fovControl, fza_systems_fnc_coreUpdate, fza_hellfire_fnc_aceController, fza_light_fnc_controller, fza_sfmplus_fnc_coreUpdate, fza_sfmplus_fnc_coreUpdateFlightModel, fza_anim_fnc_animationUpdate];
+fza_ah64_eachFrameArray   = [fza_mpd_fnc_update, fza_ihadss_fnc_fovControl, fza_systems_fnc_coreUpdate, fza_hellfire_fnc_aceController, fza_light_fnc_controller, bmkhs_fnc_coreUpdate, bmkhs_fnc_coreUpdateFlightModel, fza_anim_fnc_animationUpdate];
 
 //Draw3d handler
 fza_ah64_draw3Dhandler = addMissionEventHandler["Draw3D", {

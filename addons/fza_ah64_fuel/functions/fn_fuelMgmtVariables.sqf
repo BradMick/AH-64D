@@ -3,7 +3,7 @@ Function: fza_fuel_fnc_fuelMgmtVariables
 
 Description:
     Initialises all fuel management state variables on a helicopter.
-    Called from fza_sfmplus_fnc_coreConfig after the SFM fuel variables.
+    Called from bmkhs_fnc_coreConfig after the SFM fuel variables.
 
 Parameters:
     _heli - The helicopter to initialise [Unit].

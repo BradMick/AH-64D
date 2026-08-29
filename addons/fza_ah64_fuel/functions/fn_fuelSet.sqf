@@ -25,10 +25,10 @@ private _pylonMagazines = getPylonMagazines _heli;
 
 private _percentFuel    = fuel _heli;
 private _IAFSInstalled  = _heli getVariable "fza_ah64_IAFSInstalled";
-private _maxFwdFuelMass = _heli getVariable ["fza_sfmplus_maxFwdFuelMass", 0];
-private _maxCtrFuelMass = _heli getVariable ["fza_sfmplus_maxCtrFuelMass", 0];
-private _maxAftFuelMass = _heli getVariable ["fza_sfmplus_maxAftFuelMass", 0];
-private _maxTnkFuelMass = _heli getVariable ["fza_sfmplus_maxExtFuelMass", 0];
+private _maxFwdFuelMass = _heli getVariable ["bmkhs_maxFwdFuelMass", 0];
+private _maxCtrFuelMass = _heli getVariable ["bmkhs_maxCtrFuelMass", 0];
+private _maxAftFuelMass = _heli getVariable ["bmkhs_maxAftFuelMass", 0];
+private _maxTnkFuelMass = _heli getVariable ["bmkhs_maxExtFuelMass", 0];
 
 private _totFuelMass    = 0.0;
 private _fwdFuelMass    = 0.0;
@@ -78,16 +78,16 @@ if (_numExtTanks > 0) then {
     if (_stn3HasTank) then { _stn3FuelMass = _perTank; };
     if (_stn4HasTank) then { _stn4FuelMass = _perTank; };
 };
-_heli setVariable ["fza_sfmplus_fwdFuelMass",    _fwdFuelMass];
-_heli setVariable ["fza_sfmplus_ctrFuelMass",    _ctrFuelMass];
-_heli setVariable ["fza_sfmplus_aftFuelMass",    _aftFuelMass];
+_heli setVariable ["bmkhs_fwdFuelMass",    _fwdFuelMass];
+_heli setVariable ["bmkhs_ctrFuelMass",    _ctrFuelMass];
+_heli setVariable ["bmkhs_aftFuelMass",    _aftFuelMass];
 
-_heli setVariable ["fza_sfmplus_stn1FuelMass",   _stn1FuelMass];
-_heli setVariable ["fza_sfmplus_stn2FuelMass",   _stn2FuelMass];
-_heli setVariable ["fza_sfmplus_stn3FuelMass",   _stn3FuelMass];
-_heli setVariable ["fza_sfmplus_stn4FuelMass",   _stn4FuelMass];
+_heli setVariable ["bmkhs_stn1FuelMass",   _stn1FuelMass];
+_heli setVariable ["bmkhs_stn2FuelMass",   _stn2FuelMass];
+_heli setVariable ["bmkhs_stn3FuelMass",   _stn3FuelMass];
+_heli setVariable ["bmkhs_stn4FuelMass",   _stn4FuelMass];
 
 private _actualTotFuelMass = _fwdFuelMass + _ctrFuelMass + _aftFuelMass
                            + _stn1FuelMass + _stn2FuelMass + _stn3FuelMass + _stn4FuelMass;
-_heli setVariable ["fza_sfmplus_totFuelMass"   , _actualTotFuelMass];
-_heli setVariable ["fza_sfmplus_maxTotFuelMass", _maxTotFuelMass];
+_heli setVariable ["bmkhs_totFuelMass"   , _actualTotFuelMass];
+_heli setVariable ["bmkhs_maxTotFuelMass", _maxTotFuelMass];

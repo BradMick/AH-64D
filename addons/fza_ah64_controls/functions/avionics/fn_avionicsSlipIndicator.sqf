@@ -26,9 +26,9 @@ params["_heli"];
 
 if (!(player in _heli)) exitWith {};
 
-private _beta_g = _heli getVariable "fza_sfmplus_aero_beta_g";
+private _beta_g = _heli getVariable "bmkhs_aero_beta_g";
 
-//DISPLAY SIGN ONLY - never negate fza_sfmplus_aero_beta_g upstream; the heading hold,
+//DISPLAY SIGN ONLY - never negate bmkhs_aero_beta_g upstream; the heading hold,
 //auto-pedal and auto-tuner all depend on its raw sign (+ = accel right).
 //Hover has no lateral accel, so the ball is a pendulum hanging to the low side (AH-64 hovers
 //left-side-low). In forward flight it is a correction cue - "step on the ball".

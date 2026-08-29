@@ -1,4 +1,4 @@
-class Fza_SfmPlus {
+class BMKHS_HeliSim {
     //FCR
     emptyMassFCR      = 6609; //kg
     emptyMomFCR       = 35608.268;   //-> 212.12 in

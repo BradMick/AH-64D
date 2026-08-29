@@ -19,8 +19,8 @@ switch(_control) do {
             _state set ["xferMenuOpen", 0];
         } else {
             private _lAuxOn   = _heli getVariable ["fza_fuel_lAuxOn", false];
-            private _lHasFuel = (_heli getVariable ["fza_sfmplus_stn1FuelMass", 0] > 0)
-                             || (_heli getVariable ["fza_sfmplus_stn2FuelMass", 0] > 0);
+            private _lHasFuel = (_heli getVariable ["bmkhs_stn1FuelMass", 0] > 0)
+                             || (_heli getVariable ["bmkhs_stn2FuelMass", 0] > 0);
             // Can turn off freely; can only turn on when a left-side tank has fuel
             if (_lAuxOn || _lHasFuel) then {
                 [_heli, "fza_fuel_lAuxOn", !_lAuxOn] call fza_fnc_updateNetworkGlobal;
@@ -36,7 +36,7 @@ switch(_control) do {
         } else {
             if (_heli getVariable ["fza_ah64_IAFSInstalled", false]) then {
                 private _iafsOn  = _heli getVariable ["fza_ah64_IAFSOn", false];
-                private _ctrMass = _heli getVariable ["fza_sfmplus_ctrFuelMass", 0];
+                private _ctrMass = _heli getVariable ["bmkhs_ctrFuelMass", 0];
                 // Can turn off freely; can only turn on when CTR has fuel
                 if (_iafsOn || _ctrMass > 0) then {
                     _heli setVariable ["fza_ah64_IAFSOn", !_iafsOn];
@@ -66,8 +66,8 @@ switch(_control) do {
     // r1 — AUX R (stn3 inner-right) on/off
     case "r1": {
         private _rAuxOn   = _heli getVariable ["fza_fuel_rAuxOn", false];
-        private _rHasFuel = (_heli getVariable ["fza_sfmplus_stn3FuelMass", 0] > 0)
-                         || (_heli getVariable ["fza_sfmplus_stn4FuelMass", 0] > 0);
+        private _rHasFuel = (_heli getVariable ["bmkhs_stn3FuelMass", 0] > 0)
+                         || (_heli getVariable ["bmkhs_stn4FuelMass", 0] > 0);
         // Can turn off freely; can only turn on when a right-side tank has fuel
         if (_rAuxOn || _rHasFuel) then {
             [_heli, "fza_fuel_rAuxOn", !_rAuxOn] call fza_fnc_updateNetworkGlobal;
@@ -131,7 +131,7 @@ switch(_control) do {
             };
             private _dh = floor dayTime;
             private _dm = floor ((dayTime - _dh) * 60);
-            private _startFuelMass = _heli getVariable ["fza_sfmplus_totFuelMass", 0];
+            private _startFuelMass = _heli getVariable ["bmkhs_totFuelMass", 0];
             [_heli, "fza_fuel_checkStartTime", CBA_missionTime] call fza_fnc_updateNetworkGlobal;
             [_heli, "fza_fuel_checkStartFuel", _startFuelMass]  call fza_fnc_updateNetworkGlobal;
             [_heli, "fza_fuel_checkRunning",   true]            call fza_fnc_updateNetworkGlobal;
@@ -139,7 +139,7 @@ switch(_control) do {
         };
         if (_chkActive && _chkRunning && !_chkDone) then {
             // STOP — freeze elapsed and results
-            private _totalFuelMass = _heli getVariable ["fza_sfmplus_totFuelMass", 0];
+            private _totalFuelMass = _heli getVariable ["bmkhs_totFuelMass", 0];
             private _startFuel     = _heli getVariable ["fza_fuel_checkStartFuel", _totalFuelMass];
             private _elapsed       = CBA_missionTime - (_heli getVariable ["fza_fuel_checkStartTime", CBA_missionTime]);
             private _burnRate      = if (_elapsed > 0) then { ((_startFuel - _totalFuelMass) * 2.20462) / (_elapsed / 3600) } else { 0 };

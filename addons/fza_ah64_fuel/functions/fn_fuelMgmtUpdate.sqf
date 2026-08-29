@@ -3,7 +3,7 @@ Function: fza_fuel_fnc_fuelMgmtUpdate
 
 Description:
     Updates fuel management state: CHECK sub-mode burn calculations.
-    Called each tick from fza_sfmplus_fnc_coreUpdate after fuelUpdate.
+    Called each tick from bmkhs_fnc_coreUpdate after fuelUpdate.
 
 Parameters:
     _heli - The helicopter to update [Unit].
@@ -14,7 +14,7 @@ Returns:
 Author:
     FZA Development Team
 ---------------------------------------------------------------------------- */
-#include "\fza_ah64_sfmplus\headers\core.hpp"
+#include "\bmkhs_helisim\headers\core.hpp"
 params ["_heli"];
 
 private _checkRunning = _heli getVariable ["fza_fuel_checkRunning", false];
@@ -23,7 +23,7 @@ if (!_checkRunning) exitWith {};
 private _checkStartTime = _heli getVariable ["fza_fuel_checkStartTime", 0];
 if (_checkStartTime <= 0) exitWith {};
 
-private _totalFuelMass  = _heli getVariable ["fza_sfmplus_totFuelMass", 0];
+private _totalFuelMass  = _heli getVariable ["bmkhs_totFuelMass", 0];
 private _elapsed        = CBA_missionTime - _checkStartTime;
 private _startFuelMass  = _heli getVariable ["fza_fuel_checkStartFuel", _totalFuelMass];
 private _burnedKg       = _startFuelMass - _totalFuelMass;
@@ -45,7 +45,7 @@ if (_targetSec > 0 && _elapsed >= _targetSec) then {
 
     [_heli, "fza_fuel_checkRunning", false]     call fza_fnc_updateNetworkGlobal;
     [_heli, "fza_fuel_checkDone",     true]      call fza_fnc_updateNetworkGlobal;
-    
+
     private _fuelPageOpen = ("fuel" in ([_heli, 0] call fza_mpd_fnc_currentPage)) ||
                             ("fuel" in ([_heli, 1] call fza_mpd_fnc_currentPage));
     if (!_fuelPageOpen ||

@@ -3,7 +3,7 @@ Function: fza_systems_fnc_drivetrainNoseGearbox1
 
 Description:
     Updates all of the modules core functions.
-    
+
 Parameters:
     _heli - The helicopter to get information from [Unit].
 
@@ -19,12 +19,12 @@ Author:
 params ["_heli", "_deltaTime"];
 #include "\fza_ah64_systems\headers\systems.hpp"
 
-private _engPctTq         = _heli getVariable "fza_sfmplus_engPctTQ" select 0;
-private _isSingleEng      = _heli getVariable "fza_sfmplus_isSingleEng";
+private _engPctTq         = _heli getVariable "bmkhs_engPctTQ" select 0;
+private _isSingleEng      = _heli getVariable "bmkhs_isSingleEng";
 private _grbxHitPtDmg     = _heli getHitPointDamage "hit_drives_noseGearbox1";
 private _dmgTimerCont     = _heli getVariable "fza_systems_dmgTimerCont";
 private _dmgTimerTrans    = _heli getVariable "fza_systems_dmgTimerTrans";
-private _randomTq         = _heli getVariable "fza_sfmplus_randomTq" select 0;
+private _randomTq         = _heli getVariable "bmkhs_randomTq" select 0;
 private _applyDamage      = false;
 private _engOverspeed     = false;
 
@@ -44,7 +44,7 @@ if (isEngineOn _heli) then {
         //2.5 min SE contingency
         if (_engPctTQ > 1.10 && _engPctTQ <= 1.22) then {
             _dmgTimerCont = _dmgTimerCont + _deltaTime;
-                    
+
             if (_dmgTimerCont >= 150) then {    //2.5 minutes = 150 sec
                 _dmgTimerCont = 150;
                 _applyDamage = true;
@@ -71,7 +71,7 @@ if (isEngineOn _heli) then {
         };
     };
 };
- 
+
 if (_isSingleEng) then {
     if (_applyDamage) then {
         //--Dynamic damage
@@ -103,7 +103,7 @@ private _grbxDmg   = _grbxHitPtDmg + _dmgPerSec;
 
 _heli setHitPointDamage ["hit_drives_noseGearbox1", _grbxDmg];
 
-[_heli, "fza_sfmplus_randomTq", 0, _randomTq, true] call fza_fnc_setArrayVariable;
+[_heli, "bmkhs_randomTq", 0, _randomTq, true] call fza_fnc_setArrayVariable;
 
 if (_grbxHitPtDmg == 1.0) then {
     _engOverspeed = true;

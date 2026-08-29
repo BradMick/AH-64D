@@ -3,7 +3,7 @@ Function: fza_systems_fnc_electricalController
 
 Description:
     Updates all of the modules core functions.
-    
+
 Parameters:
     _heli - The helicopter to get information from [Unit].
 
@@ -21,7 +21,7 @@ params ["_heli", "_deltaTime"];
 private _configVehicles = configOf _heli;
 
 private _apuOn  = _heli getVariable "fza_systems_apuOn";
-private _rtrRPM = [_heli] call fza_sfmplus_fnc_getRtrRPM;
+private _rtrRPM = [_heli] call bmkhs_fnc_getRtrRPM;
 
 //Update the Battery
 [_heli, _deltaTime] call fza_systems_fnc_electricalBattery;

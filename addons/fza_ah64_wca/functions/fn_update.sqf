@@ -3,12 +3,12 @@ Function: fza_wca_fnc_update
 
 Description:
     handles the wca buttons
-    
+
 Parameters:
 
 Returns:
     Nothing
-    
+
 Examples:
 
 
@@ -19,7 +19,7 @@ params ["_heli"];
 #include "\fza_ah64_controls\headers\systemConstants.h"
 #include "\fza_ah64_mpd\headers\mfdConstants.h"
 
-private _onGnd      = [_heli] call fza_sfmplus_fnc_onGround;
+private _onGnd      = [_heli] call bmkhs_fnc_onGround;
 private _gndOrideOn = _heli getVariable "fza_ah64_gndOrideOn";
 private _battBusOn = _heli getVariable "fza_systems_battBusOn";
 

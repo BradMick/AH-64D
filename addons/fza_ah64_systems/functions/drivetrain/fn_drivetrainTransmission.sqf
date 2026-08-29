@@ -3,7 +3,7 @@ Function: fza_systems_fnc_drivetrainTransmission
 
 Description:
     Updates all of the modules core functions.
-    
+
 Parameters:
     _heli - The helicopter to get information from [Unit].
 
@@ -21,14 +21,14 @@ params ["_heli", "_deltaTime"];
 
 if (!local _heli) exitWith {};
 
-private _eng1PctTQ     = _heli getVariable "fza_sfmplus_engPctTQ" select 0;
-private _eng2PctTQ     = _heli getVariable "fza_sfmplus_engPctTQ" select 1;
+private _eng1PctTQ     = _heli getVariable "bmkhs_engPctTQ" select 0;
+private _eng2PctTQ     = _heli getVariable "bmkhs_engPctTQ" select 1;
 private _totEngTQ      = _eng1PctTQ + _eng2PctTQ;
 private _xmsnHitPtDmg  = _heli getHitPointDamage "hit_drives_transmission";
 private _dmgTimerCont  = _heli getVariable "fza_systems_dmgTimerCont";
 private _dmgTimerTrans = _heli getVariable "fza_systems_dmgTimerTrans";
-private _randomTq1     = _heli getVariable "fza_sfmplus_randomTq" select 2;
-private _randomTq2     = _heli getVariable "fza_sfmplus_randomTq" select 3;
+private _randomTq1     = _heli getVariable "bmkhs_randomTq" select 2;
+private _randomTq2     = _heli getVariable "bmkhs_randomTq" select 3;
 private _applyDamage   = false;
 
 private _persistentDmg    = 0.0;
@@ -44,7 +44,7 @@ if (isEngineOn _heli) then {
     //6 sec transient
         if (_totEngTQ > 2.0 && _totEngTQ <= 2.30) then {
         _dmgTimerTrans = _dmgTimerTrans + _deltaTime;
-            
+
         if (_dmgTimerTrans >= 6) then {
             _dmgTimerTrans = 6;
             _applyDamage = true;
@@ -84,8 +84,8 @@ private _dmg       = _xmsnHitPtDmg + _dmgPerSec;
 
 _heli setHitPointDamage ["hit_drives_transmission", _dmg];
 
-[_heli, "fza_sfmplus_randomTq", 2, _randomTq1, false] call fza_fnc_setArrayVariable;
-[_heli, "fza_sfmplus_randomTq", 3, _randomTq2, false] call fza_fnc_setArrayVariable;
+[_heli, "bmkhs_randomTq", 2, _randomTq1, false] call fza_fnc_setArrayVariable;
+[_heli, "bmkhs_randomTq", 3, _randomTq2, false] call fza_fnc_setArrayVariable;
 
 if (_xmsnHitPtDmg == 1.0) then {
     _heli setHitPointDamage ["hithrotor",           1.0];

@@ -80,19 +80,19 @@ if (isNil "_circleWAdj") then {
 };
 
 // ── Read HeliSim variables ───────────────────────────────────────────────────
-private _cycFwdAft    = _heli getVariable ["fza_sfmplus_cyclicFwdAft",           0.0]; // pitch (-1…1)
-private _cycLeftRight = _heli getVariable ["fza_sfmplus_cyclicLeftRight",        0.0]; // roll  (-1…1)
+private _cycFwdAft    = _heli getVariable ["bmkhs_cyclicFwdAft",           0.0]; // pitch (-1…1)
+private _cycLeftRight = _heli getVariable ["bmkhs_cyclicLeftRight",        0.0]; // roll  (-1…1)
 private _ftPitch      = _heli getVariable ["fza_ah64_forceTrimPosPitch",         0.0];
 private _ftRoll       = _heli getVariable ["fza_ah64_forceTrimPosRoll",          0.0];
 private _ftPedal      = _heli getVariable ["fza_ah64_forceTrimPosYaw",           0.0];
-private _sasPitch     = _heli getVariable ["fza_sfmplus_fmcSasPitchOut",         0.0];
-private _sasRoll      = _heli getVariable ["fza_sfmplus_fmcSasRollOut",          0.0];
-private _sasYaw       = _heli getVariable ["fza_sfmplus_fmcHdgHoldPedalYawOut",  0.0];
-private _attPitch     = _heli getVariable ["fza_sfmplus_fmcAttHoldCycPitchOut",  0.0];
-private _attRoll      = _heli getVariable ["fza_sfmplus_fmcAttHoldCycRollOut",   0.0];
-private _altColl      = _heli getVariable ["fza_sfmplus_fmcAltHoldCollOut",      0.0];
-private _collective   = _heli getVariable ["fza_sfmplus_collectiveOutput",       0.0];
-private _pedal        = _heli getVariable ["fza_sfmplus_pedalLeftRight",         0.0];
+private _sasPitch     = _heli getVariable ["bmkhs_fmcSasPitchOut",         0.0];
+private _sasRoll      = _heli getVariable ["bmkhs_fmcSasRollOut",          0.0];
+private _sasYaw       = _heli getVariable ["bmkhs_fmcHdgHoldPedalYawOut",  0.0];
+private _attPitch     = _heli getVariable ["bmkhs_fmcAttHoldCycPitchOut",  0.0];
+private _attRoll      = _heli getVariable ["bmkhs_fmcAttHoldCycRollOut",   0.0];
+private _altColl      = _heli getVariable ["bmkhs_fmcAltHoldCollOut",      0.0];
+private _collective   = _heli getVariable ["bmkhs_collectiveOutput",       0.0];
+private _pedal        = _heli getVariable ["bmkhs_pedalLeftRight",         0.0];
 
 private _attHoldActive  = _heli getVariable ["fza_ah64_attHoldActive",  false];
 private _attSubMode     = _heli getVariable ["fza_ah64_attHoldSubMode", "ATT"];
@@ -279,8 +279,8 @@ CTRL(5134) ctrlSetTextColor _colFT;
 CTRL(5134) ctrlCommit 0;
 
 // Actual physical stick (green ring) – top layer; transparency baked in ring_act_ca.paa
-private _effPitch = [_cycFwdAft,    _ftPitch] call fza_sfmplus_fnc_getInterpInput;
-private _effRoll  = [_cycLeftRight, _ftRoll]  call fza_sfmplus_fnc_getInterpInput;
+private _effPitch = [_cycFwdAft,    _ftPitch] call bmkhs_fnc_getInterpInput;
+private _effRoll  = [_cycLeftRight, _ftRoll]  call bmkhs_fnc_getInterpInput;
 private _szActW = _szAct * _circleWAdj;
 private _actX = _cxCtr - _effRoll  * _cxHW;
 private _actY = _cyCtr - _effPitch * _cyHH;
@@ -330,7 +330,7 @@ CTRL(5141) ctrlSetTextColor _colFT;
 CTRL(5141) ctrlCommit 0;
 
 // Actual pedal (green "|")
-private _effPedal = [_pedal, _ftPedal] call fza_sfmplus_fnc_getInterpInput;
+private _effPedal = [_pedal, _ftPedal] call bmkhs_fnc_getInterpInput;
 private _actPedX  = _yawCtrX + _effPedal * _yawHW - _indW * 0.5;
 private _actPedY = _yawCtrY - _fontSz * 0.50;
 CTRL(5142) ctrlSetPosition [_actPedX, _actPedY, _indW, _indH];

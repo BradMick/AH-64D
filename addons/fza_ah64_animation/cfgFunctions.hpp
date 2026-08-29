@@ -4,7 +4,7 @@
 // defined (no project.toml key, no CLI flag). The #else branch always won, so every
 // function was built compile-once-and-cache and patched .sqf files were never re-read.
 // Costs nothing without -filePatching: no loose file exists, so it compiles the PBO copy
-// once at mission start as before. See addons/fza_ah64_sfmplus/cfgFunctions.hpp for the
+// once at mission start as before. See addons/bmkhs_helisim/cfgFunctions.hpp for the
 // full write-up, and .hemtt/project.toml for the matching .sqfc exclude (both are needed).
 #define R recompile = 1
 class CfgFunctions

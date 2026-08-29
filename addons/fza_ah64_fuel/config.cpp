@@ -6,7 +6,7 @@ class CfgPatches
         author = "$STR_FZA_AH64_DEVELOPMENT_TEAM";
         weapons[] = {};
         requiredVersion = 2.10;
-        requiredAddons[] = {"fza_ah64_sfmplus"};
+        requiredAddons[] = {"bmkhs_helisim"};
         #include "version.hpp"
     };
 };

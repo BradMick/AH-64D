@@ -27,8 +27,8 @@ sleep 0.5;
         _pylons pushBack _pylonDummy;
     };
 
-    private _stationFuelmass = ["fza_sfmplus_stn1FuelMass", "fza_sfmplus_stn2FuelMass", "fza_sfmplus_stn3FuelMass", "fza_sfmplus_stn4FuelMass"] # _foreachindex;
-    private _pylonmass = [_heli,  (_pylon - 1),  _pylon,  (_pylon + 3), _stationFuelmass] call fza_sfmplus_fnc_massUpdateStation;
+    private _stationFuelmass = ["bmkhs_stn1FuelMass", "bmkhs_stn2FuelMass", "bmkhs_stn3FuelMass", "bmkhs_stn4FuelMass"] # _foreachindex;
+    private _pylonmass = [_heli,  (_pylon - 1),  _pylon,  (_pylon + 3), _stationFuelmass] call bmkhs_fnc_massUpdateStation;
     _pylonDummyMain setMass _pylonmass;
     _pylonDummyMain attachTo [_heli, _position];
     detach _pylonDummyMain;
@@ -40,7 +40,7 @@ sleep 0.5;
         {
             _x setPhysicsCollisionFlag false;
         } forEach _pylons;
-        
+
         waitUntil {(getPos _pylonDummyMain)#2 < -1};
         {
             deleteVehicle _x;

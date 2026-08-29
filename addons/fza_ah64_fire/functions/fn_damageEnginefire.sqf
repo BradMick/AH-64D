@@ -50,12 +50,12 @@ private _reserveFBActioned  = false;
 while {
     (alive _heli)
 }
-do { 
+do {
 	scopeName "fza_fireHandleScope";
     private _rand = random 10;
     private _primaryFBState = _heli getVariable "fza_ah64_firepdisch";
     private _reserveFBState = _heli getVariable "fza_ah64_firerdisch";
-    private _engState  = _heli getVariable "fza_sfmplus_engState";
+    private _engState  = _heli getVariable "bmkhs_engState";
     private _heliDamage = damage _heli;
     if (_primaryFBAvailable == _primaryFBState) then {
         if (floor random 11 > 7) exitWith {
@@ -67,7 +67,7 @@ do {
         if (floor random 11 > 7) exitWith {
             _reserveFBAvailable = false; //extinguisher Fail
         };
-        _reserveFBActioned = true;  
+        _reserveFBActioned = true;
     };
     switch (_eng) do {
         case "left": {

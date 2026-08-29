@@ -32,10 +32,10 @@ private _apuFire            = _heli getVariable "fza_ah64_apu_fire";
 private _mstrWarnLighton    = _heli getVariable "fza_ah64_mstrWarnLightOn";
 
 if (_engineOneArm && _engineOneArmTimer <= CBA_missionTime - 2) then {
-    [_heli, "fza_sfmplus_engState", 0, "OFF", true] call fza_fnc_setArrayVariable;
+    [_heli, "bmkhs_engState", 0, "OFF", true] call fza_fnc_setArrayVariable;
 };
 if (_engineTwoArm && _engineTwoArmTimer <= CBA_missionTime - 2) then {
-    [_heli, "fza_sfmplus_engState", 1, "OFF", true] call fza_fnc_setArrayVariable;
+    [_heli, "bmkhs_engState", 1, "OFF", true] call fza_fnc_setArrayVariable;
 };
 if (_apuArm && _apuArmTimer <= CBA_missionTime - 2) then {
     [_heli, "fza_systems_apuBtnOn", false] call fza_fnc_updateNetworkGlobal;

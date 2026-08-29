@@ -15,13 +15,13 @@ _padLeft = {
 };
 
 /// Torque
-private _torque = (_heli getVariable "fza_sfmplus_engPctTQ" select 0) max (_heli getVariable "fza_sfmplus_engPctTQ" select 1);
+private _torque = (_heli getVariable "bmkhs_engPctTQ" select 0) max (_heli getVariable "bmkhs_engPctTQ" select 1);
 _heli setUserMFDText [MFD_INDEX_OFFSET(MFD_TEXT_IND_FLT_TORQUE), ( _torque * 100) toFixed 0];
 
 //Altitude and speed
-private _groundSpeed = (_heli getVariable "fza_sfmplus_gndSpeed");//vectorMagnitude (velocity _heli call _2dvectTo3D);
-private _airspeed    = (_heli getVariable "fza_sfmplus_vel2D");//vectorMagnitude (velocity _heli vectorDiff wind);
-([_heli] call fza_sfmplus_fnc_getAltitude)
+private _groundSpeed = (_heli getVariable "bmkhs_gndSpeed");//vectorMagnitude (velocity _heli call _2dvectTo3D);
+private _airspeed    = (_heli getVariable "bmkhs_vel2D");//vectorMagnitude (velocity _heli vectorDiff wind);
+([_heli] call bmkhs_fnc_getAltitude)
     params ["_barAlt", "_radAlt"];
 _heli setUserMFDText [MFD_INDEX_OFFSET(MFD_TEXT_IND_FLT_BALT),  _barAlt toFixed 0];
 _heli setUserMFDText [MFD_INDEX_OFFSET(MFD_TEXT_IND_FLT_GALT), [_radAlt toFixed 0, ""] select (_radAlt == 1420)];
@@ -50,7 +50,7 @@ if (isNil "_nextPointPos") then {
     private _pitch = (_heli call BIS_fnc_getPitchBank) # 0;
     private _flyToCueX = _waypointDirection;
     private _flyToCueY = (_nextPointMSL - getPosASL _heli#2) atan2 (_nextPointPos distance2D getPos _heli) - (_pitch/6);
-    
+
     _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FLT_FLY_TO_CUE_X), _flyToCueX];
     _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FLT_FLY_TO_CUE_Y), _flyToCueY];
 };
@@ -59,7 +59,7 @@ private _tadsAzimuth = _heli getVariable "fza_ah64_tadsAzimuth";
 private _alternatesensorpan = (if (player == gunner _heli) then {deg(_heli animationPhase "pnvs")} else {_tadsAzimuth});
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FLT_ALTERNATE_SENSOR), _alternatesensorpan];
 
-_heli getVariable "fza_ah64_fcrLastScan" params ["_dir"]; 
+_heli getVariable "fza_ah64_fcrLastScan" params ["_dir"];
 private _fcrHeading = [(_dir - direction _heli) mod 360] call CBA_fnc_simplifyAngle180;
 if (_heli animationPhase "fcr_enable" != 1) then {
     _fcrHeading = -1000;
@@ -67,11 +67,11 @@ if (_heli animationPhase "fcr_enable" != 1) then {
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FLT_FCR_CENTERLINE), _fcrHeading];
 
 // Velocity Vector
-// Lateral drift comes from the SHARED sideslip calc (fza_sfmplus_aero_beta_deg,
+// Lateral drift comes from the SHARED sideslip calc (bmkhs_aero_beta_deg,
 // + = velocity to the RIGHT of the nose), so the HMD and MPD read one consistent
 // source. Vertical (flight-path angle) from world vertical velocity as before.
-private _velocity  = _heli getVariable "fza_sfmplus_velWorldSpace";
-private _velocityX = _heli getVariable ["fza_sfmplus_aero_beta_deg", 0.0];
+private _velocity  = _heli getVariable "bmkhs_velWorldSpace";
+private _velocityX = _heli getVariable ["bmkhs_aero_beta_deg", 0.0];
 private _velocityY = (_velocity # 2) atan2 ([0,0,0] distance2D _velocity);
 
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FLT_FLIGHT_PATH_X), _velocityX];

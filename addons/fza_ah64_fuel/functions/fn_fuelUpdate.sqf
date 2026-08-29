@@ -29,45 +29,45 @@ Author:
 #include "\fza_ah64_fuel\headers\fuelConstants.hpp"
 params ["_heli"];
 
-private _deltaTime     = _heli getVariable "fza_sfmplus_deltaTime";
+private _deltaTime     = _heli getVariable "bmkhs_deltaTime";
 if (_deltaTime <= 0) exitWith {};
 
 private _IAFSInstalled = _heli getVariable "fza_ah64_IAFSInstalled";
 if (isNil "_IAFSInstalled") exitWith {};
 
-private _maxFwdFuelMass = _heli getVariable "fza_sfmplus_maxFwdFuelMass";
-private _maxCtrFuelMass = _heli getVariable "fza_sfmplus_maxCtrFuelMass";
-private _maxAftFuelMass = _heli getVariable "fza_sfmplus_maxAftFuelMass";
-private _maxTnkFuelMass = _heli getVariable "fza_sfmplus_maxExtFuelMass";
-private _maxTotFuelMass = _heli getVariable "fza_sfmplus_maxTotFuelMass";
+private _maxFwdFuelMass = _heli getVariable "bmkhs_maxFwdFuelMass";
+private _maxCtrFuelMass = _heli getVariable "bmkhs_maxCtrFuelMass";
+private _maxAftFuelMass = _heli getVariable "bmkhs_maxAftFuelMass";
+private _maxTnkFuelMass = _heli getVariable "bmkhs_maxExtFuelMass";
+private _maxTotFuelMass = _heli getVariable "bmkhs_maxTotFuelMass";
 if (_maxTotFuelMass <= 0) exitWith {};
 
 // If Arma fuel was changed externally (e.g. editor/trigger script), resync
 // internal tank masses so subsequent simulation ticks stay consistent.
 private _armaFuelFrac = fuel _heli;
-private _storedTotFuelMass = _heli getVariable ["fza_sfmplus_totFuelMass", 0];
+private _storedTotFuelMass = _heli getVariable ["bmkhs_totFuelMass", 0];
 private _storedFuelFrac = if (_maxTotFuelMass > 0) then { _storedTotFuelMass / _maxTotFuelMass } else { 0 };
 if (abs (_armaFuelFrac - _storedFuelFrac) > 0.01) then {
     [_heli] call fza_fuel_fnc_fuelSet;
-    _maxTotFuelMass = _heli getVariable "fza_sfmplus_maxTotFuelMass";
+    _maxTotFuelMass = _heli getVariable "bmkhs_maxTotFuelMass";
 };
 
 // Current cell masses
-private _fwdFuelMass  = _heli getVariable "fza_sfmplus_fwdFuelMass";
-private _ctrFuelMass  = _heli getVariable "fza_sfmplus_ctrFuelMass";
-private _aftFuelMass  = _heli getVariable "fza_sfmplus_aftFuelMass";
-private _stn1FuelMass = _heli getVariable "fza_sfmplus_stn1FuelMass";
-private _stn2FuelMass = _heli getVariable "fza_sfmplus_stn2FuelMass";
-private _stn3FuelMass = _heli getVariable "fza_sfmplus_stn3FuelMass";
-private _stn4FuelMass = _heli getVariable "fza_sfmplus_stn4FuelMass";
+private _fwdFuelMass  = _heli getVariable "bmkhs_fwdFuelMass";
+private _ctrFuelMass  = _heli getVariable "bmkhs_ctrFuelMass";
+private _aftFuelMass  = _heli getVariable "bmkhs_aftFuelMass";
+private _stn1FuelMass = _heli getVariable "bmkhs_stn1FuelMass";
+private _stn2FuelMass = _heli getVariable "bmkhs_stn2FuelMass";
+private _stn3FuelMass = _heli getVariable "bmkhs_stn3FuelMass";
+private _stn4FuelMass = _heli getVariable "bmkhs_stn4FuelMass";
 
 // Fuel flow
 private _apuFF_kgs  = _heli getVariable "fza_systems_apuFF_kgs";
-private _engFF      = _heli getVariable "fza_sfmplus_engFF";
+private _engFF      = _heli getVariable "bmkhs_engFF";
 private _eng1FF_kgs = _engFF select 0;
 private _eng2FF_kgs = _engFF select 1;
 
-private _engState = _heli getVariable "fza_sfmplus_engState";
+private _engState = _heli getVariable "bmkhs_engState";
 private _eng1On   = (_engState select 0) == "ON";
 private _eng2On   = (_engState select 1) == "ON";
 
@@ -343,14 +343,14 @@ if (local _heli) then {
     _heli setFuel (_totFuelMass / _maxTotFuelMass);
 };
 
-_heli setVariable ["fza_sfmplus_fwdFuelMass",  _fwdFuelMass];
-_heli setVariable ["fza_sfmplus_ctrFuelMass",  _ctrFuelMass];
-_heli setVariable ["fza_sfmplus_aftFuelMass",  _aftFuelMass];
-_heli setVariable ["fza_sfmplus_stn1FuelMass", _stn1FuelMass];
-_heli setVariable ["fza_sfmplus_stn2FuelMass", _stn2FuelMass];
-_heli setVariable ["fza_sfmplus_stn3FuelMass", _stn3FuelMass];
-_heli setVariable ["fza_sfmplus_stn4FuelMass", _stn4FuelMass];
-_heli setVariable ["fza_sfmplus_totFuelMass",  _totFuelMass];
+_heli setVariable ["bmkhs_fwdFuelMass",  _fwdFuelMass];
+_heli setVariable ["bmkhs_ctrFuelMass",  _ctrFuelMass];
+_heli setVariable ["bmkhs_aftFuelMass",  _aftFuelMass];
+_heli setVariable ["bmkhs_stn1FuelMass", _stn1FuelMass];
+_heli setVariable ["bmkhs_stn2FuelMass", _stn2FuelMass];
+_heli setVariable ["bmkhs_stn3FuelMass", _stn3FuelMass];
+_heli setVariable ["bmkhs_stn4FuelMass", _stn4FuelMass];
+_heli setVariable ["bmkhs_totFuelMass",  _totFuelMass];
 
 private _fuelPageOpen = ("fuel" in (_heli getVariable ["fza_mpd_page_plt", ""]))
                      || ("fuel" in (_heli getVariable ["fza_mpd_page_cpg", ""]));

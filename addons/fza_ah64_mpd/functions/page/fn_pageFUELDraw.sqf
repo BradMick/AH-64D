@@ -1,6 +1,6 @@
 params["_heli", "_mpdIndex", "_state", "_persistState"];
 #include "\fza_ah64_mpd\headers\mfdConstants.h"
-#include "\fza_ah64_sfmplus\headers\core.hpp"
+#include "\bmkhs_helisim\headers\core.hpp"
 
 [_heli] call fza_mpd_fnc_fuelGetData params [ "_forwardCellWeight"
                                             , "_ctrFuelWeight"
@@ -80,11 +80,11 @@ _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_INTERCELL_XFER_PHASE), _int
 private _lAuxOn = _heli getVariable ["fza_fuel_lAuxOn", false];
 private _rAuxOn = _heli getVariable ["fza_fuel_rAuxOn", false];
 
-if (_lAuxOn && (_heli getVariable ["fza_sfmplus_stn1FuelMass", 0] <= 0) && (_heli getVariable ["fza_sfmplus_stn2FuelMass", 0] <= 0)) then {
+if (_lAuxOn && (_heli getVariable ["bmkhs_stn1FuelMass", 0] <= 0) && (_heli getVariable ["bmkhs_stn2FuelMass", 0] <= 0)) then {
     [_heli, "fza_fuel_lAuxOn", false] call fza_fnc_updateNetworkGlobal;
     _lAuxOn = false;
 };
-if (_rAuxOn && (_heli getVariable ["fza_sfmplus_stn3FuelMass", 0] <= 0) && (_heli getVariable ["fza_sfmplus_stn4FuelMass", 0] <= 0)) then {
+if (_rAuxOn && (_heli getVariable ["bmkhs_stn3FuelMass", 0] <= 0) && (_heli getVariable ["bmkhs_stn4FuelMass", 0] <= 0)) then {
     [_heli, "fza_fuel_rAuxOn", false] call fza_fnc_updateNetworkGlobal;
     _rAuxOn = false;
 };
@@ -150,10 +150,10 @@ _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_ENG1_FLOWING), BOOLTONUM(_e
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_ENG2_FLOWING), BOOLTONUM(_eng2FuelCons > 0 && _eng2SrcHasFuel)];
 
 // Aux tank fuel masses (fetch early for use in IAFS and Aux logic)
-private _stn1FuelMassRaw = _heli getVariable ["fza_sfmplus_stn1FuelMass", 0];
-private _stn2FuelMassRaw = _heli getVariable ["fza_sfmplus_stn2FuelMass", 0];
-private _stn3FuelMassRaw = _heli getVariable ["fza_sfmplus_stn3FuelMass", 0];
-private _stn4FuelMassRaw = _heli getVariable ["fza_sfmplus_stn4FuelMass", 0];
+private _stn1FuelMassRaw = _heli getVariable ["bmkhs_stn1FuelMass", 0];
+private _stn2FuelMassRaw = _heli getVariable ["bmkhs_stn2FuelMass", 0];
+private _stn3FuelMassRaw = _heli getVariable ["bmkhs_stn3FuelMass", 0];
+private _stn4FuelMassRaw = _heli getVariable ["bmkhs_stn4FuelMass", 0];
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_STN1_MASS), if (_stn1Present) then {_stn1FuelMassRaw * 2.205} else {-1}];
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_STN2_MASS), if (_stn2Present) then {_stn2FuelMassRaw * 2.205} else {-1}];
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_STN3_MASS), if (_stn3Present) then {_stn3FuelMassRaw * 2.205} else {-1}];
@@ -187,7 +187,7 @@ _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_CHECK_MINUTES), _checkMinut
 if (_checkRunning || _checkDone) then {
     private _startTime   = _heli getVariable ["fza_fuel_checkStartTime", 0];
     private _startFuel   = _heli getVariable ["fza_fuel_checkStartFuel", 0];
-    private _currentFuel = _heli getVariable ["fza_sfmplus_totFuelMass", 0];
+    private _currentFuel = _heli getVariable ["bmkhs_totFuelMass", 0];
     private _elapsedSec  = if (_checkRunning) then {
         (CBA_missionTime - _startTime) min (_checkMinutes * 60)
     } else {

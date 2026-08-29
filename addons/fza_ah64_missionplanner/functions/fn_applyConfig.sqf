@@ -55,7 +55,7 @@ if !(_heli isKindOf "Helicopter") exitWith {false};
     private _targetFuelKg = _settings getVariable ["fuel", 0];
     private _targetFuelKgClamped = _targetFuelKg max 0;
 
-    private _sfmPlusCfg = configOf _heli >> "Fza_SfmPlus";
+    private _sfmPlusCfg = configOf _heli >> "BMKHS_HeliSim";
     private _ctrEnabled = [0, 1] select _iafsInstalled;
     private _tankCapacityKg =
         getNumber (_sfmPlusCfg >> "maxFwdFuelMass") +
@@ -64,7 +64,7 @@ if !(_heli isKindOf "Helicopter") exitWith {false};
 
     private _targetFuelPct = if (_tankCapacityKg > 0) then { (_targetFuelKgClamped / _tankCapacityKg) max 0 min 1 } else { fuel _heli };
 
-    private _curFuelKg = _heli getVariable ["fza_sfmplus_totFuelMass", 0];
+    private _curFuelKg = _heli getVariable ["bmkhs_totFuelMass", 0];
     private _fuelDeltaKg = abs (_targetFuelKgClamped - _curFuelKg);
     private _fuelDeltaLbs = _fuelDeltaKg * 2.20462;
 
@@ -1015,7 +1015,7 @@ if !(_heli isKindOf "Helicopter") exitWith {false};
     };
 
     // ── STEP 6: MASS UPDATE ──────────────────────────────────────────────────
-    [_heli] call fza_sfmplus_fnc_massUpdate;
+    [_heli] call bmkhs_fnc_massUpdate;
 
     // ── STEP 7: MSN EQUIP (30s progress bar) ────────────────────────────────
     private _isUK = _msnEquip isEqualTo "UK";
