@@ -152,7 +152,6 @@ _heli setVariable ["fza_sfmplus_posIntClamp", 0.2500];
 _heli setVariable ["fza_sfmplus_posIntX",     0.0];
 _heli setVariable ["fza_sfmplus_posIntY",     0.0];
 
-_heli setVariable ["fza_ah64_attHoldSubModeLock", ""];
 _heli setVariable ["fza_sfmPlus_autoPedalHdg",       getDir _heli];
 _heli setVariable ["fza_sfmplus_autoPedalRegime",    "hdg"];   //hdg | ntt | aero (live regime)
 _heli setVariable ["fza_sfmplus_autoPedalRegimeWgt", 1.0];     //0-1, share of the pedal that regime owns

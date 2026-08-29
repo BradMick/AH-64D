@@ -38,28 +38,20 @@ private _curRoll  = _curAtt # 1;
 private _attHoldCycPitchOut = 0.0;
 private _attHoldCycRollOut  = 0.0;
 
-//Submode selection: normally speed-driven. A manual LOCK (fza_ah64_attHoldSubModeLock, set by the
-//pos/vel/att keybinds: "" = auto, else "pos"/"vel"/"att") OVERRIDES the speed logic and PINS the
-//submode - so a tuning run can't be kicked out of its submode if the aircraft goes haywire and you
-//fly it back through a speed band.
-private _subLock = _heli getVariable ["fza_ah64_attHoldSubModeLock", ""];
-if (_subLock != "") then {
-    [_heli, "fza_ah64_attHoldSubMode", _subLock] call fza_fnc_updateNetworkGlobal;
-} else {
-    //Position hold
-    if (_gndSpeed <= POS_HOLD_SPEED_SWITCH) then {
-        [_heli, "fza_ah64_attHoldSubMode", "pos"] call fza_fnc_updateNetworkGlobal;
-    };
-    //Velocity hold
-    //This needs to check if accelerating or decelerating...really it's
-    //5 to 40 knots accelerating, 30 to 5 knots decelerating
-    if (_gndSpeed > POS_HOLD_SPEED_SWITCH && _gndSpeed <= VEL_HOLD_SPEED_SWITCH_ACCEL) then {
-        [_heli, "fza_ah64_attHoldSubMode", "vel"] call fza_fnc_updateNetworkGlobal;
-    };
-    //Attitude hold
-    if (_gndSpeed > VEL_HOLD_SPEED_SWITCH_ACCEL) then {
-        [_heli, "fza_ah64_attHoldSubMode", "att"] call fza_fnc_updateNetworkGlobal;
-    };
+//Submode selection: speed-driven.
+//Position hold
+if (_gndSpeed <= POS_HOLD_SPEED_SWITCH) then {
+    [_heli, "fza_ah64_attHoldSubMode", "pos"] call fza_fnc_updateNetworkGlobal;
+};
+//Velocity hold
+//This needs to check if accelerating or decelerating...really it's
+//5 to 40 knots accelerating, 30 to 5 knots decelerating
+if (_gndSpeed > POS_HOLD_SPEED_SWITCH && _gndSpeed <= VEL_HOLD_SPEED_SWITCH_ACCEL) then {
+    [_heli, "fza_ah64_attHoldSubMode", "vel"] call fza_fnc_updateNetworkGlobal;
+};
+//Attitude hold
+if (_gndSpeed > VEL_HOLD_SPEED_SWITCH_ACCEL) then {
+    [_heli, "fza_ah64_attHoldSubMode", "att"] call fza_fnc_updateNetworkGlobal;
 };
 
 if (_heli getVariable "fza_ah64_attHoldActive" && !(_heli getVariable "fza_ah64_forceTrimInterupted")) then {

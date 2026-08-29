@@ -199,8 +199,6 @@ if (_velZ < -_vrsVelMin && _velXY < VEL_ETL) then {
 
     private _denom = linearConversion[-7.62, -19.30, _velZ, _vrsVel, 3.81, true];
     _inducedVelocityScalar = if(_vrsVel == 0.0) then { 1.0; } else { 1 - (_velZ / _denom); };
-
-    //systemChat format ["_denom = %1", _denom];
 };
 
 //Finally, multiply all the scalars above to arrive at the final thrust scalar
@@ -365,6 +363,29 @@ if ([_inducedVelocity] call fza_sfmplus_fnc_isNAN || [_inducedVelocity] call fza
 _heli setVariable ["fza_sfmplus_vrsVelocityMin", _inducedVelocity * 0.23];
 _heli setVariable ["fza_sfmplus_vrsVelocityMax", _inducedVelocity * 1.25];
 /////////////////////////////////////////////////////////////////////////////////////////////
+// Retreating Blade Stall ///////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+private _retBladeStallSpeedTable =
+[
+ [  0.00, 0.00, 0.00]   //0ktas
+,[ 77.16, 0.00, 0.00]   //150ktas
+,[ 82.30, 0.04, 0.20]   //160ktas
+,[ 87.45, 0.12, 0.50]   //170ktas
+,[ 92.59, 0.25, 0.90]   //180ktas
+,[ 97.74, 0.50, 1.40]   //190ktas
+,[100.31, 0.70, 1.70]   //195ktas
+,[102.88, 1.00, 2.00]   //200ktas
+];
+
+private _retBladeStallCollTable =
+[
+ [0.0, [_retBladeStallSpeedTable, _velXY] call fza_fnc_linearInterp select 1]
+,[0.7, [_retBladeStallSpeedTable, _velXY] call fza_fnc_linearInterp select 2]
+];
+
+private _retBladeStallInput = [_retBladeStallCollTable, _fmcCollOut] call fza_fnc_linearInterp select 1;
+private _retBladeStallVal   = linearConversion [77.16, 102.88, _velXY, 1.0, 0.0, true];
+/////////////////////////////////////////////////////////////////////////////////////////////
 // Pitch Torque         /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 private _cyclicFwdAft     = _heli getVariable "fza_sfmplus_cyclicFwdAft";
@@ -402,7 +423,6 @@ if (currentPilot _heli == player) then {
     private _mainRtrDamage = _heli getHitPointDamage "HitHRotor";
 
     if (_mainRtrDamage < 0.99) then {
-        //flips the crab direction); flapback (longitudinal, nose-up) is the well-understood one.
         private _advanceRatio = if (_bladeTipVel > 1.0) then { _velY / _bladeTipVel } else { 0.0 };
         private _kFlapLon     = 0.0;  // deg per unit mu, nose-up flapback
         private _kFlapLat     = 10.0;  // deg per unit mu, lateral tilt (sign TBD in-sim)
