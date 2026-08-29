@@ -69,20 +69,6 @@ class CfgVehicles {
         LESH_AxisOffsetTarget[] = {0,-9.2,-2};
         LESH_WheelOffset[]      = {0,2.5};
 
-        //HeliSim Variables-------------/
-        startDuration          = 15;
-        fuelCapacity           = 1423;
-        fuelconsumptionrate    = 0.0;
-        maxSpeed               = 298;
-        altFullForce           = 1615;
-        altNoForce             = 9000;
-        liftForceCoef          = 0.00;
-        bodyFrictionCoef       = 0.00;
-        cyclicAsideForceCoef   = 0.00;
-        cyclicForwardForceCoef = 0.00;
-        backRotorForceCoef     = 0.00;
-        //HeliSim Variables-------------/
-
         accuracy                                    = 5;
         ace_cargo_hasCargo                          = 0;
         ace_cargo_space                             = 0;
