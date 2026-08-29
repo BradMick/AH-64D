@@ -53,11 +53,11 @@ for "_i" from 0 to (_count - 1) do {
 	private _right	   = _vecRight;
     _right         	   = vectorNormalized _right;
 
-    #ifdef __A3_DEBUG__
+    if (BMKHS_FM_DEBUG) then {
     [_heli, _e, _e vectorAdd _chordLine, "white"] call fza_fnc_debugDrawLine;
 	[_heli, _e, _e vectorAdd _up,	 	 "white"] call fza_fnc_debugDrawLine;
 	[_heli, _e, _e vectorAdd _right,     "white"] call fza_fnc_debugDrawLine;
-    #endif
+    };
 
     private _velModelSpace    = (_heli getVariable "bmkhs_velModelSpace")    vectorMultiply -1.0;
     private _angVelModelSpace = (_heli getVariable "bmkhs_angVelModelSpace") vectorMultiply -1.0;
@@ -71,9 +71,9 @@ for "_i" from 0 to (_count - 1) do {
 
     //systemChat format ["_relWind = [%1, %2, %3]", _relWind select 0 toFixed 2, _relWind select 1 toFixed 2, _relWind select 2 toFixed 2];
 
-    #ifdef __A3_DEBUG__
+    if (BMKHS_FM_DEBUG) then {
     [_heli, _e vectorDiff (vectorNormalized _relWind), _e, "red"] call fza_fnc_debugDrawLine;
-    #endif
+    };
 
     private _relWindNormalized = vectorNormalized _relWind;
 
@@ -98,10 +98,10 @@ for "_i" from 0 to (_count - 1) do {
     _dragVector = (vectorNormalized _dragVector) vectorMultiply -1.0;
     _dragVector = _dragVector vectorMultiply (_drag * _deltaTime);
 
-    #ifdef __A3_DEBUG__
+    if (BMKHS_FM_DEBUG) then {
     [_heli, _e vectorAdd (_liftVector vectorMultiply _debugLineScale), _e, "green"] call fza_fnc_debugDrawLine;
     [_heli, _e vectorAdd (_dragVector vectorMultiply _debugLineScale), _e, "red"]   call fza_fnc_debugDrawLine;
-    #endif
+    };
 
     _heli addForce [_heli vectorModelToWorld _liftVector, _heliCom];
     _heli addForce [_heli vectorModelToWorld _dragVector, _heliCom];
@@ -114,11 +114,11 @@ for "_i" from 0 to (_count - 1) do {
 
     _heli addTorque (_heli vectorModelToWorld _moment);
 
-    #ifdef __A3_DEBUG__
+    if (BMKHS_FM_DEBUG) then {
     //Draw the wing
     [_heli, _a, _b, "red"]   call fza_fnc_debugDrawLine;
     [_heli, _b, _c, "white"] call fza_fnc_debugDrawLine;
     [_heli, _c, _d, "red"]   call fza_fnc_debugDrawLine;
     [_heli, _d, _a, "white"] call fza_fnc_debugDrawLine;
-    #endif
+    };
 };

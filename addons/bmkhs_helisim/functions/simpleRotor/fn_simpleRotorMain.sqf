@@ -432,9 +432,9 @@ if (currentPilot _heli == player) then {
         private _thrustVector = [_thrustZ, 0.0, (_rollInput * -6.0) - _flapLat, 0.0] call bmkhs_fnc_vectorRotate;
         //private _thrustVector = _thrustZ;
 
-        #ifdef __A3_DEBUG__
+        if (BMKHS_FM_DEBUG) then {
         [_heli, _rtrPos, _rtrPos vectorAdd (vectorNormalized _thrustVector), "white"] call fza_fnc_debugDrawLine;
-        #endif
+        };
 
         if ([vectorMagnitude _thrustVector] call bmkhs_fnc_isNAN || [vectorMagnitude _thrustVector] call bmkhs_fnc_isINF) then { _thrustVector = [0.0, 0.0, 0.0]; };
 
@@ -585,12 +585,12 @@ if (cameraView == "INTERNAL") then {
     };
 };
 
-#ifdef __A3_DEBUG__
+if (BMKHS_FM_DEBUG) then {
 [_heli, _rtrPos, _rtrPos vectorAdd _axisX,        "red"]   call fza_fnc_debugDrawLine;
 [_heli, _rtrPos, _rtrPos vectorAdd _axisY,        "green"] call fza_fnc_debugDrawLine;
 [_heli, _rtrPos, _rtrPos vectorAdd _axisZ,        "blue"]  call fza_fnc_debugDrawLine;
 [_heli, 24, _rtrPos, _bladeRadius, 2, "white", 0]   call fza_fnc_debugDrawCircle;
-#endif
+};
 
 //[_outThrust, _outTq];
 

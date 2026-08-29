@@ -45,9 +45,9 @@ for "_i" from 0 to (_count - 1) do {
 
     private _e = _g vectorAdd ((_f vectorDiff _g) vectorMultiply 0.5);
 
-    #ifdef __A3_DEBUG__
+    if (BMKHS_FM_DEBUG) then {
     [_heli, _e, _e vectorAdd _vecFwd, "white"] call fza_fnc_debugDrawLine;
-    #endif
+    };
 
     private _v          = (_heli getVariable "bmkhs_vel2D") min VEL_VNE;
     private _pa         = _heli getVariable "bmkhs_PA";
@@ -58,9 +58,9 @@ for "_i" from 0 to (_count - 1) do {
     private _dragVector = _vecFwd vectorMultiply -1.0;
     _dragVector = _dragVector vectorMultiply (_drag * _deltaTime);
 
-    #ifdef __A3_DEBUG__
+    if (BMKHS_FM_DEBUG) then {
     [_heli, _e vectorAdd (_dragVector vectorMultiply _debugLineScale), _e, "red"]   call fza_fnc_debugDrawLine;
-    #endif
+    };
 
     _heli addForce[_heli vectorModelToWorld _dragVector, _heliCom];
 
@@ -72,11 +72,11 @@ for "_i" from 0 to (_count - 1) do {
 
     //Accumulate this panel's force into the component total.
 
-    #ifdef __A3_DEBUG__
+    if (BMKHS_FM_DEBUG) then {
     //Draw the wing
     [_heli, _a, _b, "red"]   call fza_fnc_debugDrawLine;
     [_heli, _b, _c, "white"] call fza_fnc_debugDrawLine;
     [_heli, _c, _d, "red"]   call fza_fnc_debugDrawLine;
     [_heli, _d, _a, "white"] call fza_fnc_debugDrawLine;
-    #endif
+    };
 };

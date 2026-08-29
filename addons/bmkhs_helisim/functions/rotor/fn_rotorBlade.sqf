@@ -1,3 +1,4 @@
+#include "\bmkhs_helisim\headers\core.hpp"
 params ["_heli", "_bladeIndex", "_rotorIndex", "_deltaTime", "_numElements", "_numBlades", "_pos", "_uVec", "_omega", "_airfoilTable", "_bladeCutout", "_bladeLength", "_inflowAlpha", "_a_rootPos", "_b_tipPos", "_c_rootLeadingEdge", "_d_tipLeadingEdge", "_e_tipTrailingEdge", "_f_rootTrailingEdge"];
 
 private _rho              = _heli getVariable "bmkhs_rho";
@@ -42,9 +43,9 @@ for "_i" from 0 to (_numElements - 1) do {
 	private _chordLine = (_c vectorAdd ((_d vectorDiff _c) vectorMultiply 0.5)) vectorDiff (_f vectorAdd ((_e vectorDiff _f) vectorMultiply 0.5));
 	_chordLine         = vectorNormalized _chordLine;
 
-	#ifdef __A3_DEBUG__
+	if (BMKHS_FM_DEBUG) then {
 	[_heli, _liftPos, _liftPos vectorAdd _chordLine, "white"] call fza_fnc_debugDrawLine;
-	#endif
+	};
 
 	// Induced inflow from previous frame — breaks the thrust/inflow circular dependency
 	private _vi = ((_heli getVariable "bmkhs_rotorInducedFlow") select _rotorIndex) select _i;
@@ -94,18 +95,18 @@ for "_i" from 0 to (_numElements - 1) do {
 	private _inducedWind = _uVec vectorMultiply (-_vi);
 	_relWind = _localWind vectorAdd _inducedWind;
 
-	#ifdef __A3_DEBUG__
+	if (BMKHS_FM_DEBUG) then {
 	[_heli, _liftPos vectorDiff (vectorNormalized _relWind), _liftPos, "red"]   call fza_fnc_debugDrawLine;
 	[_heli, _liftPos, _liftPos vectorAdd _up,                          "white"] call fza_fnc_debugDrawLine;
-	#endif
+	};
 
 	private _relWindY = _chordLine vectorDotProduct _relWind;
 	private _relWindZ = _up        vectorDotProduct _relWind;
 	_relWind          = (_chordLine vectorMultiply _relWindY) vectorAdd (_up vectorMultiply _relWindZ);
 
-	#ifdef __A3_DEBUG__
+	if (BMKHS_FM_DEBUG) then {
 	[_heli, _liftPos vectorDiff (vectorNormalized _relWind), _liftPos, "green"] call fza_fnc_debugDrawLine;
-	#endif
+	};
 
 	private _relWindNormalized = vectorNormalized _relWind;
 	private _AoA               = _chordLine vectorDotProduct (_relWindNormalized vectorMultiply -1.0);
@@ -170,12 +171,12 @@ for "_i" from 0 to (_numElements - 1) do {
 	_heli addForce [_heli vectorModelToWorld _liftVector, _liftPos];
 	_heli addForce [_heli vectorModelToWorld _dragVector, _liftPos];
 
-	#ifdef __A3_DEBUG__
+	if (BMKHS_FM_DEBUG) then {
 	[_heli, _liftPos, _liftPos vectorAdd (_liftVector vectorMultiply (1.0 / 30.0)), "green"] call fza_fnc_debugDrawLine;
 	[_heli, _liftPos, _liftPos vectorAdd (_dragVector vectorMultiply (1.0 / 30.0)), "red"]   call fza_fnc_debugDrawLine;
 	[_heli, _c, _f, "red"] call fza_fnc_debugDrawLine;
 	[_heli, _d, _e, "red"] call fza_fnc_debugDrawLine;
-	#endif
+	};
 };
 
 [_heli, "bmkhs_rotorFlapMoment", _rotorIndex, _bladeIndex, _totalFlapMoment] call fza_fnc_setMultiArrayVariable;

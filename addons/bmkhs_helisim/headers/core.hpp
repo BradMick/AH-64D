@@ -297,4 +297,11 @@
 #define AUTOPEDAL_PEDAL_RATE          0.350
 #define AUTOPEDAL_PEDAL_TAU           0.450
 
+//Force-vector debug drawing. This was previously #ifdef __A3_DEBUG__, which is dead
+//code under HEMTT - that macro is hardcoded to 0 in a lookup the #ifdef existence
+//check never consults, so every block was compiled out unconditionally and the
+//debug graphics could never draw. Gate on the CBA setting instead so it is
+//togglable at runtime.
+#define BMKHS_FM_DEBUG (!isNil "fza_ah64_sfmPlusFmDebug" && {fza_ah64_sfmPlusFmDebug})
+
 #endif

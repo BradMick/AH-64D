@@ -1,3 +1,4 @@
+#include "\bmkhs_helisim\headers\core.hpp"
 #include "\bmkhs_helisim\functions\rotor\rotor.hpp"
 #include "\fza_ah64_systems\headers\systems.hpp"
 
@@ -124,13 +125,13 @@ for "_bladeIndex" from 0 to (_numBlades - 1) do {
 	, _e_tipTrailingEdge
 	, _f_rootTrailingEdge ] call bmkhs_fnc_rotorBlade;
 
-	#ifdef __A3_DEBUG__
+	if (BMKHS_FM_DEBUG) then {
 	[_heli, _a_rootPos,          _b_tipPos,            "blue"]  call fza_fnc_debugDrawLine;
 	[_heli, _c_rootLeadingEdge,  _d_tipLeadingEdge,    "red"]   call fza_fnc_debugDrawLine;
 	[_heli, _d_tipLeadingEdge,   _e_tipTrailingEdge,   "white"] call fza_fnc_debugDrawLine;
 	[_heli, _e_tipTrailingEdge,  _f_rootTrailingEdge,  "white"] call fza_fnc_debugDrawLine;
 	[_heli, _f_rootTrailingEdge, _c_rootLeadingEdge,   "white"] call fza_fnc_debugDrawLine;
-	#endif
+	};
 };
 
 // Sum the per-element inflow contributions across blades, lerp toward it once, publish for
@@ -200,9 +201,9 @@ if (_type == MAIN) then {
 
 }; // end damage check
 
-#ifdef __A3_DEBUG__
+if (BMKHS_FM_DEBUG) then {
 [_heli, _pivot, _pos,                 "white"] call fza_fnc_debugDrawLine;
 [_heli, _pos,   _pos vectorAdd _fVec, "green"] call fza_fnc_debugDrawLine;
 [_heli, _pos,   _pos vectorAdd _rVec, "red"]   call fza_fnc_debugDrawLine;
 [_heli, _pos,   _pos vectorAdd _uVec, "blue"]  call fza_fnc_debugDrawLine;
-#endif
+};

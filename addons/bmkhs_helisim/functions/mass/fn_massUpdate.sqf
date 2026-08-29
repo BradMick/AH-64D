@@ -140,7 +140,7 @@ _heli setMass _curMass;
 _heli setVariable ["bmkhs_GWT", _curMass,   true];
 _heli setVariable ["bmkhs_CG",  _curLongCG, true];
 
-#ifdef __A3_DEBUG__
+if (BMKHS_FM_DEBUG) then {
 private _vecX = [5.0, 0.0, 0.0];
 private _vecY = [0.0, 5.0, 0.0];
 private _vecZ = [0.0, 0.0, 5.0];
@@ -155,4 +155,4 @@ private _heliCoM = getCenterOfMass _heli;
 [_heli, [0.0, _fwdCg - (_comDatum select 1),-5], [0.0, _fwdCg - (_comDatum select 1), 5], "red"]  call fza_fnc_debugDrawLine;
 [_heli, [0.0, _aftCg - (_comDatum select 1),-5], [0.0, _aftCg - (_comDatum select 1), 5], "red"]  call fza_fnc_debugDrawLine;
 
-#endif
+};
