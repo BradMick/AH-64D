@@ -4,7 +4,7 @@ params ["_heli"];
 
 if (isGamePaused || CBA_missionTime < 0.1) exitWith {};
 
-if (fza_ah64_sfmPlusRotorModel == 1) then {
+if (bmkhs_rotorModel == 1) then {
     // Blade Element Theory rotor model
     [_heli] call bmkhs_fnc_rotorUpdate;
 } else {

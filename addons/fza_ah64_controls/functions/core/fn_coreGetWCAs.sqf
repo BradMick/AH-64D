@@ -441,10 +441,10 @@ if (_priHydPumpDamage >= SYS_HYD_DMG_THRESH) then {
     [_activeCaut, "BUCS FAIL"] call fza_wca_fnc_wcaDelCaution;
 };
 if (_priHydPumpDamage >= SYS_HYD_DMG_THRESH
-    || !(_heli getVariable "fza_ah64_fmcPitchOn")
-    || !(_heli getVariable "fza_ah64_fmcRollOn")
-    || !(_heli getVariable "fza_ah64_fmcYawOn")
-    || !(_heli getVariable "fza_ah64_fmcCollOn")) then {
+    || !(_heli getVariable "bmkhs_fmcPitchOn")
+    || !(_heli getVariable "bmkhs_fmcRollOn")
+    || !(_heli getVariable "bmkhs_fmcYawOn")
+    || !(_heli getVariable "bmkhs_fmcCollOn")) then {
         ([_heli, _activeCaut, "FMC DISENGAGED", "FMC DISENG", _playCautAudio] call fza_wca_fnc_wcaAddCaution)
         params ["_wcaAddCaution", "_playAudio"];
 
@@ -503,23 +503,23 @@ if (_eng1State == "STARTING") then {
 if (_eng2State == "STARTING") then {
     _wcas pushBack [WCA_ADVISORY, "ENGINE 2 START", "ENG2 START"];
 };
-if (_heli getVariable "fza_ah64_attHoldActive") then {
+if (_heli getVariable "bmkhs_attHoldActive") then {
     _wcas pushBack [WCA_ADVISORY, "ATTITUDE HOLD", "ATT HOLD"];
 };
 private _desiredPos = 0.0;
 private _curPos     = getPos _heli;
-if ( !(_heli getVariable "fza_ah64_attHoldActive") || _heli getVariable "fza_ah64_forceTrimInterupted") then {
+if ( !(_heli getVariable "bmkhs_attHoldActive") || _heli getVariable "bmkhs_forceTrimInterupted") then {
     _desiredPos = _curPos;
 } else {
-    _desiredPos = _heli getVariable "fza_ah64_attHoldDesiredPos";
+    _desiredPos = _heli getVariable "bmkhs_attHoldDesiredPos";
 };
 private _dist           = _heli distance2D _desiredPos;
-private _attHoldSubMode =_heli getVariable "fza_ah64_attHoldSubMode";
+private _attHoldSubMode =_heli getVariable "bmkhs_attHoldSubMode";
 if (_dist >= 14.630 && _attHoldSubMode == "POS") then {
     _wcas pushBack [WCA_ADVISORY, "HOVER DRIFT", "HOVER DRIFT"];
 };
-if (_heli getVariable "fza_ah64_altHoldActive") then {
-    if (_heli getVariable "fza_ah64_altHoldSubMode" == "rad") then {
+if (_heli getVariable "bmkhs_altHoldActive") then {
+    if (_heli getVariable "bmkhs_altHoldSubMode" == "rad") then {
         _wcas pushBack [WCA_ADVISORY, "RAD ALT HOLD", "RAD HOLD  "];
     } else {
         _wcas pushBack [WCA_ADVISORY, "BAR ALT HOLD", "BAR HOLD  "];

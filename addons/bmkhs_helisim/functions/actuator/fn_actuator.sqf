@@ -30,10 +30,10 @@ params ["_heli", "_inputAxis", "_input", "_lagVal"];
 //summed on top downstream in fn_rotorControl; this function is the pilot-command path only.)
 private _priHydOk = (_heli getHitPointDamage "hit_hyd_pripump") < SYS_HYD_DMG_THRESH;
 private _scasAvail = switch (_inputAxis) do {
-    case "pitch"      : { _priHydOk && (_heli getVariable "fza_ah64_fmcPitchOn") };
-    case "roll"       : { _priHydOk && (_heli getVariable "fza_ah64_fmcRollOn")  };
-    case "yaw"        : { _priHydOk && (_heli getVariable "fza_ah64_fmcYawOn")   };
-    case "collective" : { _priHydOk && (_heli getVariable "fza_ah64_fmcCollOn")  };
+    case "pitch"      : { _priHydOk && (_heli getVariable "bmkhs_fmcPitchOn") };
+    case "roll"       : { _priHydOk && (_heli getVariable "bmkhs_fmcRollOn")  };
+    case "yaw"        : { _priHydOk && (_heli getVariable "bmkhs_fmcYawOn")   };
+    case "collective" : { _priHydOk && (_heli getVariable "bmkhs_fmcCollOn")  };
     default { false };
 };
 

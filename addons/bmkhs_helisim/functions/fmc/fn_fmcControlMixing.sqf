@@ -12,7 +12,7 @@ params ["_heli"];
 //Yaw to Roll          - compensates for fuselage roll when pedal is applied. This is a keboard only function.
 private _gndSpeed   = (_heli getVariable "bmkhs_gndSpeed") * KNOTS_TO_MPS;
 private _pedalInput = _heli getVariable "bmkhs_pedalLeftRight";
-private _pedalTrim  = _heli getVariable "fza_ah64_forceTrimPosYaw";
+private _pedalTrim  = _heli getVariable "bmkhs_forceTrimPosYaw";
 private _pedalOut   = _pedalInput + _pedalTrim;
 private _collOut    = _heli getVariable "bmkhs_collectiveOutput";
 /////////////////////////////////////////////////////////////////////////////////////////////

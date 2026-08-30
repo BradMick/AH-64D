@@ -7,7 +7,7 @@ if (!local _heli) exitWith {};
 private _cfg            = configOf _heli;
 private _sfmPlusConfig  = _cfg >> "BMKHS_HeliSim";
 
-private _deltaTime      = _heli getVariable "bmkhs_deltaTime";//fza_ah64_fixedTimeStep;
+private _deltaTime      = _heli getVariable "bmkhs_deltaTime";
 private _heliCom        = getCenterOfMass _heli;
 private _rho            = _heli getVariable "bmkhs_rho";
 private _debugLineScale = 1.0 / 30.0;

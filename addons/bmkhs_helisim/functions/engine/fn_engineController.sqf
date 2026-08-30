@@ -139,7 +139,7 @@ if (currentPilot _heli == player || local _heli) then {
     [_heli, 0] call bmkhs_fnc_engine;
     [_heli, 1] call bmkhs_fnc_engine;
 
-    if (fza_ah64_sfmPlusRotorModel == 1) then {
+    if (bmkhs_rotorModel == 1) then {
         [_heli, 0] call bmkhs_fnc_engineBET;
         [_heli, 1] call bmkhs_fnc_engineBET;
     } else {

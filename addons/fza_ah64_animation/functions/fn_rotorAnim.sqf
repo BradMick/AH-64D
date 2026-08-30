@@ -41,11 +41,11 @@ if (player != currentPilot _heli) exitWith {};
 // ── Read inputs ──────────────────────────────────────────────────────────────
 private _cyclicFwd  = _heli getVariable ["bmkhs_cyclicFwdAft",    0.0];
 private _cyclicBank = _heli getVariable ["bmkhs_cyclicLeftRight",  0.0];
-private _ftPitch    = _heli getVariable ["fza_ah64_forceTrimPosPitch",   0.0];
-private _ftRoll     = _heli getVariable ["fza_ah64_forceTrimPosRoll",    0.0];
+private _ftPitch    = _heli getVariable ["bmkhs_forceTrimPosPitch",   0.0];
+private _ftRoll     = _heli getVariable ["bmkhs_forceTrimPosRoll",    0.0];
 private _collective = _heli getVariable ["bmkhs_collectiveOutput", 0.0];
 private _pedal      = _heli getVariable ["bmkhs_pedalLeftRight",   0.0];
-private _ftPedal    = _heli getVariable ["fza_ah64_forceTrimPosPedal",   0.0];
+private _ftPedal    = _heli getVariable ["bmkhs_forceTrimPosYaw",        0.0];
 private _rtrRPM     = _heli getVariable ["bmkhs_rtrRPM",          0.0];
 
 #define MR_REVS_PER_SEC 4.817

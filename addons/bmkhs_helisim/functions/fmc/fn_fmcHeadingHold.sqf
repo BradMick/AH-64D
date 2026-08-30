@@ -13,9 +13,9 @@ private _pidYaw        = _heli getVariable "bmkhs_pid_sas_yaw";
 private _deltaTime     = _heli getVariable "bmkhs_deltaTime";
 private _gndSpeed      = (_heli getVariable "bmkhs_gndSpeed") * KNOTS_TO_MPS;
 private _angVelZ       = (_heli getVariable "bmkhs_angVelModelSpace") # 2;
-private _pedalTrim     = _heli getVariable "fza_ah64_forceTrimPosYaw";
+private _pedalTrim     = _heli getVariable "bmkhs_forceTrimPosYaw";
 private _curHdg        = getDir _heli;
-private _desiredHdg    = _heli getVariable "fza_ah64_hdgHoldDesiredHdg";
+private _desiredHdg    = _heli getVariable "bmkhs_hdgHoldDesiredHdg";
 private _hdgError      = [_curHdg - _desiredHdg] call CBA_fnc_simplifyAngle180;
 //SIDESLIP ERROR - drive the TRIM BALL to centre. The ball is bmkhs_aero_beta_g (lateral
 //specific force in g, from fn_calculateAeroValues via bodyAccel); when it is zero the aircraft is
@@ -36,10 +36,10 @@ private _hdgError      = [_curHdg - _desiredHdg] call CBA_fnc_simplifyAngle180;
 //apply their own sense - "trn" passes it as the measurement against setpoint 0, "yaw" passes it as
 //the setpoint against measurement 0, which negates it. Those two branch signs are VALIDATED; do
 //not change them, and do not negate here either, or the "yaw" branch double-negates.
-private _desiredSlip   = _heli getVariable "fza_ah64_hdgHoldDesiredSideslip";
+private _desiredSlip   = _heli getVariable "bmkhs_hdgHoldDesiredSideslip";
 private _sideslipError = (_heli getVariable ["bmkhs_aero_beta_g", 0.0]) - _desiredSlip;
-private _subMode       = _heli getVariable "fza_ah64_hdgHoldSubMode";
-private _attSubMode    = _heli getVariable "fza_ah64_attHoldSubMode";
+private _subMode       = _heli getVariable "bmkhs_hdgHoldSubMode";
+private _attSubMode    = _heli getVariable "bmkhs_attHoldSubMode";
 private _hdgOutput     = 0.0;
 private _trnOutput     = 0.0;
 private _yawOutput     = 0.0;
@@ -72,16 +72,16 @@ if ((_heli getVariable "bmkhs_pedalLeftRight") >= _breakoutValue && (_heli getVa
 };
 //systemChat format ["_breakoutValue = %1 -- bmkhs_pedalLeftRight = %2", _breakoutValue, (_heli getVariable "bmkhs_pedalLeftRight") toFixed 2];
 if (   _onGnd
-    || _heli getVariable "fza_ah64_forceTrimInterupted"
+    || _heli getVariable "bmkhs_forceTrimInterupted"
     || _breakout
     ) then {
-        if (_heli getVariable "fza_ah64_hdgHoldActive" isNotEqualTo false) then {
-            _heli setVariable ["fza_ah64_hdgHoldActive", false, true];
+        if (_heli getVariable "bmkhs_hdgHoldActive" isNotEqualTo false) then {
+            _heli setVariable ["bmkhs_hdgHoldActive", false, true];
         };
 } else {
-    if (_heli getVariable "fza_ah64_hdgHoldActive" isNotEqualTo true) then {
-        _heli setVariable ["fza_ah64_hdgHoldActive", true, true];
-        _heli setVariable ["fza_ah64_hdgHoldDesiredHdg", getDir _heli, true];
+    if (_heli getVariable "bmkhs_hdgHoldActive" isNotEqualTo true) then {
+        _heli setVariable ["bmkhs_hdgHoldActive", true, true];
+        _heli setVariable ["bmkhs_hdgHoldDesiredHdg", getDir _heli, true];
         //Clear the PIDs on ENGAGE. Capturing the heading alone is not enough: the integrators
         //still hold whatever they accumulated before the mode dropped out (a pedal breakout, a
         //force-trim interrupt, sitting on the ground), and that lands on the pedals as a kick the
@@ -92,7 +92,7 @@ if (   _onGnd
     };
 };
 //Finally, if the heading hold is active, perform the required functions
-if (_heli getVariable "fza_ah64_hdgHoldActive") then {
+if (_heli getVariable "bmkhs_hdgHoldActive") then {
     //Compute target sub-mode from current state — one authoritative decision per frame.
     //  < 5 kts                              → hdg  (always, regardless of auto pedal)
     //  >= 5 kts, auto pedal on              → aut  (auto pedal owns axis via force trim, PIDs idle)
@@ -101,18 +101,18 @@ if (_heli getVariable "fza_ah64_hdgHoldActive") then {
     private _targetSubMode = if (_gndSpeed < POS_HOLD_SPEED_SWITCH) then {
         "hdg"
     } else {
-        if (fza_ah64_sfmPlusAutoPedal) then {
+        if (bmkhs_autoPedal) then {
             "aut"
         } else {
-            private _attHoldActive = _heli getVariable "fza_ah64_attHoldActive";
+            private _attHoldActive = _heli getVariable "bmkhs_attHoldActive";
             private _curBank       = (_heli call BIS_fnc_getPitchBank) # 1;
 
             //Turn coord: engages at > 7 deg bank from level, disengages when back within 3 deg.
             //When disengaging, reset att hold roll reference to 0 so yaw SAS holds level cleanly.
             private _trnCoordActive = _attHoldActive && (if (_subMode == "trn") then { abs _curBank > 3.0 } else { abs _curBank > 7.0 });
             if (_subMode == "trn" && !_trnCoordActive) then {
-                private _desiredAtt = _heli getVariable "fza_ah64_attHoldDesiredAtt";
-                _heli setVariable ["fza_ah64_attHoldDesiredAtt", [_desiredAtt # 0, 0.0], true];
+                private _desiredAtt = _heli getVariable "bmkhs_attHoldDesiredAtt";
+                _heli setVariable ["bmkhs_attHoldDesiredAtt", [_desiredAtt # 0, 0.0], true];
             };
 
             ["yaw", "trn"] select (_trnCoordActive)
@@ -132,10 +132,10 @@ if (_heli getVariable "fza_ah64_hdgHoldActive") then {
         if (_targetSubMode == "hdg") then { [_pidHdg] call fza_fnc_pidReset; };
         if (_targetSubMode == "trn" || _targetSubMode == "yaw") then { [_pidTrn] call fza_fnc_pidReset; };
         if (_targetSubMode == "hdg") then {
-            _heli setVariable ["fza_ah64_hdgHoldDesiredHdg", getDir _heli, true];
+            _heli setVariable ["bmkhs_hdgHoldDesiredHdg", getDir _heli, true];
         };
         _subMode = _targetSubMode;
-        _heli setVariable ["fza_ah64_hdgHoldSubMode", _subMode, true];
+        _heli setVariable ["bmkhs_hdgHoldSubMode", _subMode, true];
     };
 
     //Run exactly one PID per frame based on current sub-mode
@@ -153,7 +153,7 @@ if (_heli getVariable "fza_ah64_hdgHoldActive") then {
         _yawOutput = [_pidTrn, _deltaTime, _sideslipError, 0.0] call fza_fnc_pidRun;
         _yawOutput = [_yawOutput, -1.0, 1.0] call BIS_fnc_clamp;
     };
-    //"aut": auto pedal owns the yaw axis via fza_ah64_forceTrimPosYaw (fn_getInput.sqf).
+    //"aut": auto pedal owns the yaw axis via bmkhs_forceTrimPosYaw (fn_getInput.sqf).
     //  fn_fmc.sqf zeroes _hdgHoldPedalYawOut when auto pedal is active, so no PID runs here.
     //  This sub-mode exists only to block "yaw" and "trn" from interfering.
 

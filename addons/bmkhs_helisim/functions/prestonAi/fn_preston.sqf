@@ -62,7 +62,7 @@ private _deltaTime = _heli getVariable "bmkhs_deltaTime";
 
 //FEET - the pedals. Skipped when the PLAYER already has the auto-pedal option on, because
 //fn_getInput has run it for this frame already and running it twice would double-integrate.
-if (!fza_ah64_sfmPlusAutoPedal) then {
+if (!bmkhs_autoPedal) then {
     private _kbPedal      = _heli getVariable ["bmkhs_kbPedalLeftRight", 0.0];
     private _pedal        = _heli getVariable ["bmkhs_pedalLeftRight",   0.0];
     //Same hover -> nose-to-tail handover speed fn_getInput uses: ~24kts GS.

@@ -19,7 +19,7 @@ private _engInputTq  = 0.0;
     _engInputTq = _engInputTq + _x;
 } forEach _engOutputTq;
 
-if (fza_ah64_sfmPlusRotorModel == 1) then {
+if (bmkhs_rotorModel == 1) then {
     // ── BET driveline dynamics ────────────────────────────────────────────────
     // Lumped at the engine shaft, dimensionally correct and framerate-independent:
     //   alpha = tau_net / J_eng           [rad/s^2]

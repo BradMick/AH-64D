@@ -82,13 +82,13 @@ private _pedalLeftRight     = _heliRudderRightOut - _heliRudderLeftOut;
 _pedalLeftRight             = [_pedalLeftRight, -1.0, 1.0] call BIS_fnc_clamp;
 //systemChat format ["_pedalLeftRight = %1", _pedalLeftRight toFixed 2];
 
-if (!_isPlaying || (freeLook && fza_ah64_sfmPlusMouseAsJoystick)) then {
+if (!_isPlaying || (freeLook && bmkhs_mouseAsJoystick)) then {
     _cyclicFwdAft      = 0.0;
     _cyclicLeftRight   = 0.0;
 };
 
 //Cyclic Pitch
-if (fza_ah64_sfmPlusKeyboardStickyPitch) then {
+if (bmkhs_keyboardStickyPitch) then {
     private _cyclicPitchValue     = _heli getVariable "bmkhs_cyclicPitchValue";
     private _prevCyclicPitchValue = _heli getVariable "bmkhs_prevCyclicPitchValue";
 
@@ -110,7 +110,7 @@ if (fza_ah64_sfmPlusKeyboardStickyPitch) then {
     };
 };
 //Cyclic Roll
-if (fza_ah64_sfmPlusKeyboardStickyRoll) then {
+if (bmkhs_keyboardStickyRoll) then {
     private _cyclicRollValue     = _heli getVariable "bmkhs_cyclicRollValue";
     private _prevCyclicRollValue = _heli getVariable "bmkhs_prevCyclicRollValue";
 
@@ -130,7 +130,7 @@ if (fza_ah64_sfmPlusKeyboardStickyRoll) then {
     };
 };
 //Pedal yaw
-if (fza_ah64_sfmPlusKeyboardStickyYaw && !fza_ah64_sfmPlusAutoPedal) then {
+if (bmkhs_keyboardStickyYaw && !bmkhs_autoPedal) then {
     private _pedalYawValue     = _heli getVariable "bmkhs_pedalYawValue";
     private _prevPedalYawValue = _heli getVariable "bmkhs_prevPedalYawValue";
 
@@ -154,7 +154,7 @@ if (fza_ah64_sfmPlusKeyboardStickyYaw && !fza_ah64_sfmPlusAutoPedal) then {
 /////////////////////////////////////////////////////////////////////////////////////////////
 //Player accommodation: the machine pilot's FEET, available to a HUMAN pilot independently of
 //whether Preston is flying. Same function fn_preston calls - see prestonAi/fn_prestonPedal.sqf.
-if (fza_ah64_sfmPlusAutoPedal) then {
+if (bmkhs_autoPedal) then {
     ([_heli, _deltaTime, _pedalLeftRight, _kbPedalLeftRight, _kbYawSwitchVel]
         call bmkhs_fnc_prestonPedal) params ["_pedalLeftRight", "_yawBreakout"];
 };
@@ -226,9 +226,9 @@ if (!_hydFailure || _emerHydOn) then {
 // Cyclic and Pedals    /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 if (_isZeus && (!_hydFailure || _emerHydOn)) then {
-    if (fza_ah64_sfmPlusMouseAsJoystick) then {
-        _heli setVariable ["bmkhs_cyclicFwdAft",    _cyclicFwdAft    * fza_ah64_sfmPlusMouseSense];
-        _heli setVariable ["bmkhs_cyclicLeftRight", _cyclicLeftRight * fza_ah64_sfmPlusMouseSense];
+    if (bmkhs_mouseAsJoystick) then {
+        _heli setVariable ["bmkhs_cyclicFwdAft",    _cyclicFwdAft    * bmkhs_mouseSense];
+        _heli setVariable ["bmkhs_cyclicLeftRight", _cyclicLeftRight * bmkhs_mouseSense];
     } else {
         _heli setVariable ["bmkhs_cyclicFwdAft",    _cyclicFwdAft];
         _heli setVariable ["bmkhs_cyclicLeftRight", _cyclicLeftRight];

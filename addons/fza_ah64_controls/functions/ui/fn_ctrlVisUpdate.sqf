@@ -82,9 +82,9 @@ if (isNil "_circleWAdj") then {
 // ── Read HeliSim variables ───────────────────────────────────────────────────
 private _cycFwdAft    = _heli getVariable ["bmkhs_cyclicFwdAft",           0.0]; // pitch (-1…1)
 private _cycLeftRight = _heli getVariable ["bmkhs_cyclicLeftRight",        0.0]; // roll  (-1…1)
-private _ftPitch      = _heli getVariable ["fza_ah64_forceTrimPosPitch",         0.0];
-private _ftRoll       = _heli getVariable ["fza_ah64_forceTrimPosRoll",          0.0];
-private _ftPedal      = _heli getVariable ["fza_ah64_forceTrimPosYaw",           0.0];
+private _ftPitch      = _heli getVariable ["bmkhs_forceTrimPosPitch",         0.0];
+private _ftRoll       = _heli getVariable ["bmkhs_forceTrimPosRoll",          0.0];
+private _ftPedal      = _heli getVariable ["bmkhs_forceTrimPosYaw",           0.0];
 private _sasPitch     = _heli getVariable ["bmkhs_fmcSasPitchOut",         0.0];
 private _sasRoll      = _heli getVariable ["bmkhs_fmcSasRollOut",          0.0];
 private _sasYaw       = _heli getVariable ["bmkhs_fmcHdgHoldPedalYawOut",  0.0];
@@ -94,11 +94,11 @@ private _altColl      = _heli getVariable ["bmkhs_fmcAltHoldCollOut",      0.0];
 private _collective   = _heli getVariable ["bmkhs_collectiveOutput",       0.0];
 private _pedal        = _heli getVariable ["bmkhs_pedalLeftRight",         0.0];
 
-private _attHoldActive  = _heli getVariable ["fza_ah64_attHoldActive",  false];
-private _attSubMode     = _heli getVariable ["fza_ah64_attHoldSubMode", "ATT"];
-private _altHoldActive  = _heli getVariable ["fza_ah64_altHoldActive",  false];
-private _hdgHoldActive  = _heli getVariable ["fza_ah64_hdgHoldActive",  false];
-private _hdgHoldSubMode = _heli getVariable ["fza_ah64_hdgHoldSubMode", ""];
+private _attHoldActive  = _heli getVariable ["bmkhs_attHoldActive",  false];
+private _attSubMode     = _heli getVariable ["bmkhs_attHoldSubMode", "ATT"];
+private _altHoldActive  = _heli getVariable ["bmkhs_altHoldActive",  false];
+private _hdgHoldActive  = _heli getVariable ["bmkhs_hdgHoldActive",  false];
+private _hdgHoldSubMode = _heli getVariable ["bmkhs_hdgHoldSubMode", ""];
 
 // SAS cyclic corrections only (FT reference is shown separately by the ◆ indicator)
 private _sasTotalPitch = _sasPitch + _attPitch;

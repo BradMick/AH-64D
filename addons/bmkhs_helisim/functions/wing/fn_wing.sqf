@@ -37,7 +37,7 @@ if (_isStab) then {
 
     private _stabOutputTable = [[]];
     private _desiredTheta    = 0.0;
-    private _theta           = _heli getVariable "fza_ah64_stabilatorPosition";
+    private _theta           = _heli getVariable "bmkhs_stabilatorPosition";
 
     private _intStabTable = [getArray (_sfmPlusConfig >> "heliSimStabTable"), (_heli getVariable "bmkhs_collectiveOutput")] call fza_fnc_linearInterp;
     _stabOutputTable = [
@@ -60,7 +60,7 @@ if (_isStab) then {
     if (_stabDamage < SYS_STAB_DMG_THRESH && _dcBusOn) then {
         _desiredTheta = [_stabOutputTable, (_heli getVariable "bmkhs_vel2D") * KNOTS_TO_MPS] call fza_fnc_linearInterp select 1;
         _theta        = [_theta, _desiredTheta, (1.0 / 1.5) * _deltaTime] call BIS_fnc_lerp;
-        _heli setVariable ["fza_ah64_stabilatorPosition", _theta];
+        _heli setVariable ["bmkhs_stabilatorPosition", _theta];
     };
 
     _heli animate ["Hstab", _theta];

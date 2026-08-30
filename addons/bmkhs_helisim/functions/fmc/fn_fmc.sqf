@@ -18,11 +18,11 @@ private _hdgHoldPedalYawOut = [_heli] call bmkhs_fnc_fmcHeadingHold;
 ([_heli] call bmkhs_fnc_fmcSAS)
     params ["_SASPitchOutput", "_SASRollOutput", "_SASYawOutput"];
 
-if (fza_ah64_sfmPlusSpringlessPedals || fza_ah64_sfmPlusAutoPedal) then {
+if (bmkhs_springlessPedals || bmkhs_autoPedal) then {
     _hdgHoldPedalYawOut = 0.0;
 };
 
-if (!(_heli getVariable "fza_ah64_fmcPitchOn")) then {
+if (!(_heli getVariable "bmkhs_fmcPitchOn")) then {
     _attHoldCycPitchOut = 0.0;
     _SASPitchOutput     = 0.0;
     if (!_mechanicalMixing) then {
@@ -31,7 +31,7 @@ if (!(_heli getVariable "fza_ah64_fmcPitchOn")) then {
     };
 };
 
-if (!(_heli getVariable "fza_ah64_fmcRollOn")) then {
+if (!(_heli getVariable "bmkhs_fmcRollOn")) then {
     _attHoldCycRollOut = 0.0;
     _SASRollOutput     = 0.0;
     if (!_mechanicalMixing) then {
@@ -40,7 +40,7 @@ if (!(_heli getVariable "fza_ah64_fmcRollOn")) then {
     };
 };
 
-if (!(_heli getVariable "fza_ah64_fmcYawOn")) then {
+if (!(_heli getVariable "bmkhs_fmcYawOn")) then {
     _hdgHoldPedalYawOut = 0.0;
     _SASYawOutput       = 0.0;
     if (!_mechanicalMixing) then {
@@ -49,7 +49,7 @@ if (!(_heli getVariable "fza_ah64_fmcYawOn")) then {
     };
 };
 
-if (!(_heli getVariable "fza_ah64_fmcCollOn")) then {
+if (!(_heli getVariable "bmkhs_fmcCollOn")) then {
     _altHoldCollOut = 0.0;
 };
 

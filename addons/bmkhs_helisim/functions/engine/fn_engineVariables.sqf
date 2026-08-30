@@ -18,8 +18,8 @@ Author:
 ---------------------------------------------------------------------------- */
 params ["_heli"];
 
-if (!(_heli getVariable ["fza_ah64_aircraftEngineInitialised", false]) && local _heli) then {
-    _heli setVariable ["fza_ah64_aircraftEngineInitialised", true, true];
+if (!(_heli getVariable ["bmkhs_engineInitialised", false]) && local _heli) then {
+    _heli setVariable ["bmkhs_engineInitialised", true, true];
 
     _heli setVariable ["bmkhs_engPowerLeverState",    ["OFF", "OFF"], true]; //OFF, IDLE, FLY
     _heli setVariable ["bmkhs_engState",              ["OFF", "OFF"], true]; //OFF, STARTING, ON

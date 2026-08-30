@@ -95,8 +95,8 @@ if (_active) then {
     //it was left rather than moving on from where the stick actually is - a visible lurch at
     //exactly the moment the pilot hands control back.
     if (_cyclicBreakout) then {
-        _heli setVariable ["bmkhs_prestonPrevPitch", _heli getVariable ["fza_ah64_forceTrimPosPitch", 0.0]];
-        _heli setVariable ["bmkhs_prestonPrevRoll",  _heli getVariable ["fza_ah64_forceTrimPosRoll",  0.0]];
+        _heli setVariable ["bmkhs_prestonPrevPitch", _heli getVariable ["bmkhs_forceTrimPosPitch", 0.0]];
+        _heli setVariable ["bmkhs_prestonPrevRoll",  _heli getVariable ["bmkhs_forceTrimPosRoll",  0.0]];
     };
     _heli setVariable ["bmkhs_prestonBreakout", _cyclicBreakout];
 
@@ -387,8 +387,8 @@ if (_active) then {
         private _kiY = _pidHovYr get "ki";
         //Roll trim is in the negated-X frame (see the setpoint notes above); pitch is not.
         private _seedFrac = AUTO_ATT_HOVER_SEED_FRAC;
-        private _seedX = if (_kiX > 0.0) then { -(_heli getVariable ["fza_ah64_forceTrimPosRoll",  0.0]) * _seedFrac / _kiX } else { 0.0 };
-        private _seedY = if (_kiY > 0.0) then {  (_heli getVariable ["fza_ah64_forceTrimPosPitch", 0.0]) * _seedFrac / _kiY } else { 0.0 };
+        private _seedX = if (_kiX > 0.0) then { -(_heli getVariable ["bmkhs_forceTrimPosRoll",  0.0]) * _seedFrac / _kiX } else { 0.0 };
+        private _seedY = if (_kiY > 0.0) then {  (_heli getVariable ["bmkhs_forceTrimPosPitch", 0.0]) * _seedFrac / _kiY } else { 0.0 };
         private _learnedX = _heli getVariable ["bmkhs_prestonLearnedIntX", -9999];
         private _learnedY = _heli getVariable ["bmkhs_prestonLearnedIntY", -9999];
         if (_learnedX != -9999) then { _seedX = _learnedX; };
@@ -425,8 +425,8 @@ if (_active) then {
 
     _heli setVariable ["bmkhs_prestonPrevPitch", _pitchTrim];
     _heli setVariable ["bmkhs_prestonPrevRoll",  _rollTrim];
-    _heli setVariable ["fza_ah64_forceTrimPosPitch",   _pitchTrim, true];
-    _heli setVariable ["fza_ah64_forceTrimPosRoll",    _rollTrim,  true];
+    _heli setVariable ["bmkhs_forceTrimPosPitch",   _pitchTrim, true];
+    _heli setVariable ["bmkhs_forceTrimPosRoll",    _rollTrim,  true];
 
     _heli setVariable ["bmkhs_prestonPitchActive", true];
     _heli setVariable ["bmkhs_prestonRollActive",  true];

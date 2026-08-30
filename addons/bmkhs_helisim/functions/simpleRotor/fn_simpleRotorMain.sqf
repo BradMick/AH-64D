@@ -24,7 +24,7 @@ params ["_heli"];
 
 if (!local _heli) exitWith {};
 
-private _deltaTime              = _heli getVariable "bmkhs_deltaTime";//fza_ah64_fixedTimeStep;
+private _deltaTime              = _heli getVariable "bmkhs_deltaTime";
 private _heliCom                = getCenterOfMass _heli;
 
 private _altitude               = _heli getVariable "bmkhs_PA";
@@ -390,7 +390,7 @@ private _retBladeStallVal   = linearConversion [77.16, 102.88, _velXY, 1.0, 0.0,
 /////////////////////////////////////////////////////////////////////////////////////////////
 private _cyclicFwdAft     = _heli getVariable "bmkhs_cyclicFwdAft";
 private _cyclicFwdAftTrim = 0.0;
-_cyclicFwdAftTrim         = _heli getVariable "fza_ah64_forceTrimPosPitch";
+_cyclicFwdAftTrim         = _heli getVariable "bmkhs_forceTrimPosPitch";
 
 private _pitchTorque      = linearConversion [0.0, 1.0, _inputRpmPct, 0.0, 100000 * _pitchTorqueScalar * _deltaTime, true];
 private _pitchInput       = ([_cyclicFwdAft, _cyclicFwdAftTrim] call bmkhs_fnc_getInterpInput) + _fmcPitchOut;
@@ -402,7 +402,7 @@ private _momentX          = _pitchTorque * _pitchInput;
 /////////////////////////////////////////////////////////////////////////////////////////////
 private _cyclicLeftRight     = _heli getVariable "bmkhs_cyclicLeftRight";
 private _cyclicLeftRightTrim = 0.0;
-_cyclicLeftRightTrim         = _heli getVariable "fza_ah64_forceTrimPosRoll";
+_cyclicLeftRightTrim         = _heli getVariable "bmkhs_forceTrimPosRoll";
 
 private _rollTorque          = linearConversion [0.0, 1.0, _inputRpmPct, 0.0, 100000 * _rollTorqueScalar * _deltaTime, true];
 private _rollInput           = ([_cyclicLeftRight, _cyclicLeftRightTrim] call bmkhs_fnc_getInterpInput) + _fmcRollOut;
@@ -534,7 +534,7 @@ if (cameraView == "INTERNAL") then {
             setCustomSoundController[_heli, "CustomSoundController3", 6.4];
             setCustomSoundController[_heli, "CustomSoundController4", 1.8];
 
-            if (fza_ah64_sfmPlusVrsWarning) then {
+            if (bmkhs_vrsWarning) then {
                 hintSilent parseText format ["<t size='1.5' font='EtelkaMonospacePro' color='#99ffffff'>Entering VRS Condition!</t>"];
             };
         };
@@ -548,7 +548,7 @@ if (cameraView == "INTERNAL") then {
             setCustomSoundController[_heli, "CustomSoundController3", 6.4];
             setCustomSoundController[_heli, "CustomSoundController4", 1.8];
 
-            if (fza_ah64_sfmPlusVrsWarning) then {
+            if (bmkhs_vrsWarning) then {
                 hintSilent parseText format ["<t size='1.5' font='EtelkaMonospacePro' color='#FFFF00'>Caution! VRS Developing!</t>"];
             };
         };
@@ -561,7 +561,7 @@ if (cameraView == "INTERNAL") then {
 
             setCustomSoundController[_heli, "CustomSoundController3", 6.4];
             setCustomSoundController[_heli, "CustomSoundController4", 1.8];
-            if (fza_ah64_sfmPlusVrsWarning) then {
+            if (bmkhs_vrsWarning) then {
                 hintSilent parseText format ["<t size='1.5' font='EtelkaMonospacePro' color='#ff0000'>Warning! Fully Developed VRS Imminent!</t>"];
             };
         };
@@ -575,7 +575,7 @@ if (cameraView == "INTERNAL") then {
             setCustomSoundController[_heli, "CustomSoundController3", 6.4];
             setCustomSoundController[_heli, "CustomSoundController4", 1.8];
 
-            if (fza_ah64_sfmPlusVrsWarning) then {
+            if (bmkhs_vrsWarning) then {
 
                 hintSilent parseText format ["<t size='1.5' font='EtelkaMonospacePro' color='#ff0000'>Danger! You are in VRS!</t>"];
             };

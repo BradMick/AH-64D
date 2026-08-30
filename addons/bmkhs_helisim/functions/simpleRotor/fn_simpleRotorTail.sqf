@@ -24,7 +24,7 @@ params ["_heli"];
 
 if (!local _heli) exitWith {};
 
-private _deltaTime              = _heli getVariable "bmkhs_deltaTime";//fza_ah64_fixedTimeStep;
+private _deltaTime              = _heli getVariable "bmkhs_deltaTime";
 private _heliCom                = getCenterOfMass _heli;
 
 private _altitude               = _heli getVariable "bmkhs_PA";
@@ -101,7 +101,7 @@ private _baseThrust             = 10230;  //N - max gross weight (kg) * gravity 
 //Thrust produced
 private _pedalLeftRight     = _heli getVariable "bmkhs_pedalLeftRight";
 private _pedalLeftRightTrim = 0.0;
-_pedalLeftRightTrim         = _heli getVariable "fza_ah64_forceTrimPosYaw";
+_pedalLeftRightTrim         = _heli getVariable "bmkhs_forceTrimPosYaw";
 
 private _pedalInput         = ([_pedalLeftRight, _pedalLeftRightTrim] call bmkhs_fnc_getInterpInput) + _fmcYawOut;
 _pedalInput                 = [_pedalInput, -1.0, 1.0] call BIS_fnc_clamp;

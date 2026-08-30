@@ -24,8 +24,8 @@ if (player != currentPilot _heli) exitWith {};
 
 private _cyclicFwd  = _heli getVariable ["bmkhs_cyclicFwdAft",    0.0];
 private _cyclicBank = _heli getVariable ["bmkhs_cyclicLeftRight",  0.0];
-private _ftPitch    = _heli getVariable ["fza_ah64_forceTrimPosPitch",   0.0];
-private _ftRoll     = _heli getVariable ["fza_ah64_forceTrimPosRoll",    0.0];
+private _ftPitch    = _heli getVariable ["bmkhs_forceTrimPosPitch",   0.0];
+private _ftRoll     = _heli getVariable ["bmkhs_forceTrimPosRoll",    0.0];
 private _collective = _heli getVariable ["bmkhs_collectiveOutput", 0.0];
 
 private _effPitch = [_cyclicFwd,  _ftPitch] call fza_anim_fnc_getEffInput;

@@ -187,7 +187,7 @@ if (_yawBreakout) then {
     if (_prevHdgHoldBreakout && !_hdgHoldBreakout) then {
         _heli setVariable ["fza_sfmPlus_autoPedalHdg", getDir _heli, true];
     };
-    _heli setVariable ["fza_ah64_forceTrimPosYaw", _yawOutput, true];
+    _heli setVariable ["bmkhs_forceTrimPosYaw", _yawOutput, true];
 };
 _heli setVariable ["bmkhs_prevAutoPedalHdgBreakout", _hdgHoldBreakout];
 

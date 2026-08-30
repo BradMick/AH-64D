@@ -30,7 +30,7 @@
 ] call CBA_fnc_addSetting;
 
 [
-    "fza_ah64_sfmPlusSpringlessCyclic",
+    "bmkhs_springlessCyclic",
     "CHECKBOX",
     [(localize "STR_FZA_AH64_SETTINGS_SPRINGLESS_CYCLIC"), (localize "STR_FZA_AH64_SETTINGS_SPRINGLESS_CYCLIC_INFO")],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
@@ -39,7 +39,7 @@
 ] call CBA_fnc_addSetting;
 
 [
-    "fza_ah64_sfmPlusSpringlessPedals",
+    "bmkhs_springlessPedals",
     "CHECKBOX",
     [(localize "STR_FZA_AH64_SETTINGS_SPRINGLESS_PEDALS"), (localize "STR_FZA_AH64_SETTINGS_SPRINGLESS_PEDALS_INFO")],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
@@ -48,7 +48,7 @@
 ] call CBA_fnc_addSetting;
 
 [
-    "fza_ah64_sfmPlusKeyboardStickyPitch",
+    "bmkhs_keyboardStickyPitch",
     "CHECKBOX",
     [(localize "STR_FZA_AH64_SETTINGS_KEYBOARD_STICKY_PITCH"), (localize "STR_FZA_AH64_SETTINGS_KEYBOARD_STICKY_PITCH_INFO")],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
@@ -57,7 +57,7 @@
 ] call CBA_fnc_addSetting;
 
 [
-    "fza_ah64_sfmPlusKeyboardStickyRoll",
+    "bmkhs_keyboardStickyRoll",
     "CHECKBOX",
     [(localize "STR_FZA_AH64_SETTINGS_KEYBOARD_STICKY_ROLL"), (localize "STR_FZA_AH64_SETTINGS_KEYBOARD_STICKY_ROLL_INFO")],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
@@ -66,7 +66,7 @@
 ] call CBA_fnc_addSetting;
 
 [
-    "fza_ah64_sfmPlusKeyboardStickyYaw",
+    "bmkhs_keyboardStickyYaw",
     "CHECKBOX",
     [(localize "STR_FZA_AH64_SETTINGS_KEYBOARD_STICKY_YAW"), (localize "STR_FZA_AH64_SETTINGS_KEYBOARD_STICKY_YAW_INFO")],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
@@ -75,7 +75,7 @@
 ] call CBA_fnc_addSetting;
 
 [
-    "fza_ah64_sfmPlusAutoPedal",
+    "bmkhs_autoPedal",
     "CHECKBOX",
     [(localize "STR_FZA_AH64_SETTINGS_KEYBOARD_AUTO_PEDAL"), (localize "STR_FZA_AH64_SETTINGS_KEYBOARD_AUTO_PEDAL_INFO")],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
@@ -91,7 +91,7 @@
 //a realistic pilot who left it ticked lost pitch SAS to an assist that never ran.
 
 [
-    "fza_ah64_sfmPlusMouseAsJoystick",
+    "bmkhs_mouseAsJoystick",
     "CHECKBOX",
     [(localize "STR_FZA_AH64_SETTINGS_MOUSE_AS_JOYSTICK"), (localize "STR_FZA_AH64_SETTINGS_MOUSE_AS_JOYSTICK_INFO")],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
@@ -100,7 +100,7 @@
 ] call CBA_fnc_addSetting;
 
 [
-    "fza_ah64_sfmPlusMouseSense",
+    "bmkhs_mouseSense",
     "SLIDER",
     [(localize "STR_FZA_AH64_SETTINGS_MOUSE_SENSITIVITY"), (localize "STR_FZA_AH64_SETTINGS_MOUSE_SENSITIVITY_INFO")],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
@@ -118,7 +118,7 @@
 ] call CBA_fnc_addSetting;
 
 [
-    "fza_ah64_sfmPlusVrsWarning",
+    "bmkhs_vrsWarning",
     "CHECKBOX",
     [(localize "STR_FZA_AH64_SETTINGS_VRS_WARNING"), (localize "STR_FZA_AH64_SETTINGS_VRS_WARNING_INFO")],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
@@ -127,7 +127,7 @@
 ] call CBA_fnc_addSetting;
 
 [
-    "fza_ah64_sfmPlusFmDebug",
+    "bmkhs_fmDebug",
     "CHECKBOX",
     [(localize "STR_FZA_AH64_SETTINGS_FM_DEBUG"), (localize "STR_FZA_AH64_SETTINGS_FM_DEBUG_INFO")],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
@@ -136,7 +136,7 @@
 ] call CBA_fnc_addSetting;
 
 [
-    "fza_ah64_sfmPlusRotorModel",
+    "bmkhs_rotorModel",
     "LIST",
     [(localize "STR_FZA_AH64_SETTINGS_ROTOR_MODEL"), (localize "STR_FZA_AH64_SETTINGS_ROTOR_MODEL_INFO")],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],

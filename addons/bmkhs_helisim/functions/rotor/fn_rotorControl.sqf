@@ -13,21 +13,21 @@ params ["_heli", "_type", "_pitchMin", "_pitchMid", "_pitchMax", "_rollMin", "_r
 //SAS outputs are FMC-gated + primary-hydraulics-gated in fn_fmc (zeroed when their channel/hyd
 //is unavailable), so summing them here is safe (=0 when inactive).
 private _cyclicFwdAft           = _heli getVariable "bmkhs_cyclicFwdAft";
-private _forceTrimPosPitch      = _heli getVariable "fza_ah64_forceTrimPosPitch";
+private _forceTrimPosPitch      = _heli getVariable "bmkhs_forceTrimPosPitch";
 private _sasPitchOut            = _heli getVariable "bmkhs_fmcSasPitchOut";
 private _attHoldCycPitchOut     = _heli getVariable "bmkhs_fmcAttHoldCycPitchOut";
 private _pitchInput             = _cyclicFwdAft + _forceTrimPosPitch + _sasPitchOut + _attHoldCycPitchOut;
 private _pitchFeather			= 0.0;
 
 private _cyclicLeftRight        = _heli getVariable "bmkhs_cyclicLeftRight";
-private _forceTrimPosRoll       = _heli getVariable "fza_ah64_forceTrimPosRoll";
+private _forceTrimPosRoll       = _heli getVariable "bmkhs_forceTrimPosRoll";
 private _sasRollOut             = _heli getVariable "bmkhs_fmcSasRollOut";
 private _attHoldCycRollOut      = _heli getVariable "bmkhs_fmcAttHoldCycRollOut";
 private _rollInput              = _cyclicLeftRight + _forceTrimPosRoll + _sasRollOut + _attHoldCycRollOut;
 private _rollFeather			= 0.0;
 
 private _pedalLeftRight         = _heli getVariable "bmkhs_pedalLeftRight";
-private _forceTrimPosYaw        = _heli getVariable "fza_ah64_forceTrimPosYaw";
+private _forceTrimPosYaw        = _heli getVariable "bmkhs_forceTrimPosYaw";
 private _sasYawOut              = _heli getVariable "bmkhs_fmcSasYawOut";
 private _hdgHoldPedalYawOut     = _heli getVariable "bmkhs_fmcHdgHoldPedalYawOut";
 private _yawInput               = _pedalLeftRight + _forceTrimPosYaw + _sasYawOut + _hdgHoldPedalYawOut;

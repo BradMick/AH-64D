@@ -302,6 +302,6 @@
 //check never consults, so every block was compiled out unconditionally and the
 //debug graphics could never draw. Gate on the CBA setting instead so it is
 //togglable at runtime.
-#define BMKHS_FM_DEBUG (!isNil "fza_ah64_sfmPlusFmDebug" && {fza_ah64_sfmPlusFmDebug})
+#define BMKHS_FM_DEBUG (!isNil "bmkhs_fmDebug" && {bmkhs_fmDebug})
 
 #endif

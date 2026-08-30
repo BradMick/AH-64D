@@ -125,7 +125,7 @@ if (_value) then {
         case "fza_ah64_forceTrimHoldModeSwitch_up": {
             if (currentPilot _heli != player || !local _heli) exitWith {};
 
-            _heli setVariable ["fza_ah64_forceTrimInterupted", true, true];
+            _heli setVariable ["bmkhs_forceTrimInterupted", true, true];
         };
         case "fza_ah64_forceTrimHoldModeSwitch_right": {
             if (currentPilot _heli != player || !local _heli) exitWith {};
@@ -348,17 +348,17 @@ if !(_value) then {
             private _curAtt   = _heli call BIS_fnc_getPitchBank;
             private _curPitch = _curAtt # 0;
             private _curRoll  = _curAtt # 1;
-            _heli setVariable ["fza_ah64_forceTrimInterupted",    false,                 true];
-            _heli setVariable ["fza_ah64_attHoldDesiredPos",      getPos _heli,          true];
-            _heli setVariable ["fza_ah64_attHoldDesiredVel",      [_curVelX, _curVelY],  true];
-            _heli setVariable ["fza_ah64_attHoldDesiredAtt",      [_curPitch, _curRoll], true];
-            _heli setVariable ["fza_ah64_hdgHoldDesiredHdg",      getDir _heli,          true];
+            _heli setVariable ["bmkhs_forceTrimInterupted",    false,                 true];
+            _heli setVariable ["bmkhs_attHoldDesiredPos",      getPos _heli,          true];
+            _heli setVariable ["bmkhs_attHoldDesiredVel",      [_curVelX, _curVelY],  true];
+            _heli setVariable ["bmkhs_attHoldDesiredAtt",      [_curPitch, _curRoll], true];
+            _heli setVariable ["bmkhs_hdgHoldDesiredHdg",      getDir _heli,          true];
             //Sideslip setpoint is ZERO - a centred ball IS aerodynamic trim, which is what the
             //heading hold's yaw/trn sub-modes are for. This used to capture fza_ah64_sideslip (the
             //GAUGE global) on force-trim, which is wrong now that the loop measures
             //bmkhs_aero_beta_g: the two are different units (clamped gauge deflection vs
             //lateral g), so the setpoint and measurement would not be comparable.
-            _heli setVariable ["fza_ah64_hdgHoldDesiredSideslip", 0.0,                   true];
+            _heli setVariable ["bmkhs_hdgHoldDesiredSideslip", 0.0,                   true];
             [_heli] call bmkhs_fnc_fmcForceTrimSet;
 
             [_heli] call bmkhs_fnc_centerTrimMode;
@@ -368,9 +368,9 @@ if !(_value) then {
         };
         case "fza_ah64_forceTrimPanicButton": {
             // Reset force-trim reference positions
-            _heli setVariable ["fza_ah64_forceTrimPosPitch", 0.0, true];
-            _heli setVariable ["fza_ah64_forceTrimPosRoll",  0.0, true];
-            _heli setVariable ["fza_ah64_forceTrimPosYaw",   0.0, true];
+            _heli setVariable ["bmkhs_forceTrimPosPitch", 0.0, true];
+            _heli setVariable ["bmkhs_forceTrimPosRoll",  0.0, true];
+            _heli setVariable ["bmkhs_forceTrimPosYaw",   0.0, true];
             // Reset keyboard sticky input accumulated values to centre
             _heli setVariable ["bmkhs_cyclicPitchValue",     0.0];
             _heli setVariable ["bmkhs_cyclicRollValue",      0.0];

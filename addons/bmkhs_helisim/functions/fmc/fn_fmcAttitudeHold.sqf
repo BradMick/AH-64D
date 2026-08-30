@@ -11,7 +11,7 @@ private _pidPitch     = _heli getVariable "bmkhs_pid_pitch";
 private _pidPitch_att = _heli getVariable "bmkhs_pid_pitch_att";
 
 //Position & Velocity hold
-private _subMode  = _heli getVariable "fza_ah64_attHoldSubMode";
+private _subMode  = _heli getVariable "bmkhs_attHoldSubMode";
 
 ((_heli getVariable "bmkhs_velModelSpaceNoWind"))
     params [
@@ -41,20 +41,20 @@ private _attHoldCycRollOut  = 0.0;
 //Submode selection: speed-driven.
 //Position hold
 if (_gndSpeed <= POS_HOLD_SPEED_SWITCH) then {
-    [_heli, "fza_ah64_attHoldSubMode", "pos"] call fza_fnc_updateNetworkGlobal;
+    [_heli, "bmkhs_attHoldSubMode", "pos"] call fza_fnc_updateNetworkGlobal;
 };
 //Velocity hold
 //This needs to check if accelerating or decelerating...really it's
 //5 to 40 knots accelerating, 30 to 5 knots decelerating
 if (_gndSpeed > POS_HOLD_SPEED_SWITCH && _gndSpeed <= VEL_HOLD_SPEED_SWITCH_ACCEL) then {
-    [_heli, "fza_ah64_attHoldSubMode", "vel"] call fza_fnc_updateNetworkGlobal;
+    [_heli, "bmkhs_attHoldSubMode", "vel"] call fza_fnc_updateNetworkGlobal;
 };
 //Attitude hold
 if (_gndSpeed > VEL_HOLD_SPEED_SWITCH_ACCEL) then {
-    [_heli, "fza_ah64_attHoldSubMode", "att"] call fza_fnc_updateNetworkGlobal;
+    [_heli, "bmkhs_attHoldSubMode", "att"] call fza_fnc_updateNetworkGlobal;
 };
 
-if (_heli getVariable "fza_ah64_attHoldActive" && !(_heli getVariable "fza_ah64_forceTrimInterupted")) then {
+if (_heli getVariable "bmkhs_attHoldActive" && !(_heli getVariable "bmkhs_forceTrimInterupted")) then {
     //Position hold = velocity-null loop + a SLOW, TIGHTLY-CLAMPED position-error integral that biases
     //the velocity SETPOINT (not the output) to trim out the standing drift a pure velocity-null loop
     //leaves (type-0 -> type-1: zero steady-state position error). The bias works THROUGH the velocity
@@ -62,7 +62,7 @@ if (_heli getVariable "fza_ah64_attHoldActive" && !(_heli getVariable "fza_ah64_
     //Anti-windup: the accumulator is clamped to a tiny ceiling (posIntClamp) near the loop's real working
     //range so it physically cannot rail the +-0.1 servo (the old 0.6 ceiling was 60x too big -> railed).
     if (_subMode == "pos") then {
-        private _desiredPos = _heli getVariable ["fza_ah64_attHoldDesiredPos", getPos _heli];
+        private _desiredPos = _heli getVariable ["bmkhs_attHoldDesiredPos", getPos _heli];
         private _dPos = _desiredPos vectorDiff (getPos _heli);
         private _hdg  = direction _heli;
         //model-space position error: X = right+, Y = fwd+
@@ -92,7 +92,7 @@ if (_heli getVariable "fza_ah64_attHoldActive" && !(_heli getVariable "fza_ah64_
     };
     //Velocity hold
     if (_subMode == "vel") then {
-        (_heli getVariable "fza_ah64_attHoldDesiredVel")
+        (_heli getVariable "bmkhs_attHoldDesiredVel")
             params ["_setVelX", "_setVelY"];
         private _roll  = [_pidRoll,  _deltaTime, _setVelX, -_velX] call fza_fnc_pidRun;
         _roll          = [_roll,  -1.0, 1.0] call BIS_fnc_clamp;
@@ -104,7 +104,7 @@ if (_heli getVariable "fza_ah64_attHoldActive" && !(_heli getVariable "fza_ah64_
     };
     //Attitude hold
     if (_subMode == "att") then {
-       (_heli getVariable "fza_ah64_attHoldDesiredAtt")
+       (_heli getVariable "bmkhs_attHoldDesiredAtt")
               params ["_setPitch", "_setRoll"];
         private _pitchError = [_curPitch - _setPitch] call CBA_fnc_simplifyAngle180;
         private _rollError  = [_curRoll  - _setRoll]  call CBA_fnc_simplifyAngle180;

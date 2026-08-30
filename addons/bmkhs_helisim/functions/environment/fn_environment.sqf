@@ -75,7 +75,7 @@ _heli setVariable ["bmkhs_windDirFrom",  round _windDirFrom];
 
 private _velWindWorldSpace = [0,0,0];
 
-if (fza_ah64_sfmPlusRotorModel == 0) then {
+if (bmkhs_rotorModel == 0) then {
     private _windDirToward = (_windDirFrom + 180) mod 360;
     _velWindWorldSpace = [_windSpeed * sin _windDirToward, _windSpeed * cos _windDirToward, 0.0];
 };

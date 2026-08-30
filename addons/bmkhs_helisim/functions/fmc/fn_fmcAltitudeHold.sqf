@@ -6,10 +6,10 @@ private _gndSpeed   = (_heli getVariable "bmkhs_gndSpeed") * KNOTS_TO_MPS;
 private _pidRadAlt  = _heli getVariable "bmkhs_pid_radHold";
 private _pidBarAlt  = _heli getVariable "bmkhs_pid_barHold";
 private _curAltAGL  = ASLToAGL getPosASL _heli # 2;
-private _subMode    = _heli getVariable "fza_ah64_altHoldSubMode";
-private _desiredAlt = _heli getVariable "fza_ah64_altHoldDesiredAlt";
+private _subMode    = _heli getVariable "bmkhs_altHoldSubMode";
+private _desiredAlt = _heli getVariable "bmkhs_altHoldDesiredAlt";
 private _curAltMSL  = getPosASL _heli # 2;
-private _collRef    = _heli getVariable  "fza_ah64_altHoldCollRef";
+private _collRef    = _heli getVariable  "bmkhs_altHoldCollRef";
 private _e1tq       = _heli getVariable "bmkhs_engPctTQ" select 0;
 private _e2tq       = _heli getVariable "bmkhs_engPctTQ" select 1;
 private _tq         = _e1tq max _e2tq;
@@ -18,18 +18,18 @@ private _output     = 0.0;
 //If the total torque exceeds 98%, de-activate altitude hold and don't allow its
 //activation until it it is below 98%
 if (_tq >= 0.98) then {
-    [_heli, "fza_ah64_altHoldActive", false] call fza_fnc_updateNetworkGlobal;
+    [_heli, "bmkhs_altHoldActive", false] call fza_fnc_updateNetworkGlobal;
     [_pidRadAlt] call fza_fnc_pidReset;
     [_pidBarAlt] call fza_fnc_pidReset;
 };
 
-if ( _heli getVariable "fza_ah64_altHoldActive") then {
+if ( _heli getVariable "bmkhs_altHoldActive") then {
     //If the pilot is intentionally trying to change altitude, de-activate altitude
     //hold and allow them to do so
     private _collRef_low = _collRef * 0.95;
     private _collRef_hi  = _collRef * 1.05;
     if ((_heli getVariable "bmkhs_collectiveOutput") >= _collRef_hi || (_heli getVariable "bmkhs_collectiveOutput") <= _collRef_low) then {
-        [_heli, "fza_ah64_altHoldActive", false] call fza_fnc_updateNetworkGlobal;
+        [_heli, "bmkhs_altHoldActive", false] call fza_fnc_updateNetworkGlobal;
         [_heli] spawn fza_audio_fnc_flightTone;
     };
 
@@ -37,9 +37,9 @@ if ( _heli getVariable "fza_ah64_altHoldActive") then {
     //then set the desired altitude to the current AGL altitude, otherwise set it to the
     //current ASL altitude.
     if (_curAltAGL < RAD_ALT_MAX_ALT && _gndSpeed < ALT_HOLD_SPEED_SWITCH) then {
-        [_heli, "fza_ah64_altHoldSubMode", "rad"] call fza_fnc_updateNetworkGlobal;
+        [_heli, "bmkhs_altHoldSubMode", "rad"] call fza_fnc_updateNetworkGlobal;
     } else {
-        [_heli, "fza_ah64_altHoldSubMode", "bar"] call fza_fnc_updateNetworkGlobal;
+        [_heli, "bmkhs_altHoldSubMode", "bar"] call fza_fnc_updateNetworkGlobal;
     };
 
     if (_subMode == "rad") then {

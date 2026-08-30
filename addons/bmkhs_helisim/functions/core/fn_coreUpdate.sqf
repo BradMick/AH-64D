@@ -66,7 +66,7 @@ if (isAutoHoverOn _heli) then {
 //Damage
 [_heli] call bmkhs_fnc_damageApply;
 
-if (fza_ah64_sfmPlusFmDebug) then {
+if (bmkhs_fmDebug) then {
     hintSilent format [
     "_cyclicFwdAft = %1
     \n_cyclicLeftRight = %2
@@ -124,18 +124,18 @@ if (fza_ah64_sfmPlusFmDebug) then {
     _heli getVariable "bmkhs_cyclicLeftRight" toFixed 3,                 //2
     _heli getVariable "bmkhs_pedalLeftRight" toFixed 3,                  //3
     _heli getVariable "bmkhs_collectiveOutput" toFixed 3,                //4
-    _heli getVariable "fza_ah64_stabilatorPosition" toFixed 3,                 //5
-    fza_ah64_sfmPlusSpringlessCyclic,                                          //6
-    fza_ah64_sfmPlusSpringlessPedals,                                          //7
-    fza_ah64_sfmPlusKeyboardStickyPitch,                                       //8
-    fza_ah64_sfmPlusKeyboardStickyRoll,                                        //9
-    fza_ah64_sfmPlusKeyboardStickyYaw,                                         //10
-    fza_ah64_sfmPlusAutoPedal,                                                 //11
+    _heli getVariable "bmkhs_stabilatorPosition" toFixed 3,                 //5
+    bmkhs_springlessCyclic,                                          //6
+    bmkhs_springlessPedals,                                          //7
+    bmkhs_keyboardStickyPitch,                                       //8
+    bmkhs_keyboardStickyRoll,                                        //9
+    bmkhs_keyboardStickyYaw,                                         //10
+    bmkhs_autoPedal,                                                 //11
     bmkhs_cyclicCenterTrimMode,                                          //12
     bmkhs_pedalCenterTrimMode,                                           //13
-    fza_ah64_sfmPlusMouseAsJoystick,                                           //14
+    bmkhs_mouseAsJoystick,                                           //14
     _heli getVariable "bmkhs_kbStickyInterupt",                          //15
-    _heli getVariable "fza_ah64_forceTrimInterupted",                          //16
+    _heli getVariable "bmkhs_forceTrimInterupted",                          //16
     _heli getVariable "bmkhs_fmcAttHoldCycPitchOut" toFixed 3,          //17
     _heli getVariable "bmkhs_fmcSasPitchOut" toFixed 3,                 //18
     _heli getVariable "bmkhs_fmcAttHoldCycRollOut" toFixed 3,           //19
@@ -143,9 +143,9 @@ if (fza_ah64_sfmPlusFmDebug) then {
     _heli getVariable "bmkhs_fmcHdgHoldPedalYawOut" toFixed 3,          //21
     _heli getVariable "bmkhs_fmcSasYawOut" toFixed 3,                   //22
     _heli getVariable "bmkhs_fmcAltHoldCollOut" toFixed 3,              //23
-    _heli getVariable "fza_ah64_forceTrimPosPitch" toFixed 3,                 //24
-    _heli getVariable "fza_ah64_forceTrimPosRoll" toFixed 3,                  //25
-    _heli getVariable "fza_ah64_forceTrimPosYaw" toFixed 3,                   //26
+    _heli getVariable "bmkhs_forceTrimPosPitch" toFixed 3,                 //24
+    _heli getVariable "bmkhs_forceTrimPosRoll" toFixed 3,                  //25
+    _heli getVariable "bmkhs_forceTrimPosYaw" toFixed 3,                   //26
     //Report the CoM in SURVEYED space - the frame the user measured in Object Builder and typed
     //into the arms - not the engine's shifted frame. setCenterOfMass was handed the surveyed CG
     //with boundingCenter subtracted, so adding it back here undoes that and the readout matches
@@ -155,12 +155,12 @@ if (fza_ah64_sfmPlusFmDebug) then {
     ((getCenterOfMass _heli) vectorAdd (boundingCenter _heli)) select 1 toFixed 3,   //28
     ((getCenterOfMass _heli) vectorAdd (boundingCenter _heli)) select 2 toFixed 3,   //29
     ((_heli getVariable "bmkhs_GWT") * 2.20462) toFixed 0,              //30
-    _heli getVariable "fza_ah64_attHoldActive",                               //31
-    _heli getVariable "fza_ah64_attHoldSubMode",                              //32
-    _heli getVariable "fza_ah64_altHoldActive",                               //33
-    _heli getVariable "fza_ah64_altHoldSubMode",                              //34
-    _heli getVariable "fza_ah64_hdgHoldActive",                               //35
-    _heli getVariable "fza_ah64_hdgHoldSubMode",                              //36
+    _heli getVariable "bmkhs_attHoldActive",                               //31
+    _heli getVariable "bmkhs_attHoldSubMode",                              //32
+    _heli getVariable "bmkhs_altHoldActive",                               //33
+    _heli getVariable "bmkhs_altHoldSubMode",                              //34
+    _heli getVariable "bmkhs_hdgHoldActive",                               //35
+    _heli getVariable "bmkhs_hdgHoldSubMode",                              //36
     _heli getVariable "bmkhs_flightControlLockOut",                     //37
     _heli call BIS_fnc_getPitchBank select 0 toFixed 2,                       //38
     _heli call BIS_fnc_getPitchBank select 1 toFixed 2,                       //39
