@@ -309,24 +309,7 @@ if (_value) then {
             _heli spawn fza_weapons_fnc_jettisonAll;
         };
         case "fza_ah64_ctrlVisToggle": {
-            if !(_heli getVariable ["fza_ah64_aircraftInitialised", false]) exitWith {};
-
-            private _layer = "fza_ah64_ctrlvis" call BIS_fnc_rscLayer;
-
-            // Check whether the display is currently shown
-            private _ctrlVisDisplay = uiNamespace getVariable ["fza_ah64_ctrlvis", displayNull];
-            private _ctrlVisIsShown = !isNull _ctrlVisDisplay;
-
-            if (_ctrlVisIsShown) then {
-                // Hide — also clear cached statics so they're recomputed on next open
-                _layer cutText ["", "PLAIN", 0, false];
-                uiNamespace setVariable ["fza_ah64_ctrlvis",        displayNull];
-                uiNamespace setVariable ["fza_ah64_ctrlVisColors",  []];
-                uiNamespace setVariable ["fza_ah64_ctrlVisCircleW", nil];
-            } else {
-                // Show
-                _layer cutRsc ["fza_ah64_ctrlvis", "PLAIN", 0, false];
-            };
+            [_heli] call bmkhs_fnc_ctrlVisToggle;
         };
     };
 };

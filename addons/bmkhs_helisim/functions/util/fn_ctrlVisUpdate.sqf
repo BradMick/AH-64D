@@ -1,9 +1,9 @@
 /* ----------------------------------------------------------------------------
-Function: fza_fnc_ctrlVisUpdate
+Function: bmkhs_fnc_ctrlVisUpdate
 
 Description:
     Per-frame update for the Control Input Visualiser.
-    Called from fza_ah64_draw3Darray every Draw3D event.
+    Called every Draw3D event by the aircraft pack.
 
     Reads HeliSim/SFM+ variables and repositions all display controls to show:
       • Cyclic 2-D display   – actual stick (green O), FT reference (orange FT),
@@ -25,10 +25,10 @@ Author:
 params ["_heli"];
 
 // ── Guard conditions ─────────────────────────────────────────────────────────
-private _display = uiNamespace getVariable ["fza_ah64_ctrlvis", displayNull];
+private _display = uiNamespace getVariable ["bmkhs_ctrlvis", displayNull];
 if (isNull _display) exitWith {};
 if !(driver _heli == player || gunner _heli == player) exitWith {};
-if !(_heli isKindOf "fza_ah64base") exitWith {};
+if !(_heli getVariable ["bmkhs_initialised", false]) exitWith {};
 
 private _bgPos = ctrlPosition (_display displayCtrl 5101);
 if (count _bgPos < 4) exitWith {};
@@ -68,12 +68,12 @@ private _thSAS = _szSAS * 0.12;   // SAS cross: bar thickness (+20%)
 private _szAct = _mainH * 0.06;   // actual ring outer diameter (= old FT size)
 private _szFT  = _szAct * 0.5;    // FT ring: half actual diameter; baked-in 2× relative band → same absolute border thickness
 
-private _circleWAdj = uiNamespace getVariable "fza_ah64_ctrlVisCircleW";
+private _circleWAdj = uiNamespace getVariable "bmkhs_ctrlVisCircleW";
 if (isNil "_circleWAdj") then {
     private _res = getResolution;
     if ((_res select 0) > 0 && (_res select 1) > 0) then {
         _circleWAdj = (safeZoneW / safeZoneH) / ((_res select 0) / (_res select 1));
-        uiNamespace setVariable ["fza_ah64_ctrlVisCircleW", _circleWAdj];
+        uiNamespace setVariable ["bmkhs_ctrlVisCircleW", _circleWAdj];
     } else {
         _circleWAdj = 1.0;
     };
@@ -106,7 +106,7 @@ private _sasTotalRoll  = _sasRoll  + _attRoll;
 
 // ── Colour scheme ────────────────────────────────────────────────────────────
 
-private _colorScheme = fza_ah64_ctrlVisColor;
+private _colorScheme = bmkhs_ctrlVisColor;
 
 // Initialised to the Default (0) scheme; switch below overrides for schemes 1-5.
 private _colAct      = [0.20,1.00,0.20,1.00];

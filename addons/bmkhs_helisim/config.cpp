@@ -14,3 +14,4 @@ class CfgPatches
 
 #include "CfgFunctions.hpp"
 #include "extendedEventHandlers.hpp"
+#include "ui\RscCtrlVis.hpp"

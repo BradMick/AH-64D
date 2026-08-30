@@ -144,6 +144,23 @@
     0
 ] call CBA_fnc_addSetting;
 
+//Flight control indicator
+[
+    "bmkhs_ctrlVisColor",
+    "LIST",
+    [(localize "STR_FZA_AH64_CTRLVIS_COLOR"), (localize "STR_FZA_AH64_CTRLVIS_COLOR_INFO")],
+    [BMKHS_SETTINGS_CATEGORY, "Flight model"],
+    [[0, 1, 2, 3, 4, 5], [
+        (localize "STR_FZA_AH64_CTRLVIS_COLOR_DEFAULT"),
+        (localize "STR_FZA_AH64_CTRLVIS_COLOR_NVG"),
+        (localize "STR_FZA_AH64_CTRLVIS_COLOR_MONO"),
+        (localize "STR_FZA_AH64_CTRLVIS_COLOR_AMBER"),
+        (localize "STR_FZA_AH64_CTRLVIS_COLOR_BLUEFOR"),
+        (localize "STR_FZA_AH64_CTRLVIS_COLOR_HICONTRAST")
+    ], 0],
+    2
+] call CBA_fnc_addSetting;
+
 bmkhs_keyboardCollective         = true;
 bmkhs_keyboardCollectivePrevious = true;
 

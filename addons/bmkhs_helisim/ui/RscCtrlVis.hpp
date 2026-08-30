@@ -9,7 +9,7 @@ class RscFrame;
 
 class RscTitles
 {
-    class fza_ah64_ctrlvis
+    class bmkhs_ctrlvis
     {
     idd          = 5100;
     movingEnable = 1;       // Non-blocking: player retains game/vehicle inputs while display is open
@@ -17,8 +17,8 @@ class RscTitles
     duration     = 99999;
     fadein       = 0;
     fadeout      = 0;
-    name         = "fza_ah64_ctrlvis";
-    onLoad       = "uiNameSpace setVariable ['fza_ah64_ctrlvis', _this select 0];";
+    name         = "bmkhs_ctrlvis";
+    onLoad       = "uiNameSpace setVariable ['bmkhs_ctrlvis', _this select 0];";
 
     class controls
     {
@@ -196,7 +196,7 @@ class RscTitles
             idc   = 5134;
             type  = 0;
             style = 48;   // ST_PICTURE
-            text  = "\fza_ah64_controls\data\ui\ring_ft_ca.paa";
+            text  = "\bmkhs_helisim\data\ui\ring_ft_ca.paa";
             colorText[]       = {1, 1, 1, 1};
             colorBackground[] = {0, 0, 0, 0};
             x = 0; y = 0; w = 0.001; h = 0.001;
@@ -208,7 +208,7 @@ class RscTitles
             idc   = 5135;
             type  = 0;
             style = 48;   // ST_PICTURE
-            text  = "\fza_ah64_controls\data\ui\ring_act_ca.paa";
+            text  = "\bmkhs_helisim\data\ui\ring_act_ca.paa";
             colorText[]       = {1, 1, 1, 1};
             colorBackground[] = {0, 0, 0, 0};
             x = 0; y = 0; w = 0.001; h = 0.001;
@@ -285,7 +285,7 @@ class RscTitles
         };
 
     }; // class controls
-    }; // class fza_ah64_ctrlvis
+    }; // class bmkhs_ctrlvis
 }; // class RscTitles
 
 // Register with the Arma layout editor (Options → Video → Edit Layout).
@@ -324,7 +324,7 @@ class CfgUIGrids
                 description     = "HeliSim control input and SAS visualiser overlay";
                 // preview is the image the layout editor renders as the draggable element.
                 // Without this the widget is invisible on the canvas and cannot be interacted with.
-                preview         = "\fza_ah64_controls\data\ui\IGUI_ctrlvis_preview.paa";
+                preview         = "\bmkhs_helisim\data\ui\IGUI_ctrlvis_preview.paa";
                 saveToProfile[] = {0, 1, 2, 3};
                 canResize       = 1;
             };

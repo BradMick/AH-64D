@@ -110,6 +110,8 @@ class CfgFunctions
         };
         class util {
             file = "\bmkhs_helisim\functions\util";
+            class ctrlVisToggle {R;};
+            class ctrlVisUpdate {R;};
             class notify {R;};
             class setArrayVariable {R;};
             class setMultiArrayVariable {R;};
