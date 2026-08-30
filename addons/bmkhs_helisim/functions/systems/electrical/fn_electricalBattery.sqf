@@ -37,7 +37,7 @@ if (_battSwitchOn) then {
 };
 //Set the state of the battery bus
 if (local _heli) then {
-    [_heli, "bmkhs_battBusOn", _battBusOn] call fza_fnc_updateNetworkGlobal;
+    [_heli, "bmkhs_battBusOn", _battBusOn] call bmkhs_fnc_updateNetworkGlobal;
 };
 
 //Drain the battery

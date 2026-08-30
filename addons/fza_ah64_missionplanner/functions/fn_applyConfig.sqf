@@ -20,11 +20,11 @@ if !(_heli isKindOf "Helicopter") exitWith {false};
 
     if (isNull _heli) exitWith {};
 
-    _heli setVariable ["fza_mplanner_applying", true, true];
+    _heli setVariable ["bmkhs_inputLockout", true, true];
 
     private _settings = [_legacyJson] call CBA_fnc_parseJSON;
     if (isNil "_settings") exitWith {
-        _heli setVariable ["fza_mplanner_applying", false, true];
+        _heli setVariable ["bmkhs_inputLockout", false, true];
         systemChat "Mission Planner apply failed: invalid payload.";
     };
 
@@ -79,7 +79,7 @@ if !(_heli isKindOf "Helicopter") exitWith {false};
 
     private _currentFcrState = [0, 1] select ((_heli animationPhase "fcr_enable") > 0.5);
     private _needsFcr = _desiredFcrState != _currentFcrState;
-    private _needsCenterStore = (_heli getVariable ["fza_ah64_IAFSInstalled", true]) != _iafsInstalled;
+    private _needsCenterStore = (_heli getVariable ["bmkhs_ctrTankInstalled", true]) != _iafsInstalled;
     private _needsFuel = _fuelDeltaKg > 1;
     private _needsCannon = _cannonDelta > 0;
     // ACE rearm supply mode (0=unlimited, 1=caliber pool, 2=magazine-inventory)
@@ -593,7 +593,7 @@ if !(_heli isKindOf "Helicopter") exitWith {false};
         };
     };
 
-    private _currentIafsInstalled = _heli getVariable ["fza_ah64_IAFSInstalled", true];
+    private _currentIafsInstalled = _heli getVariable ["bmkhs_ctrTankInstalled", true];
 
     if (_needsCenterStore && _iafsInstalled && !_currentIafsInstalled) then {
         // magazine → IAFS: unload cannon first (if loaded), then swap
@@ -1098,7 +1098,7 @@ if !(_heli isKindOf "Helicopter") exitWith {false};
     // equipment is reapplied (e.g. UK→UK after expending flares).
     [_heli, _heli animationPhase "msn_equip_british"] remoteExec ["fza_ase_fnc_swapFlares", _heli];
 
-    _heli setVariable ["fza_mplanner_applying", false, true];
+    _heli setVariable ["bmkhs_inputLockout", false, true];
     systemChat "Mission Planner apply complete.";
 };
 

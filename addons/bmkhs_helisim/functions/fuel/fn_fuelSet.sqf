@@ -12,7 +12,7 @@ Returns:
 
 Examples:
     ...
-    _fuelMass = [_heli] call fza_fnc_setFuel;
+    _fuelMass = [_heli] call bmkhs_fnc_fuelSet;
     _fwdFuelMass = _fuelMass select 0;
     _aftFuelMass = _fuelMass select 1;
 
@@ -24,7 +24,7 @@ params ["_heli"];
 private _pylonMagazines = getPylonMagazines _heli;
 
 private _percentFuel    = fuel _heli;
-private _IAFSInstalled  = _heli getVariable ["fza_ah64_IAFSInstalled", false];
+private _IAFSInstalled  = _heli getVariable ["bmkhs_ctrTankInstalled", false];
 private _maxFwdFuelMass = _heli getVariable ["bmkhs_maxFwdFuelMass", 0];
 private _maxCtrFuelMass = _heli getVariable ["bmkhs_maxCtrFuelMass", 0];
 private _maxAftFuelMass = _heli getVariable ["bmkhs_maxAftFuelMass", 0];

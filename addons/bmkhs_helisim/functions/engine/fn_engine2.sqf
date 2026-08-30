@@ -21,7 +21,7 @@ private _engPid             = _heli getVariable "bmkhs_pid_engine" select _engNu
 //_engPid set ["ki", E_KI];
 //_engPid set ["kd", E_KD];
 private _rtrTqReq           = _heli getVariable "bmkhs_reqEngTorque" select 0;
-private _engOverspeed       = _heli getVariable "fza_ah64_engineOverspeed" select _engNum;
+private _engOverspeed       = _heli getVariable "bmkhs_engineOverspeed" select _engNum;
 private _randomTq           = _heli getVariable "bmkhs_randomTq";
 private _onGnd              = [_heli] call bmkhs_fnc_onGround;
 private _engPctNp           = _heli getVariable "bmkhs_engPctNP" select _engNum;
@@ -68,7 +68,7 @@ if (_engState in ["STARTING", "ON"]) then {
         if (_engPctNP >= 1.196) then {
             _engState     = "OFF";
             [_heli, "bmkhs_engState", _engNum, _engState, true] call bmkhs_fnc_setArrayVariable;
-            [_heli, "fza_ah64_engineOverspeed", _engNum, false, true] call bmkhs_fnc_setArrayVariable;
+            [_heli, "bmkhs_engineOverspeed", _engNum, false, true] call bmkhs_fnc_setArrayVariable;
         };
     } else {
         if (_xmsnRpm > _npTrimRef || _xmsnRpm < _npTrimRef) then {

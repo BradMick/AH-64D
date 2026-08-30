@@ -1,0 +1,32 @@
+//Flight control bindings. These belong to HeliSim rather than to any aircraft:
+//they drive the flight model directly through bmkhs_fnc_analogHandler and
+//bmkhs_fnc_nonAnalogHandler, which read them by these exact names.
+
+#define BMKHS_ANALOG(vname, vdisplayName, vtooltip) \
+class vname {\
+    displayName           = vdisplayName;\
+    tooltip               = vtooltip;\
+    onAnalog              = __EVAL(format["['%1', _this] call bmkhs_fnc_analogHandler", #vname]);\
+    analogChangeThreshold = 0.01; \
+}
+
+#define BMKHS_NONANALOG(vname, vdisplayName, vtooltip) \
+class vname {\
+    displayName           = vdisplayName;\
+    tooltip               = vtooltip;\
+    onActivate            = __EVAL(format["['%1', true]  call bmkhs_fnc_nonAnalogHandler", #vname]);\
+    onDeactivate          = __EVAL(format["['%1', false] call bmkhs_fnc_nonAnalogHandler", #vname]);\
+}
+
+class CfgUserActions {
+    BMKHS_ANALOG(bmkhs_cyclicForward,"Cyclic Forward","Cyclic Forward");
+    BMKHS_ANALOG(bmkhs_cyclicBackward,"Cyclic Backward","Cyclic Backward");
+    BMKHS_ANALOG(bmkhs_cyclicLeft,"Cyclic Left","Cyclic Left");
+    BMKHS_ANALOG(bmkhs_cyclicRight,"Cyclic Right","Cyclic Right");
+    BMKHS_ANALOG(bmkhs_pedalLeft,"Pedal Left","Pedal Left");
+    BMKHS_ANALOG(bmkhs_pedalRight,"Pedal Right","Pedal Right");
+    BMKHS_ANALOG(bmkhs_collectiveUp,"Collective Up","Collective Up");
+    BMKHS_ANALOG(bmkhs_collectiveDn,"Collective Down","Collective Down");
+    BMKHS_NONANALOG(bmkhs_kbCollectiveUp,"Keyboard Collective Up","Keyboard Collective Up");
+    BMKHS_NONANALOG(bmkhs_kbCollectiveDn,"Keyboard Collective Down","Keyboard Collective Down");
+};

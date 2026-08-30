@@ -43,18 +43,18 @@ class CfgDefaultKeysPresets {
             fza_ah64_stickyControlInterupt[] = {0x39};
             fza_ah64_forceTrimPanicButton[] = {};
             fza_ah64_collectiveEmergJett[] = {};
-            fza_ah64_cyclicForward[] = {0x11};
-            fza_ah64_cyclicBackward[] = {0x1F};
-            fza_ah64_cyclicLeft[] = {0x1E};
-            fza_ah64_cyclicRight[] = {0x20};
-            fza_ah64_pedalLeft[] = {0x10};
-            fza_ah64_pedalRight[] = {0x12};
-            fza_ah64_collectiveUp[] = {};
-            fza_ah64_collectiveDn[] = {};
-            fza_ah64_kbCollectiveUp[] = {0x2A};
-            fza_ah64_kbCollectiveDn[] = {0x1D};
+            bmkhs_cyclicForward[] = {0x11};
+            bmkhs_cyclicBackward[] = {0x1F};
+            bmkhs_cyclicLeft[] = {0x1E};
+            bmkhs_cyclicRight[] = {0x20};
+            bmkhs_pedalLeft[] = {0x10};
+            bmkhs_pedalRight[] = {0x12};
+            bmkhs_collectiveUp[] = {};
+            bmkhs_collectiveDn[] = {};
+            bmkhs_kbCollectiveUp[] = {0x2A};
+            bmkhs_kbCollectiveDn[] = {0x1D};
             fza_ah64_ctrlVisToggle[]  = {0x1D130017};  // Ctrl+I (unassigned by default controls)
-            
+
         };
     };
     class Arma3: Arma2 {

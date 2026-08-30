@@ -17,7 +17,7 @@ switch (_control) do {
         _heli setVariable ["fza_ah64_gndOrideOn", !(_heli getVariable "fza_ah64_gndOrideOn"), true];
     };
     case "emerHyd": {
-        _heli setVariable ["fza_ah64_emerHydOn", !(_heli getVariable "fza_ah64_emerHydOn"), true];
+        _heli setVariable ["bmkhs_emerHydOn", !(_heli getVariable "bmkhs_emerHydOn"), true];
     };
     case "mstrCaut": {
         _heli setVariable ["fza_ah64_mstrCautLightOn", false];

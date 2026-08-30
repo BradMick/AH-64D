@@ -30,11 +30,11 @@ class RscTitles
             colorText[]       = {0, 0, 0, 0};
             text = "";
             // Position is read from profileNamespace so the Arma layout editor
-            // (CfgUIGrids) can save/restore it.  Keys: IGUI_grid_fza_ctrlvis_X/Y/W/H
-            x = "(profileNamespace getVariable ['IGUI_grid_fza_ctrlvis_X', safeZoneX + safeZoneW * 0.780])";
-            y = "(profileNamespace getVariable ['IGUI_grid_fza_ctrlvis_Y', safeZoneY + safeZoneH * 0.500])";
-            w = "(profileNamespace getVariable ['IGUI_grid_fza_ctrlvis_W', safeZoneH * 0.160])";
-            h = "(profileNamespace getVariable ['IGUI_grid_fza_ctrlvis_H', safeZoneH * 0.240])";
+            // (CfgUIGrids) can save/restore it.  Keys: IGUI_grid_bmkhs_ctrlvis_X/Y/W/H
+            x = "(profileNamespace getVariable ['IGUI_grid_bmkhs_ctrlvis_X', safeZoneX + safeZoneW * 0.780])";
+            y = "(profileNamespace getVariable ['IGUI_grid_bmkhs_ctrlvis_Y', safeZoneY + safeZoneH * 0.500])";
+            w = "(profileNamespace getVariable ['IGUI_grid_bmkhs_ctrlvis_W', safeZoneH * 0.160])";
+            h = "(profileNamespace getVariable ['IGUI_grid_bmkhs_ctrlvis_H', safeZoneH * 0.240])";
         };
 
         // ── Drag / title bar ────────────────────────────────────────────────
@@ -289,7 +289,7 @@ class RscTitles
 }; // class RscTitles
 
 // Register with the Arma layout editor (Options → Video → Edit Layout).
-// CfgUIGrids is the correct API; the editor saves/restores IGUI_grid_fza_ctrlvis_X/Y/W/H
+// CfgUIGrids is the correct API; the editor saves/restores IGUI_grid_bmkhs_ctrlvis_X/Y/W/H
 // in profileNamespace.  The BG control x/y/w/h read those keys above.
 class CfgUIGrids
 {
@@ -302,7 +302,7 @@ class CfgUIGrids
                 class Variables
                 {
                     // Default position (used when player has not yet moved the widget)
-                    grid_fza_ctrlvis[] = {
+                    grid_bmkhs_ctrlvis[] = {
                         {
                             "safeZoneX + safeZoneW * 0.780",
                             "safeZoneY + safeZoneH * 0.500",
@@ -318,7 +318,7 @@ class CfgUIGrids
 
         class Variables
         {
-            class grid_fza_ctrlvis
+            class grid_bmkhs_ctrlvis
             {
                 displayName     = "FZA AH-64D: Control Input Visualiser";
                 description     = "HeliSim control input and SAS visualiser overlay";

@@ -160,7 +160,7 @@ _heli setVariable ["bmkhs_posIntClamp", 0.2500];
 _heli setVariable ["bmkhs_posIntX",     0.0];
 _heli setVariable ["bmkhs_posIntY",     0.0];
 
-_heli setVariable ["fza_sfmPlus_autoPedalHdg",       getDir _heli];
+_heli setVariable ["bmkhs_autoPedalHdg",       getDir _heli];
 _heli setVariable ["bmkhs_autoPedalRegime",    "hdg"];   //hdg | ntt | aero (live regime)
 _heli setVariable ["bmkhs_autoPedalRegimeWgt", 1.0];     //0-1, share of the pedal that regime owns
 _heli setVariable ["bmkhs_autoPedalHdgErr",    0.0];     //deg, heading error

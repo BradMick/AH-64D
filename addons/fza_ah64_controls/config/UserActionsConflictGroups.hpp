@@ -36,16 +36,16 @@ class UserActionsConflictGroups{
             "fza_ah64_stickyControlInterupt",
             "fza_ah64_forceTrimPanicButton",
             "fza_ah64_collectiveEmergJett",
-            "fza_ah64_cyclicForward",
-            "fza_ah64_cyclicBackward",
-            "fza_ah64_cyclicLeft",
-            "fza_ah64_cyclicRight",
-            "fza_ah64_pedalLeft",
-            "fza_ah64_pedalRight",
-            "fza_ah64_collectiveUp",
-            "fza_ah64_collectiveDn",
-            "fza_ah64_kbCollectiveUp",
-            "fza_ah64_kbCollectiveDn"
+            "bmkhs_cyclicForward",
+            "bmkhs_cyclicBackward",
+            "bmkhs_cyclicLeft",
+            "bmkhs_cyclicRight",
+            "bmkhs_pedalLeft",
+            "bmkhs_pedalRight",
+            "bmkhs_collectiveUp",
+            "bmkhs_collectiveDn",
+            "bmkhs_kbCollectiveUp",
+            "bmkhs_kbCollectiveDn"
         };
     };
 };

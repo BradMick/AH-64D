@@ -34,12 +34,12 @@ switch(_control) do {
             [_heli, "bmkhs_xferMode", "OFF"] call fza_fnc_updateNetworkGlobal;
             _state set ["xferMenuOpen", 0];
         } else {
-            if (_heli getVariable ["fza_ah64_IAFSInstalled", false]) then {
-                private _iafsOn  = _heli getVariable ["fza_ah64_IAFSOn", false];
+            if (_heli getVariable ["bmkhs_ctrTankInstalled", false]) then {
+                private _iafsOn  = _heli getVariable ["bmkhs_ctrTankXferOn", false];
                 private _ctrMass = _heli getVariable ["bmkhs_ctrFuelMass", 0];
                 // Can turn off freely; can only turn on when CTR has fuel
                 if (_iafsOn || _ctrMass > 0) then {
-                    _heli setVariable ["fza_ah64_IAFSOn", !_iafsOn];
+                    _heli setVariable ["bmkhs_ctrTankXferOn", !_iafsOn];
                 };
             };
         };

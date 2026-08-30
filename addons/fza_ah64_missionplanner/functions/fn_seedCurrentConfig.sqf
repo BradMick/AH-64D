@@ -52,7 +52,7 @@ if !(_tailNum isEqualType "") then { _tailNum = "00000" };
 // ── FCR / IAFS ──────────────────────────────────────────────────────────────
 private _fcrActive = (_heli animationPhase "fcr_enable") > 0.5;
 private _fcrJson = ["false", "true"] select (_fcrActive);
-private _iafsInstalled = _heli getVariable ["fza_ah64_IAFSInstalled", true];
+private _iafsInstalled = _heli getVariable ["bmkhs_ctrTankInstalled", true];
 private _robbieMode = ["magazine", "iafs"] select _iafsInstalled;
 
 // ── Cannon ───────────────────────────────────────────────────────────────────

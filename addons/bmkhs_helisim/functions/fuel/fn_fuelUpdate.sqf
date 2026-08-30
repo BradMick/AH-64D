@@ -32,7 +32,7 @@ params ["_heli"];
 private _deltaTime     = _heli getVariable "bmkhs_deltaTime";
 if (_deltaTime <= 0) exitWith {};
 
-private _IAFSInstalled = _heli getVariable ["fza_ah64_IAFSInstalled", false];
+private _IAFSInstalled = _heli getVariable ["bmkhs_ctrTankInstalled", false];
 if (isNil "_IAFSInstalled") exitWith {};
 
 private _maxFwdFuelMass = _heli getVariable "bmkhs_maxFwdFuelMass";
@@ -205,7 +205,7 @@ private _anyAuxTransferring = (_lAuxOn && (_stn1FuelMass > EXT_EMPTY_ADV_THRESH_
 
 private _iafsAftFlowing = false;
 private _iafsFwdFlowing = false;
-if (_IAFSInstalled && (_heli getVariable ["fza_ah64_IAFSOn", false]) && !_anyAuxTransferring) then {
+if (_IAFSInstalled && (_heli getVariable ["bmkhs_ctrTankXferOn", false]) && !_anyAuxTransferring) then {
     if (_ctrFuelMass > 0 && _aftFuelMass < _maxAftFuelMass) then {
         private _iafsFlow = _xferStep min _ctrFuelMass min (_maxAftFuelMass - _aftFuelMass);
         _ctrFuelMass = _ctrFuelMass - _iafsFlow;
@@ -220,7 +220,7 @@ if (_IAFSInstalled && (_heli getVariable ["fza_ah64_IAFSOn", false]) && !_anyAux
     };
     // Auto-shutoff: turn off IAFS switch when CTR tank is empty
     if (_ctrFuelMass <= 0) then {
-        _heli setVariable ["fza_ah64_IAFSOn", false, true];
+        _heli setVariable ["bmkhs_ctrTankXferOn", false, true];
     };
 };
 
@@ -323,9 +323,9 @@ if (!_eng2FuelAvail) then {
     _eng2FuelAvail = (CBA_missionTime - _eng2StarvedSince) < 2;
 } else { _heli setVariable ["bmkhs_eng2StarvedSince", -1]; };
 
-[_heli, "bmkhs_eng1FuelAvail", _eng1FuelAvail] call fza_fnc_updateNetworkGlobal;
-[_heli, "bmkhs_eng2FuelAvail", _eng2FuelAvail] call fza_fnc_updateNetworkGlobal;
-[_heli, "bmkhs_apuFuelAvail",  _apuFuelAvail]  call fza_fnc_updateNetworkGlobal;
+[_heli, "bmkhs_eng1FuelAvail", _eng1FuelAvail] call bmkhs_fnc_updateNetworkGlobal;
+[_heli, "bmkhs_eng2FuelAvail", _eng2FuelAvail] call bmkhs_fnc_updateNetworkGlobal;
+[_heli, "bmkhs_apuFuelAvail",  _apuFuelAvail]  call bmkhs_fnc_updateNetworkGlobal;
 
 // Status flags
 _heli setVariable ["bmkhs_intercellTransferActive", _intercellTransferActive];
@@ -352,8 +352,9 @@ _heli setVariable ["bmkhs_stn3FuelMass", _stn3FuelMass];
 _heli setVariable ["bmkhs_stn4FuelMass", _stn4FuelMass];
 _heli setVariable ["bmkhs_totFuelMass",  _totFuelMass];
 
-private _fuelPageOpen = ("fuel" in (_heli getVariable ["fza_mpd_page_plt", ""]))
-                     || ("fuel" in (_heli getVariable ["fza_mpd_page_cpg", ""]));
+//Whether the crew can see the fuel page is the aircraft's business - it sets this
+//if it wants empty-tank advisories to re-arm only while the page is displayed.
+private _fuelPageOpen = _heli getVariable ["bmkhs_fuelPageOpen", false];
 {
     _x params ["_present", "_mass", "_var"];
     if (!_present || _mass >= EXT_EMPTY_ADV_THRESH_KG) then {

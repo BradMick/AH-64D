@@ -52,7 +52,7 @@ private _pidAutoPedalAero = _heli getVariable "bmkhs_pid_autoPedalAero";
 private _hdgOut        = 0.0;
 private _yawOutput     = 0.0;
 private _curHdg        = getDir _heli;
-private _desiredHdg    = _heli getVariable "fza_sfmPlus_autoPedalHdg";
+private _desiredHdg    = _heli getVariable "bmkhs_autoPedalHdg";
 private _hdgError      = 0.0;
 
 //Heading capture. The setpoint is re-captured only while the pilot is actually on the pedals
@@ -62,7 +62,7 @@ private _hdgError      = 0.0;
 //held at release (see the release-capture below).
 if (_yawBreakout) then {
     _desiredHdg       = getDir _heli;
-    _heli setVariable ["fza_sfmPlus_autoPedalHdg",     _desiredHdg, true];
+    _heli setVariable ["bmkhs_autoPedalHdg",     _desiredHdg, true];
 };
 if (_yawBreakout || _gndSpeed > POS_HOLD_SPEED_SWITCH) then {
     _kbPedalLeftRight = [_kbPedalLeftRight, _pedalLeftRight, (1.0 / 0.1) * _deltaTime] call BIS_fnc_lerp;
@@ -83,7 +83,7 @@ if (_yawBreakout || _gndSpeed > POS_HOLD_SPEED_SWITCH) then {
 //ERROR SIGNS ARE VETTED - do not unify them. Heading is (actual - desired); the slip channels
 //are negated, because a heading error and a lateral acceleration need opposite pedal sense.
 //
-//AERO uses the per-vehicle beta_g, NOT the fza_ah64_sideslip global - that one is clamped at
+//AERO uses the per-vehicle beta_g, NOT the gauge sideslip global - that one is clamped at
 //0.15g (the controller would go blind past it) and is stale for AI aircraft.
 private _betaG    = _heli getVariable "bmkhs_aero_beta_g";     // g,   + = accel right
 private _betaDeg  = _heli getVariable "bmkhs_aero_beta_deg";   // deg, + = flow from right
@@ -185,7 +185,7 @@ if (_yawBreakout) then {
     //setpoint has to be re-captured on release at every speed too, or the PID would fight to
     //recover a heading from before the pilot's pedal input.
     if (_prevHdgHoldBreakout && !_hdgHoldBreakout) then {
-        _heli setVariable ["fza_sfmPlus_autoPedalHdg", getDir _heli, true];
+        _heli setVariable ["bmkhs_autoPedalHdg", getDir _heli, true];
     };
     _heli setVariable ["bmkhs_forceTrimPosYaw", _yawOutput, true];
 };

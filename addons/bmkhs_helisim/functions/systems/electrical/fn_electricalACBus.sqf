@@ -29,7 +29,7 @@ if (_gen1On || _gen2On) then {
 } else {
     _acBusOn = false;
 };
-[_heli, "bmkhs_acBusOn", _acBusOn] call fza_fnc_updateNetworkGlobal;
+[_heli, "bmkhs_acBusOn", _acBusOn] call bmkhs_fnc_updateNetworkGlobal;
 //AC Bus powers the following
 //--(1) FCR
 //--(5) 30mm motor

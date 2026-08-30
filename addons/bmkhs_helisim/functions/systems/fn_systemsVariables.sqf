@@ -19,8 +19,8 @@ Author:
 params ["_heli"];
 #include "\bmkhs_helisim\headers\systems.hpp"
 
-if (!(_heli getVariable ["fza_ah64_aircraftSystemsInitialised", false]) && local _heli) then {
-    _heli setVariable ["fza_ah64_aircraftSystemsInitialised", true, true];
+if (!(_heli getVariable ["bmkhs_systemsInitialised", false]) && local _heli) then {
+    _heli setVariable ["bmkhs_systemsInitialised", true, true];
 
     //Switch states
     _heli setVariable ["bmkhs_battSwitchOn",      false, true];

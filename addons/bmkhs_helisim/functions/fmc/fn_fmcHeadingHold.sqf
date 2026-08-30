@@ -21,7 +21,7 @@ private _hdgError      = [_curHdg - _desiredHdg] call CBA_fnc_simplifyAngle180;
 //specific force in g, from fn_calculateAeroValues via bodyAccel); when it is zero the aircraft is
 //in aerodynamic trim, which is exactly what this loop is for.
 //
-//This previously read the GLOBAL fza_ah64_sideslip, which is the GAUGE signal and wrong here on
+//This previously read the GLOBAL gauge sideslip signal, which and wrong here on
 //two counts:
 //  1. it is CLAMPED to +-1 at 0.15 g, so past that the controller goes blind - it sees a constant
 //     maxed-out error however hard the aircraft is actually skidding, and the loop just pins its

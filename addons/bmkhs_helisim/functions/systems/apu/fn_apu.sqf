@@ -47,7 +47,8 @@ if (_apuRPM_pct > SYS_MIN_RPM) then {
     };
 };
 _heli setVariable ["bmkhs_apuOn", _apuOn];
-_heli setObjectTexture ["in_lt_apu", ["", "\fza_ah64_model\tex\in\pushbut.paa"] select _apuOn];
+//Cockpit indication is the aircraft's business - Core only reports the state
+[_heli, "apuStateChanged"] call bmkhs_fnc_notify;
 
 if (_apuOn) then {
     _apuFF_kgs = 0.0220;//175pph

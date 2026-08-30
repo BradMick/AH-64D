@@ -33,9 +33,9 @@ _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_ENDR_INT_LOW), BOOLTONUM(_e
 _heli setUserMFDText [MFD_INDEX_OFFSET(MFD_TEXT_IND_FUEL_SFR), _sfrText];
 
 // IAFS / centre tank
-private _IAFSInstalled = BOOLTONUM(_heli getVariable ["fza_ah64_IAFSInstalled", false]);
+private _IAFSInstalled = BOOLTONUM(_heli getVariable ["bmkhs_ctrTankInstalled", false]);
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_IAFS_INSTALLED), _IAFSInstalled];
-private _IAFSOn = _heli getVariable ["fza_ah64_IAFSOn", false];
+private _IAFSOn = _heli getVariable ["bmkhs_ctrTankXferOn", false];
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_IAFS_ON), BOOLTONUM(_IAFSOn)];
 _heli setUserMFDText [MFD_INDEX_OFFSET(MFD_TEXT_IND_FUEL_IAFS), str (round (_ctrFuelWeight / 10) * 10)];
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_IAFS_EMPTY), _ctrFuelWeight];

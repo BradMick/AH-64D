@@ -25,7 +25,7 @@ private _engPctNG           = _heli getVariable "bmkhs_engPctNG"          select
 private _engPctNP           = _heli getVariable "bmkhs_engPctNP"          select _engNum;
 private _engPctTQ           = _heli getVariable "bmkhs_engPctTQ"          select _engNum;
 private _engPid             = _heli getVariable "bmkhs_pid_engine"        select _engNum;
-private _engOverspeed       = _heli getVariable "fza_ah64_engineOverspeed"      select _engNum;
+private _engOverspeed       = _heli getVariable "bmkhs_engineOverspeed"      select _engNum;
 private _randomTq           = _heli getVariable "bmkhs_randomTq";
 private _isSingleEng        = _heli getVariable "bmkhs_isSingleEng";
 private _xmsnRpm            = _heli getVariable "bmkhs_xmsnOutputRpm";
@@ -51,7 +51,7 @@ if (_engState in ["STARTING", "ON"]) then {
 
             if (_engPctNP >= 1.196) then {
                 [_heli, "bmkhs_engState",     _engNum, "OFF", true] call bmkhs_fnc_setArrayVariable;
-                [_heli, "fza_ah64_engineOverspeed", _engNum, false, true] call bmkhs_fnc_setArrayVariable;
+                [_heli, "bmkhs_engineOverspeed", _engNum, false, true] call bmkhs_fnc_setArrayVariable;
             };
         } else {
             // ── Available shaft power from Ng ─────────────────────────────────

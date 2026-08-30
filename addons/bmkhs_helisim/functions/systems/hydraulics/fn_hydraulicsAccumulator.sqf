@@ -24,7 +24,7 @@ private _utilHydPSI    = _heli getVariable "bmkhs_utilHydPsi";
 
 private _accHydPSI_pct = _heli getVariable "bmkhs_accHydPSI_pct";
 private _accHydPSI     = _heli getVariable "bmkhs_accHydPsi";
-private _emerHydOn     = _heli getVariable "fza_ah64_emerHydOn";
+private _emerHydOn     = _heli getVariable "bmkhs_emerHydOn";
 private _accTimer      = _heli getVariable "bmkhs_accTimer";
 
 if (_priHydPSI < SYS_MIN_HYD_PSI && _utilHydPSI < SYS_MIN_HYD_PSI) then {
@@ -41,4 +41,4 @@ if (_accHydPSI < SYS_MIN_ACC_PSI) then {
 
 _heli setVariable ["bmkhs_accHydPSI_pct",  _accHydPSI_pct];
 _heli setVariable ["bmkhs_accHydPsi",      _accHydPSI];
-_heli setVariable ["fza_ah64_emerHydOn",          _emerHydOn];
+_heli setVariable ["bmkhs_emerHydOn",          _emerHydOn];

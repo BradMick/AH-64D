@@ -28,9 +28,10 @@ private _inDialog           = !dialog;
 private _isZeus             = isNull findDisplay 312;
 private _inMap              = !visibleMap;
 private _inInventory        = isNull findDisplay 602;
-private _mplannerApplying   = _heli getVariable ["fza_mplanner_applying", false];
+//Set by whatever is applying a loadout, to suppress pilot input while it works
+private _mplannerApplying   = _heli getVariable ["bmkhs_inputLockout", false];
 
-private _isPlaying          = isGameFocused && _paused && _chatting && _inDialog && _isZeus && _inMap && _inInventory && !fza_ah64_lastFrameGetIn && !_mplannerApplying;
+private _isPlaying          = isGameFocused && _paused && _chatting && _inDialog && _isZeus && _inMap && _inInventory && !bmkhs_lastFrameGetIn && !_mplannerApplying;
 
 private _config             = configOf _heli >> "BMKHS_HeliSim";
 private _configVehicles     = configOf _heli;
@@ -58,7 +59,7 @@ private _utilHydPumpDamage  = _heli getHitPointDamage "hit_hyd_utilpump";
 private _utilHydPSI         = _heli getVariable ["bmkhs_utilHydPsi", SYS_MIN_HYD_PSI];
 private _utilLevel_pct      = _heli getVariable ["bmkhs_utilLevel_pct", 1.0];
 
-private _emerHydOn          = _heli getVariable "fza_ah64_emerHydOn";
+private _emerHydOn          = _heli getVariable "bmkhs_emerHydOn";
 private _apuOn              = _heli getVariable ["bmkhs_apuOn", true];
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -242,6 +243,6 @@ if (_isZeus && (!_hydFailure || _emerHydOn)) then {
     _heli setVariable ["bmkhs_pedalLeftRight",   0.0];
 };
 
-if (fza_ah64_lastFrameGetIn) then {
-    fza_ah64_lastFrameGetIn = false;
+if (bmkhs_lastFrameGetIn) then {
+    bmkhs_lastFrameGetIn = false;
 };

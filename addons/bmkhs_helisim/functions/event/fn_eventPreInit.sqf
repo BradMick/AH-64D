@@ -5,16 +5,16 @@
 [
     "bmkhs_helisimRealismSetting",
     "LIST",
-    [(localize "STR_FZA_AH64_SETTINGS_HELISIM_REALISM"), (localize "STR_FZA_AH64_SETTINGS_HELISIM_REALISM_INFO")],
+    ["Aircraft Realism Settings", "Switch helisim between different realism levels, Casual recomneded for keyboard"],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
-    [[CASUAL, REALISTIC],[(localize "STR_FZA_AH64_SETTINGS_REALISM_CASUAL"), (localize "STR_FZA_AH64_SETTINGS_REALISM_REALISTIC")],0],
+    [[CASUAL, REALISTIC],["Casual", "Realistic"],0],
     0
 ] call CBA_fnc_addSetting;
 
 [
     "bmkhs_cyclicCenterTrimMode",
     "CHECKBOX",
-    [(localize "STR_FZA_AH64_SETTINGS_CYCLIC_CENTER_TRIM_MODE"), (localize "STR_FZA_AH64_SETTINGS_CYCLIC_CENTER_TRIM_MODE_INFO")],
+    ["Cyclic Center Trim Mode", "When enabled, the cyclic is locked out until re-centered"],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
     [false],
     2
@@ -23,7 +23,7 @@
 [
     "bmkhs_pedalCenterTrimMode",
     "CHECKBOX",
-    [(localize "STR_FZA_AH64_SETTINGS_PEDAL_CENTER_TRIM_MODE"), (localize "STR_FZA_AH64_SETTINGS_PEDAL_CENTER_TRIM_MODE_INFO")],
+    ["Pedal Center Trim Mode", "When enabled, the pedals are locked out until re-centered"],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
     [false],
     2
@@ -32,7 +32,7 @@
 [
     "bmkhs_springlessCyclic",
     "CHECKBOX",
-    [(localize "STR_FZA_AH64_SETTINGS_SPRINGLESS_CYCLIC"), (localize "STR_FZA_AH64_SETTINGS_SPRINGLESS_CYCLIC_INFO")],
+    ["Springless Cyclic", "When enabled, cyclic force trim is disabled. This is for users with force feedback or springless HOTAS"],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
     [false],
     2
@@ -41,7 +41,7 @@
 [
     "bmkhs_springlessPedals",
     "CHECKBOX",
-    [(localize "STR_FZA_AH64_SETTINGS_SPRINGLESS_PEDALS"), (localize "STR_FZA_AH64_SETTINGS_SPRINGLESS_PEDALS_INFO")],
+    ["Springless Pedals", "When enabled, pedal force trim is disabled. This is for users with force feedback or springless pedals. This option also disables Heading Hold"],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
     [false],
     2
@@ -50,7 +50,7 @@
 [
     "bmkhs_keyboardStickyPitch",
     "CHECKBOX",
-    [(localize "STR_FZA_AH64_SETTINGS_KEYBOARD_STICKY_PITCH"), (localize "STR_FZA_AH64_SETTINGS_KEYBOARD_STICKY_PITCH_INFO")],
+    ["Keyboard Sticky Pitch", "DO NOT USE THIS IF USING HOTAS OR GAMEPAD! When enabled, keyboard input is continously updated while the input key is held down"],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
     [false],
     2
@@ -59,7 +59,7 @@
 [
     "bmkhs_keyboardStickyRoll",
     "CHECKBOX",
-    [(localize "STR_FZA_AH64_SETTINGS_KEYBOARD_STICKY_ROLL"), (localize "STR_FZA_AH64_SETTINGS_KEYBOARD_STICKY_ROLL_INFO")],
+    ["Keyboard Sticky Roll", "DO NOT USE THIS IF USING HOTAS OR GAMEPAD! When enabled, keyboard input is continously updated while the input key is held down"],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
     [false],
     2
@@ -68,7 +68,7 @@
 [
     "bmkhs_keyboardStickyYaw",
     "CHECKBOX",
-    [(localize "STR_FZA_AH64_SETTINGS_KEYBOARD_STICKY_YAW"), (localize "STR_FZA_AH64_SETTINGS_KEYBOARD_STICKY_YAW_INFO")],
+    ["Keyboard Sticky Yaw", "DO NOT USE THIS IF USING HOTAS OR GAMEPAD! When enabled, keyboard input is continously updated while the input key is held down"],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
     [false],
     2
@@ -77,7 +77,7 @@
 [
     "bmkhs_autoPedal",
     "CHECKBOX",
-    [(localize "STR_FZA_AH64_SETTINGS_KEYBOARD_AUTO_PEDAL"), (localize "STR_FZA_AH64_SETTINGS_KEYBOARD_AUTO_PEDAL_INFO")],
+    ["Keyboard Auto Pedal", "DOES NOT WORK WITH STICKY YAW! When enabled, the pedals are automatically managed by AI"],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
     [true],
     2
@@ -93,7 +93,7 @@
 [
     "bmkhs_mouseAsJoystick",
     "CHECKBOX",
-    [(localize "STR_FZA_AH64_SETTINGS_MOUSE_AS_JOYSTICK"), (localize "STR_FZA_AH64_SETTINGS_MOUSE_AS_JOYSTICK_INFO")],
+    ["Mouse as Joystick", "DO NOT USE THIS IF USING HOTAS OR GAMEPAD! Enables the mouse sensitivity option and stops input in freelook"],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
     [false],
     2
@@ -102,7 +102,7 @@
 [
     "bmkhs_mouseSense",
     "SLIDER",
-    [(localize "STR_FZA_AH64_SETTINGS_MOUSE_SENSITIVITY"), (localize "STR_FZA_AH64_SETTINGS_MOUSE_SENSITIVITY_INFO")],
+    ["Mouse Sensitivity", "Controls the sensitivity of the Mouse when used as a Joystick"],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
     [0.1, 1.0, 1.0, 1],
     2
@@ -111,16 +111,16 @@
 [
     "bmkhs_helisimEnvironment",
     "LIST",
-    [(localize "STR_FZA_AH64_SETTINGS_ENVIRONMENT"), (localize "STR_FZA_AH64_SETTINGS_ENVIRONMENT_INFO")],
+    ["Aircraft Environmental Settings", "Standard day is Sea Level and 15 deg C.\nEurope is a base altitude of 800ft, with a Summer temperature of 20 deg C and a Winter temperature of 0 deg C.\nThe Middle East is a base altitude of 1,800ft and a temperature of 30 deg C.\nCentral Asia is a base altitude of 5000ft, with a Summer temperature of 30 deg C and a winter temperature of -5 deg C.\nAsia is a base altitude of 3100ft and a temperature of 25 deg C."],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
-    [[ISA_STD, EUROPE_SUMMER, EUROPE_WINTER, MIDDLE_EAST, CENTRAL_ASIA_SUMMER, CENTRAL_ASIA_WINTER, ASIA],[(localize "STR_FZA_AH64_SETTINGS_ENVIRONMENT_STANDARD_DAY"), (localize "STR_FZA_AH64_SETTINGS_ENVIRONMENT_EUROPE_SUMMER"), (localize "STR_FZA_AH64_SETTINGS_ENVIRONMENT_EUROPE_WINTER"), (localize "STR_FZA_AH64_SETTINGS_ENVIRONMENT_MIDDLE_EAST"), (localize "STR_FZA_AH64_SETTINGS_ENVIRONMENT_CENTRAL_ASIA_SUMMER"), (localize "STR_FZA_AH64_SETTINGS_ENVIRONMENT_CENTRAL_ASIA_WINTER"), (localize "STR_FZA_AH64_SETTINGS_ENVIRONMENT_ASIA")],1],
+    [[ISA_STD, EUROPE_SUMMER, EUROPE_WINTER, MIDDLE_EAST, CENTRAL_ASIA_SUMMER, CENTRAL_ASIA_WINTER, ASIA],["Standard Day", "Europe - Summer", "Europe - Winter", "Middle East", "Central Asia - Summer", "Central Asia - Winter", "Asia"],1],
     0
 ] call CBA_fnc_addSetting;
 
 [
     "bmkhs_vrsWarning",
     "CHECKBOX",
-    [(localize "STR_FZA_AH64_SETTINGS_VRS_WARNING"), (localize "STR_FZA_AH64_SETTINGS_VRS_WARNING_INFO")],
+    ["Enable VRS Warning", "When enabled, will alert the pilot to the onset of VRS"],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
     [false],
     2
@@ -129,7 +129,7 @@
 [
     "bmkhs_fmDebug",
     "CHECKBOX",
-    [(localize "STR_FZA_AH64_SETTINGS_FM_DEBUG"), (localize "STR_FZA_AH64_SETTINGS_FM_DEBUG_INFO")],
+    ["Enable FM Debugging", "Displays debug output for troubleshooting FM issues"],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
     [false],
     2
@@ -138,9 +138,9 @@
 [
     "bmkhs_rotorModel",
     "LIST",
-    [(localize "STR_FZA_AH64_SETTINGS_ROTOR_MODEL"), (localize "STR_FZA_AH64_SETTINGS_ROTOR_MODEL_INFO")],
+    ["Rotor Model", "Selects the rotor aerodynamic model. Simple is stable and performant. BET (Blade Element Theory) is higher fidelity with induced flow, dissymmetry of lift, and flapping dynamics."],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
-    [[0, 1], [(localize "STR_FZA_AH64_SETTINGS_ROTOR_MODEL_SIMPLE"), (localize "STR_FZA_AH64_SETTINGS_ROTOR_MODEL_BET")], 0],
+    [[0, 1], ["Simple", "BET [WIP]"], 0],
     0
 ] call CBA_fnc_addSetting;
 
@@ -148,15 +148,15 @@
 [
     "bmkhs_ctrlVisColor",
     "LIST",
-    [(localize "STR_FZA_AH64_CTRLVIS_COLOR"), (localize "STR_FZA_AH64_CTRLVIS_COLOR_INFO")],
+    ["Control Input Visualiser: Colour Scheme", "Colour theme for the Control Input Visualiser indicators"],
     [BMKHS_SETTINGS_CATEGORY, "Flight model"],
     [[0, 1, 2, 3, 4, 5], [
-        (localize "STR_FZA_AH64_CTRLVIS_COLOR_DEFAULT"),
-        (localize "STR_FZA_AH64_CTRLVIS_COLOR_NVG"),
-        (localize "STR_FZA_AH64_CTRLVIS_COLOR_MONO"),
-        (localize "STR_FZA_AH64_CTRLVIS_COLOR_AMBER"),
-        (localize "STR_FZA_AH64_CTRLVIS_COLOR_BLUEFOR"),
-        (localize "STR_FZA_AH64_CTRLVIS_COLOR_HICONTRAST")
+        "Default (Green / Orange / Red)",
+        "NVG (All Green)",
+        "Monochrome (White / Grey)",
+        "Amber (Amber / Yellow / Red)",
+        "Blue Force (Cyan / White / Yellow)",
+        "High Contrast (White / Yellow / Red)"
     ], 0],
     2
 ] call CBA_fnc_addSetting;
@@ -167,13 +167,13 @@ bmkhs_keyboardCollectivePrevious = true;
 //private _nonAnalogEvents = ["Activate", "Deactivate"];
 //
 //{
-//    addUserActionEventHandler ["fza_ah64_kbCollectiveUp", _x, {bmkhs_keyboardCollective = true;}];
-//    addUserActionEventHandler ["fza_ah64_kbCollectiveDn", _x, {bmkhs_keyboardCollective = true;}];
+//    addUserActionEventHandler ["bmkhs_kbCollectiveUp", _x, {bmkhs_keyboardCollective = true;}];
+//    addUserActionEventHandler ["bmkhs_kbCollectiveDn", _x, {bmkhs_keyboardCollective = true;}];
 //} forEach _nonAnalogEvents;
 //
 //private _analogEvents = ["Analog"];
 //
 //{
-//    addUserActionEventHandler ["fza_ah64_collectiveUp", _x, {bmkhs_keyboardCollective = false;}];
-//    addUserActionEventHandler ["fza_ah64_collectiveDn", _x, {bmkhs_keyboardCollective = false;}];
+//    addUserActionEventHandler ["bmkhs_collectiveUp", _x, {bmkhs_keyboardCollective = false;}];
+//    addUserActionEventHandler ["bmkhs_collectiveDn", _x, {bmkhs_keyboardCollective = false;}];
 //} forEach _analogEvents;
