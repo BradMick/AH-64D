@@ -13,6 +13,7 @@ class CfgVehicles {
         altFullForce  = 1615;
         altNoForce    = 9000;
 
+        #include "hitPoints.hpp"
         #include "bmkhs_ah64_config.hpp"
     };
 };
