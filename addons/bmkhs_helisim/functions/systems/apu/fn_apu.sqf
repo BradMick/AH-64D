@@ -36,10 +36,10 @@ if (_apuBtnOn && _battBusOn && _apuFuelAvail) then {
 _heli setVariable ["bmkhs_apuRPM_pct", _apuRPM_pct];
 
 //Set the APU state
-if (_apuRPM_pct <= (_heli getVariable "bmkhs_minRotorRpmPct")) then {
+if (_apuRPM_pct <= SYS_MIN_RPM) then {
     _apuOn = false;
 };
-if (_apuRPM_pct > (_heli getVariable "bmkhs_minRotorRpmPct")) then {
+if (_apuRPM_pct > SYS_MIN_RPM) then {
     if (_apuDamage <= SYS_APU_DMG_THRESH) then {
         _apuOn = true;
     } else {

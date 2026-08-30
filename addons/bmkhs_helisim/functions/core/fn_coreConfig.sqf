@@ -106,13 +106,9 @@ _heli setVariable ["bmkhs_accelZ_avg",        [bmkhs_movingAverageSize] call bmk
 _heli setVariable ["bmkhs_hydMinPsi",       getNumber (_config >> "hydMinPsi")];
 _heli setVariable ["bmkhs_hydMinAccPsi",    getNumber (_config >> "hydMinAccPsi")];
 _heli setVariable ["bmkhs_hydMinLevel",     getNumber (_config >> "hydMinLevel")];
-_heli setVariable ["bmkhs_hydResMinDmg",    getNumber (_config >> "hydResMinDmg")];
-_heli setVariable ["bmkhs_hydResModDmg",    getNumber (_config >> "hydResModDmg")];
-_heli setVariable ["bmkhs_hydResHvyDmg",    getNumber (_config >> "hydResHvyDmg")];
 _heli setVariable ["bmkhs_hydAccTimerMin",  getNumber (_config >> "hydAccTimerMin")];
 _heli setVariable ["bmkhs_hydLeakTimerMin", getNumber (_config >> "hydLeakTimerMin")];
 _heli setVariable ["bmkhs_elecBattTimerMin",getNumber (_config >> "elecBattTimerMin")];
-_heli setVariable ["bmkhs_minRotorRpmPct",  getNumber (_config >> "minRotorRpmPct")];
 _heli setVariable ["bmkhs_apuStartDelay",   getNumber (_config >> "apuStartDelay")];
 
 //Drivetrain torque limits and timers

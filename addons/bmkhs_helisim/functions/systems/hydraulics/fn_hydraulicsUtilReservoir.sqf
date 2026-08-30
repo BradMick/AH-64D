@@ -36,19 +36,19 @@ for "_i" from 0 to 3 do {
 private _utilReservoirDamage = _utilReservoirDamage + _pylonLeak + _gunDamage;
 
 //Small leak
-if (_utilReservoirDamage > (_heli getVariable "bmkhs_hydResMinDmg") && _utilReservoirDamage <= (_heli getVariable "bmkhs_hydResModDmg")) then {
+if (_utilReservoirDamage > SYS_HYD_RES_MIN_DMG && _utilReservoirDamage <= SYS_HYD_RES_MOD_DMG) then {
     _curLeakTimer = _leakTimer;
 };
 //Medium leak
-if (_utilReservoirDamage > (_heli getVariable "bmkhs_hydResModDmg") && _utilReservoirDamage <= (_heli getVariable "bmkhs_hydResHvyDmg")) then {
+if (_utilReservoirDamage > SYS_HYD_RES_MOD_DMG && _utilReservoirDamage <= SYS_HYD_RES_HVY_DMG) then {
     _curLeakTimer = _leakTimer * 0.75;
 };
 //Large leak
-if (_utilReservoirDamage > (_heli getVariable "bmkhs_hydResHvyDmg")) then {
+if (_utilReservoirDamage > SYS_HYD_RES_HVY_DMG) then {
     _curLeakTimer = _leakTimer * 0.5;
 };
 //Leak
-if (_utilReservoirDamage > (_heli getVariable "bmkhs_hydResMinDmg")) then {
+if (_utilReservoirDamage > SYS_HYD_RES_MIN_DMG) then {
     _utilHydLevel_pct = [_utilHydLevel_pct, 0.0, (1 / _curLeakTimer) * _deltaTime] call BIS_fnc_lerp;
 };
 
