@@ -14,7 +14,7 @@ class CfgVehicles {
         altNoForce    = 9000;
 
         //Aircraft hitpoint values, then Core's definitions that consume them
-        #include "hitPointValues.hpp"
+        #include "helisim_hitpoints.hpp"
         #include "\bmkhs_helisim\hitPoints.hpp"
         #include "bmkhs_ah64_config.hpp"
     };
