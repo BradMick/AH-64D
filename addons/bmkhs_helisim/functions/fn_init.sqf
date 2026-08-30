@@ -19,8 +19,8 @@ Author:
 ---------------------------------------------------------------------------- */
 params ["_heli"];
 
-if (!(_heli getVariable ["fza_ah64_sfmPlusInitialised", false]) && local _heli) then {
-    _heli setVariable ["fza_ah64_sfmPlusInitialised", true, true];
+if (!(_heli getVariable ["bmkhs_initialised", false]) && local _heli) then {
+    _heli setVariable ["bmkhs_initialised", true, true];
 
     //FMC
     _heli setVariable ["fza_ah64_fmcPitchOn",                true,  true];

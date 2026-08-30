@@ -1,6 +1,7 @@
 params["_name", "_value"];
-if !(vehicle player isKindOf "fza_ah64base") exitWith {};
 private _heli = vehicle player;
+//Gate on HeliSim being initialised, not on an airframe class - Core is airframe-agnostic
+if !(_heli getVariable ["bmkhs_initialised", false]) exitWith {};
 
 
 
