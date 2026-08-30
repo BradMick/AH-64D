@@ -45,7 +45,7 @@ Verdict key:
 | `_bladeRadius` | 1.402 m | CONFIG |
 | `_bladeChord` | 0.253 m | CONFIG |
 | `_baseThrust` | 10230 N | CONFIG |
-| `_rtrAirspeedVelocityMod` | 0.4 | CHECK |
+| `_rtrAirspeedVelocityMod` | 0.4 | CORE |
 | `_tailRtrDamage` | 0.85 | CORE |
 
 Plus the tuning scalars the earlier survey found (`_pitchTorqueScalar 2.50*1.3`,
@@ -157,13 +157,13 @@ Plus the **15 PID gain sets** in `fn_coreConfig.sqf`, all CONFIG.
 | Verdict | Count |
 |---|---|
 | CONFIG | ~85 |
-| CORE | ~32 |
+| CORE | ~33 |
 | MOD | 6 |
-| CHECK | ~4 |
+| CHECK | 3 |
 
 Remaining CHECK items:
-`_kFlapLat` (flapback gain), `_rtrAirspeedVelocityMod`, `_govGain` (governor
-tuning), and the drivetrain torque jitter.
+`_kFlapLat` (flapback gain), `_govGain` (governor tuning), and the drivetrain
+torque jitter.
 
 ## Notable findings
 
