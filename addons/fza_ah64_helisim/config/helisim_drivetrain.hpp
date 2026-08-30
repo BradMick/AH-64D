@@ -16,6 +16,3 @@
     xmsnContTqLimit     = 2.00;   //continuous
     xmsnTransTqLimit    = 2.30;   //transient
     xmsnTransTimer      = 6;      //s
-
-    //Main rotor gear ratio - shared by the rotor and transmission models
-    mainRotorGearRatio  = 72.291;

@@ -50,19 +50,19 @@ private _altHoldCollOut         = _heli getVariable "bmkhs_fmcAltHoldCollOut";
 private _fmcCollOut             = _collectiveOut + _altHoldCollOut;
 //private _isAutorotating         = _heli getVariable "bmkhs_isAutorotating";
 
-private _rtrPos                 = [0.0, 2.06, 0.70];
-private _rtrHeightAGL           = 3.606;   //m
-private _rtrDesignRPM           = 289.0;
-private _rtrRPMTrimVal          = 1.01;
-private _rtrGearRatio           = 72.291;
-private _rtrNumBlades           = 4;
+private _rtrPos                 = _heli getVariable "bmkhs_mainRtrPos";
+private _rtrHeightAGL           = _heli getVariable "bmkhs_mainRtrHeightAgl";
+private _rtrDesignRPM           = _heli getVariable "bmkhs_mainRtrDesignRpm";
+private _rtrRPMTrimVal          = _heli getVariable "bmkhs_mainRtrRpmTrimVal";
+private _rtrGearRatio           = _heli getVariable "bmkhs_mainRotorGearRatio";
+private _rtrNumBlades           = _heli getVariable "bmkhs_mainRtrNumBlades";
 
-private _bladeRadius            = 7.315;    //m
-private _bladeChord             = 0.533;    //m
-private _bladeMass              = 72.108;   //kg
-private _bladeHingeOffset       = 0.038;    //dimensionless, % of bladeRadius
-private _bladePitch_min         = 1.0;      //deg
-private _bladePitch_max         = 19.0;     //deg
+private _bladeRadius            = _heli getVariable "bmkhs_mainRtrBladeRadius";
+private _bladeChord             = _heli getVariable "bmkhs_mainRtrBladeChord";
+private _bladeMass              = _heli getVariable "bmkhs_mainRtrBladeMass";
+private _bladeHingeOffset       = _heli getVariable "bmkhs_mainRtrBladeHingeOff";
+private _bladePitch_min         = _heli getVariable "bmkhs_mainRtrBladePitchMin";
+private _bladePitch_max         = _heli getVariable "bmkhs_mainRtrBladePitchMax";
 
 private _rtrGndEffTable =
 [
@@ -147,7 +147,7 @@ private _isOnGnd                = [_heli] call bmkhs_fnc_onGround;
 private _pitchTorqueScalar      = 2.50 * 1.3;
 private _rollTorqueScalar       = 0.75 * 1.3;
 
-private _baseThrust             = 102306;  //N - max gross weight (kg) * gravity (9.806 m/s)
+private _baseThrust             = _heli getVariable "bmkhs_mainRtrBaseThrust";
 
 //Moment of inertia
 private _Icm  = (1.0 / 3.0) * _bladeMass * (_bladeRadius * _bladeRadius);
