@@ -1,10 +1,6 @@
 #ifndef BMKHS_HELISIM_HEADERS_FUELCONSTANTS_HPP
 #define BMKHS_HELISIM_HEADERS_FUELCONSTANTS_HPP
 
-// Fuel cell low-level thresholds
-#define FWD_FUEL_LOW_VAL_KG     109.0
-#define AFT_FUEL_LOW_VAL_KG     118.0
-#define FUEL_FLOW_LBS_PER_HOUR  7936.64
 
 // XFER pump and AUTO mode thresholds
 #define XFER_RATE_KGS           0.378   // ~50 lb/min pump transfer rate

@@ -10,3 +10,9 @@
     maxCtrFuelMass       = 300.9;   //663lbs in kg, net yet implemented, center robbie
     maxAftFuelMass       = 668.6;   //1474lbs in kg
     maxExtFuelMass       = 699.0;   //1541lbs in kg, not yet implemented, 230gal external tank
+
+    //Low-level caution thresholds
+    fwdFuelLowKg       = 109.0;   //kg
+    aftFuelLowKg       = 118.0;   //kg
+    //Engine fuel flow at 100% - drives the FUEL page consumption readout
+    fuelFlowLbsPerHour = 7936.64;

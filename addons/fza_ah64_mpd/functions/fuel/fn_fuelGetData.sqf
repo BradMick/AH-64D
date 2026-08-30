@@ -25,7 +25,7 @@ private _eng2FF = _heli getVariable "bmkhs_engFF" select 1;
 private _eng1FuelCons = 0;
 private _eng1State    = _heli getVariable "bmkhs_engState" select 0;
 if (_eng1State == "ON") then {
-    _eng1FuelCons = _eng1FF * FUEL_FLOW_LBS_PER_HOUR;
+    _eng1FuelCons = _eng1FF * (_heli getVariable "bmkhs_fuelFlowLbsPerHour");
 } else {
     _eng1FuelCons = 0;
 };
@@ -33,7 +33,7 @@ if (_eng1State == "ON") then {
 private _eng2FuelCons = 0;
 private _eng2State    = _heli getVariable "bmkhs_engState" select 1;
 if (_eng2State == "ON") then {
-    _eng2FuelCons = _eng2FF * FUEL_FLOW_LBS_PER_HOUR;
+    _eng2FuelCons = _eng2FF * (_heli getVariable "bmkhs_fuelFlowLbsPerHour");
 } else {
     _eng2FuelCons = 0;
 };

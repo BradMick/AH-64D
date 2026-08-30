@@ -109,8 +109,8 @@ private _aftFuelAvailLastFrame = _aftFuelBefore > _eps;
 
 // XFER pump — Table 2-6 logic
 private _xferStep   = XFER_RATE_KGS * _deltaTime;
-private _fwdLow     = _fwdFuelMass < FWD_FUEL_LOW_VAL_KG;
-private _aftLow     = _aftFuelMass < AFT_FUEL_LOW_VAL_KG;
+private _fwdLow     = _fwdFuelMass < (_heli getVariable "bmkhs_fwdFuelLowKg");
+private _aftLow     = _aftFuelMass < (_heli getVariable "bmkhs_aftFuelLowKg");
 private _apuOn      = _heli getVariable ["bmkhs_apuOn", false];
 private _engBleedOn = _eng1On || _eng2On;
 private _airAvail   = _apuOn || _engBleedOn;
@@ -152,7 +152,7 @@ switch (_xferMode) do {
                 && _airAvail
                 && (_fwdFuelMass < AUTO_FILL_THRESH_KG)
                 && !_aftLow
-                && (_aftFuelMass > FWD_FUEL_LOW_VAL_KG)
+                && (_aftFuelMass > (_heli getVariable "bmkhs_fwdFuelLowKg"))
                 && _aftLeadEnough
                 // HALT guards
                 && (_aftMinusFwd >= AUTO_SPLIT_STOP_KG) && (_fwdFuelMass < (_maxFwdFuelMass - 0.1))) then {
