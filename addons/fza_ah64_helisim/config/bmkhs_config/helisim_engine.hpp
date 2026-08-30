@@ -22,6 +22,16 @@
     engOvrspdNP = 1.50;
 
     //--------------------0-NG-----1-TGT----2-TQ----3-NP----4-Oil
+    //Power, governing and limits used by the engine2 / BET models
+    engContPwrKW   = 1066.0;   //kW per engine, continuous
+    engCntgncyPwrKW= 1447.0;   //kW per engine, single-engine contingency
+    engDesignRPM   = 20900;    //100% Np
+    engFriction    = 0.0;
+    engGovGain     = 6.0;      //governor response rate
+    engRunNG       = 0.52;     //Ng above which the engine is running
+    engMaxTGT_DE   = 867;      //deg C, dual engine
+    engMaxTGT_SE   = 896;      //deg C, single engine
+
     engBaseTable[] =    {{0.000,      0,    0.00,     0.00,    0.00}, //Off - 0 sec
                          {0.010,      0,    0.00,     0.00,    0.00}, //5 sec
                          {0.178,      0,    0.00,     0.00,    0.00}, //10 sec

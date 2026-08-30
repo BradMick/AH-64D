@@ -90,7 +90,7 @@ switch (_engState) do {
 		};
 
 		//Transition state to ON
-		if (_engPctNG > 0.52) then {
+		if (_engPctNG > (_heli getVariable "bmkhs_engRunNG")) then {
 			_engState = "ON";
 			[_heli, "bmkhs_engState", _engNum, "ON", true] call bmkhs_fnc_setArrayVariable;
 		};
@@ -122,9 +122,11 @@ private _engTable = [[  _engBaseTQ, _engBaseTGT, _engBaseNG, _engBaseOilPSI],
 
 _engTGT    = [_engTable,   _engPctTQ] call bmkhs_fnc_linearInterp select 1;
 if (_isSingleEng) then {
-    if (_engTGT > 896) then { _engTGT = 896; };
+    private _tgtMax = _heli getVariable "bmkhs_engMaxTGT_SE";
+    if (_engTGT > _tgtMax) then { _engTGT = _tgtMax; };
 } else {
-    if (_engTGT > 867) then { _engTGT = 867; };
+    private _tgtMax = _heli getVariable "bmkhs_engMaxTGT_DE";
+    if (_engTGT > _tgtMax) then { _engTGT = _tgtMax; };
 };
 
 _engOilPSI = [_engTable,   _engPctTQ] call bmkhs_fnc_linearInterp select 3;

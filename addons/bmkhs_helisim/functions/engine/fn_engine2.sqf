@@ -2,13 +2,13 @@
 
 params ["_heli", "_engNum"];
 
-private _continuosPower     = 1066.0;    //kW
-private _contingencyPower   = 1447.0;    //kW
-private _designRpm          = 20900;
-private _engFriction        = 0.000000;
+private _continuosPower     = _heli getVariable "bmkhs_engContPwrKW";
+private _contingencyPower   = _heli getVariable "bmkhs_engCntgncyPwrKW";
+private _designRpm          = _heli getVariable "bmkhs_engDesignRPM";
+private _engFriction        = _heli getVariable "bmkhs_engFriction";
 
-private _npIdleRef          = 0.57;
-private _npFlyRef           = 1.01;
+private _npIdleRef          = _heli getVariable "bmkhs_engIdleNP";
+private _npFlyRef           = _heli getVariable "bmkhs_engFlyNP";
 
 private _deltaTime          = _heli getVariable "bmkhs_deltaTime";
 private _rho                = _heli getVariable "bmkhs_RHO";
@@ -65,7 +65,7 @@ if (_engState in ["STARTING", "ON"]) then {
         _engPctNp = [_engPctNp, 1.22, 1.5 * _deltaTime] call BIS_fnc_lerp;
         _engPctTq = _rtrTqReq/ _engRefTq;
 
-        if (_engPctNP >= 1.196) then {
+        if (_engPctNP >= (_heli getVariable "bmkhs_engOvrspdNP")) then {
             _engState     = "OFF";
             [_heli, "bmkhs_engState", _engNum, _engState, true] call bmkhs_fnc_setArrayVariable;
             [_heli, "bmkhs_engineOverspeed", _engNum, false, true] call bmkhs_fnc_setArrayVariable;

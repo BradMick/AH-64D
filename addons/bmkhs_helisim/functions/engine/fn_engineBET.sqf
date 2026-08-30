@@ -7,12 +7,12 @@ private _cfg           = configOf _heli;
 private _sfmPlusConfig = _cfg >> "BMKHS_HeliSim";
 
 // ── Physical constants ────────────────────────────────────────────────────────
-private _continuousPower  = 1066.0;   // kW continuous per engine
-private _designRpm        = 20900;    // 100% Np RPM
-private _npFlyRef         = 1.01;     // governed Np target (fraction)
-private _npIdleRef        = 0.57;     // idle Np target (fraction)
-private _ngFlyRef         = 0.856;    // Ng at fly power (fraction)
-private _ngIdleRef        = 0.674;    // Ng at idle (fraction)
+private _continuousPower  = _heli getVariable "bmkhs_engContPwrKW";
+private _designRpm        = _heli getVariable "bmkhs_engDesignRPM";
+private _npFlyRef         = _heli getVariable "bmkhs_engFlyNP";
+private _npIdleRef        = _heli getVariable "bmkhs_engIdleNP";
+private _ngFlyRef         = _heli getVariable "bmkhs_engFlyNG";
+private _ngIdleRef        = _heli getVariable "bmkhs_engIdleNG";
 
 // Reference torque at 100% Np: Q = P / omega
 private _engRefTq = (_continuousPower * 1000) / (_designRpm * _npFlyRef * 0.10472);
@@ -49,7 +49,7 @@ if (_engState in ["STARTING", "ON"]) then {
             _tqOutput = 0.0;
             _engPctTQ = _tqOutput / _engRefTq;
 
-            if (_engPctNP >= 1.196) then {
+            if (_engPctNP >= (_heli getVariable "bmkhs_engOvrspdNP")) then {
                 [_heli, "bmkhs_engState",     _engNum, "OFF", true] call bmkhs_fnc_setArrayVariable;
                 [_heli, "bmkhs_engineOverspeed", _engNum, false, true] call bmkhs_fnc_setArrayVariable;
             };
@@ -81,7 +81,7 @@ if (_engState in ["STARTING", "ON"]) then {
             // spool lag leaves behind.
             private _npFrac  = _xmsnRpm / (_npFlyRef * _designRpm);  // 1.0 = on-speed
             private _npErr   = 1.0 - _npFrac;                         // positive = underspeed
-            private _govGain = 6.0;
+            private _govGain = _heli getVariable "bmkhs_engGovGain";
             private _govCorr = [_npErr * _govGain, -0.5, 0.5] call BIS_fnc_clamp;
 
             // ── Engine spool dynamics ─────────────────────────────────────────
