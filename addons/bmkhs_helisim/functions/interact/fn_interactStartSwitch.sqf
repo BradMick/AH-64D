@@ -19,11 +19,12 @@ Author:
 ---------------------------------------------------------------------------- */
 params ["_heli", "_engNum", "_action"];
 
-if (_heli getVariable "fza_ah64_rtrbrake") exitWith {};
+//Aircraft sets this if it has a rotor brake that inhibits engine operation
+if (_heli getVariable ["bmkhs_rotorBrakeOn", false]) exitWith {};
 
 private _engState = _heli getVariable "bmkhs_engState" select _engNum;
 
-_heli animateSource [(["plt_eng1_start", "plt_eng2_start"] select _engNum), 0.5, 0.2];
+[_heli, "startSwitchPressed", [_engNum]] call bmkhs_fnc_notify;
 
 switch (_action) do {
     case "START": {

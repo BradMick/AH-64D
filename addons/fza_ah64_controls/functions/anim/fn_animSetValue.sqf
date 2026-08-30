@@ -4,7 +4,7 @@ Function: fza_fnc_animSetValue
 Description:
     For variables that are linked to an animation, updates the variable value
     and animates the animation to the value.
-    
+
 Parameters:
     _heli - The apache helicopter to check. (Object)
     _varName - Name of the variable to assign. (String)
@@ -37,6 +37,11 @@ private _animName = _animNames get _varName;
 if (isNil "_animName") exitWith {["Variable name not valid: '%1'", _varName] call BIS_fnc_error};
 
 _heli setVariable [_varName, _value, true];
+
+//Mirror the rotor brake into HeliSim - Core inhibits engine start/power lever on it
+if (_varName == "fza_ah64_rtrbrake") then {
+    _heli setVariable ["bmkhs_rotorBrakeOn", _value, true];
+};
 
 private _animValue = if (typeName _value != "SCALAR") then {parseNumber _value} else {_value};
 

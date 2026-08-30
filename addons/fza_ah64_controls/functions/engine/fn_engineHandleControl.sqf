@@ -78,78 +78,78 @@ switch(_control) do {
     //--------------------ENGINE 1--------------------//
     //Start Switch
     case (localize "STR_FZA_AH64_ENGINE_ONE_START"): {
-        [_heli, 0, "START"] call fza_ah64_helisim_fnc_interactStartSwitch;
+        [_heli, 0, "START"] call bmkhs_fnc_interactStartSwitch;
     };
     case (localize "STR_FZA_AH64_ENGINE_ONE_IGN_OVERRIDE"): {
-        [_heli, 0, "IGN ORDIE"] call fza_ah64_helisim_fnc_interactStartSwitch;
+        [_heli, 0, "IGN ORDIE"] call bmkhs_fnc_interactStartSwitch;
     };
     case "e1startertoggle": {
         private _engState = _heli getVariable "bmkhs_engState" select 0;
         if (_engState isEqualTo "OFF") then {
             _heli animateSource ["plt_eng1_start", 1, true];
-            [_heli, 0, "START"] call fza_ah64_helisim_fnc_interactStartSwitch;
+            [_heli, 0, "START"] call bmkhs_fnc_interactStartSwitch;
         };
         if (_engState isEqualTo "STARTING") exitWith {
             _heli animateSource ["plt_eng1_start", 0, true];
-            [_heli, 0, "IGN ORDIE"] call fza_ah64_helisim_fnc_interactStartSwitch;
+            [_heli, 0, "IGN ORDIE"] call bmkhs_fnc_interactStartSwitch;
         };
     };
     case "e1off": {
-        [_heli, 0, "OFF"] spawn fza_ah64_helisim_fnc_interactPowerLever;
+        [_heli, 0, "OFF"] spawn bmkhs_fnc_interactPowerLever;
     };
     case "e1idle": {
-        [_heli, 0, "IDLE"] spawn fza_ah64_helisim_fnc_interactPowerLever;
+        [_heli, 0, "IDLE"] spawn bmkhs_fnc_interactPowerLever;
     };
     case "e1fly": {
         private _eng2State       = _heli getVariable "bmkhs_engState" select 1;
         private _eng2PwrLvrState = _heli getVariable "bmkhs_engPowerLeverState" select 1;
 
         if (_eng2State == "OFF" || (_eng2State == "ON" && _eng2PwrLvrState == "FLY")) then {
-            [_heli, 0, "FLY"] spawn fza_ah64_helisim_fnc_interactPowerLever;
+            [_heli, 0, "FLY"] spawn bmkhs_fnc_interactPowerLever;
         };
 
         if (_eng2State == "ON" && _eng2PwrLvrState == "IDLE") then {
-            [_heli, 0, "FLY"] spawn fza_ah64_helisim_fnc_interactPowerLever;
-            [_heli, 1, "FLY"] spawn fza_ah64_helisim_fnc_interactPowerLever;
+            [_heli, 0, "FLY"] spawn bmkhs_fnc_interactPowerLever;
+            [_heli, 1, "FLY"] spawn bmkhs_fnc_interactPowerLever;
         };
     };
 
     //--------------------ENGINE 2--------------------//
     //Start Switch
     case (localize "STR_FZA_AH64_ENGINE_TWO_START"): {
-        [_heli, 1, "START"] call fza_ah64_helisim_fnc_interactStartSwitch;
+        [_heli, 1, "START"] call bmkhs_fnc_interactStartSwitch;
     };
     case (localize "STR_FZA_AH64_ENGINE_TWO_IGN_OVERRIDE"): {
-        [_heli, 1, "IGN ORDIE"] call fza_ah64_helisim_fnc_interactStartSwitch;
+        [_heli, 1, "IGN ORDIE"] call bmkhs_fnc_interactStartSwitch;
     };
     case "e2startertoggle": {
         private _engState = _heli getVariable "bmkhs_engState" select 1;
         if (_engState isEqualTo "OFF") then {
             _heli animateSource ["plt_eng2_start", 1, true];
-            [_heli, 1, "START"] call fza_ah64_helisim_fnc_interactStartSwitch;
+            [_heli, 1, "START"] call bmkhs_fnc_interactStartSwitch;
         };
         if (_engState isEqualTo "STARTING") exitWith {
             _heli animateSource ["plt_eng2_start", 0, true];
-            [_heli, 1, "IGN ORDIE"] call fza_ah64_helisim_fnc_interactStartSwitch;
+            [_heli, 1, "IGN ORDIE"] call bmkhs_fnc_interactStartSwitch;
         };
     };
     case "e2off": {
-        [_heli, 1, "OFF"] spawn fza_ah64_helisim_fnc_interactPowerLever;
+        [_heli, 1, "OFF"] spawn bmkhs_fnc_interactPowerLever;
     };
     case "e2idle": {
-        [_heli, 1, "IDLE"] spawn fza_ah64_helisim_fnc_interactPowerLever;
+        [_heli, 1, "IDLE"] spawn bmkhs_fnc_interactPowerLever;
     };
     case "e2fly": {
         private _eng1State       = _heli getVariable "bmkhs_engState" select 0;
         private _eng1PwrLvrState = _heli getVariable "bmkhs_engPowerLeverState" select 0;
 
         if (_eng1State == "OFF" || (_eng1State == "ON" && _eng1PwrLvrState == "FLY")) then {
-            [_heli, 1, "FLY"] spawn fza_ah64_helisim_fnc_interactPowerLever;
+            [_heli, 1, "FLY"] spawn bmkhs_fnc_interactPowerLever;
         };
 
         if (_eng1State == "ON" && _eng1PwrLvrState == "IDLE") then {
-            [_heli, 0, "FLY"] spawn fza_ah64_helisim_fnc_interactPowerLever;
-            [_heli, 1, "FLY"] spawn fza_ah64_helisim_fnc_interactPowerLever;
+            [_heli, 0, "FLY"] spawn bmkhs_fnc_interactPowerLever;
+            [_heli, 1, "FLY"] spawn bmkhs_fnc_interactPowerLever;
         };
     };
 };

@@ -8,19 +8,20 @@ Description:
 
     A pack registers a handler by setting bmkhs_notifyHandler to a code block:
 
-        bmkhs_notifyHandler = { params ["_heli", "_event"]; ... };
+        bmkhs_notifyHandler = { params ["_heli", "_event", ["_data", []]]; ... };
 
     If no handler is registered the call is a no-op, so Core runs standalone.
 
 Parameters:
     _heli  - The helicopter [Object]
     _event - Event name [String], e.g. "holdModeDisengaged"
+    _data  - Optional event payload [Array]
 
 Returns:
     Nothing
 ---------------------------------------------------------------------------- */
-params ["_heli", "_event"];
+params ["_heli", "_event", ["_data", []]];
 
 if (isNil "bmkhs_notifyHandler") exitWith {};
 
-[_heli, _event] call bmkhs_notifyHandler;
+[_heli, _event, _data] call bmkhs_notifyHandler;

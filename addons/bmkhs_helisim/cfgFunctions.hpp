@@ -95,6 +95,11 @@ class CfgFunctions
             class fuselageTop {R;};
             class fuselageVariables {R;};
         };
+        class interact {
+            file = "\bmkhs_helisim\functions\interact";
+            class interactPowerLever {R;};
+            class interactStartSwitch {R;};
+        };
         class mass {
             file = "\bmkhs_helisim\functions\mass";
             class massUpdate {R;};

@@ -20,13 +20,13 @@ Author:
 ---------------------------------------------------------------------------- */
 params ["_heli", "_engNum", "_state"];
 
-if (_heli getVariable "fza_ah64_rtrbrake") exitWith {};
+//Aircraft sets this if it has a rotor brake that inhibits engine operation
+if (_heli getVariable ["bmkhs_rotorBrakeOn", false]) exitWith {};
 
 private _engState = _heli getVariable "bmkhs_engState" select _engNum;
-private _engPwrLeverAnimName = format["fza_ah64_powerLever%1", _engNum + 1];
 
 if (_state == "OFF") then {
-    [_heli, _engPwrLeverAnimName, 0] call fza_fnc_animSetValue;
+    [_heli, "powerLeverMoved", [_engNum, 0.0]] call bmkhs_fnc_notify;
     [_heli, "bmkhs_engPowerLeverState", _engNum, _state, true] call bmkhs_fnc_setArrayVariable;
 
     if (_engState == "ON") then {
@@ -38,7 +38,7 @@ if (_state == "OFF") then {
 };
 
 if (_state == "IDLE") then {
-    [_heli, _engPwrLeverAnimName, 0.25] call fza_fnc_animSetValue;
+    [_heli, "powerLeverMoved", [_engNum, 0.25]] call bmkhs_fnc_notify;
     [_heli, "bmkhs_engPowerLeverState", _engNum, _state, true] call bmkhs_fnc_setArrayVariable;
 
     //HeliSim
@@ -47,6 +47,6 @@ if (_state == "IDLE") then {
 
 if (_state == "FLY") then {
     //0.063 sets the power levers to fly in 16 seconds
-    [_heli, _engPwrLeverAnimName, 1, 0.25] call fza_fnc_animSetValue;
+    [_heli, "powerLeverMoved", [_engNum, 1.0]] call bmkhs_fnc_notify;
     [_heli, "bmkhs_engPowerLeverState", _engNum, _state, true] call bmkhs_fnc_setArrayVariable;
 };
