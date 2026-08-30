@@ -27,12 +27,12 @@ Verdict key:
 | `_bladeHingeOffset` | 0.038 | CONFIG |
 | `_bladePitch_max` | 19.0 deg | CONFIG |
 | `_baseThrust` | 102306 N | CONFIG |
-| `_vrsScalarExponent` | 0.3 | CHECK — VRS model tuning |
+| `_vrsScalarExponent` | 0.3 | CORE (VRS model shape) |
 | `_profile_min` / `_profile_max` | 0.180 / 0.407 | CONFIG |
 | `_kFlapLat` | 10.0 | CHECK — flapback gain |
 | ETL band | 8.23 / 12.35 m/s | CONFIG |
 | High-speed shake bands | 66.87 / 72.02 / 77.16 / 82.30 m/s | CONFIG |
-| `_velXY` gate | 2.6 | CHECK |
+| `_velXY` hover gate | 2.6 | CORE (hover/forward-flight boundary in the thrust model) |
 | `_mainRtrDamage` | 0.99 | CORE |
 
 `fn_simpleRotorTail.sqf`
@@ -157,13 +157,13 @@ Plus the **15 PID gain sets** in `fn_coreConfig.sqf`, all CONFIG.
 | Verdict | Count |
 |---|---|
 | CONFIG | ~85 |
-| CORE | ~30 |
+| CORE | ~32 |
 | MOD | 6 |
-| CHECK | ~6 |
+| CHECK | ~4 |
 
-Remaining CHECK items are all model tuning where the line is genuinely unclear:
-`_vrsScalarExponent`, `_kFlapLat`, `_velXY` gate, `_rtrAirspeedVelocityMod`,
-`_govGain`, and the drivetrain torque jitter.
+Remaining CHECK items:
+`_kFlapLat` (flapback gain), `_rtrAirspeedVelocityMod`, `_govGain` (governor
+tuning), and the drivetrain torque jitter.
 
 ## Notable findings
 
