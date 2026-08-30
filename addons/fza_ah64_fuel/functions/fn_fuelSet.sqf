@@ -24,7 +24,7 @@ params ["_heli"];
 private _pylonMagazines = getPylonMagazines _heli;
 
 private _percentFuel    = fuel _heli;
-private _IAFSInstalled  = _heli getVariable "fza_ah64_IAFSInstalled";
+private _IAFSInstalled  = _heli getVariable ["fza_ah64_IAFSInstalled", false];
 private _maxFwdFuelMass = _heli getVariable ["bmkhs_maxFwdFuelMass", 0];
 private _maxCtrFuelMass = _heli getVariable ["bmkhs_maxCtrFuelMass", 0];
 private _maxAftFuelMass = _heli getVariable ["bmkhs_maxAftFuelMass", 0];

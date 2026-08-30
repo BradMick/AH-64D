@@ -13,11 +13,13 @@ Returns:
 ---------------------------------------------------------------------------- */
 params ["_heli"];
 
-[_heli] call bmkhs_fnc_init;
-[_heli, configOf _heli >> "BMKHS_HeliSim"] call bmkhs_fnc_coreConfig;
-
-//AH-64 equipment - not flight model state, so it lives here rather than in Core
+//AH-64 equipment - not flight model state, so it lives here rather than in Core.
+//Must be set before coreConfig: that calls fza_fuel_fnc_fuelSet, which reads
+//IAFSInstalled with no default to decide the tank split.
 if (local _heli) then {
     _heli setVariable ["fza_ah64_IAFSInstalled", true,  true];
     _heli setVariable ["fza_ah64_IAFSOn",        false, true];
 };
+
+[_heli] call bmkhs_fnc_init;
+[_heli, configOf _heli >> "BMKHS_HeliSim"] call bmkhs_fnc_coreConfig;

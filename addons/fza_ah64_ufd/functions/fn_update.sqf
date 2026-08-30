@@ -127,7 +127,7 @@ if (_battBusOn || _dcBusOn) then {
         _numExtTanks  = _numExtTanks + 1;
     };
 
-    if (_heli getVariable "fza_ah64_IAFSInstalled") then {
+    if (_heli getVariable ["fza_ah64_IAFSInstalled", false]) then {
         _heli setUserMFDValue [MFD_IND_IAFS_INSTALLED, _numExtTanks];
     } else {
         _heli setUserMFDValue [MFD_IND_IAFS_INSTALLED, (_numExtTanks + 5)];

@@ -32,7 +32,7 @@ params ["_heli"];
 private _deltaTime     = _heli getVariable "bmkhs_deltaTime";
 if (_deltaTime <= 0) exitWith {};
 
-private _IAFSInstalled = _heli getVariable "fza_ah64_IAFSInstalled";
+private _IAFSInstalled = _heli getVariable ["fza_ah64_IAFSInstalled", false];
 if (isNil "_IAFSInstalled") exitWith {};
 
 private _maxFwdFuelMass = _heli getVariable "bmkhs_maxFwdFuelMass";
