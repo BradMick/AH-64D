@@ -66,3 +66,6 @@ private _leakTimer = SYS_LEAK_TIMER * 60;
 _heli setVariable ["bmkhs_hydLeakTimer",      _leakTimer];
 private _accTime = SYS_ACC_TIMER * 60;
 _heli setVariable ["bmkhs_accTimer",          _accTime];
+
+_heli setVariable ["bmkhs_emerHydOn",         false, true];
+_heli setVariable ["bmkhs_engineOverspeed",   false, true];

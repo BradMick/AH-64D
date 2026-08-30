@@ -67,7 +67,11 @@ class CfgFunctions
             class fmcAltitudeHoldEnable {R;};
             class fmcAttitudeHoldEnable {R;};
             class fmcControlMixing {R;};
+            class fmcForceTrimHold {R;};
+            class fmcForceTrimRelease {R;};
+            class fmcForceTrimReset {R;};
             class fmcForceTrimSet {R;};
+            class fmcSetChannel {R;};
             class fmcHeadingHold {R;};
             class fmcHoldModesDisable {R;};
             class fmcSAS {R;};
@@ -226,6 +230,8 @@ class CfgFunctions
             class calculateAeroValues {R;};
             class centerTrimMode {R;};
             class getAccelerations {R;};
+            class controlHandle {R;};
+            class stickyInterrupt {R;};
             class getAltitude {R;};
             class getDeltaTime {R;};
             class getInput {R;};

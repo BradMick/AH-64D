@@ -24,10 +24,6 @@ class UserActionGroups {
             "fza_ah64_wasGun",
             "fza_ah64_wasRkt",
             "fza_ah64_wasMsl",
-            "fza_ah64_forceTrimHoldModeSwitch_up",
-            "fza_ah64_forceTrimHoldModeSwitch_right",
-            "fza_ah64_forceTrimHoldModeSwitch_down",
-            "fza_ah64_forceTrimHoldModeSwitch_left",
             "fza_ah64_fcrModeSwitch_up",
             "fza_ah64_fcrModeSwitch_down",
             "fza_ah64_flare",
@@ -39,8 +35,6 @@ class UserActionGroups {
             "fza_ah64_SensorSelect_DTV",
             "fza_ah64_SensorSelect_DVO",
             "fza_ah64_tadsLHGLmc",
-            "fza_ah64_stickyControlInterupt",
-            "fza_ah64_forceTrimPanicButton",
             "fza_ah64_collectiveEmergJett"
         };
     };
@@ -56,23 +50,13 @@ class UserActionGroups {
         name = "$STR_FZA_AH64_INPUT";
         group[] = {
             //HOTAS & Keyboard Cylic
-            "bmkhs_cyclicForward",
-            "bmkhs_cyclicBackward",
-            "bmkhs_cyclicLeft",
-            "bmkhs_cyclicRight",
             //Mouse Cyclic
             //fza_ah64_mouseCyclicForward,
             //fza_ah64_mouseCyclicBackward,
             //fza_ah64_mouseCyclicLeft,
             //fza_ah64_mouseCyclicRight,
             //HOTAS & Keyboard Collective
-            "bmkhs_pedalLeft",
-            "bmkhs_pedalRight",
-            "bmkhs_collectiveUp",
-            "bmkhs_collectiveDn",
             //Keyboard Collective
-            "bmkhs_kbCollectiveUp",
-            "bmkhs_kbCollectiveDn",
             "fza_ah64_ctrlVisToggle"
         };
     };

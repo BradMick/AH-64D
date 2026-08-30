@@ -40,19 +40,7 @@ class CfgDefaultKeysPresets {
             fza_ah64_SensorSelect_FLIR[] = {0x1D130031};
             fza_ah64_SensorSelect_DTV[] = {0x2A130031};
             fza_ah64_SensorSelect_DVO[] = {0x38130031};
-            fza_ah64_stickyControlInterupt[] = {0x39};
-            fza_ah64_forceTrimPanicButton[] = {};
             fza_ah64_collectiveEmergJett[] = {};
-            bmkhs_cyclicForward[] = {0x11};
-            bmkhs_cyclicBackward[] = {0x1F};
-            bmkhs_cyclicLeft[] = {0x1E};
-            bmkhs_cyclicRight[] = {0x20};
-            bmkhs_pedalLeft[] = {0x10};
-            bmkhs_pedalRight[] = {0x12};
-            bmkhs_collectiveUp[] = {};
-            bmkhs_collectiveDn[] = {};
-            bmkhs_kbCollectiveUp[] = {0x2A};
-            bmkhs_kbCollectiveDn[] = {0x1D};
             fza_ah64_ctrlVisToggle[]  = {0x1D130017};  // Ctrl+I (unassigned by default controls)
 
         };

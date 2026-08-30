@@ -122,26 +122,6 @@ if (_value) then {
         case "vehLockTargets": {
             [_heli] call fza_fcr_fnc_cycleNTS;
         };
-        case "fza_ah64_forceTrimHoldModeSwitch_up": {
-            if (currentPilot _heli != player || !local _heli) exitWith {};
-
-            _heli setVariable ["bmkhs_forceTrimInterupted", true, true];
-        };
-        case "fza_ah64_forceTrimHoldModeSwitch_right": {
-            if (currentPilot _heli != player || !local _heli) exitWith {};
-
-            [_heli] call bmkhs_fnc_fmcAltitudeHoldEnable;
-        };
-        case "fza_ah64_forceTrimHoldModeSwitch_down": {
-            if (currentPilot _heli != player || !local _heli) exitWith {};
-
-            [_heli] call bmkhs_fnc_fmcHoldModesDisable;
-        };
-        case "fza_ah64_forceTrimHoldModeSwitch_left": {
-            if (currentPilot _heli != player || !local _heli) exitWith {};
-
-            [_heli] call bmkhs_fnc_fmcAttitudeHoldEnable;
-        };
         case "fza_ah64_fcrModeSwitch_up": {
             if (_heli getVariable "fza_ah64_fcrMode" == 1) exitWith {};
             _heli setVariable ["fza_ah64_fcrMode", 1, true];
@@ -298,9 +278,6 @@ if (_value) then {
             private _lmc = _heli getVariable "fza_ah64_LmcActive";
             _heli setVariable ["fza_ah64_LmcActive", !_lmc, true];
         };
-        case "fza_ah64_stickyControlInterupt": {
-            _heli setVariable ["bmkhs_kbStickyInterupt", true];
-        };
         case "Headlights": {
             private _lightval = _heli getVariable "fza_ah64_lightSearchLight";
             _heli setVariable ["fza_ah64_lightSearchLight", !_lightval, true];
@@ -319,49 +296,6 @@ if !(_value) then {
     switch (_name) do {
         case "fza_ah64_laserDesig": {
             [_heli] call fza_fnc_laserDisarm;
-        };
-        case "fza_ah64_forceTrimHoldModeSwitch_up": {
-            if (currentPilot _heli != player || !local _heli) exitWith {};
-
-            //Velocity Hold Velocities
-            private _curVel   = velocityModelSpace _heli;
-            private _curVelX  = (_curVel # 0) * -1.0;
-            private _curVelY  = _curVel # 1;
-            //Attitude Hold Pitch & Roll
-            private _curAtt   = _heli call BIS_fnc_getPitchBank;
-            private _curPitch = _curAtt # 0;
-            private _curRoll  = _curAtt # 1;
-            _heli setVariable ["bmkhs_forceTrimInterupted",    false,                 true];
-            _heli setVariable ["bmkhs_attHoldDesiredPos",      getPos _heli,          true];
-            _heli setVariable ["bmkhs_attHoldDesiredVel",      [_curVelX, _curVelY],  true];
-            _heli setVariable ["bmkhs_attHoldDesiredAtt",      [_curPitch, _curRoll], true];
-            _heli setVariable ["bmkhs_hdgHoldDesiredHdg",      getDir _heli,          true];
-            //Sideslip setpoint is ZERO - a centred ball IS aerodynamic trim, which is what the
-            //heading hold's yaw/trn sub-modes are for. This used to capture fza_ah64_sideslip (the
-            //GAUGE global) on force-trim, which is wrong now that the loop measures
-            //bmkhs_aero_beta_g: the two are different units (clamped gauge deflection vs
-            //lateral g), so the setpoint and measurement would not be comparable.
-            _heli setVariable ["bmkhs_hdgHoldDesiredSideslip", 0.0,                   true];
-            [_heli] call bmkhs_fnc_fmcForceTrimSet;
-
-            [_heli] call bmkhs_fnc_centerTrimMode;
-        };
-        case "fza_ah64_stickyControlInterupt": {
-            _heli setVariable ["bmkhs_kbStickyInterupt", false];
-        };
-        case "fza_ah64_forceTrimPanicButton": {
-            // Reset force-trim reference positions
-            _heli setVariable ["bmkhs_forceTrimPosPitch", 0.0, true];
-            _heli setVariable ["bmkhs_forceTrimPosRoll",  0.0, true];
-            _heli setVariable ["bmkhs_forceTrimPosYaw",   0.0, true];
-            // Reset keyboard sticky input accumulated values to centre
-            _heli setVariable ["bmkhs_cyclicPitchValue",     0.0];
-            _heli setVariable ["bmkhs_cyclicRollValue",      0.0];
-            _heli setVariable ["bmkhs_pedalYawValue",        0.0];
-            // Reset prev* shadow values used by the sticky-interrupt branch of fn_getInput
-            _heli setVariable ["bmkhs_prevCyclicPitchValue", 0.0];
-            _heli setVariable ["bmkhs_prevCyclicRollValue",  0.0];
-            _heli setVariable ["bmkhs_prevPedalYawValue",    0.0];
         };
     };
 };

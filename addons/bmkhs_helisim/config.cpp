@@ -13,5 +13,7 @@ class CfgPatches
 
 #include "CfgFunctions.hpp"
 #include "CfgUserActions.hpp"
+#include "CfgDefaultKeysPresets.hpp"
+#include "UserActionGroups.hpp"
 #include "extendedEventHandlers.hpp"
 #include "ui\RscCtrlVis.hpp"
