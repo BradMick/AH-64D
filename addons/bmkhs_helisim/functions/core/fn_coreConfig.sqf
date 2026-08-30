@@ -191,12 +191,8 @@ _heli setVariable ["bmkhs_tailRtrBladeRadius",  getNumber (_config >> "tailRtrBl
 _heli setVariable ["bmkhs_tailRtrBladeChord",   getNumber (_config >> "tailRtrBladeChord")];
 _heli setVariable ["bmkhs_tailRtrBaseThrust",   getNumber (_config >> "tailRtrBaseThrust")];
 
-//Subsystem gates - the aircraft config decides which systems Core runs
+//Systems gate - all or nothing
 _heli setVariable ["bmkhs_useSystems",          getNumber (_config >> "useSystems")          > 0];
-_heli setVariable ["bmkhs_useAPU",              getNumber (_config >> "useAPU")              > 0];
-_heli setVariable ["bmkhs_useElectricalSystem", getNumber (_config >> "useElectricalSystem") > 0];
-_heli setVariable ["bmkhs_useHydraulicSystem",  getNumber (_config >> "useHydraulicSystem")  > 0];
-_heli setVariable ["bmkhs_useDrivetrain",       getNumber (_config >> "useDrivetrain")       > 0];
 
 _heli setVariable ["bmkhs_emptyMassFCR",       getNumber (_config >> "emptyMassFCR")];        //kg
 _heli setVariable ["bmkhs_emptyMomFCR",        getNumber (_config >> "emptyMomFCR")];

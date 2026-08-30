@@ -2,12 +2,9 @@
 //Split along system/component lines; Core reads this class.
 
 class BMKHS_HeliSim {
-    //Subsystem gates
-    useSystems          = 1;
-    useAPU              = 1;
-    useElectricalSystem = 1;
-    useHydraulicSystem  = 1;
-    useDrivetrain       = 1;
+    //Model the aircraft's systems (electrical, APU, hydraulics, drivetrain).
+    //Off means vanilla behaviour and Core's optional-input defaults.
+    useSystems = 1;
 
     #include "bmkhs_config\helisim_airfoils.hpp"
     #include "bmkhs_config\helisim_apu.hpp"

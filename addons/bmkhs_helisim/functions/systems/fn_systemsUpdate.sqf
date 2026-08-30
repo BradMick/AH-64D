@@ -21,17 +21,11 @@ params ["_heli"];
 if (CBA_missionTime < 0.1) exitWith {};
 private _deltaTime = ["systems_deltaTime"] call BIS_fnc_deltaTime;
 
-//Each subsystem is gated by the aircraft config. Off means the aircraft uses
-//vanilla behaviour and Core's optional-input defaults apply.
-if (_heli getVariable ["bmkhs_useElectricalSystem", false]) then {
-    [_heli, _deltaTime] call bmkhs_fnc_electricalController;
-};
-if (_heli getVariable ["bmkhs_useAPU", false]) then {
-    [_heli, _deltaTime] call bmkhs_fnc_apu;
-};
-if (_heli getVariable ["bmkhs_useHydraulicSystem", false]) then {
-    [_heli, _deltaTime] call bmkhs_fnc_hydraulicsController;
-};
-if (_heli getVariable ["bmkhs_useDrivetrain", false]) then {
-    [_heli, _deltaTime] call bmkhs_fnc_drivetrainController;
-};
+//Systems are all-or-nothing: an aircraft either models them or uses vanilla
+//behaviour, in which case Core's optional-input defaults apply.
+if !(_heli getVariable ["bmkhs_useSystems", false]) exitWith {};
+
+[_heli, _deltaTime] call bmkhs_fnc_electricalController;
+[_heli, _deltaTime] call bmkhs_fnc_apu;
+[_heli, _deltaTime] call bmkhs_fnc_hydraulicsController;
+[_heli, _deltaTime] call bmkhs_fnc_drivetrainController;
