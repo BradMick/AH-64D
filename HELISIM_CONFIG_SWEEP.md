@@ -74,7 +74,7 @@ Transmission:
 | Continuous limit | 2.00 | CONFIG |
 | Transient limit | 2.30 | CONFIG |
 | Transient timer | 6 s | CONFIG |
-| Torque jitter | ±0.10 | CHECK |
+| Torque jitter | ±0.10 | CORE |
 
 Electrical: battery power floor `0.25` — CONFIG.
 
@@ -157,13 +157,13 @@ Plus the **15 PID gain sets** in `fn_coreConfig.sqf`, all CONFIG.
 | Verdict | Count |
 |---|---|
 | CONFIG | ~85 |
-| CORE | ~33 |
+| CORE | ~34 |
 | MOD | 6 |
-| CHECK | 3 |
+| CHECK | 2 |
 
-Remaining CHECK items:
-`_kFlapLat` (flapback gain), `_govGain` (governor tuning), and the drivetrain
-torque jitter.
+Remaining CHECK items: `_kFlapLat` (flapback gain) and `_govGain` (governor
+tuning). Both are model shaping rather than aircraft data, so both likely
+resolve to CORE when read in context.
 
 ## Notable findings
 
