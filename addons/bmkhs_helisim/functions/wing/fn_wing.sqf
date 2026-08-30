@@ -39,7 +39,7 @@ if (_isStab) then {
     private _desiredTheta    = 0.0;
     private _theta           = _heli getVariable "bmkhs_stabilatorPosition";
 
-    private _intStabTable = [getArray (_sfmPlusConfig >> "heliSimStabTable"), (_heli getVariable "bmkhs_collectiveOutput")] call fza_fnc_linearInterp;
+    private _intStabTable = [getArray (_sfmPlusConfig >> "heliSimStabTable"), (_heli getVariable "bmkhs_collectiveOutput")] call bmkhs_fnc_linearInterp;
     _stabOutputTable = [
                         [15.43, _intStabTable select 1]   //30kts
                        ,[20.58, _intStabTable select 2]   //40kts
@@ -58,7 +58,7 @@ if (_isStab) then {
                        ];
 
     if (_stabDamage < SYS_STAB_DMG_THRESH && _dcBusOn) then {
-        _desiredTheta = [_stabOutputTable, (_heli getVariable "bmkhs_vel2D") * KNOTS_TO_MPS] call fza_fnc_linearInterp select 1;
+        _desiredTheta = [_stabOutputTable, (_heli getVariable "bmkhs_vel2D") * KNOTS_TO_MPS] call bmkhs_fnc_linearInterp select 1;
         _theta        = [_theta, _desiredTheta, (1.0 / 1.5) * _deltaTime] call BIS_fnc_lerp;
         _heli setVariable ["bmkhs_stabilatorPosition", _theta];
     };
@@ -112,15 +112,15 @@ for "_j" from 0 to (_numElements - 1) do {
     private _d = _D_wingRootTrailingEdge vectorAdd ((_C_wingTipTrailingEdge vectorDiff _D_wingRootTrailingEdge) vectorMultiply (_j / _numElements));
 
     if (BMKHS_FM_DEBUG) then {
-    [_heli, _b, _c,   "white"] call fza_fnc_debugDrawLine;
-    [_heli, _d, _a,   "white"] call fza_fnc_debugDrawLine;
+    [_heli, _b, _c,   "white"] call bmkhs_fnc_debugDrawLine;
+    [_heli, _d, _a,   "white"] call bmkhs_fnc_debugDrawLine;
     };
 
     private _f = _d vectorAdd ((_a vectorDiff _d) vectorMultiply (1.0 - _chordLinePos));
     private _g = _c vectorAdd ((_b vectorDiff _c) vectorMultiply (1.0 - _chordLinePos));
 
     if (BMKHS_FM_DEBUG) then {
-    [_heli, _f, _g,   "green"] call fza_fnc_debugDrawLine;
+    [_heli, _f, _g,   "green"] call bmkhs_fnc_debugDrawLine;
     };
 
     private _e = _f vectorAdd ((_g vectorDiff _f) vectorMultiply 0.5);
@@ -130,7 +130,7 @@ for "_j" from 0 to (_numElements - 1) do {
     _chordLine           = vectorNormalized _chordLine;
 
     if (BMKHS_FM_DEBUG) then {
-    [_heli, _e, _e vectorAdd _chordLine, "blue"] call fza_fnc_debugDrawLine;
+    [_heli, _e, _e vectorAdd _chordLine, "blue"] call bmkhs_fnc_debugDrawLine;
     };
 
     private _relativeWind = (_heli getVariable "bmkhs_velModelSpace") vectorMultiply -1.0;
@@ -143,7 +143,7 @@ for "_j" from 0 to (_numElements - 1) do {
     _relativeWind         = _relativeWind vectorAdd _localRelWind;
 
     if (BMKHS_FM_DEBUG) then {
-    [_heli, _e vectorDiff (vectorNormalized _relativeWind), _e, "red"] call fza_fnc_debugDrawLine;
+    [_heli, _e vectorDiff (vectorNormalized _relativeWind), _e, "red"] call bmkhs_fnc_debugDrawLine;
     };
 
     private _up = (vectorNormalized (_g vectorDiff _f)) vectorCrossProduct _chordLine;
@@ -153,7 +153,7 @@ for "_j" from 0 to (_numElements - 1) do {
     };
 
     if (BMKHS_FM_DEBUG) then {
-    [_heli, _e, _e vectorAdd _up, "white"] call fza_fnc_debugDrawLine;
+    [_heli, _e, _e vectorAdd _up, "white"] call bmkhs_fnc_debugDrawLine;
     };
 
     private _relWindY = _chordLine vectorDotProduct _relativeWind;
@@ -161,7 +161,7 @@ for "_j" from 0 to (_numElements - 1) do {
     _relativeWind     = (_chordLine vectorMultiply _relWindY) vectorAdd (_up vectorMultiply _relWindZ);
 
     if (BMKHS_FM_DEBUG) then {
-    [_heli, _e vectorDiff (vectorNormalized _relativeWind), _e, "green"] call fza_fnc_debugDrawLine;
+    [_heli, _e vectorDiff (vectorNormalized _relativeWind), _e, "green"] call bmkhs_fnc_debugDrawLine;
     };
 
     private _relativeWindNormalized = vectorNormalized _relativeWind;
@@ -175,19 +175,19 @@ for "_j" from 0 to (_numElements - 1) do {
     };
 
     //Lift coefficient
-    private _area  = [_a, _b, _c, _d] call fza_fnc_getArea;
-    private _CL    = [_airfoilTable, _AoA] call fza_fnc_linearInterp select 1;
+    private _area  = [_a, _b, _c, _d] call bmkhs_fnc_getArea;
+    private _CL    = [_airfoilTable, _AoA] call bmkhs_fnc_linearInterp select 1;
     private _v     = vectorMagnitude _relativeWind;
     private _lift  = _CL * 0.5 * _rho * _area * (_v * _v);
 
     //Drag coefficient
-    private _CD    = [_airfoilTable, _AoA] call fza_fnc_linearInterp select 2;
+    private _CD    = [_airfoilTable, _AoA] call bmkhs_fnc_linearInterp select 2;
     private _drag  = _CD * 0.5 * _rho * _area * (_v * _v);
 
     private _liftVector = _relativeWindNormalized vectorCrossProduct _up;
     _liftVector = _liftVector vectorCrossProduct _relativeWindNormalized;
     _liftVector = vectorNormalized _liftVector;
-    _liftScalar = [_wingLiftScalarTable, _v] call fza_fnc_linearInterp select 1;
+    _liftScalar = [_wingLiftScalarTable, _v] call bmkhs_fnc_linearInterp select 1;
     _liftVector = _liftVector vectorMultiply (_lift * _liftScalar * _deltaTime);
 
     private _dragVector = _relativeWind;
@@ -195,8 +195,8 @@ for "_j" from 0 to (_numElements - 1) do {
     _dragVector = _dragVector vectorMultiply (_drag * _deltaTime);
 
     if (BMKHS_FM_DEBUG) then {
-    [_heli, _e vectorAdd (_liftVector vectorMultiply _debugLineScale), _e, "green"] call fza_fnc_debugDrawLine;
-    [_heli, _e vectorAdd (_dragVector vectorMultiply _debugLineScale), _e, "red"]   call fza_fnc_debugDrawLine;
+    [_heli, _e vectorAdd (_liftVector vectorMultiply _debugLineScale), _e, "green"] call bmkhs_fnc_debugDrawLine;
+    [_heli, _e vectorAdd (_dragVector vectorMultiply _debugLineScale), _e, "red"]   call bmkhs_fnc_debugDrawLine;
     };
 
     _heli addForce [_heli vectorModelToWorld _liftVector, _heliCom];
@@ -213,8 +213,8 @@ for "_j" from 0 to (_numElements - 1) do {
 // Debug                /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 if (BMKHS_FM_DEBUG) then {
-[_heli, _A_wingRootLeadingEdge,  _B_wingTipLeadingEdge,   "red"]   call fza_fnc_debugDrawLine;
-[_heli, _B_wingTipLeadingEdge,   _C_wingTipTrailingEdge,  "white"] call fza_fnc_debugDrawLine;
-[_heli, _C_wingTipTrailingEdge,  _D_wingRootTrailingEdge, "white"] call fza_fnc_debugDrawLine;
-[_heli, _D_wingRootTrailingEdge, _A_wingRootLeadingEdge,  "white"] call fza_fnc_debugDrawLine;
+[_heli, _A_wingRootLeadingEdge,  _B_wingTipLeadingEdge,   "red"]   call bmkhs_fnc_debugDrawLine;
+[_heli, _B_wingTipLeadingEdge,   _C_wingTipTrailingEdge,  "white"] call bmkhs_fnc_debugDrawLine;
+[_heli, _C_wingTipTrailingEdge,  _D_wingRootTrailingEdge, "white"] call bmkhs_fnc_debugDrawLine;
+[_heli, _D_wingRootTrailingEdge, _A_wingRootLeadingEdge,  "white"] call bmkhs_fnc_debugDrawLine;
 };

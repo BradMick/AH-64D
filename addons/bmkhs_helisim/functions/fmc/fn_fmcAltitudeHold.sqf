@@ -18,9 +18,9 @@ private _output     = 0.0;
 //If the total torque exceeds 98%, de-activate altitude hold and don't allow its
 //activation until it it is below 98%
 if (_tq >= 0.98) then {
-    [_heli, "bmkhs_altHoldActive", false] call fza_fnc_updateNetworkGlobal;
-    [_pidRadAlt] call fza_fnc_pidReset;
-    [_pidBarAlt] call fza_fnc_pidReset;
+    [_heli, "bmkhs_altHoldActive", false] call bmkhs_fnc_updateNetworkGlobal;
+    [_pidRadAlt] call bmkhs_fnc_pidReset;
+    [_pidBarAlt] call bmkhs_fnc_pidReset;
 };
 
 if ( _heli getVariable "bmkhs_altHoldActive") then {
@@ -29,7 +29,7 @@ if ( _heli getVariable "bmkhs_altHoldActive") then {
     private _collRef_low = _collRef * 0.95;
     private _collRef_hi  = _collRef * 1.05;
     if ((_heli getVariable "bmkhs_collectiveOutput") >= _collRef_hi || (_heli getVariable "bmkhs_collectiveOutput") <= _collRef_low) then {
-        [_heli, "bmkhs_altHoldActive", false] call fza_fnc_updateNetworkGlobal;
+        [_heli, "bmkhs_altHoldActive", false] call bmkhs_fnc_updateNetworkGlobal;
         [_heli] spawn fza_audio_fnc_flightTone;
     };
 
@@ -37,23 +37,23 @@ if ( _heli getVariable "bmkhs_altHoldActive") then {
     //then set the desired altitude to the current AGL altitude, otherwise set it to the
     //current ASL altitude.
     if (_curAltAGL < RAD_ALT_MAX_ALT && _gndSpeed < ALT_HOLD_SPEED_SWITCH) then {
-        [_heli, "bmkhs_altHoldSubMode", "rad"] call fza_fnc_updateNetworkGlobal;
+        [_heli, "bmkhs_altHoldSubMode", "rad"] call bmkhs_fnc_updateNetworkGlobal;
     } else {
-        [_heli, "bmkhs_altHoldSubMode", "bar"] call fza_fnc_updateNetworkGlobal;
+        [_heli, "bmkhs_altHoldSubMode", "bar"] call bmkhs_fnc_updateNetworkGlobal;
     };
 
     if (_subMode == "rad") then {
         //Radar altitude hold uses AGL altitude
         private _altError = _curAltAGL - _desiredAlt;
-        _output = [_pidRadAlt, _deltaTime, 0.0, _altError] call fza_fnc_pidRun;
+        _output = [_pidRadAlt, _deltaTime, 0.0, _altError] call bmkhs_fnc_pidRun;
     } else {
         //Barometric altitude hold uses the ASL altitude
         private _altError = _curAltMSL - _desiredAlt;
-        _output = [_pidBarAlt, _deltaTime, 0.0, _altError] call fza_fnc_pidRun;
+        _output = [_pidBarAlt, _deltaTime, 0.0, _altError] call bmkhs_fnc_pidRun;
     };
 } else {
-    [_pidRadAlt] call fza_fnc_pidReset;
-    [_pidBarAlt] call fza_fnc_pidReset;
+    [_pidRadAlt] call bmkhs_fnc_pidReset;
+    [_pidBarAlt] call bmkhs_fnc_pidReset;
 };
 
 _output;

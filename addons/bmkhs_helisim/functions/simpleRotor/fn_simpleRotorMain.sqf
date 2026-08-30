@@ -155,11 +155,11 @@ private _Iy   = (1.0 / 12.0) * _bladeMass * (_bladeChord * _bladeChord);
 private _md2  = _bladeMass * (_bladeHingeOffset * _bladeHingeOffset);
 private _Itot = _Icm + _md2;
 private _Jtot = (_Iy + _Itot) * _rtrNumBlades;
-[_heli, "bmkhs_rtrMoi", 0, _Jtot, true] call fza_fnc_setArrayVariable;
+[_heli, "bmkhs_rtrMoi", 0, _Jtot, true] call bmkhs_fnc_setArrayVariable;
 
 //Thrust produced
 private _bladePitch_cur                = _bladePitch_min + (_bladePitch_max - _bladePitch_min) * _fmcCollOut;
-private _rtrThrustScalar_min           = [_rtrThrustScalarTable_min, _altitude] call fza_fnc_linearInterp select 1;
+private _rtrThrustScalar_min           = [_rtrThrustScalarTable_min, _altitude] call bmkhs_fnc_linearInterp select 1;
 private _bladePitchInducedThrustScalar = _rtrThrustScalar_min + ((1 - _rtrThrustScalar_min) / _bladePitch_max)  * _bladePitch_cur;
 //(_heli getVariable "bmkhs_engPctNP")
 //    params ["_eng1PctNP", "_eng2PctNp"];
@@ -167,7 +167,7 @@ private _inputRPM                      = (_heli getVariable "bmkhs_xmsnOutputRpm
 private _inputRpmPct                   = [_inputRpm / _rtrRPMTrimVal, 0.0, 1.0] call BIS_fnc_clamp;
 
 //Rotor induced thrust as a function of RPM
-private _rtrThrustScalar_max       = [_rtrThrustScalarTable_max, _altitude] call fza_fnc_linearInterp select 1;
+private _rtrThrustScalar_max       = [_rtrThrustScalarTable_max, _altitude] call bmkhs_fnc_linearInterp select 1;
 private _rtrRPMInducedThrustScalar = _inputRpmPct * _rtrThrustScalar_max;
 
 //Thrust scalar as a result of altitude
@@ -179,7 +179,7 @@ private _velY                      = _heli getVariable "bmkhs_velModelSpace" sel
 private _velXY                     = vectorMagnitude [_velX, _velY] min VEL_VNE;
 if ([_velXY] call bmkhs_fnc_isNAN || [_velXY] call bmkhs_fnc_isINF) then { _velXY = 0.0; };
 if (_isOnGnd) then { _velXY = 0.0; };
-private _velocityThrustExponent    = [_velocityThrustExponentTable, _velXY] call fza_fnc_linearInterp select 1;
+private _velocityThrustExponent    = [_velocityThrustExponentTable, _velXY] call bmkhs_fnc_linearInterp select 1;
 //systemChat format ["_velocityThrustExponent = %1 -- _fmcCollOut = %2", _velocityThrustExponent toFixed 3, _fmcCollOut toFixed 3];
 private _airspeedVelocityScalar    = (1 + (_velXY / VEL_VBE)) ^ (_velocityThrustExponent);
 
@@ -231,7 +231,7 @@ private _inducedPowerVelocityScalarTable =
 ,[69.96, 0.861]
 ,[72.02, 0.899]
 ];
-private _inducedPowerVelocityScalar = ([_inducedPowerVelocityScalarTable, _velXYNoWind] call fza_fnc_linearInterp) select 1;
+private _inducedPowerVelocityScalar = ([_inducedPowerVelocityScalarTable, _velXYNoWind] call bmkhs_fnc_linearInterp) select 1;
 _inducedPowerVelocityScalar         = _inducedPowerVelocityScalar * _fmcCollOut;
 
 private _inducedPowerCollectiveCorrectionTable =
@@ -265,21 +265,21 @@ private _autorotationTorqueTable =
 ,[ -7.62,  -5.0] //1500fpm
 ,[  0.00,   0.0]
 ];
-private _inducedPowerCollectiveCorrection = ([_inducedPowerCollectiveCorrectionTable, _velXYNoWind] call fza_fnc_linearInterp) select 1;
+private _inducedPowerCollectiveCorrection = ([_inducedPowerCollectiveCorrectionTable, _velXYNoWind] call bmkhs_fnc_linearInterp) select 1;
 private _induced_val                      = [_fmcCollOut / _inducedPowerCollectiveCorrection, 0.0, 2.0] call BIS_fnc_clamp;
 private _induced_cur                      = _inducedPowerVelocityScalar * _induced_val;
-private _collectiveTorqueCorrection       = ([_collectiveTorqueCorrectionTable, _fmcCollOut] call fza_fnc_linearInterp) select 1;
+private _collectiveTorqueCorrection       = ([_collectiveTorqueCorrectionTable, _fmcCollOut] call bmkhs_fnc_linearInterp) select 1;
 _collectiveTorqueCorrection               = linearConversion[0.0, VEL_ETL, _velXYNoWind, 1.0, _collectiveTorqueCorrection, true];
 private _power_val                        = [(_profile_cur + _induced_cur) * _collectiveTorqueCorrection, -1.0, 2.50] call BIS_fnc_clamp;
 private _power_req                        = _power_val * 2133.0;
 private _torque_req                       = (_power_req / 0.001) / 0.105 / 21109;
-private _autorotationTorque               = ([_autorotationTorqueTable, _velZ] call fza_fnc_linearInterp) select 1;
+private _autorotationTorque               = ([_autorotationTorqueTable, _velZ] call bmkhs_fnc_linearInterp) select 1;
 _torque_req                               = (_torque_req * _inputRpmPct) + _autorotationTorque;
 
 //systemChat format ["_velZ = %1 -- _autorotationTorque = %2", _velZ * 196.85, _autorotationTorque];
 
 private _rtrTorque   = _torque_req * _rtrGearRatio;
-[_heli, "bmkhs_reqEngTorque", 0, _torque_req, true] call fza_fnc_setArrayVariable;
+[_heli, "bmkhs_reqEngTorque", 0, _torque_req, true] call bmkhs_fnc_setArrayVariable;
 
 private _axisX = [1.0, 0.0, 0.0];
 private _axisY = [0.0, 1.0, 0.0];
@@ -289,7 +289,7 @@ private _axisZ = [0.0, 0.0, 1.0];
 private _heightAGL     = _rtrHeightAGL  + (ASLToAGL getPosASL _heli # 2);
 private _rtrDiam       = _bladeRadius * 2;
 
-private _rtrGndEffScalar = ([_rtrGndEffTable, _heli getVariable "bmkhs_GWT"] call fza_fnc_linearInterp) select 1;
+private _rtrGndEffScalar = ([_rtrGndEffTable, _heli getVariable "bmkhs_GWT"] call bmkhs_fnc_linearInterp) select 1;
 _rtrGndEffScalar         = _rtrGndEffScalar * (1.0);
 private _gndEffScalar  = (1 - (_heightAGL / _rtrDiam)) * _rtrGndEffScalar;
 _gndEffScalar          = [_gndEffScalar, 0.0, 1.0] call BIS_fnc_clamp;
@@ -321,7 +321,7 @@ private _cruiseTqTable =
 ,[72.02, 1.01]
 ,[77.17, 1.18]
 ];
-private _cruiseTq   = [_cruiseTqTable, _velXY] call fza_fnc_linearInterp select 1;
+private _cruiseTq   = [_cruiseTqTable, _velXY] call bmkhs_fnc_linearInterp select 1;
 if (_isSingleEng) then {
     _cruiseTq = _cruiseTq * 2.0;
 };
@@ -339,16 +339,16 @@ private _tqRoCTable =
 ,[0.7, 0.517]   //2800fpm
 ,[0.8, 0.587]   //3200fpm
 ];
-private _RoCScalar       = [_tqRoCTable, _tqChange] call fza_fnc_linearInterp select 1;
+private _RoCScalar       = [_tqRoCTable, _tqChange] call bmkhs_fnc_linearInterp select 1;
 private _climbThrust     = _baseThrust * _RoCScalar;
-private _tipLossScalar   = [_rtrTipLossTable, _heli getVariable "bmkhs_GWT"] call fza_fnc_linearInterp select 1;
+private _tipLossScalar   = [_rtrTipLossTable, _heli getVariable "bmkhs_GWT"] call bmkhs_fnc_linearInterp select 1;
 private _totThrust       = (_rtrThrust + _gndEffThrust + _climbThrust) * _tipLossScalar;
 if ([_totThrust] call bmkhs_fnc_isNAN || [_totThrust] call bmkhs_fnc_isINF) then { _totThrust = 0.0; };
-[_heli, "bmkhs_rtrThrust", 0, _totThrust, true] call fza_fnc_setArrayVariable;
+[_heli, "bmkhs_rtrThrust", 0, _totThrust, true] call bmkhs_fnc_setArrayVariable;
 //Main-thrust scalar. In forward flight: the airspeed-banded table. In HOVER (low
 //forward speed): blend the IGE and OGE hover thrust values by AGL height (IGE at
 //5 ft, OGE at 80 ft) so ground effect gets its own tuned thrust at each height.
-private _rtrThrustScalar = [_rtrThrustScalarTable, _velXY] call fza_fnc_linearInterp select 1;
+private _rtrThrustScalar = [_rtrThrustScalarTable, _velXY] call bmkhs_fnc_linearInterp select 1;
 if (_velXY < 2.6) then {   // < ~5 kt = hover
     private _igeThr = 1.0;
     private _ogeThr = 1.0;
@@ -379,11 +379,11 @@ private _retBladeStallSpeedTable =
 
 private _retBladeStallCollTable =
 [
- [0.0, [_retBladeStallSpeedTable, _velXY] call fza_fnc_linearInterp select 1]
-,[0.7, [_retBladeStallSpeedTable, _velXY] call fza_fnc_linearInterp select 2]
+ [0.0, [_retBladeStallSpeedTable, _velXY] call bmkhs_fnc_linearInterp select 1]
+,[0.7, [_retBladeStallSpeedTable, _velXY] call bmkhs_fnc_linearInterp select 2]
 ];
 
-private _retBladeStallInput = [_retBladeStallCollTable, _fmcCollOut] call fza_fnc_linearInterp select 1;
+private _retBladeStallInput = [_retBladeStallCollTable, _fmcCollOut] call bmkhs_fnc_linearInterp select 1;
 private _retBladeStallVal   = linearConversion [77.16, 102.88, _velXY, 1.0, 0.0, true];
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Pitch Torque         /////////////////////////////////////////////////////////////////////
@@ -413,7 +413,7 @@ private _momentY             = _rollTorque * _rollInput;
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Yaw Torque           /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
-private _rtrTorqueScalar = [_rtrTorqueScalarTable, _velXY] call fza_fnc_linearInterp select 1;
+private _rtrTorqueScalar = [_rtrTorqueScalarTable, _velXY] call bmkhs_fnc_linearInterp select 1;
 private _momentZ         = _rtrTorque * _rtrTorqueScalar * _deltaTime;
 //systemChat format ["main rotor _momentZ = %1", _momentZ toFixed 0];
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -433,7 +433,7 @@ if (currentPilot _heli == player) then {
         //private _thrustVector = _thrustZ;
 
         if (BMKHS_FM_DEBUG) then {
-        [_heli, _rtrPos, _rtrPos vectorAdd (vectorNormalized _thrustVector), "white"] call fza_fnc_debugDrawLine;
+        [_heli, _rtrPos, _rtrPos vectorAdd (vectorNormalized _thrustVector), "white"] call bmkhs_fnc_debugDrawLine;
         };
 
         if ([vectorMagnitude _thrustVector] call bmkhs_fnc_isNAN || [vectorMagnitude _thrustVector] call bmkhs_fnc_isINF) then { _thrustVector = [0.0, 0.0, 0.0]; };
@@ -586,10 +586,10 @@ if (cameraView == "INTERNAL") then {
 };
 
 if (BMKHS_FM_DEBUG) then {
-[_heli, _rtrPos, _rtrPos vectorAdd _axisX,        "red"]   call fza_fnc_debugDrawLine;
-[_heli, _rtrPos, _rtrPos vectorAdd _axisY,        "green"] call fza_fnc_debugDrawLine;
-[_heli, _rtrPos, _rtrPos vectorAdd _axisZ,        "blue"]  call fza_fnc_debugDrawLine;
-[_heli, 24, _rtrPos, _bladeRadius, 2, "white", 0]   call fza_fnc_debugDrawCircle;
+[_heli, _rtrPos, _rtrPos vectorAdd _axisX,        "red"]   call bmkhs_fnc_debugDrawLine;
+[_heli, _rtrPos, _rtrPos vectorAdd _axisY,        "green"] call bmkhs_fnc_debugDrawLine;
+[_heli, _rtrPos, _rtrPos vectorAdd _axisZ,        "blue"]  call bmkhs_fnc_debugDrawLine;
+[_heli, 24, _rtrPos, _bladeRadius, 2, "white", 0]   call bmkhs_fnc_debugDrawCircle;
 };
 
 //[_outThrust, _outTq];

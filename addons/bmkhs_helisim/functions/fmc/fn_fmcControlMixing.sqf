@@ -32,7 +32,7 @@ private _collToPitchTable = //move to config!
 ,[0.9, 0.081]
 ,[1.0, 0.090]
 ];
-private _collToPitch = [_collToPitchTable, _collOut] call fza_fnc_linearInterp select 1;
+private _collToPitch = [_collToPitchTable, _collOut] call bmkhs_fnc_linearInterp select 1;
 _collToPitch         = linearConversion [0, 20.58, _gndSpeed, _collToPitch, 0.0, true];
 //systemChat format ["_collToPitch = %1", _collToPitch];
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -52,7 +52,7 @@ private _collToRollTable = //move to config!
 ,[0.9, 0.079]
 ,[1.0, 0.088]
 ];
-private _collToRoll = [_collToRollTable, _collOut] call fza_fnc_linearInterp select 1;
+private _collToRoll = [_collToRollTable, _collOut] call bmkhs_fnc_linearInterp select 1;
 /*
 SPD_TBL =
 [
@@ -71,7 +71,7 @@ private _speedToRollTable = //move to config!
 ,[ 66.88, 0.66] //130kts
 ,[ 77.17, 0.66] //150kts
 ];
-_collToRoll = _collToRoll * ([_speedToRollTable, _gndSpeed] call fza_fnc_linearInterp select 1);
+_collToRoll = _collToRoll * ([_speedToRollTable, _gndSpeed] call bmkhs_fnc_linearInterp select 1);
 //systemChat format ["_collToRoll = %1", _collToRoll];
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Collective To Yaw    /////////////////////////////////////////////////////////////////////
@@ -104,7 +104,7 @@ private _yawToPitchTable = //move to config!
 ,[ 0.9,  0.054]
 ,[ 1.0,  0.060]
 ];
-private _yawToPitch = [_yawToPitchTable, _pedalOut] call fza_fnc_linearInterp select 1;
+private _yawToPitch = [_yawToPitchTable, _pedalOut] call bmkhs_fnc_linearInterp select 1;
 //systemChat format ["_yawToPitch = %1", _yawToPitch];
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Yaw To Roll         /////////////////////////////////////////////////////////////////////
@@ -133,7 +133,7 @@ private _yawToRollTable = //move to config!
 ,[ 0.9, -0.275]
 ,[ 1.0, -0.412]
 ];
-private _yawToRoll = ([_yawToRollTable, _pedalOut] call fza_fnc_linearInterp select 1) * 0.6;
+private _yawToRoll = ([_yawToRollTable, _pedalOut] call bmkhs_fnc_linearInterp select 1) * 0.6;
 
 //systemChat format ["_yawToRoll = %1", _yawToRoll];
 /////////////////////////////////////////////////////////////////////////////////////////////

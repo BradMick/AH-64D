@@ -28,13 +28,13 @@ _heli animateSource [(["plt_eng1_start", "plt_eng2_start"] select _engNum), 0.5,
 switch (_action) do {
     case "START": {
         if (_engState isEqualTo "OFF") exitWith {
-            [_heli, "bmkhs_engState", _engNum, "STARTING", true] call fza_fnc_setArrayVariable;
+            [_heli, "bmkhs_engState", _engNum, "STARTING", true] call bmkhs_fnc_setArrayVariable;
         };
         true;
     };
     case "IGN ORDIE": {
         if (_engState isEqualTo "STARTING") exitWith {
-            [_heli, "bmkhs_engState", _engNum, "OFF", true] call fza_fnc_setArrayVariable;
+            [_heli, "bmkhs_engState", _engNum, "OFF", true] call bmkhs_fnc_setArrayVariable;
         };
         true;
     };

@@ -92,13 +92,13 @@ switch (_engState) do {
 		//Transition state to ON
 		if (_engPctNG > 0.52) then {
 			_engState = "ON";
-			[_heli, "bmkhs_engState", _engNum, "ON", true] call fza_fnc_setArrayVariable;
+			[_heli, "bmkhs_engState", _engNum, "ON", true] call bmkhs_fnc_setArrayVariable;
 		};
 	};
 	case "ON": {
 		if (_engPowerLeverState == "OFF") then {
 			_engState = "OFF";
-			[_heli, "bmkhs_engState", _engNum, "ON", true] call fza_fnc_setArrayVariable;
+			[_heli, "bmkhs_engState", _engNum, "ON", true] call bmkhs_fnc_setArrayVariable;
 		};
 		//Ng
 		_engSetNG = _engBaseNG + (_engMaxNG - _engBaseNG) * _engThrottle * _collectiveOutput;
@@ -106,7 +106,7 @@ switch (_engState) do {
 	};
 };
 
-private _intEngBaseTable = [getArray (_sfmPlusConfig >> "engBaseTable"), _engPctNG] call fza_fnc_linearInterp;
+private _intEngBaseTable = [getArray (_sfmPlusConfig >> "engBaseTable"), _engPctNG] call bmkhs_fnc_linearInterp;
 //Base TGT
 private _engBaseTGT      = _intEngBaseTable select 1;
 //Base Oil
@@ -120,22 +120,22 @@ private _engTable = [[  _engBaseTQ, _engBaseTGT, _engBaseNG, _engBaseOilPSI],
                      [   _maxTQ_DE,         867,      0.990,           0.94],   //10 min
                      [   _maxTQ_SE,         896,      0.997,           0.99]];  //2.5 Min
 
-_engTGT    = [_engTable,   _engPctTQ] call fza_fnc_linearInterp select 1;
+_engTGT    = [_engTable,   _engPctTQ] call bmkhs_fnc_linearInterp select 1;
 if (_isSingleEng) then {
     if (_engTGT > 896) then { _engTGT = 896; };
 } else {
     if (_engTGT > 867) then { _engTGT = 867; };
 };
 
-_engOilPSI = [_engTable,   _engPctTQ] call fza_fnc_linearInterp select 3;
-_engFF     = [getArray (_sfmPlusConfig >> "engFFTable"), _engPctTQ] call fza_fnc_linearInterp select 1;
+_engOilPSI = [_engTable,   _engPctTQ] call bmkhs_fnc_linearInterp select 3;
+_engFF     = [getArray (_sfmPlusConfig >> "engFFTable"), _engPctTQ] call bmkhs_fnc_linearInterp select 1;
 
 
 //Update variables
-[_heli, "bmkhs_engPctNG",      _engNum, _engPctNG] call fza_fnc_setArrayVariable;
-[_heli, "bmkhs_engBaseTGT",    _engNum, _engBaseTGT] call fza_fnc_setArrayVariable;
-[_heli, "bmkhs_engBaseOilPSI", _engNum, _engBaseOilPSI] call fza_fnc_setArrayVariable;
+[_heli, "bmkhs_engPctNG",      _engNum, _engPctNG] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_engBaseTGT",    _engNum, _engBaseTGT] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_engBaseOilPSI", _engNum, _engBaseOilPSI] call bmkhs_fnc_setArrayVariable;
 
-[_heli, "bmkhs_engTGT",        _engNum, _engTGT] call fza_fnc_setArrayVariable;
-[_heli, "bmkhs_engOilPSI",     _engNum, _engOilPSI] call fza_fnc_setArrayVariable;
-[_heli, "bmkhs_engFF",         _engNum, _engFF] call fza_fnc_setArrayVariable;
+[_heli, "bmkhs_engTGT",        _engNum, _engTGT] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_engOilPSI",     _engNum, _engOilPSI] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_engFF",         _engNum, _engFF] call bmkhs_fnc_setArrayVariable;

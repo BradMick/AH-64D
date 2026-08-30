@@ -36,7 +36,7 @@ _heli setVariable ["bmkhs_isSingleEng",           false];
 //Outputs
 _heli setVariable ["bmkhs_engFF",                 [0.0, 0.0]];
 _heli setVariable ["bmkhs_engPctNG",              [0.0, 0.0]];
-//SEEDS REQUIRED even though nothing READS these: fza_fnc_setArrayVariable does
+//SEEDS REQUIRED even though nothing READS these: bmkhs_fnc_setArrayVariable does
 //`+(_heli getVariable _name)` then `set`, so the array must already exist or it
 //throws "Type Number, expected Array". Written per-engine by fn_engine.
 _heli setVariable ["bmkhs_engBaseNG",             [0.0, 0.0]];

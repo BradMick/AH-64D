@@ -50,8 +50,8 @@ if (_engState in ["STARTING", "ON"]) then {
             _engPctTQ = _tqOutput / _engRefTq;
 
             if (_engPctNP >= 1.196) then {
-                [_heli, "bmkhs_engState",     _engNum, "OFF", true] call fza_fnc_setArrayVariable;
-                [_heli, "fza_ah64_engineOverspeed", _engNum, false, true] call fza_fnc_setArrayVariable;
+                [_heli, "bmkhs_engState",     _engNum, "OFF", true] call bmkhs_fnc_setArrayVariable;
+                [_heli, "fza_ah64_engineOverspeed", _engNum, false, true] call bmkhs_fnc_setArrayVariable;
             };
         } else {
             // ── Available shaft power from Ng ─────────────────────────────────
@@ -105,7 +105,7 @@ if (_engState in ["STARTING", "ON"]) then {
 
             // ── Fuel flow schedule (display) ──────────────────────────────────
             private _wfDemand = if (_availTq > 0.0) then { [_tqOutput / _availTq, 0.0, 1.0] call BIS_fnc_clamp } else { 0.0 };
-            _engFF = [getArray (_sfmPlusConfig >> "engFFTable"), _wfDemand] call fza_fnc_linearInterp select 1;
+            _engFF = [getArray (_sfmPlusConfig >> "engFFTable"), _wfDemand] call bmkhs_fnc_linearInterp select 1;
 
             _engPctNP = _xmsnRpm / _designRpm;
             _engPctTQ = _tqOutput / _engRefTq;
@@ -115,10 +115,10 @@ if (_engState in ["STARTING", "ON"]) then {
         // IDLE: engine runs at idle Ng/Np, minimal torque output
         private _engIdleTQ = getNumber (_sfmPlusConfig >> "engIdleTQ");
         private _npTrimRef = _npIdleRef * _designRpm;
-        private _govTrim   = [_engPid, _deltaTime, _npTrimRef, _xmsnRpm] call fza_fnc_pidRun;
+        private _govTrim   = [_engPid, _deltaTime, _npTrimRef, _xmsnRpm] call bmkhs_fnc_pidRun;
         _govTrim   = [_govTrim, 0.0, _engRefTq * 0.15] call BIS_fnc_clamp;
         _tqOutput  = _govTrim;
-        _engFF     = [getArray (_sfmPlusConfig >> "engFFTable"), _engIdleTQ] call fza_fnc_linearInterp select 1;
+        _engFF     = [getArray (_sfmPlusConfig >> "engFFTable"), _engIdleTQ] call bmkhs_fnc_linearInterp select 1;
 
         _engPctNP = _xmsnRpm / _designRpm;
         _engPctTQ = _tqOutput / _engRefTq;
@@ -132,7 +132,7 @@ if (_engState in ["STARTING", "ON"]) then {
 };
 
 // ── Write outputs ─────────────────────────────────────────────────────────────
-[_heli, "bmkhs_engOutputTq", _engNum, _tqOutput,  true] call fza_fnc_setArrayVariable;
-[_heli, "bmkhs_engPctNP",    _engNum, _engPctNP       ] call fza_fnc_setArrayVariable;
-[_heli, "bmkhs_engFF",       _engNum, _engFF          ] call fza_fnc_setArrayVariable;
-[_heli, "bmkhs_engPctTQ",    _engNum, _engPctTQ + (_randomTq select _engNum) + (_randomTq select (_engNum + 2))] call fza_fnc_setArrayVariable;
+[_heli, "bmkhs_engOutputTq", _engNum, _tqOutput,  true] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_engPctNP",    _engNum, _engPctNP       ] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_engFF",       _engNum, _engFF          ] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_engPctTQ",    _engNum, _engPctTQ + (_randomTq select _engNum) + (_randomTq select (_engNum + 2))] call bmkhs_fnc_setArrayVariable;

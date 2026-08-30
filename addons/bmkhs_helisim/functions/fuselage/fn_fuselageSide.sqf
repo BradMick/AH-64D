@@ -42,15 +42,15 @@ private _fuseSpd = vectorMagnitude [
     (_heli getVariable ["bmkhs_velModelSpace", [0,0,0]]) select 0,
     (_heli getVariable ["bmkhs_velModelSpace", [0,0,0]]) select 1
 ];
-private _sideForceScalar = [_sideForceScalarTable, _fuseSpd] call fza_fnc_linearInterp select 1;
+private _sideForceScalar = [_sideForceScalarTable, _fuseSpd] call bmkhs_fnc_linearInterp select 1;
 
 private _pitch          = _rotation select 0;
 private _roll           = _rotation select 1;
 private _yaw            = _rotation select 2;
 
-private _vecRight = [[1.0, 0.0, 0.0], _pitch, _roll, _yaw] call fza_fnc_rotateVector;
-private _vecFwd   = [[0.0, 1.0, 0.0], _pitch, _roll, _yaw] call fza_fnc_rotateVector;
-private _vecUp    = [[0.0, 0.0, 1.0], _pitch, _roll, _yaw] call fza_fnc_rotateVector;
+private _vecRight = [[1.0, 0.0, 0.0], _pitch, _roll, _yaw] call bmkhs_fnc_rotateVector;
+private _vecFwd   = [[0.0, 1.0, 0.0], _pitch, _roll, _yaw] call bmkhs_fnc_rotateVector;
+private _vecUp    = [[0.0, 0.0, 1.0], _pitch, _roll, _yaw] call bmkhs_fnc_rotateVector;
 
 
 for "_i" from 0 to (_count - 1) do {
@@ -80,9 +80,9 @@ for "_i" from 0 to (_count - 1) do {
     _right         	   = vectorNormalized _right;
 
     if (BMKHS_FM_DEBUG) then {
-    [_heli, _e, _e vectorAdd _chordLine, "white"] call fza_fnc_debugDrawLine;
-	[_heli, _e, _e vectorAdd _up,	 	 "white"] call fza_fnc_debugDrawLine;
-	[_heli, _e, _e vectorAdd _right,     "white"] call fza_fnc_debugDrawLine;
+    [_heli, _e, _e vectorAdd _chordLine, "white"] call bmkhs_fnc_debugDrawLine;
+	[_heli, _e, _e vectorAdd _up,	 	 "white"] call bmkhs_fnc_debugDrawLine;
+	[_heli, _e, _e vectorAdd _right,     "white"] call bmkhs_fnc_debugDrawLine;
     };
 
     private _velModelSpace    = (_heli getVariable "bmkhs_velModelSpace")    vectorMultiply -1.0;
@@ -96,7 +96,7 @@ for "_i" from 0 to (_count - 1) do {
 	private _relWind		  = [_relWindX + _locRelWindX, _relWindY, 0.0];
 
     if (BMKHS_FM_DEBUG) then {
-    [_heli, _e vectorDiff (vectorNormalized _relWind), _e, "red"] call fza_fnc_debugDrawLine;
+    [_heli, _e vectorDiff (vectorNormalized _relWind), _e, "red"] call bmkhs_fnc_debugDrawLine;
     };
 
     private _relWindNormalized = vectorNormalized _relWind;
@@ -104,13 +104,13 @@ for "_i" from 0 to (_count - 1) do {
 	private _aoa = (_relWindNormalized select 0) atan2 (_relWindNormalized select 1);
 
     //Lift coefficient
-    private _area        = [_a, _b, _c, _d] call fza_fnc_getArea;
-    private _CL          = [_airfoilTable, _aoa] call fza_fnc_linearInterp select 1;
+    private _area        = [_a, _b, _c, _d] call bmkhs_fnc_getArea;
+    private _CL          = [_airfoilTable, _aoa] call bmkhs_fnc_linearInterp select 1;
     private _v            = (vectorMagnitude _relWind) min VEL_VNE;
     private _lift         = _CL * 0.5 * _rho * _area * (_v * _v);
 
     //Drag coefficient
-    private _CD          =  [_dragCoefTable, _aoa] call fza_fnc_linearInterp select 1;
+    private _CD          =  [_dragCoefTable, _aoa] call bmkhs_fnc_linearInterp select 1;
     private _drag         = _CD * 0.5 * _rho * _area * (_relWindX * _relWindX);
 
     private _liftVector = _relWindNormalized vectorCrossProduct _up;
@@ -123,8 +123,8 @@ for "_i" from 0 to (_count - 1) do {
     _dragVector = _dragVector vectorMultiply (_drag * _sideForceScalar * _deltaTime);
 
     if (BMKHS_FM_DEBUG) then {
-    [_heli, _e vectorAdd (_liftVector vectorMultiply _debugLineScale), _e, "green"] call fza_fnc_debugDrawLine;
-    [_heli, _e vectorAdd (_dragVector vectorMultiply _debugLineScale), _e, "red"]   call fza_fnc_debugDrawLine;
+    [_heli, _e vectorAdd (_liftVector vectorMultiply _debugLineScale), _e, "green"] call bmkhs_fnc_debugDrawLine;
+    [_heli, _e vectorAdd (_dragVector vectorMultiply _debugLineScale), _e, "red"]   call bmkhs_fnc_debugDrawLine;
     };
 
     _heli addForce [_heli vectorModelToWorld _liftVector, _heliCom];
@@ -140,9 +140,9 @@ for "_i" from 0 to (_count - 1) do {
 
     if (BMKHS_FM_DEBUG) then {
     //Draw the wing
-    [_heli, _a, _b, "red"]   call fza_fnc_debugDrawLine;
-    [_heli, _b, _c, "white"] call fza_fnc_debugDrawLine;
-    [_heli, _c, _d, "red"]   call fza_fnc_debugDrawLine;
-    [_heli, _d, _a, "white"] call fza_fnc_debugDrawLine;
+    [_heli, _a, _b, "red"]   call bmkhs_fnc_debugDrawLine;
+    [_heli, _b, _c, "white"] call bmkhs_fnc_debugDrawLine;
+    [_heli, _c, _d, "red"]   call bmkhs_fnc_debugDrawLine;
+    [_heli, _d, _a, "white"] call bmkhs_fnc_debugDrawLine;
     };
 };

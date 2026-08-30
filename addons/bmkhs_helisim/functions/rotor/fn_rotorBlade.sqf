@@ -15,15 +15,15 @@ private _totalPower       = (_heli getVariable "bmkhs_rotorReactionTorque") sele
 private _velBet   = vectorMagnitude [(_heli getVariable "bmkhs_velModelSpace" select 0), (_heli getVariable "bmkhs_velModelSpace" select 1)];
 private _isTail   = _rotorIndex == 1;
 private _liftTbl  = _heli getVariable [(if (_isTail) then { "bmkhs_betTailLiftTable" } else { "bmkhs_betMainLiftTable" }), []];
-private _bladeScale = if (_liftTbl isEqualTo []) then { 1.0 } else { [_liftTbl, _velBet] call fza_fnc_linearInterp select 1 };
+private _bladeScale = if (_liftTbl isEqualTo []) then { 1.0 } else { [_liftTbl, _velBet] call bmkhs_fnc_linearInterp select 1 };
 //Tail airspeed trim/reversal: additive to the tail LIFT scalar (the ~100kt tail-thrust reversal
 //the simple model dials in via tailTrimTable; BET had no equivalent). Only for the tail rotor.
 if (_isTail) then {
     private _trimTbl = [];
-    if !(_trimTbl isEqualTo []) then { _bladeScale = _bladeScale + ([_trimTbl, _velBet] call fza_fnc_linearInterp select 1); };
+    if !(_trimTbl isEqualTo []) then { _bladeScale = _bladeScale + ([_trimTbl, _velBet] call bmkhs_fnc_linearInterp select 1); };
 };
 
-[_heli, "bmkhs_rotorFlapMoment", _rotorIndex, _bladeIndex, 0.0] call fza_fnc_setMultiArrayVariable;
+[_heli, "bmkhs_rotorFlapMoment", _rotorIndex, _bladeIndex, 0.0] call bmkhs_fnc_setMultiArrayVariable;
 
 for "_i" from 0 to (_numElements - 1) do {
 	private _spanInboard  =  _i      / _numElements;
@@ -44,7 +44,7 @@ for "_i" from 0 to (_numElements - 1) do {
 	_chordLine         = vectorNormalized _chordLine;
 
 	if (BMKHS_FM_DEBUG) then {
-	[_heli, _liftPos, _liftPos vectorAdd _chordLine, "white"] call fza_fnc_debugDrawLine;
+	[_heli, _liftPos, _liftPos vectorAdd _chordLine, "white"] call bmkhs_fnc_debugDrawLine;
 	};
 
 	// Induced inflow from previous frame — breaks the thrust/inflow circular dependency
@@ -96,8 +96,8 @@ for "_i" from 0 to (_numElements - 1) do {
 	_relWind = _localWind vectorAdd _inducedWind;
 
 	if (BMKHS_FM_DEBUG) then {
-	[_heli, _liftPos vectorDiff (vectorNormalized _relWind), _liftPos, "red"]   call fza_fnc_debugDrawLine;
-	[_heli, _liftPos, _liftPos vectorAdd _up,                          "white"] call fza_fnc_debugDrawLine;
+	[_heli, _liftPos vectorDiff (vectorNormalized _relWind), _liftPos, "red"]   call bmkhs_fnc_debugDrawLine;
+	[_heli, _liftPos, _liftPos vectorAdd _up,                          "white"] call bmkhs_fnc_debugDrawLine;
 	};
 
 	private _relWindY = _chordLine vectorDotProduct _relWind;
@@ -105,7 +105,7 @@ for "_i" from 0 to (_numElements - 1) do {
 	_relWind          = (_chordLine vectorMultiply _relWindY) vectorAdd (_up vectorMultiply _relWindZ);
 
 	if (BMKHS_FM_DEBUG) then {
-	[_heli, _liftPos vectorDiff (vectorNormalized _relWind), _liftPos, "green"] call fza_fnc_debugDrawLine;
+	[_heli, _liftPos vectorDiff (vectorNormalized _relWind), _liftPos, "green"] call bmkhs_fnc_debugDrawLine;
 	};
 
 	private _relWindNormalized = vectorNormalized _relWind;
@@ -115,12 +115,12 @@ for "_i" from 0 to (_numElements - 1) do {
 
 	if ((_up vectorDotProduct _relWindNormalized) < 0.0) then { _AoA = _AoA * -1.0; };
 
-	private _area = [_c, _d, _e, _f] call fza_fnc_getArea;
+	private _area = [_c, _d, _e, _f] call bmkhs_fnc_getArea;
 	private _v    = vectorMagnitude _relWind;
 	private _q    = 0.5 * _rho * _area * (_v * _v);
 
-	private _CL = [_airfoilTable, _AoA] call fza_fnc_linearInterp select 1;
-	private _CD = [_airfoilTable, _AoA] call fza_fnc_linearInterp select 2;
+	private _CL = [_airfoilTable, _AoA] call bmkhs_fnc_linearInterp select 1;
+	private _CD = [_airfoilTable, _AoA] call bmkhs_fnc_linearInterp select 2;
 
 	private _lift = _CL * _q;
 	private _drag = (_CD min 0.15) * _q;
@@ -140,7 +140,7 @@ for "_i" from 0 to (_numElements - 1) do {
 		[_raw, -25.0, 25.0] call BIS_fnc_clamp
 	} else { 0.0 };
 	private _viAccum = ((_heli getVariable "bmkhs_rotorInducedFlowAccum") select _rotorIndex) select _i;
-	[_heli, "bmkhs_rotorInducedFlowAccum", _rotorIndex, _i, (_viAccum + _viRaw)] call fza_fnc_setMultiArrayVariable;
+	[_heli, "bmkhs_rotorInducedFlowAccum", _rotorIndex, _i, (_viAccum + _viRaw)] call bmkhs_fnc_setMultiArrayVariable;
 
 	_totalFlapMoment = _totalFlapMoment + (_lift * _r);
 
@@ -162,7 +162,7 @@ for "_i" from 0 to (_numElements - 1) do {
 
 
 	private _thrustAccum = (_heli getVariable "bmkhs_rotorThrustAccum") select _rotorIndex;
-	[_heli, "bmkhs_rotorThrustAccum", _rotorIndex, (_thrustAccum + (_lift * _bladeScale))] call fza_fnc_setArrayVariable;
+	[_heli, "bmkhs_rotorThrustAccum", _rotorIndex, (_thrustAccum + (_lift * _bladeScale))] call bmkhs_fnc_setArrayVariable;
 
 	_liftVector = _liftDir vectorMultiply (_lift * _deltaTime * _bladeScale);
 
@@ -172,13 +172,13 @@ for "_i" from 0 to (_numElements - 1) do {
 	_heli addForce [_heli vectorModelToWorld _dragVector, _liftPos];
 
 	if (BMKHS_FM_DEBUG) then {
-	[_heli, _liftPos, _liftPos vectorAdd (_liftVector vectorMultiply (1.0 / 30.0)), "green"] call fza_fnc_debugDrawLine;
-	[_heli, _liftPos, _liftPos vectorAdd (_dragVector vectorMultiply (1.0 / 30.0)), "red"]   call fza_fnc_debugDrawLine;
-	[_heli, _c, _f, "red"] call fza_fnc_debugDrawLine;
-	[_heli, _d, _e, "red"] call fza_fnc_debugDrawLine;
+	[_heli, _liftPos, _liftPos vectorAdd (_liftVector vectorMultiply (1.0 / 30.0)), "green"] call bmkhs_fnc_debugDrawLine;
+	[_heli, _liftPos, _liftPos vectorAdd (_dragVector vectorMultiply (1.0 / 30.0)), "red"]   call bmkhs_fnc_debugDrawLine;
+	[_heli, _c, _f, "red"] call bmkhs_fnc_debugDrawLine;
+	[_heli, _d, _e, "red"] call bmkhs_fnc_debugDrawLine;
 	};
 };
 
-[_heli, "bmkhs_rotorFlapMoment", _rotorIndex, _bladeIndex, _totalFlapMoment] call fza_fnc_setMultiArrayVariable;
+[_heli, "bmkhs_rotorFlapMoment", _rotorIndex, _bladeIndex, _totalFlapMoment] call bmkhs_fnc_setMultiArrayVariable;
 
-[_heli, "bmkhs_rotorReactionTorque", _rotorIndex, _totalPower] call fza_fnc_setArrayVariable;
+[_heli, "bmkhs_rotorReactionTorque", _rotorIndex, _totalPower] call bmkhs_fnc_setArrayVariable;

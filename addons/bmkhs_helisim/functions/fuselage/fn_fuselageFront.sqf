@@ -23,9 +23,9 @@ private _pitch          = _rotation select 0;
 private _roll           = _rotation select 1;
 private _yaw            = _rotation select 2;
 
-private _vecRight = [[1.0, 0.0, 0.0], _pitch, _roll, _yaw] call fza_fnc_rotateVector;
-private _vecFwd   = [[0.0, 1.0, 0.0], _pitch, _roll, _yaw] call fza_fnc_rotateVector;
-private _vecUp    = [[0.0, 0.0, 1.0], _pitch, _roll, _yaw] call fza_fnc_rotateVector;
+private _vecRight = [[1.0, 0.0, 0.0], _pitch, _roll, _yaw] call bmkhs_fnc_rotateVector;
+private _vecFwd   = [[0.0, 1.0, 0.0], _pitch, _roll, _yaw] call bmkhs_fnc_rotateVector;
+private _vecUp    = [[0.0, 0.0, 1.0], _pitch, _roll, _yaw] call bmkhs_fnc_rotateVector;
 
 
 for "_i" from 0 to (_count - 1) do {
@@ -46,20 +46,20 @@ for "_i" from 0 to (_count - 1) do {
     private _e = _g vectorAdd ((_f vectorDiff _g) vectorMultiply 0.5);
 
     if (BMKHS_FM_DEBUG) then {
-    [_heli, _e, _e vectorAdd _vecFwd, "white"] call fza_fnc_debugDrawLine;
+    [_heli, _e, _e vectorAdd _vecFwd, "white"] call bmkhs_fnc_debugDrawLine;
     };
 
     private _v          = (_heli getVariable "bmkhs_vel2D") min VEL_VNE;
     private _pa         = _heli getVariable "bmkhs_PA";
-    private _CD         = [_dragCoefTable, _pa] call fza_fnc_linearInterp select 1;
-    private _area       = [_a, _b, _c, _d] call fza_fnc_getArea;
+    private _CD         = [_dragCoefTable, _pa] call bmkhs_fnc_linearInterp select 1;
+    private _area       = [_a, _b, _c, _d] call bmkhs_fnc_getArea;
     private _drag       = _CD * 0.5 * _rho * _area * (_v * _v);
 
     private _dragVector = _vecFwd vectorMultiply -1.0;
     _dragVector = _dragVector vectorMultiply (_drag * _deltaTime);
 
     if (BMKHS_FM_DEBUG) then {
-    [_heli, _e vectorAdd (_dragVector vectorMultiply _debugLineScale), _e, "red"]   call fza_fnc_debugDrawLine;
+    [_heli, _e vectorAdd (_dragVector vectorMultiply _debugLineScale), _e, "red"]   call bmkhs_fnc_debugDrawLine;
     };
 
     _heli addForce[_heli vectorModelToWorld _dragVector, _heliCom];
@@ -74,9 +74,9 @@ for "_i" from 0 to (_count - 1) do {
 
     if (BMKHS_FM_DEBUG) then {
     //Draw the wing
-    [_heli, _a, _b, "red"]   call fza_fnc_debugDrawLine;
-    [_heli, _b, _c, "white"] call fza_fnc_debugDrawLine;
-    [_heli, _c, _d, "red"]   call fza_fnc_debugDrawLine;
-    [_heli, _d, _a, "white"] call fza_fnc_debugDrawLine;
+    [_heli, _a, _b, "red"]   call bmkhs_fnc_debugDrawLine;
+    [_heli, _b, _c, "white"] call bmkhs_fnc_debugDrawLine;
+    [_heli, _c, _d, "red"]   call bmkhs_fnc_debugDrawLine;
+    [_heli, _d, _a, "white"] call bmkhs_fnc_debugDrawLine;
     };
 };

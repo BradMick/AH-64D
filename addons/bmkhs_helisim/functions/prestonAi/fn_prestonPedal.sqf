@@ -114,9 +114,9 @@ if (abs _nttError <= AUTOPEDAL_NTT_DEADBAND_DEG) then {
 };
 
 _hdgError            = [_curHdg - _desiredHdg] call CBA_fnc_simplifyAngle180;
-_hdgOut              = [_pidAutoPedalHdg,  _deltaTime, 0.0, _hdgError]  call fza_fnc_pidRun;
-private _nttOut      = [_pidAutoPedalNtt,  _deltaTime, 0.0, _nttError]  call fza_fnc_pidRun;
-private _aeroOut     = [_pidAutoPedalAero, _deltaTime, 0.0, _aeroError] call fza_fnc_pidRun;
+_hdgOut              = [_pidAutoPedalHdg,  _deltaTime, 0.0, _hdgError]  call bmkhs_fnc_pidRun;
+private _nttOut      = [_pidAutoPedalNtt,  _deltaTime, 0.0, _nttError]  call bmkhs_fnc_pidRun;
+private _aeroOut     = [_pidAutoPedalAero, _deltaTime, 0.0, _aeroError] call bmkhs_fnc_pidRun;
 
 //Blend WEIGHTS.
 //
@@ -173,9 +173,9 @@ _heli setVariable ["bmkhs_autoPedalOut",       _yawOutput];
 private _hdgHoldBreakout     = (_pedalLeftRight <= -HDG_HOLD_BREAKOUT_VALUE && _pedalLeftRight < 0.0) || (_pedalLeftRight >= HDG_HOLD_BREAKOUT_VALUE && _pedalLeftRight > 0.0);
 private _prevHdgHoldBreakout = _heli getVariable ["bmkhs_prevAutoPedalHdgBreakout", false];
 if (_yawBreakout) then {
-    [_pidAutoPedalHdg]  call fza_fnc_pidReset;
-    [_pidAutoPedalNtt]  call fza_fnc_pidReset;
-    [_pidAutoPedalAero] call fza_fnc_pidReset;
+    [_pidAutoPedalHdg]  call bmkhs_fnc_pidReset;
+    [_pidAutoPedalNtt]  call bmkhs_fnc_pidReset;
+    [_pidAutoPedalAero] call bmkhs_fnc_pidReset;
     //Re-seed the pilot-feet filter to where the PILOT'S pedal actually is, so when they release
     //the auto-pedal picks up from that position instead of rate-limiting back from a stale one.
     _heli setVariable ["bmkhs_autoPedalPrevOut", _pedalLeftRight];

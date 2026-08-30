@@ -41,17 +41,17 @@ private _attHoldCycRollOut  = 0.0;
 //Submode selection: speed-driven.
 //Position hold
 if (_gndSpeed <= POS_HOLD_SPEED_SWITCH) then {
-    [_heli, "bmkhs_attHoldSubMode", "pos"] call fza_fnc_updateNetworkGlobal;
+    [_heli, "bmkhs_attHoldSubMode", "pos"] call bmkhs_fnc_updateNetworkGlobal;
 };
 //Velocity hold
 //This needs to check if accelerating or decelerating...really it's
 //5 to 40 knots accelerating, 30 to 5 knots decelerating
 if (_gndSpeed > POS_HOLD_SPEED_SWITCH && _gndSpeed <= VEL_HOLD_SPEED_SWITCH_ACCEL) then {
-    [_heli, "bmkhs_attHoldSubMode", "vel"] call fza_fnc_updateNetworkGlobal;
+    [_heli, "bmkhs_attHoldSubMode", "vel"] call bmkhs_fnc_updateNetworkGlobal;
 };
 //Attitude hold
 if (_gndSpeed > VEL_HOLD_SPEED_SWITCH_ACCEL) then {
-    [_heli, "bmkhs_attHoldSubMode", "att"] call fza_fnc_updateNetworkGlobal;
+    [_heli, "bmkhs_attHoldSubMode", "att"] call bmkhs_fnc_updateNetworkGlobal;
 };
 
 if (_heli getVariable "bmkhs_attHoldActive" && !(_heli getVariable "bmkhs_forceTrimInterupted")) then {
@@ -80,9 +80,9 @@ if (_heli getVariable "bmkhs_attHoldActive" && !(_heli getVariable "bmkhs_forceT
 
         //Bias is a velocity SETPOINT (m/s toward datum). roll measures -velX so its setpoint = -_iX;
         //pitch measures +velY so its setpoint = +_iY (matches the un-negated pos convention).
-        private _roll  = [_pidRoll,  _deltaTime, (-_iX), -_velX] call fza_fnc_pidRun;
+        private _roll  = [_pidRoll,  _deltaTime, (-_iX), -_velX] call bmkhs_fnc_pidRun;
         _roll          = [_roll,  -1.0, 1.0] call BIS_fnc_clamp;
-        private _pitch = [_pidPitch, _deltaTime, ( _iY),  _velY] call fza_fnc_pidRun;
+        private _pitch = [_pidPitch, _deltaTime, ( _iY),  _velY] call bmkhs_fnc_pidRun;
         _pitch         = [_pitch, -1.0, 1.0] call BIS_fnc_clamp;
 
         _attHoldCycPitchOut = _pitch;
@@ -94,9 +94,9 @@ if (_heli getVariable "bmkhs_attHoldActive" && !(_heli getVariable "bmkhs_forceT
     if (_subMode == "vel") then {
         (_heli getVariable "bmkhs_attHoldDesiredVel")
             params ["_setVelX", "_setVelY"];
-        private _roll  = [_pidRoll,  _deltaTime, _setVelX, -_velX] call fza_fnc_pidRun;
+        private _roll  = [_pidRoll,  _deltaTime, _setVelX, -_velX] call bmkhs_fnc_pidRun;
         _roll          = [_roll,  -1.0, 1.0] call BIS_fnc_clamp;
-        private _pitch = [_pidPitch, _deltaTime, _setVelY, _velY] call fza_fnc_pidRun;
+        private _pitch = [_pidPitch, _deltaTime, _setVelY, _velY] call bmkhs_fnc_pidRun;
         _pitch         = [_pitch, -1.0, 1.0] call BIS_fnc_clamp;
 
         _attHoldCycPitchOut = _pitch;
@@ -109,9 +109,9 @@ if (_heli getVariable "bmkhs_attHoldActive" && !(_heli getVariable "bmkhs_forceT
         private _pitchError = [_curPitch - _setPitch] call CBA_fnc_simplifyAngle180;
         private _rollError  = [_curRoll  - _setRoll]  call CBA_fnc_simplifyAngle180;
 
-        private _roll  = [_pidRoll_att,  _deltaTime, 0.0, _rollError] call fza_fnc_pidRun;
+        private _roll  = [_pidRoll_att,  _deltaTime, 0.0, _rollError] call bmkhs_fnc_pidRun;
         _roll          = [_roll,  -1.0, 1.0] call BIS_fnc_clamp;
-        private _pitch = [_pidPitch_att, _deltaTime, 0.0, _pitchError] call fza_fnc_pidRun;
+        private _pitch = [_pidPitch_att, _deltaTime, 0.0, _pitchError] call bmkhs_fnc_pidRun;
         _pitch         = [_pitch, -1.0, 1.0] call BIS_fnc_clamp;
 
         _attHoldCycPitchOut = _pitch * -1.0;
@@ -119,12 +119,12 @@ if (_heli getVariable "bmkhs_attHoldActive" && !(_heli getVariable "bmkhs_forceT
     };
 } else {
     //Position & Velocity hold
-    [_pidRoll]  call fza_fnc_pidReset;
-    [_pidPitch] call fza_fnc_pidReset;
+    [_pidRoll]  call bmkhs_fnc_pidReset;
+    [_pidPitch] call bmkhs_fnc_pidReset;
 
     //Attitude hold
-    [_pidRoll_att]  call fza_fnc_pidReset;
-    [_pidPitch_att] call fza_fnc_pidReset;
+    [_pidRoll_att]  call bmkhs_fnc_pidReset;
+    [_pidPitch_att] call bmkhs_fnc_pidReset;
 
     //Clear the position integral so re-engaging pos hold starts clean (no stale bias on engage).
     _heli setVariable ["bmkhs_posIntX", 0.0];

@@ -87,11 +87,6 @@ class CfgFunctions
             class fuselageTop {R;};
             class fuselageVariables {R;};
         };
-        class interact {
-            file = "\bmkhs_helisim\functions\interact";
-            class interactPowerLever {R;};
-            class interactStartSwitch {R;};
-        };
         class mass {
             file = "\bmkhs_helisim\functions\mass";
             class massUpdate {R;};
@@ -100,9 +95,29 @@ class CfgFunctions
         };
         class math {
             file = "\bmkhs_helisim\functions\math";
+            class getArea {R;};
+            class linearInterp {R;};
             class linearInterpFromCenter {R;};
+            class rotateVector {R;};
             class vectorRotate {R;};
             class vectorRotateAroundAxis {R;};
+        };
+        class pid {
+            file = "\bmkhs_helisim\functions\pid";
+            class pidCreate {R;};
+            class pidReset {R;};
+            class pidRun {R;};
+        };
+        class util {
+            file = "\bmkhs_helisim\functions\util";
+            class setArrayVariable {R;};
+            class setMultiArrayVariable {R;};
+            class updateNetworkGlobal {R;};
+        };
+        class debug {
+            file = "\bmkhs_helisim\functions\debug";
+            class debugDrawCircle {R;};
+            class debugDrawLine {R;};
         };
         class mathQuaternion {
             file = "\bmkhs_helisim\functions\math\quaternion";

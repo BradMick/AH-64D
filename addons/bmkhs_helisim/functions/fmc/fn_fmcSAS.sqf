@@ -44,18 +44,18 @@ private _sasYawOutput   = 0.0;
 //change simply carries a little more input to sustain its rate).
 
 //ROLL: proportional rate damping - oppose actual roll rate.
-private _roll  = [_pidSASRoll, _deltaTime, 0.0, _angVelY] call fza_fnc_pidRun;
+private _roll  = [_pidSASRoll, _deltaTime, 0.0, _angVelY] call bmkhs_fnc_pidRun;
 _roll          = [_roll,  -0.1, 0.1] call BIS_fnc_clamp;   // 10% SAS-servo authority (roll)
 _sasRollOutput = _roll;
 
 //YAW: proportional rate damping - oppose actual yaw rate. (Heading Hold is a separate
 //reference-hold submode on top, in fn_fmcHeadingHold; not built here.)
-private _yaw   = [_pidSASYaw, _deltaTime, 0.0, _angVelZ] call fza_fnc_pidRun;
+private _yaw   = [_pidSASYaw, _deltaTime, 0.0, _angVelZ] call bmkhs_fnc_pidRun;
 _yaw           = [_yaw, -0.1, 0.1] call BIS_fnc_clamp;   // 10% SAS-servo authority (yaw)
 _sasYawOutput  = _yaw;
 
 //PITCH: proportional rate damping - oppose actual pitch rate. Runs always (see the note above).
-private _pitch = [_pidSASPitch, _deltaTime, 0.0, _angVelX] call fza_fnc_pidRun;
+private _pitch = [_pidSASPitch, _deltaTime, 0.0, _angVelX] call bmkhs_fnc_pidRun;
 _pitch         = [_pitch, -0.2, 0.2] call BIS_fnc_clamp;   // 20% SAS-servo authority (pitch)
 _sasPitchOutput = _pitch;
 

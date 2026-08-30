@@ -86,9 +86,9 @@ if (   _onGnd
         //still hold whatever they accumulated before the mode dropped out (a pedal breakout, a
         //force-trim interrupt, sitting on the ground), and that lands on the pedals as a kick the
         //instant the hold re-engages.
-        [_pidHdg] call fza_fnc_pidReset;
-        [_pidTrn] call fza_fnc_pidReset;
-        [_pidYaw] call fza_fnc_pidReset;
+        [_pidHdg] call bmkhs_fnc_pidReset;
+        [_pidTrn] call bmkhs_fnc_pidReset;
+        [_pidYaw] call bmkhs_fnc_pidReset;
     };
 };
 //Finally, if the heading hold is active, perform the required functions
@@ -126,11 +126,11 @@ if (_heli getVariable "bmkhs_hdgHoldActive") then {
     //the incoming one is reset explicitly too so a first-ever entry starts clean rather than
     //from whatever the PID was seeded with.
     if (_subMode != _targetSubMode) then {
-        if (_subMode == "hdg") then { [_pidHdg] call fza_fnc_pidReset; };
-        if (_subMode == "trn" || _subMode == "yaw") then { [_pidTrn] call fza_fnc_pidReset; };
-        if (_subMode == "aut") then { [_pidYaw] call fza_fnc_pidReset; };
-        if (_targetSubMode == "hdg") then { [_pidHdg] call fza_fnc_pidReset; };
-        if (_targetSubMode == "trn" || _targetSubMode == "yaw") then { [_pidTrn] call fza_fnc_pidReset; };
+        if (_subMode == "hdg") then { [_pidHdg] call bmkhs_fnc_pidReset; };
+        if (_subMode == "trn" || _subMode == "yaw") then { [_pidTrn] call bmkhs_fnc_pidReset; };
+        if (_subMode == "aut") then { [_pidYaw] call bmkhs_fnc_pidReset; };
+        if (_targetSubMode == "hdg") then { [_pidHdg] call bmkhs_fnc_pidReset; };
+        if (_targetSubMode == "trn" || _targetSubMode == "yaw") then { [_pidTrn] call bmkhs_fnc_pidReset; };
         if (_targetSubMode == "hdg") then {
             _heli setVariable ["bmkhs_hdgHoldDesiredHdg", getDir _heli, true];
         };
@@ -140,17 +140,17 @@ if (_heli getVariable "bmkhs_hdgHoldActive") then {
 
     //Run exactly one PID per frame based on current sub-mode
     if (_subMode == "hdg") then {
-        _hdgOutput = [_pidHdg, _deltaTime, 0.0, _hdgError] call fza_fnc_pidRun;
+        _hdgOutput = [_pidHdg, _deltaTime, 0.0, _hdgError] call bmkhs_fnc_pidRun;
         _hdgOutput = [_hdgOutput, -1.0, 1.0] call BIS_fnc_clamp;
     };
     if (_subMode == "trn") then {
-        _trnOutput = [_pidTrn, _deltaTime, 0.0, _sideslipError] call fza_fnc_pidRun;
+        _trnOutput = [_pidTrn, _deltaTime, 0.0, _sideslipError] call bmkhs_fnc_pidRun;
         _trnOutput = [_trnOutput, -1.0, 1.0] call BIS_fnc_clamp;
     };
     if (_subMode == "yaw") then {
         //SIGN IS INTENTIONAL AND VALIDATED - do not "unify" it with the "trn" branch above.
         //The two branches deliberately use opposite error senses.
-        _yawOutput = [_pidTrn, _deltaTime, _sideslipError, 0.0] call fza_fnc_pidRun;
+        _yawOutput = [_pidTrn, _deltaTime, _sideslipError, 0.0] call bmkhs_fnc_pidRun;
         _yawOutput = [_yawOutput, -1.0, 1.0] call BIS_fnc_clamp;
     };
     //"aut": auto pedal owns the yaw axis via bmkhs_forceTrimPosYaw (fn_getInput.sqf).
@@ -167,9 +167,9 @@ if (_heli getVariable "bmkhs_hdgHoldActive") then {
     };
     _output = linearConversion[POS_HOLD_SPEED_SWITCH, HDG_HOLD_SPEED_SWITCH_ACCEL, _gndSpeed, _hdgOutput, _highSpeedOutput, true];
 } else {
-    [_pidHdg] call fza_fnc_pidReset;
-    [_pidTrn] call fza_fnc_pidReset;
-    [_pidYaw] call fza_fnc_pidReset;
+    [_pidHdg] call bmkhs_fnc_pidReset;
+    [_pidTrn] call bmkhs_fnc_pidReset;
+    [_pidYaw] call bmkhs_fnc_pidReset;
 };
 
 _output = [_output,  -0.1, 0.1] call BIS_fnc_clamp;

@@ -147,12 +147,12 @@ private _vecZ = [0.0, 0.0, 5.0];
 
 private _heliCoM = getCenterOfMass _heli;
 
-[_heli, _heliCoM, _heliCoM vectorAdd _vecX, "red"]   call fza_fnc_debugDrawLine;
-[_heli, _heliCoM, _heliCoM vectorAdd _vecY, "green"] call fza_fnc_debugDrawLine;
-[_heli, _heliCoM, _heliCoM vectorAdd _vecZ, "blue"]  call fza_fnc_debugDrawLine;
+[_heli, _heliCoM, _heliCoM vectorAdd _vecX, "red"]   call bmkhs_fnc_debugDrawLine;
+[_heli, _heliCoM, _heliCoM vectorAdd _vecY, "green"] call bmkhs_fnc_debugDrawLine;
+[_heli, _heliCoM, _heliCoM vectorAdd _vecZ, "blue"]  call bmkhs_fnc_debugDrawLine;
 
-[_heli, [0.0, _fs0   - (_comDatum select 1),-5], [0.0, _fs0   - (_comDatum select 1), 5], "green"]  call fza_fnc_debugDrawLine;
-[_heli, [0.0, _fwdCg - (_comDatum select 1),-5], [0.0, _fwdCg - (_comDatum select 1), 5], "red"]  call fza_fnc_debugDrawLine;
-[_heli, [0.0, _aftCg - (_comDatum select 1),-5], [0.0, _aftCg - (_comDatum select 1), 5], "red"]  call fza_fnc_debugDrawLine;
+[_heli, [0.0, _fs0   - (_comDatum select 1),-5], [0.0, _fs0   - (_comDatum select 1), 5], "green"]  call bmkhs_fnc_debugDrawLine;
+[_heli, [0.0, _fwdCg - (_comDatum select 1),-5], [0.0, _fwdCg - (_comDatum select 1), 5], "red"]  call bmkhs_fnc_debugDrawLine;
+[_heli, [0.0, _aftCg - (_comDatum select 1),-5], [0.0, _aftCg - (_comDatum select 1), 5], "red"]  call bmkhs_fnc_debugDrawLine;
 
 };

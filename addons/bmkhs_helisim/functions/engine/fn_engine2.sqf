@@ -67,12 +67,12 @@ if (_engState in ["STARTING", "ON"]) then {
 
         if (_engPctNP >= 1.196) then {
             _engState     = "OFF";
-            [_heli, "bmkhs_engState", _engNum, _engState, true] call fza_fnc_setArrayVariable;
-            [_heli, "fza_ah64_engineOverspeed", _engNum, false, true] call fza_fnc_setArrayVariable;
+            [_heli, "bmkhs_engState", _engNum, _engState, true] call bmkhs_fnc_setArrayVariable;
+            [_heli, "fza_ah64_engineOverspeed", _engNum, false, true] call bmkhs_fnc_setArrayVariable;
         };
     } else {
         if (_xmsnRpm > _npTrimRef || _xmsnRpm < _npTrimRef) then {
-            _trimTq = [_engPid, _deltaTime, _npTrimRef, _xmsnRpm] call fza_fnc_pidRun;
+            _trimTq = [_engPid, _deltaTime, _npTrimRef, _xmsnRpm] call bmkhs_fnc_pidRun;
             _trimTq = [_trimTq, _maxTorque * -0.5, _maxTorque * 0.5] call BIS_fnc_clamp;
         };
         _tqOutput = (_engRefTq * _throttle) + (_engRefTq * _collectiveOutput) + _trimTq;
@@ -83,8 +83,8 @@ if (_engState in ["STARTING", "ON"]) then {
     };
 };
 
-[_heli, "bmkhs_engOutputTq", _engNum, _tqOutput, true] call fza_fnc_setArrayVariable;
-[_heli, "bmkhs_engPctNP",    _engNum, _engPctNp] call fza_fnc_setArrayVariable;
-[_heli, "bmkhs_engPctTQ", _engNum, _engPctTq + (_randomTq select _engNum) + (_randomTq select _engNum + 2)] call fza_fnc_setArrayVariable;
+[_heli, "bmkhs_engOutputTq", _engNum, _tqOutput, true] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_engPctNP",    _engNum, _engPctNp] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_engPctTQ", _engNum, _engPctTq + (_randomTq select _engNum) + (_randomTq select _engNum + 2)] call bmkhs_fnc_setArrayVariable;
 //systemChat format ["_engRefTq = %1 -- _maxPowerInWatts = %2 -- _maxOutputTq = %3", _engRefTq, _maxPowerInWatts, _maxTorque];
 //systemChat format ["Engine %3 -- _trimTq = %1 -- _tqOutput = %2 -- _maxTorque = %4", _trimTq toFixed 2, _tqOutput toFixed 2, _engNum, _maxTorque];

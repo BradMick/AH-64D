@@ -71,9 +71,9 @@ private _bladeAlpha  = if (_bladePeriod > 0.0) then { [_deltaTime / _bladePeriod
 private _beta0Target = if (_isTeetering) then { _beta0Raw } else { [(_heli getVariable "bmkhs_rotorBeta0Target") select _rotorIndex, _beta0Raw, _bladeAlpha] call BIS_fnc_lerp };
 private _a1Target    = if (_isTeetering) then { _a1Raw    } else { [(_heli getVariable "bmkhs_rotorA1Target")    select _rotorIndex, _a1Raw,    _bladeAlpha] call BIS_fnc_lerp };
 private _b1Target    = if (_isTeetering) then { _b1Raw    } else { [(_heli getVariable "bmkhs_rotorB1Target")    select _rotorIndex, _b1Raw,    _bladeAlpha] call BIS_fnc_lerp };
-[_heli, "bmkhs_rotorBeta0Target", _rotorIndex, _beta0Target] call fza_fnc_setArrayVariable;
-[_heli, "bmkhs_rotorA1Target",    _rotorIndex, _a1Target]    call fza_fnc_setArrayVariable;
-[_heli, "bmkhs_rotorB1Target",    _rotorIndex, _b1Target]    call fza_fnc_setArrayVariable;
+[_heli, "bmkhs_rotorBeta0Target", _rotorIndex, _beta0Target] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_rotorA1Target",    _rotorIndex, _a1Target]    call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_rotorB1Target",    _rotorIndex, _b1Target]    call bmkhs_fnc_setArrayVariable;
 
 // Main disc tilt filter — physical lag representing rotor disc inertia
 // Tail rotor has no flapping hinge — all flap coefficients are zero
@@ -82,8 +82,8 @@ private _b1Target    = if (_isTeetering) then { _b1Raw    } else { [(_heli getVa
 private _beta0 = if (_type == TAIL || _isTeetering) then { 0.0                                                                                                                                    } else { [(_heli getVariable "bmkhs_rotorBeta0") select _rotorIndex, _beta0Target, (_deltaTime / _flapTimeConstPitch)] call BIS_fnc_lerp };
 private _a1    = if (_type == TAIL)                  then { 0.0                                                                                                                                    } else { if (_isTeetering) then { _a1Target } else { [(_heli getVariable "bmkhs_rotorA1") select _rotorIndex, _a1Target, (_deltaTime / _flapTimeConstPitch)] call BIS_fnc_lerp } };
 private _b1    = if (_type == TAIL)                  then { 0.0                                                                                                                                    } else { if (_isTeetering) then { _b1Target } else { [(_heli getVariable "bmkhs_rotorB1") select _rotorIndex, _b1Target, (_deltaTime / _flapTimeConstRoll)]  call BIS_fnc_lerp } };
-[_heli, "bmkhs_rotorBeta0", _rotorIndex, _beta0] call fza_fnc_setArrayVariable;
-[_heli, "bmkhs_rotorA1",    _rotorIndex, _a1]    call fza_fnc_setArrayVariable;
-[_heli, "bmkhs_rotorB1",    _rotorIndex, _b1]    call fza_fnc_setArrayVariable;
+[_heli, "bmkhs_rotorBeta0", _rotorIndex, _beta0] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_rotorA1",    _rotorIndex, _a1]    call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_rotorB1",    _rotorIndex, _b1]    call bmkhs_fnc_setArrayVariable;
 
 [_beta0, _a1, _b1]

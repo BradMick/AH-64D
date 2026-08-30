@@ -189,9 +189,9 @@ if (_active) then {
     private _attPitchOut = 0.0;
     private _attRollOut  = 0.0;
     if (_wAtt > 0.0) then {
-        _attPitchOut = [_pidAutoPitch, _deltaTime, _pitchTarget, _curPitch] call fza_fnc_pidRun;
+        _attPitchOut = [_pidAutoPitch, _deltaTime, _pitchTarget, _curPitch] call bmkhs_fnc_pidRun;
         _attPitchOut = -([_attPitchOut, -1.0, 1.0] call BIS_fnc_clamp);
-        _attRollOut  = [_pidAutoRoll,  _deltaTime, _rollTarget,  _curRoll]  call fza_fnc_pidRun;
+        _attRollOut  = [_pidAutoRoll,  _deltaTime, _rollTarget,  _curRoll]  call bmkhs_fnc_pidRun;
         _attRollOut  = -([_attRollOut,  -1.0, 1.0] call BIS_fnc_clamp);
     } else {
         //Not in cruise: slave the target to actual and hold the PIDs reset.
@@ -199,8 +199,8 @@ if (_active) then {
         _rollTarget  = _curRoll;
         _heli setVariable ["bmkhs_prestonPitchTarget", _pitchTarget];
         _heli setVariable ["bmkhs_prestonRollTarget",  _rollTarget];
-        [_pidAutoPitch] call fza_fnc_pidReset;
-        [_pidAutoRoll]  call fza_fnc_pidReset;
+        [_pidAutoPitch] call bmkhs_fnc_pidReset;
+        [_pidAutoRoll]  call bmkhs_fnc_pidReset;
     };
 
     //VEL REGIME (transition) - ROLL nulls lateral ground velocity, PITCH holds forward velocity.
@@ -237,13 +237,13 @@ if (_active) then {
         private _vLeadY = [(_heli getVariable ["bmkhs_accelY", 0.0]) * AUTO_ATT_ACCEL_LEAD,
                            -AUTO_ATT_ACCEL_LEAD_CLAMP, AUTO_ATT_ACCEL_LEAD_CLAMP] call BIS_fnc_clamp;
 
-        _velRollOut  = [_pidVelX, _deltaTime, ( _velCmdLat), (-(_velX + _vLeadX))] call fza_fnc_pidRun;
+        _velRollOut  = [_pidVelX, _deltaTime, ( _velCmdLat), (-(_velX + _vLeadX))] call bmkhs_fnc_pidRun;
         _velRollOut  = [_velRollOut,  -1.0, 1.0] call BIS_fnc_clamp;
-        _velPitchOut = [_pidVelY, _deltaTime, ( _velCmdFwd), ( _velY + _vLeadY)] call fza_fnc_pidRun;
+        _velPitchOut = [_pidVelY, _deltaTime, ( _velCmdFwd), ( _velY + _vLeadY)] call bmkhs_fnc_pidRun;
         _velPitchOut = [_velPitchOut, -1.0, 1.0] call BIS_fnc_clamp;
     } else {
-        [_heli getVariable "bmkhs_pid_prestonVelX"] call fza_fnc_pidReset;
-        [_heli getVariable "bmkhs_pid_prestonVelY"] call fza_fnc_pidReset;
+        [_heli getVariable "bmkhs_pid_prestonVelX"] call bmkhs_fnc_pidReset;
+        [_heli getVariable "bmkhs_pid_prestonVelY"] call bmkhs_fnc_pidReset;
         //Seed the commanded forward velocity to actual, so entering VEL from either side starts
         //from what the aircraft is already doing instead of snapping to a stale command.
         _heli setVariable ["bmkhs_prestonVelCmdFwd", _velY];
@@ -338,9 +338,9 @@ if (_active) then {
         private _predVelX = _velX + _leadX;
         private _predVelY = _velY + _leadY;
 
-        _hovRollOut  = [_pidHovX, _deltaTime, ( _setVelX), (-_predVelX)] call fza_fnc_pidRun;
+        _hovRollOut  = [_pidHovX, _deltaTime, ( _setVelX), (-_predVelX)] call bmkhs_fnc_pidRun;
         _hovRollOut  = [_hovRollOut,  -1.0, 1.0] call BIS_fnc_clamp;
-        _hovPitchOut = [_pidHovY, _deltaTime, ( _setVelY), ( _predVelY)] call fza_fnc_pidRun;
+        _hovPitchOut = [_pidHovY, _deltaTime, ( _setVelY), ( _predVelY)] call bmkhs_fnc_pidRun;
         _hovPitchOut = [_hovPitchOut, -1.0, 1.0] call BIS_fnc_clamp;
 
         //LEARN the converged integral while the hover is genuinely settled, so the next entry (and
@@ -380,8 +380,8 @@ if (_active) then {
         //the integral.
         private _pidHovXr = _heli getVariable "bmkhs_pid_prestonHoverX";
         private _pidHovYr = _heli getVariable "bmkhs_pid_prestonHoverY";
-        [_pidHovXr] call fza_fnc_pidReset;
-        [_pidHovYr] call fza_fnc_pidReset;
+        [_pidHovXr] call bmkhs_fnc_pidReset;
+        [_pidHovYr] call bmkhs_fnc_pidReset;
 
         private _kiX = _pidHovXr get "ki";
         private _kiY = _pidHovYr get "ki";

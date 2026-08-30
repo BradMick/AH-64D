@@ -40,10 +40,10 @@ private _rotorAzimuth = (_heli animationSourcePhase _animSource) * 360.0 * (if (
 if (_heli getHitPointDamage _hitPoint < _dmgThreshold && currentPilot _heli == player) then {
 
 // Reset accumulators before blade loop
-[_heli, "bmkhs_rotorReactionTorque", _rotorIndex, 0.0] call fza_fnc_setArrayVariable;
-[_heli, "bmkhs_rotorThrustAccum",    _rotorIndex, 0.0] call fza_fnc_setArrayVariable;
+[_heli, "bmkhs_rotorReactionTorque", _rotorIndex, 0.0] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_rotorThrustAccum",    _rotorIndex, 0.0] call bmkhs_fnc_setArrayVariable;
 for "_ei" from 0 to (_numElements - 1) do {
-    [_heli, "bmkhs_rotorInducedFlowAccum", _rotorIndex, _ei, 0.0] call fza_fnc_setMultiArrayVariable;
+    [_heli, "bmkhs_rotorInducedFlowAccum", _rotorIndex, _ei, 0.0] call bmkhs_fnc_setMultiArrayVariable;
 };
 
 // Blade flapping dynamics
@@ -103,7 +103,7 @@ for "_bladeIndex" from 0 to (_numBlades - 1) do {
 	private _f_rootTrailingEdge = _a_rootPos vectorDiff ([_chordDir vectorMultiply (_bladeChord * 0.75), _bladeDir, -(_featherAngle + _rootIncidence)]              call bmkhs_fnc_vectorRotateAroundAxis);
 
 	// Store this blade's azimuth so the decomposition next frame uses the correct position
-	[_heli, "bmkhs_rotorBladeAzimuth", _rotorIndex, _bladeIndex, _psi] call fza_fnc_setMultiArrayVariable;
+	[_heli, "bmkhs_rotorBladeAzimuth", _rotorIndex, _bladeIndex, _psi] call bmkhs_fnc_setMultiArrayVariable;
 
 	[ _heli
 	, _bladeIndex
@@ -126,11 +126,11 @@ for "_bladeIndex" from 0 to (_numBlades - 1) do {
 	, _f_rootTrailingEdge ] call bmkhs_fnc_rotorBlade;
 
 	if (BMKHS_FM_DEBUG) then {
-	[_heli, _a_rootPos,          _b_tipPos,            "blue"]  call fza_fnc_debugDrawLine;
-	[_heli, _c_rootLeadingEdge,  _d_tipLeadingEdge,    "red"]   call fza_fnc_debugDrawLine;
-	[_heli, _d_tipLeadingEdge,   _e_tipTrailingEdge,   "white"] call fza_fnc_debugDrawLine;
-	[_heli, _e_tipTrailingEdge,  _f_rootTrailingEdge,  "white"] call fza_fnc_debugDrawLine;
-	[_heli, _f_rootTrailingEdge, _c_rootLeadingEdge,   "white"] call fza_fnc_debugDrawLine;
+	[_heli, _a_rootPos,          _b_tipPos,            "blue"]  call bmkhs_fnc_debugDrawLine;
+	[_heli, _c_rootLeadingEdge,  _d_tipLeadingEdge,    "red"]   call bmkhs_fnc_debugDrawLine;
+	[_heli, _d_tipLeadingEdge,   _e_tipTrailingEdge,   "white"] call bmkhs_fnc_debugDrawLine;
+	[_heli, _e_tipTrailingEdge,  _f_rootTrailingEdge,  "white"] call bmkhs_fnc_debugDrawLine;
+	[_heli, _f_rootTrailingEdge, _c_rootLeadingEdge,   "white"] call bmkhs_fnc_debugDrawLine;
 	};
 };
 
@@ -147,7 +147,7 @@ for "_ei" from 0 to (_numElements - 1) do {
     private _viRawAvg = _viAccum select _ei;
     private _viPrev   = ((_heli getVariable "bmkhs_rotorInducedFlow") select _rotorIndex) select _ei;
     private _viNext   = [_viPrev, _viRawAvg, _inflowAlpha] call BIS_fnc_lerp;
-    [_heli, "bmkhs_rotorInducedFlow", _rotorIndex, _ei, _viNext] call fza_fnc_setMultiArrayVariable;
+    [_heli, "bmkhs_rotorInducedFlow", _rotorIndex, _ei, _viNext] call bmkhs_fnc_setMultiArrayVariable;
 };
 
 // Convert accumulated blade power to rotor shaft torque (Q = P / omega),
@@ -174,16 +174,16 @@ if (_type == MAIN) then {
 private _tqSmoothed     = (_heli getVariable ["bmkhs_reqEngTorque", [0.0, 0.0]]) select _rotorIndex;
 private _tqAlpha        = 1.0 - exp (-_deltaTime / 0.1);
 _tqSmoothed             = _tqSmoothed + (_reqEngTorque - _tqSmoothed) * _tqAlpha;
-[_heli, "bmkhs_reqEngTorque", _rotorIndex, _tqSmoothed, true] call fza_fnc_setArrayVariable;
+[_heli, "bmkhs_reqEngTorque", _rotorIndex, _tqSmoothed, true] call bmkhs_fnc_setArrayVariable;
 
 private _rotorThrust = (_heli getVariable "bmkhs_rotorThrustAccum") select _rotorIndex;
-[_heli, "bmkhs_rtrThrust", _rotorIndex, _rotorThrust, true] call fza_fnc_setArrayVariable;
+[_heli, "bmkhs_rtrThrust", _rotorIndex, _rotorThrust, true] call bmkhs_fnc_setArrayVariable;
 
 private _Icm  = (1.0 / 3.0) * _bladeMass * (_bladeLength * _bladeLength);
 private _Iy   = (1.0 / 12.0) * _bladeMass * (_bladeChord * _bladeChord);
 private _Itot = _Icm;
 private _Jtot = (_Iy + _Itot) * _numBlades;
-[_heli, "bmkhs_rtrMoi", _rotorIndex, _Jtot, true] call fza_fnc_setArrayVariable;
+[_heli, "bmkhs_rtrMoi", _rotorIndex, _Jtot, true] call bmkhs_fnc_setArrayVariable;
 
 // Apply rotor drag torque reaction to fuselage — main rotor only.
 // Use the smoothed value so BET noise doesn't shake the airframe.
@@ -194,7 +194,7 @@ if (_type == MAIN) then {
     //engine load (_totalPower stays physics-true). Airspeed-banded; 1.0 = pure physics. Lets the
     private _velBet   = vectorMagnitude [(_heli getVariable "bmkhs_velModelSpace" select 0), (_heli getVariable "bmkhs_velModelSpace" select 1)];
     private _torqTbl  = [];
-    private _torqueScale = if (_torqTbl isEqualTo []) then { 1.0 } else { [_torqTbl, _velBet] call fza_fnc_linearInterp select 1 };
+    private _torqueScale = if (_torqTbl isEqualTo []) then { 1.0 } else { [_torqTbl, _velBet] call bmkhs_fnc_linearInterp select 1 };
     _reactionMoment = _uVec vectorMultiply (_tqSmoothed * _gearRatio * _torqueSign * _deltaTime * _torqueScale);
     _heli addTorque (_heli vectorModelToWorld _reactionMoment);
 };
@@ -202,8 +202,8 @@ if (_type == MAIN) then {
 }; // end damage check
 
 if (BMKHS_FM_DEBUG) then {
-[_heli, _pivot, _pos,                 "white"] call fza_fnc_debugDrawLine;
-[_heli, _pos,   _pos vectorAdd _fVec, "green"] call fza_fnc_debugDrawLine;
-[_heli, _pos,   _pos vectorAdd _rVec, "red"]   call fza_fnc_debugDrawLine;
-[_heli, _pos,   _pos vectorAdd _uVec, "blue"]  call fza_fnc_debugDrawLine;
+[_heli, _pivot, _pos,                 "white"] call bmkhs_fnc_debugDrawLine;
+[_heli, _pos,   _pos vectorAdd _fVec, "green"] call bmkhs_fnc_debugDrawLine;
+[_heli, _pos,   _pos vectorAdd _rVec, "red"]   call bmkhs_fnc_debugDrawLine;
+[_heli, _pos,   _pos vectorAdd _uVec, "blue"]  call bmkhs_fnc_debugDrawLine;
 };
