@@ -124,6 +124,33 @@ _heli setVariable ["bmkhs_ngbMaxTqLimit",     getNumber (_config >> "ngbMaxTqLim
 _heli setVariable ["bmkhs_xmsnContTqLimit",   getNumber (_config >> "xmsnContTqLimit")];
 _heli setVariable ["bmkhs_xmsnTransTqLimit",  getNumber (_config >> "xmsnTransTqLimit")];
 _heli setVariable ["bmkhs_xmsnTransTimer",    getNumber (_config >> "xmsnTransTimer")];
+//BET rotor - per-rotor arrays, index 0 = main, 1 = tail
+_heli setVariable ["bmkhs_numRotors",          getNumber (_config >> "numRotors")];
+_heli setVariable ["bmkhs_rotorType",          getArray  (_config >> "rotorType")];
+_heli setVariable ["bmkhs_rotorDirection",     getArray  (_config >> "rotorDirection")];
+_heli setVariable ["bmkhs_rotorNumBlades",     getArray  (_config >> "rotorNumBlades")];
+_heli setVariable ["bmkhs_rotorNumElements",   getArray  (_config >> "rotorNumElements")];
+_heli setVariable ["bmkhs_rotorMastLength",    getArray  (_config >> "rotorMastLength")];
+_heli setVariable ["bmkhs_rotorGearRatioArr",  getArray  (_config >> "rotorGearRatio")];
+_heli setVariable ["bmkhs_rotorAirfoil",       getArray  (_config >> "rotorAirfoil")];
+_heli setVariable ["bmkhs_rotorBladeCutout",   getArray  (_config >> "rotorBladeCutout")];
+_heli setVariable ["bmkhs_rotorBladeLength",   getArray  (_config >> "rotorBladeLength")];
+_heli setVariable ["bmkhs_rotorBladeChordArr", getArray  (_config >> "rotorBladeChord")];
+_heli setVariable ["bmkhs_rotorBladeTwist",    getArray  (_config >> "rotorBladeTwist")];
+_heli setVariable ["bmkhs_rotorBladeMassArr",  getArray  (_config >> "rotorBladeMass")];
+_heli setVariable ["bmkhs_rotorDelta3",        getArray  (_config >> "rotorDelta3")];
+_heli setVariable ["bmkhs_rotorPitchMin",      getArray  (_config >> "rotorPitchMin")];
+_heli setVariable ["bmkhs_rotorPitchMid",      getArray  (_config >> "rotorPitchMid")];
+_heli setVariable ["bmkhs_rotorPitchMax",      getArray  (_config >> "rotorPitchMax")];
+_heli setVariable ["bmkhs_rotorRollMin",       getArray  (_config >> "rotorRollMin")];
+_heli setVariable ["bmkhs_rotorRollMid",       getArray  (_config >> "rotorRollMid")];
+_heli setVariable ["bmkhs_rotorRollMax",       getArray  (_config >> "rotorRollMax")];
+_heli setVariable ["bmkhs_rotorCollMin",       getArray  (_config >> "rotorCollMin")];
+_heli setVariable ["bmkhs_rotorCollMid",       getArray  (_config >> "rotorCollMid")];
+_heli setVariable ["bmkhs_rotorCollMax",       getArray  (_config >> "rotorCollMax")];
+_heli setVariable ["bmkhs_rotorAnimSource",    getArray  (_config >> "rotorAnimSource")];
+_heli setVariable ["bmkhs_rotorHitPoint",      getArray  (_config >> "rotorHitPoint")];
+
 //Rotor geometry
 _heli setVariable ["bmkhs_mainRtrPos",          getArray  (_config >> "mainRtrPos")];
 _heli setVariable ["bmkhs_mainRtrHeightAgl",    getNumber (_config >> "mainRtrHeightAgl")];

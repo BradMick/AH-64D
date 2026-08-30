@@ -1,30 +1,35 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
-// Rotors ///////////////////////////////////////////////////////////////////////////////////
+// Rotors - Blade Element Theory ////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
-//Physical rotor properties. Model shaping - VRS curve, hover/forward gate,
-//airspeed response - stays in Core.
+//Per-rotor arrays, index 0 = main, 1 = tail. Core reads numRotors and loops.
+//Model shaping - inflow, flap dynamics, damping - stays in Core.
 
-    //Main rotor
-    mainRtrPos[]          = {0.0, 2.06, 0.70};  //m, x = right, y = forward, z = up
-    mainRtrHeightAgl      = 3.606;   //m, hub height above ground on the wheels
-    mainRtrDesignRpm      = 289.0;
-    mainRtrRpmTrimVal     = 1.01;
-    mainRtrNumBlades      = 4;
-    mainRtrBladeRadius    = 7.315;   //m
-    mainRtrBladeChord     = 0.533;   //m
-    mainRtrBladeMass      = 72.108;  //kg
-    mainRtrBladeHingeOff  = 0.038;   //fraction of blade radius
-    mainRtrBladePitchMin  = 1.0;     //deg
-    mainRtrBladePitchMax  = 19.0;    //deg
-    mainRtrBaseThrust     = 102306;  //N, max gross weight * g
-    mainRtrGearRatio      = 72.291;  //shared with the transmission model
+    numRotors            = 2;
+    rotorType[]          = {0, 1};          //0 = main, 1 = tail
+    rotorDirection[]     = {0, 0};          //0 = ccw, 1 = cw
+    rotorNumBlades[]     = {4, 4};
+    rotorNumElements[]   = {4.0, 4.0};
+    rotorMastLength[]    = {0.70, -0.87};   //m
+    rotorGearRatio[]     = {72.291, 14.90};
+    rotorAirfoil[]       = {2, 1};          //index into the airfoil tables
+    rotorBladeCutout[]   = {1.15, 0.15};    //m, root cutout
+    rotorBladeLength[]   = {7.315, 1.402};  //m
+    rotorBladeChord[]    = {0.533, 0.253};  //m
+    rotorBladeTwist[]    = {-9, -8};        //deg
+    rotorBladeMass[]     = {72.108, 5.131}; //kg
+    rotorDelta3[]        = {0.5, 0.5};      //pitch-flap coupling
 
-    //Tail rotor
-    tailRtrPos[]          = {-0.87, -6.98, -0.075};  //m
-    tailRtrDesignRpm      = 1403.0;
-    tailRtrRpmTrimVal     = 1.01;
-    tailRtrGearRatio      = 14.90;
-    tailRtrNumBlades      = 4;
-    tailRtrBladeRadius    = 1.402;   //m
-    tailRtrBladeChord     = 0.253;   //m
-    tailRtrBaseThrust     = 10230;   //N
+    //Blade pitch ranges - min / mid / max, deg
+    rotorPitchMin[]      = {-10, 0};
+    rotorPitchMid[]      = {0, 0};
+    rotorPitchMax[]      = {20, 0};
+    rotorRollMin[]       = {-10.5, 0};
+    rotorRollMid[]       = {0, 0};
+    rotorRollMax[]       = {7, 0};
+    rotorCollMin[]       = {1, -15};
+    rotorCollMid[]       = {0, 0};
+    rotorCollMax[]       = {19, 27};
+
+    //Model bindings - the aircraft must provide these selections
+    rotorAnimSource[]    = {"rotorH", "rotorV"};
+    rotorHitPoint[]      = {"hithrotor", "hitvrotor"};

@@ -16,55 +16,36 @@ private _type          = [ MAIN
                          , TAIL];
 private _dir           = [ CCW
                          , CCW];
-private _numBlades     = [ 4
-                         , 4];
-private _numElements   = [ 4.0
-                         , 4.0];
-private _mastLength    = [ 0.70
-                         ,-0.87];
-private _gearRatio     = [ 72.291
-                         , 14.90];
+private _numBlades     = _heli getVariable "bmkhs_rotorNumBlades";
+private _numElements   = _heli getVariable "bmkhs_rotorNumElements";
+private _mastLength    = _heli getVariable "bmkhs_rotorMastLength";
+private _gearRatio     = _heli getVariable "bmkhs_rotorGearRatioArr";
 private _flapTimeConst = [ [2.0, 3.0]
                          , [0.5, 0.5]];
-private _inflowAlpha   = [ 0.05
-                         , 0.01];
-private _delta3        = [ 0.5
-                         , 0.5];
+private _inflowAlpha   = [0.05, 0.01];
+private _delta3        = _heli getVariable "bmkhs_rotorDelta3";
 private _airfoilTable  = [ getArray (_sfmPlusConfig >> "airfoilTable02")
                          , getArray (_sfmPlusConfig >> "airfoilTable01")];
-private _bladeCutout   = [ 1.15
-                         , 0.15];
-private _bladeLength   = [ 7.315
-                         , 1.402];
-private _bladeChord    = [ 0.533
-                         , 0.253];
-private _bladeTwist    = [ -9
-                         , -8];
-private _bladeMass     = [ 72.108
-                         , 5.131];
+private _bladeCutout   = _heli getVariable "bmkhs_rotorBladeCutout";
+private _bladeLength   = _heli getVariable "bmkhs_rotorBladeLength";
+private _bladeChord    = _heli getVariable "bmkhs_rotorBladeChordArr";
+private _bladeTwist    = _heli getVariable "bmkhs_rotorBladeTwist";
+private _bladeMass     = _heli getVariable "bmkhs_rotorBladeMassArr";
 
-private _pitchMin      = [ -10
-                         ,   0];
+private _pitchMin      = _heli getVariable "bmkhs_rotorPitchMin";
 private _pitchMid      = [  0
                          ,  0];
-private _pitchMax      = [ 20
-                         ,  0];
-private _rollMin       = [ -10.5
-                         ,    0];
+private _pitchMax      = _heli getVariable "bmkhs_rotorPitchMax";
+private _rollMin       = _heli getVariable "bmkhs_rotorRollMin";
 private _rollMid       = [  0
                          ,  0];
-private _rollMax       = [  7
-                         ,  0];
-private _collMin       = [  1
-                         , -15];
+private _rollMax       = _heli getVariable "bmkhs_rotorRollMax";
+private _collMin       = _heli getVariable "bmkhs_rotorCollMin";
 private _collMid       = [  0
                          ,  0];
-private _collMax       = [ 19
-                         , 27];
-private _animSource    = [ "rotorH"
-                         , "rotorV"];
-private _hitPoint      = [ "hithrotor"
-                         , "hitvrotor"];
+private _collMax       = _heli getVariable "bmkhs_rotorCollMax";
+private _animSource    = _heli getVariable "bmkhs_rotorAnimSource";
+private _hitPoint      = _heli getVariable "bmkhs_rotorHitPoint";
 private _dmgThreshold  = [ 0.99
                          , 0.85];
 
