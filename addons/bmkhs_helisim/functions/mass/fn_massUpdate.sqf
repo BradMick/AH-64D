@@ -21,21 +21,21 @@ params ["_heli"];
 
 if (!local _heli) exitWith {};
 
-private _fs0            = 6.4;
+private _fs0            = _heli getVariable "bmkhs_fsDatum";
 
-private _fwdCg          = 1.117;
-private _aftCg          = 0.964;
+private _fwdCg          = _heli getVariable "bmkhs_fwdCgLimit";
+private _aftCg          = _heli getVariable "bmkhs_aftCgLimit";
 
-private _armCPG         = [ 0.000, 4.312];
-private _armPLT         = [ 0.000, 2.760];
-private _armFwdFuelCell = [ 0.000, 2.542];
-private _armAmmoBay     = [ 0.000, 0.944];
-private _armAftFuelCell = [ 0.000,-0.077];
+private _armCPG         = _heli getVariable "bmkhs_armCpg";
+private _armPLT         = _heli getVariable "bmkhs_armPlt";
+private _armFwdFuelCell = _heli getVariable "bmkhs_armFwdFuelCell";
+private _armAmmoBay     = _heli getVariable "bmkhs_armAmmoBay";
+private _armAftFuelCell = _heli getVariable "bmkhs_armAftFuelCell";
 
-private _armStation01   = [-2.160, 1.345];
-private _armStation02   = [-1.500, 1.345];
-private _armStation03   = [ 1.500, 1.345];
-private _armStation04   = [ 2.160, 1.345];
+private _armStation01   = _heli getVariable "bmkhs_armStation01";
+private _armStation02   = _heli getVariable "bmkhs_armStation02";
+private _armStation03   = _heli getVariable "bmkhs_armStation03";
+private _armStation04   = _heli getVariable "bmkhs_armStation04";
 
 private _curMass   = 0;
 private _curMom    = 0;
@@ -50,10 +50,10 @@ if (_heli animationPhase "fcr_enable" == 1) then {
     _emptyMom  = (_emptyMass * _fs0) - (_heli getVariable "bmkhs_emptyMomNonFCR");
 };
 
-private _cpgMass     = 113.4;   //kg - 250lbs
+private _cpgMass     = _heli getVariable "bmkhs_crewMass";
 private _cpgMom      = _cpgMass * (_armCPG select 1);
 
-private _pltMass     = 113.4;   //kg - 250lbs
+private _pltMass     = _heli getVariable "bmkhs_crewMass";
 private _pltMom      = _pltMass * (_armPLT select 1);
 
 private _crewMass    = _cpgMass + _pltMass;//(count (fullcrew _heli)) * 113.4; //kg - 250lbs per individual

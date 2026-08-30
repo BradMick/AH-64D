@@ -135,6 +135,21 @@ _heli setVariable ["bmkhs_armStation02",   getArray  (_config >> "armStation02")
 _heli setVariable ["bmkhs_armStation03",   getArray  (_config >> "armStation03")];
 _heli setVariable ["bmkhs_armStation04",   getArray  (_config >> "armStation04")];
 
+//Mass and balance - datum, CG limits, crew mass and station arms
+_heli setVariable ["bmkhs_fsDatum",        getNumber (_config >> "fsDatum")];
+_heli setVariable ["bmkhs_fwdCgLimit",     getNumber (_config >> "fwdCgLimit")];
+_heli setVariable ["bmkhs_aftCgLimit",     getNumber (_config >> "aftCgLimit")];
+_heli setVariable ["bmkhs_crewMass",       getNumber (_config >> "crewMass")];
+_heli setVariable ["bmkhs_armCpg",         getArray  (_config >> "armCpg")];
+_heli setVariable ["bmkhs_armPlt",         getArray  (_config >> "armPlt")];
+_heli setVariable ["bmkhs_armFwdFuelCell", getArray  (_config >> "armFwdFuelCell")];
+_heli setVariable ["bmkhs_armAmmoBay",     getArray  (_config >> "armAmmoBay")];
+_heli setVariable ["bmkhs_armAftFuelCell", getArray  (_config >> "armAftFuelCell")];
+_heli setVariable ["bmkhs_armStation01",   getArray  (_config >> "armStation01")];
+_heli setVariable ["bmkhs_armStation02",   getArray  (_config >> "armStation02")];
+_heli setVariable ["bmkhs_armStation03",   getArray  (_config >> "armStation03")];
+_heli setVariable ["bmkhs_armStation04",   getArray  (_config >> "armStation04")];
+
 //Fuel
 _heli setVariable ["bmkhs_fwdFuelLowKg",       getNumber (_config >> "fwdFuelLowKg")];
 _heli setVariable ["bmkhs_aftFuelLowKg",       getNumber (_config >> "aftFuelLowKg")];
