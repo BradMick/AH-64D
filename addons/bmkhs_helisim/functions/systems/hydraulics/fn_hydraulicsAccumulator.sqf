@@ -27,14 +27,14 @@ private _accHydPSI     = _heli getVariable "bmkhs_accHydPsi";
 private _emerHydOn     = _heli getVariable "bmkhs_emerHydOn";
 private _accTimer      = _heli getVariable "bmkhs_accTimer";
 
-if (_priHydPSI < SYS_MIN_HYD_PSI && _utilHydPSI < SYS_MIN_HYD_PSI) then {
+if (_priHydPSI < (_heli getVariable "bmkhs_hydMinPsi") && _utilHydPSI < (_heli getVariable "bmkhs_hydMinPsi")) then {
     if (_emerHydOn) then {
         _accHydPSI_pct = [_accHydPSI_pct, 0.0, (1 / _accTimer) * _deltaTime] call BIS_fnc_lerp;
     };
 };
 _accHydPSI = _accHydPSI_pct  * 3000.0;
 
-if (_accHydPSI < SYS_MIN_ACC_PSI) then {
+if (_accHydPSI < (_heli getVariable "bmkhs_hydMinAccPsi")) then {
     _emerHydOn         = false;
     _accHydPSI_pct = 0.0;
 };

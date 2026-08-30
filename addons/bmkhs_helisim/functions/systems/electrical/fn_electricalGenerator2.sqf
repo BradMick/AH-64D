@@ -22,7 +22,7 @@ params ["_heli", "_apuOn", "_rtrRPM"];
 private _gen2On  = _heli getVariable "bmkhs_gen2On";
 private _gen2Damage = _heli getHitPointDamage "hit_elec_generator2";
 
-if (_apuOn || _rtrRPM > SYS_MIN_RPM) then {
+if (_apuOn || _rtrRPM > (_heli getVariable "bmkhs_minRotorRpmPct")) then {
     //Generator 2
     if (_gen2Damage <= SYS_GEN_DMG_THRESH) then {
         _gen2On = true;

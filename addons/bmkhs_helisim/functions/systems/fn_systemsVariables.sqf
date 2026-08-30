@@ -53,18 +53,17 @@ if (!(_heli getVariable ["bmkhs_systemsInitialised", false]) && local _heli) the
     _heli setVariable ["bmkhs_accHydPSI_pct",     1.0, true];
 };
 
-_heli setVariable ["bmkhs_apuStartDelay",     5.0];
 _heli setVariable ["bmkhs_apuFF_kgs",         0.0];
 _heli setVariable ["bmkhs_priHydPsi",         1.0];
 _heli setVariable ["bmkhs_utilHydPsi",        1.0];
 _heli setVariable ["bmkhs_dmgTimerCont",      0.0];
 _heli setVariable ["bmkhs_dmgTimerTrans",     0.0];
 _heli setVariable ["bmkhs_accHydPsi",         0.0];
-private _battTime = SYS_BATT_TIMER * 60;
+private _battTime = (_heli getVariable "bmkhs_elecBattTimerMin") * 60;
 _heli setVariable ["bmkhs_battTimer",         _battTime];
-private _leakTimer = SYS_LEAK_TIMER * 60;
+private _leakTimer = (_heli getVariable "bmkhs_hydLeakTimerMin") * 60;
 _heli setVariable ["bmkhs_hydLeakTimer",      _leakTimer];
-private _accTime = SYS_ACC_TIMER * 60;
+private _accTime = (_heli getVariable "bmkhs_hydAccTimerMin") * 60;
 _heli setVariable ["bmkhs_accTimer",          _accTime];
 
 _heli setVariable ["bmkhs_emerHydOn",         false, true];

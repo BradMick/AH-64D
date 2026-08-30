@@ -53,10 +53,10 @@ private _yawBreakout        = false;
 private _kbPedalLeftRight   = _heli getVariable "bmkhs_kbPedalLeftRight";
 
 private _priHydPumpDamage   = _heli getHitPointDamage "hit_hyd_pripump";
-private _priHydPSI          = _heli getVariable ["bmkhs_priHydPsi", SYS_MIN_HYD_PSI];
+private _priHydPSI          = _heli getVariable ["bmkhs_priHydPsi", (_heli getVariable "bmkhs_hydMinPsi")];
 
 private _utilHydPumpDamage  = _heli getHitPointDamage "hit_hyd_utilpump";
-private _utilHydPSI         = _heli getVariable ["bmkhs_utilHydPsi", SYS_MIN_HYD_PSI];
+private _utilHydPSI         = _heli getVariable ["bmkhs_utilHydPsi", (_heli getVariable "bmkhs_hydMinPsi")];
 private _utilLevel_pct      = _heli getVariable ["bmkhs_utilLevel_pct", 1.0];
 
 private _emerHydOn          = _heli getVariable "bmkhs_emerHydOn";
@@ -194,11 +194,11 @@ private _keyCollectiveDn = _heli getVariable "bmkhs_kbHeliCollectiveLowerOut";
 private _joyCollectiveUp = _heli getVariable "bmkhs_heliCollectiveRaiseOut";
 private _joyCollectiveDn = _heli getVariable "bmkhs_heliCollectiveLowerOut";
 
-if (_priHydPSI < SYS_MIN_HYD_PSI && _utilHydPSI < SYS_MIN_HYD_PSI) then {
+if (_priHydPSI < (_heli getVariable "bmkhs_hydMinPsi") && _utilHydPSI < (_heli getVariable "bmkhs_hydMinPsi")) then {
     _hydFailure = true;
 };
 
-if (_priHydPSI < SYS_MIN_HYD_PSI && _utilLevel_pct < SYS_HYD_MIN_LVL) then {
+if (_priHydPSI < (_heli getVariable "bmkhs_hydMinPsi") && _utilLevel_pct < (_heli getVariable "bmkhs_hydMinLevel")) then {
     _tailRtrFixed = true;
 };
 

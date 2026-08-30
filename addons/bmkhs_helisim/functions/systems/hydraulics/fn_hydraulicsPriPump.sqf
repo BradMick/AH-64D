@@ -30,7 +30,7 @@ if (_priHydPumpDamage > SYS_HYD_DMG_THRESH) then {
 };
 _priHydPSI  = _priHydPSI_pct  * 3000.0;
 
-if (_priHydPSI < SYS_MIN_HYD_PSI) then {
+if (_priHydPSI < (_heli getVariable "bmkhs_hydMinPsi")) then {
     //CALL WCA here
 };
 

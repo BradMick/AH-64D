@@ -102,6 +102,19 @@ _heli setVariable ["bmkhs_accelZ",            0.0];
 _heli setVariable ["bmkhs_accelZ_avg",        [bmkhs_movingAverageSize] call bmkhs_fnc_smoothAverageInit];
 
 
+//Systems tuning - the aircraft supplies these, Core keeps damage thresholds fixed
+_heli setVariable ["bmkhs_hydMinPsi",       getNumber (_config >> "hydMinPsi")];
+_heli setVariable ["bmkhs_hydMinAccPsi",    getNumber (_config >> "hydMinAccPsi")];
+_heli setVariable ["bmkhs_hydMinLevel",     getNumber (_config >> "hydMinLevel")];
+_heli setVariable ["bmkhs_hydResMinDmg",    getNumber (_config >> "hydResMinDmg")];
+_heli setVariable ["bmkhs_hydResModDmg",    getNumber (_config >> "hydResModDmg")];
+_heli setVariable ["bmkhs_hydResHvyDmg",    getNumber (_config >> "hydResHvyDmg")];
+_heli setVariable ["bmkhs_hydAccTimerMin",  getNumber (_config >> "hydAccTimerMin")];
+_heli setVariable ["bmkhs_hydLeakTimerMin", getNumber (_config >> "hydLeakTimerMin")];
+_heli setVariable ["bmkhs_elecBattTimerMin",getNumber (_config >> "elecBattTimerMin")];
+_heli setVariable ["bmkhs_minRotorRpmPct",  getNumber (_config >> "minRotorRpmPct")];
+_heli setVariable ["bmkhs_apuStartDelay",   getNumber (_config >> "apuStartDelay")];
+
 //Subsystem gates - the aircraft config decides which systems Core runs
 _heli setVariable ["bmkhs_useSystems",          getNumber (_config >> "useSystems")          > 0];
 _heli setVariable ["bmkhs_useAPU",              getNumber (_config >> "useAPU")              > 0];
