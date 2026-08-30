@@ -2,7 +2,7 @@ params ["_heli"];
 
 if (currentPilot _heli != player || !local _heli) exitWith {};
 
-private _mainRotorGearRatio = 72.29;
+private _mainRotorGearRatio = _heli getVariable "bmkhs_mainRotorGearRatio";
 private _mainRotorMoi       = _heli getVariable "bmkhs_rtrMoi" select 0;
 private _outputRpm          = _heli getVariable "bmkhs_xmsnOutputRpm";
 private _deltaRpm           = _heli getVariable "bmkhs_xmsnDeltaRpm";

@@ -31,39 +31,43 @@ private _randomTq1     = _heli getVariable "bmkhs_randomTq" select 2;
 private _randomTq2     = _heli getVariable "bmkhs_randomTq" select 3;
 private _applyDamage   = false;
 
+private _contTqLimit      = _heli getVariable "bmkhs_xmsnContTqLimit";
+private _transTqLimit     = _heli getVariable "bmkhs_xmsnTransTqLimit";
+private _transTimerLimit  = _heli getVariable "bmkhs_xmsnTransTimer";
+
 private _persistentDmg    = 0.0;
 private _dynamicDmgStage1 = 0.0;
 private _dynamicDmgStage2 = 0.0;
 private _dynamicDmgStage3 = 0.0;
 
 if (isEngineOn _heli) then {
-    if (_totEngTQ <= 2.0) then {
+    if (_totEngTQ <= _contTqLimit) then {
         _dmgTimerTrans = 0;
         _heli setVariable ["bmkhs_dmgTimerTrans", _dmgTimerTrans];
     };
     //6 sec transient
-        if (_totEngTQ > 2.0 && _totEngTQ <= 2.30) then {
+        if (_totEngTQ > _contTqLimit && _totEngTQ <= _transTqLimit) then {
         _dmgTimerTrans = _dmgTimerTrans + _deltaTime;
 
-        if (_dmgTimerTrans >= 6) then {
-            _dmgTimerTrans = 6;
+        if (_dmgTimerTrans >= _transTimerLimit) then {
+            _dmgTimerTrans = _transTimerLimit;
             _applyDamage = true;
         };
 
         _heli setVariable ["bmkhs_dmgTimerTrans", _dmgTimerTrans];
     };
-    if (_totEngTQ > 2.30) then {
+    if (_totEngTQ > _transTqLimit) then {
         _applyDamage = true;
     };
 };
 
 if (_applyDamage) then {
     //--Dynamic damage
-    if (_totEngTQ > 2.00) then {
-        _dynamicDmgStage1 = (_totEngTQ - 2.00) / 10.0;
+    if (_totEngTQ > _contTqLimit) then {
+        _dynamicDmgStage1 = (_totEngTQ - _contTqLimit) / 10.0;
     };
-    if (_totEngTQ > 2.30) then {
-        _dynamicDmgStage2 = (_totEngTQ - 2.30) / 20.0;
+    if (_totEngTQ > _transTqLimit) then {
+        _dynamicDmgStage2 = (_totEngTQ - _transTqLimit) / 20.0;
     };
 };
 //--Persistent damage

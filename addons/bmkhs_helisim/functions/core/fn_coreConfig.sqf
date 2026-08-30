@@ -115,6 +115,17 @@ _heli setVariable ["bmkhs_elecBattTimerMin",getNumber (_config >> "elecBattTimer
 _heli setVariable ["bmkhs_minRotorRpmPct",  getNumber (_config >> "minRotorRpmPct")];
 _heli setVariable ["bmkhs_apuStartDelay",   getNumber (_config >> "apuStartDelay")];
 
+//Drivetrain torque limits and timers
+_heli setVariable ["bmkhs_ngbContTqLimit",    getNumber (_config >> "ngbContTqLimit")];
+_heli setVariable ["bmkhs_ngbContTimer",      getNumber (_config >> "ngbContTimer")];
+_heli setVariable ["bmkhs_ngbTransTqLimit",   getNumber (_config >> "ngbTransTqLimit")];
+_heli setVariable ["bmkhs_ngbTransTimer",     getNumber (_config >> "ngbTransTimer")];
+_heli setVariable ["bmkhs_ngbMaxTqLimit",     getNumber (_config >> "ngbMaxTqLimit")];
+_heli setVariable ["bmkhs_xmsnContTqLimit",   getNumber (_config >> "xmsnContTqLimit")];
+_heli setVariable ["bmkhs_xmsnTransTqLimit",  getNumber (_config >> "xmsnTransTqLimit")];
+_heli setVariable ["bmkhs_xmsnTransTimer",    getNumber (_config >> "xmsnTransTimer")];
+_heli setVariable ["bmkhs_mainRotorGearRatio",getNumber (_config >> "mainRotorGearRatio")];
+
 //Subsystem gates - the aircraft config decides which systems Core runs
 _heli setVariable ["bmkhs_useSystems",          getNumber (_config >> "useSystems")          > 0];
 _heli setVariable ["bmkhs_useAPU",              getNumber (_config >> "useAPU")              > 0];

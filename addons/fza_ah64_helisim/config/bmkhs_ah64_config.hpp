@@ -17,6 +17,7 @@ class BMKHS_HeliSim {
     #include "helisim_apu.hpp"
     #include "helisim_electrical.hpp"
     #include "helisim_hydraulics.hpp"
+    #include "helisim_drivetrain.hpp"
     #include "helisim_engine.hpp"
     #include "helisim_stabilator.hpp"
     #include "helisim_airfoils.hpp"
