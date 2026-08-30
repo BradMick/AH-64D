@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
-Function: fza_fuel_fnc_fuelVariables
+Function: bmkhs_fnc_fuelVariables
 
 Description:
     Defines the initial performance page variables and initializes them.

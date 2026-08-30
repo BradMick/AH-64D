@@ -33,7 +33,7 @@ Author:
 #include "\fza_ah64_controls\headers\systemConstants.h"
 #include "\bmkhs_helisim\headers\systems.hpp"
 #include "\bmkhs_helisim\headers\core.hpp"
-#include "\fza_ah64_fuel\headers\fuelConstants.hpp"
+#include "\bmkhs_helisim\headers\fuelConstants.hpp"
 #include "\fza_ah64_ase\headers\ase.h"
 
 params ["_heli"];
@@ -537,16 +537,16 @@ if (_onGnd) then {
 };
 
 //Auxilary Fuel tanks
-if (("auxTank" in (_pylonMagazines select 0))  && _auxTank1FuelMass < EXT_EMPTY_ADV_THRESH_KG && (_heli getVariable ["fza_fuel_ext1EmptyArmed", true])) then {
+if (("auxTank" in (_pylonMagazines select 0))  && _auxTank1FuelMass < EXT_EMPTY_ADV_THRESH_KG && (_heli getVariable ["bmkhs_ext1EmptyArmed", true])) then {
     _wcas pushBack [WCA_ADVISORY, "EXTERNAL 1 EMPTY", "EXT1 EMPTY"];
 };
-if (("auxTank" in (_pylonMagazines select 4))  && _auxTank2FuelMass < EXT_EMPTY_ADV_THRESH_KG && (_heli getVariable ["fza_fuel_ext2EmptyArmed", true])) then {
+if (("auxTank" in (_pylonMagazines select 4))  && _auxTank2FuelMass < EXT_EMPTY_ADV_THRESH_KG && (_heli getVariable ["bmkhs_ext2EmptyArmed", true])) then {
     _wcas pushBack [WCA_ADVISORY, "EXTERNAL 2 EMPTY", "EXT2 EMPTY"];
 };
-if (("auxTank" in (_pylonMagazines select 8))  && _auxTank3FuelMass < EXT_EMPTY_ADV_THRESH_KG && (_heli getVariable ["fza_fuel_ext3EmptyArmed", true])) then {
+if (("auxTank" in (_pylonMagazines select 8))  && _auxTank3FuelMass < EXT_EMPTY_ADV_THRESH_KG && (_heli getVariable ["bmkhs_ext3EmptyArmed", true])) then {
     _wcas pushBack [WCA_ADVISORY, "EXTERNAL 3 EMPTY", "EXT3 EMPTY"];
 };
-if (("auxTank" in (_pylonMagazines select 12)) && _auxTank4FuelMass < EXT_EMPTY_ADV_THRESH_KG && (_heli getVariable ["fza_fuel_ext4EmptyArmed", true])) then {
+if (("auxTank" in (_pylonMagazines select 12)) && _auxTank4FuelMass < EXT_EMPTY_ADV_THRESH_KG && (_heli getVariable ["bmkhs_ext4EmptyArmed", true])) then {
     _wcas pushBack [WCA_ADVISORY, "EXTERNAL 4 EMPTY", "EXT4 EMPTY"];
 };
 
@@ -561,7 +561,7 @@ if (!("tsd" in _pltMpd || "tsd" in _cpgMpd) && _wptAprch#1) then {
 if (!("tsd" in _pltMpd || "tsd" in _cpgMpd) && _wptPassed) then {
     _wcas pushBack [WCA_ADVISORY, "WAYPOINT PASSED", "WPT PASSED"];
 };
-if (_heli getVariable ["fza_fuel_checkPendingAdvisory", false]) then {
+if (_heli getVariable ["bmkhs_checkPendingAdvisory", false]) then {
     _wcas pushBack [WCA_ADVISORY, "FUEL CHECK", "FUEL CHECK"];
 };
 _wcas;

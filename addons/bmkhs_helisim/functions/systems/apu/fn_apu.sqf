@@ -26,7 +26,7 @@ private _apuDamage     = _heli getHitPointDamage "hit_apu";
 private _apuStartDelay = _heli getVariable "bmkhs_apuStartDelay";
 private _apuRPM_pct    = _heli getVariable "bmkhs_apuRPM_pct";
 private _apuFF_kgs     = 0.0;
-private _apuFuelAvail  = _heli getVariable ["fza_fuel_apuFuelAvail", true];
+private _apuFuelAvail  = _heli getVariable ["bmkhs_apuFuelAvail", true];
 
 if (_apuBtnOn && _battBusOn && _apuFuelAvail) then {
     _apuRPM_pct = [_apuRPM_pct, 1.0, (1.0 / _apuStartDelay) * _deltaTime] call BIS_fnc_lerp;

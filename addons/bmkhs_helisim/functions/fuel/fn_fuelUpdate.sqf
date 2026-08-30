@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
-Function: fza_fuel_fnc_fuelUpdate
+Function: bmkhs_fnc_fuelUpdate
 
 Description:
     Updates fuel cell masses each tick. Handles independent cell draw based on
@@ -26,7 +26,7 @@ Returns:
 Author:
     BradMick / FZA Development Team
 ---------------------------------------------------------------------------- */
-#include "\fza_ah64_fuel\headers\fuelConstants.hpp"
+#include "\bmkhs_helisim\headers\fuelConstants.hpp"
 params ["_heli"];
 
 private _deltaTime     = _heli getVariable "bmkhs_deltaTime";
@@ -48,7 +48,7 @@ private _armaFuelFrac = fuel _heli;
 private _storedTotFuelMass = _heli getVariable ["bmkhs_totFuelMass", 0];
 private _storedFuelFrac = if (_maxTotFuelMass > 0) then { _storedTotFuelMass / _maxTotFuelMass } else { 0 };
 if (abs (_armaFuelFrac - _storedFuelFrac) > 0.01) then {
-    [_heli] call fza_fuel_fnc_fuelSet;
+    [_heli] call bmkhs_fnc_fuelSet;
     _maxTotFuelMass = _heli getVariable "bmkhs_maxTotFuelMass";
 };
 
@@ -72,7 +72,7 @@ private _eng1On   = (_engState select 0) == "ON";
 private _eng2On   = (_engState select 1) == "ON";
 
 // Crossfeed draw — source-based with starvation
-private _crossfeedMode = _heli getVariable ["fza_fuel_crossfeedMode", "NORM"];
+private _crossfeedMode = _heli getVariable ["bmkhs_crossfeedMode", "NORM"];
 
 private _eng1Req = if (_eng1On) then { _eng1FF_kgs * _deltaTime } else { 0 };
 private _eng2Req = if (_eng2On) then { _eng2FF_kgs * _deltaTime } else { 0 };
@@ -114,7 +114,7 @@ private _aftLow     = _aftFuelMass < AFT_FUEL_LOW_VAL_KG;
 private _apuOn      = _heli getVariable ["bmkhs_apuOn", false];
 private _engBleedOn = _eng1On || _eng2On;
 private _airAvail   = _apuOn || _engBleedOn;
-private _xferMode   = _heli getVariable ["fza_fuel_xferMode", "OFF"];
+private _xferMode   = _heli getVariable ["bmkhs_xferMode", "OFF"];
 private _intercellTransferActive = false;
 private _intercellTransferDir = 0;
 
@@ -198,8 +198,8 @@ if (_doAftToFwd) then {
 };
 
 // IAFS gravity feed — inhibited while any aux tank is transferring
-private _lAuxOn = _heli getVariable ["fza_fuel_lAuxOn", false];
-private _rAuxOn = _heli getVariable ["fza_fuel_rAuxOn", false];
+private _lAuxOn = _heli getVariable ["bmkhs_lAuxOn", false];
+private _rAuxOn = _heli getVariable ["bmkhs_rAuxOn", false];
 
 private _anyAuxTransferring = (_lAuxOn && (_stn1FuelMass > EXT_EMPTY_ADV_THRESH_KG || _stn2FuelMass > EXT_EMPTY_ADV_THRESH_KG)) || (_rAuxOn && (_stn3FuelMass > EXT_EMPTY_ADV_THRESH_KG || _stn4FuelMass > EXT_EMPTY_ADV_THRESH_KG));
 
@@ -311,30 +311,30 @@ private _eng2FuelAvail = (_eng2Req <= _eps) || ([_aftFuelAvailLastFrame, _fwdFue
 private _apuFuelAvail  = (_apuReq  <= _eps) || _aftFuelAvailLastFrame;
 
 // 2-second starvation grace period
-private _eng1StarvedSince = _heli getVariable ["fza_fuel_eng1StarvedSince", -1];
+private _eng1StarvedSince = _heli getVariable ["bmkhs_eng1StarvedSince", -1];
 if (!_eng1FuelAvail) then {
-    if (_eng1StarvedSince < 0) then { _eng1StarvedSince = CBA_missionTime; _heli setVariable ["fza_fuel_eng1StarvedSince", _eng1StarvedSince]; };
+    if (_eng1StarvedSince < 0) then { _eng1StarvedSince = CBA_missionTime; _heli setVariable ["bmkhs_eng1StarvedSince", _eng1StarvedSince]; };
     _eng1FuelAvail = (CBA_missionTime - _eng1StarvedSince) < 2;
-} else { _heli setVariable ["fza_fuel_eng1StarvedSince", -1]; };
+} else { _heli setVariable ["bmkhs_eng1StarvedSince", -1]; };
 
-private _eng2StarvedSince = _heli getVariable ["fza_fuel_eng2StarvedSince", -1];
+private _eng2StarvedSince = _heli getVariable ["bmkhs_eng2StarvedSince", -1];
 if (!_eng2FuelAvail) then {
-    if (_eng2StarvedSince < 0) then { _eng2StarvedSince = CBA_missionTime; _heli setVariable ["fza_fuel_eng2StarvedSince", _eng2StarvedSince]; };
+    if (_eng2StarvedSince < 0) then { _eng2StarvedSince = CBA_missionTime; _heli setVariable ["bmkhs_eng2StarvedSince", _eng2StarvedSince]; };
     _eng2FuelAvail = (CBA_missionTime - _eng2StarvedSince) < 2;
-} else { _heli setVariable ["fza_fuel_eng2StarvedSince", -1]; };
+} else { _heli setVariable ["bmkhs_eng2StarvedSince", -1]; };
 
-[_heli, "fza_fuel_eng1FuelAvail", _eng1FuelAvail] call fza_fnc_updateNetworkGlobal;
-[_heli, "fza_fuel_eng2FuelAvail", _eng2FuelAvail] call fza_fnc_updateNetworkGlobal;
-[_heli, "fza_fuel_apuFuelAvail",  _apuFuelAvail]  call fza_fnc_updateNetworkGlobal;
+[_heli, "bmkhs_eng1FuelAvail", _eng1FuelAvail] call fza_fnc_updateNetworkGlobal;
+[_heli, "bmkhs_eng2FuelAvail", _eng2FuelAvail] call fza_fnc_updateNetworkGlobal;
+[_heli, "bmkhs_apuFuelAvail",  _apuFuelAvail]  call fza_fnc_updateNetworkGlobal;
 
 // Status flags
-_heli setVariable ["fza_fuel_intercellTransferActive", _intercellTransferActive];
-_heli setVariable ["fza_fuel_intercellTransferDir",    _intercellTransferDir];
-_heli setVariable ["fza_fuel_iafsFlowing",            _iafsAftFlowing || _iafsFwdFlowing];
-_heli setVariable ["fza_fuel_iafsAftFlowing",         _iafsAftFlowing];
-_heli setVariable ["fza_fuel_iafsFwdFlowing",         _iafsFwdFlowing];
-_heli setVariable ["fza_fuel_lAuxFlowing",            _lAuxFlowing];
-_heli setVariable ["fza_fuel_rAuxFlowing",            _rAuxFlowing];
+_heli setVariable ["bmkhs_intercellTransferActive", _intercellTransferActive];
+_heli setVariable ["bmkhs_intercellTransferDir",    _intercellTransferDir];
+_heli setVariable ["bmkhs_iafsFlowing",            _iafsAftFlowing || _iafsFwdFlowing];
+_heli setVariable ["bmkhs_iafsAftFlowing",         _iafsAftFlowing];
+_heli setVariable ["bmkhs_iafsFwdFlowing",         _iafsFwdFlowing];
+_heli setVariable ["bmkhs_lAuxFlowing",            _lAuxFlowing];
+_heli setVariable ["bmkhs_rAuxFlowing",            _rAuxFlowing];
 
 // Write back
 private _totFuelMass = _fwdFuelMass + _ctrFuelMass + _aftFuelMass
@@ -362,8 +362,8 @@ private _fuelPageOpen = ("fuel" in (_heli getVariable ["fza_mpd_page_plt", ""]))
         if (_fuelPageOpen) then { _heli setVariable [_var, false]; };
     };
 } forEach [
-    [_stn1HasTank, _stn1FuelMass, "fza_fuel_ext1EmptyArmed"],
-    [_stn2HasTank, _stn2FuelMass, "fza_fuel_ext2EmptyArmed"],
-    [_stn3HasTank, _stn3FuelMass, "fza_fuel_ext3EmptyArmed"],
-    [_stn4HasTank, _stn4FuelMass, "fza_fuel_ext4EmptyArmed"]
+    [_stn1HasTank, _stn1FuelMass, "bmkhs_ext1EmptyArmed"],
+    [_stn2HasTank, _stn2FuelMass, "bmkhs_ext2EmptyArmed"],
+    [_stn3HasTank, _stn3FuelMass, "bmkhs_ext3EmptyArmed"],
+    [_stn4HasTank, _stn4FuelMass, "bmkhs_ext4EmptyArmed"]
 ];

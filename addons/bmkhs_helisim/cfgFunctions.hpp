@@ -79,6 +79,14 @@ class CfgFunctions
             class prestonPilot {R;};
             class prestonVariables {R;};
         };
+        class fuel {
+            file = "\bmkhs_helisim\functions\fuel";
+            class fuelMgmtUpdate {R;};
+            class fuelMgmtVariables {R;};
+            class fuelSet {R;};
+            class fuelUpdate {R;};
+            class fuelVariables {R;};
+        };
         class fuselage {
             file = "\bmkhs_helisim\functions\fuselage";
             class fuselage {R;};

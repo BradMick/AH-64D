@@ -48,8 +48,8 @@ if (isAutoHoverOn _heli) then {
 [_heli] call bmkhs_fnc_calculateAeroValues;
 
 //Fuel
-[_heli] call fza_fuel_fnc_fuelUpdate;
-[_heli] call fza_fuel_fnc_fuelMgmtUpdate;
+[_heli] call bmkhs_fnc_fuelUpdate;
+[_heli] call bmkhs_fnc_fuelMgmtUpdate;
 
 //Mass and Balance
 [_heli] call bmkhs_fnc_massUpdate;

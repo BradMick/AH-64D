@@ -177,9 +177,9 @@ _heli setVariable ["bmkhs_cyclicPitchValue",   0.0];
 _heli setVariable ["bmkhs_cyclicRollValue",    0.0];
 _heli setVariable ["bmkhs_pedalYawValue",      0.0];
 //Fuel
-[_heli] call fza_fuel_fnc_fuelVariables;
-[_heli] call fza_fuel_fnc_fuelMgmtVariables;
-[_heli] call fza_fuel_fnc_fuelSet;
+[_heli] call bmkhs_fnc_fuelVariables;
+[_heli] call bmkhs_fnc_fuelMgmtVariables;
+[_heli] call bmkhs_fnc_fuelSet;
 //Engines
 _heli setVariable ["bmkhs_pid_engine",        [[0.7000, 0.0000, 0.0005, 0.0000] call bmkhs_fnc_pidCreate, [0.7000, 0.0000, 0.0005, 0.0000] call bmkhs_fnc_pidCreate]];
 [_heli] call bmkhs_fnc_engineVariables;

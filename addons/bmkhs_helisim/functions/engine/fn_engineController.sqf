@@ -41,8 +41,8 @@ private _rtrRPM  = _heli getVariable "bmkhs_rtrRPM";
 private _eng1TQ   = _heli getVariable "bmkhs_engPctTQ" select 0;
 private _eng2TQ   = _heli getVariable "bmkhs_engPctTQ" select 1;
 private _engPctTQ = _eng1TQ max _eng2TQ;
-private _eng1FuelAvail = _heli getVariable ["fza_fuel_eng1FuelAvail", true];
-private _eng2FuelAvail = _heli getVariable ["fza_fuel_eng2FuelAvail", true];
+private _eng1FuelAvail = _heli getVariable ["bmkhs_eng1FuelAvail", true];
+private _eng2FuelAvail = _heli getVariable ["bmkhs_eng2FuelAvail", true];
 
 private _shiftLocked = _heli getVariable "bmkhs_shiftLocked";
 private _isSingleEng     = _heli getVariable "bmkhs_isSingleEng";

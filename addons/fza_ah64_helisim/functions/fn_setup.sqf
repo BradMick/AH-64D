@@ -14,7 +14,7 @@ Returns:
 params ["_heli"];
 
 //AH-64 equipment - not flight model state, so it lives here rather than in Core.
-//Must be set before coreConfig: that calls fza_fuel_fnc_fuelSet, which reads
+//Must be set before coreConfig: that calls bmkhs_fnc_fuelSet, which reads
 //IAFSInstalled with no default to decide the tank split.
 if (local _heli) then {
     _heli setVariable ["fza_ah64_IAFSInstalled", true,  true];
