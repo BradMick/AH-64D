@@ -17,32 +17,38 @@ Author:
     BradMick
 ---------------------------------------------------------------------------- */
 params ["_heli"];
+
 #include "\bmkhs_helisim\headers\systems.hpp"
 
 if (!(_heli getVariable ["bmkhs_systemsInitialised", false]) && local _heli) then {
     _heli setVariable ["bmkhs_systemsInitialised", true, true];
 
+    //Electrical and APU are only modelled when the aircraft asks for them. Without
+    //them the aircraft behaves like vanilla Arma: powered up and running, with no
+    //start procedure - so everything downstream reads as already on.
+    private _sys = _heli getVariable ["bmkhs_useSystems", false];
+
     //Switch states
-    _heli setVariable ["bmkhs_battSwitchOn",      false, true];
+    _heli setVariable ["bmkhs_battSwitchOn",      !_sys, true];
 
     //Electrical System
     //--Battery
     _heli setVariable ["bmkhs_battPower_pct",     1.0, true];
     //--Buses
-    _heli setVariable ["bmkhs_battBusOn",         false, true];
-    _heli setVariable ["bmkhs_acBusOn",           false, true];
-    _heli setVariable ["bmkhs_dcBusOn",           false, true];
+    _heli setVariable ["bmkhs_battBusOn",         !_sys, true];
+    _heli setVariable ["bmkhs_acBusOn",           !_sys, true];
+    _heli setVariable ["bmkhs_dcBusOn",           !_sys, true];
     //--Gen 1 and RTRU 1
-    _heli setVariable ["bmkhs_gen1On",            false, true];
-    _heli setVariable ["bmkhs_rect1On",           false, true];
+    _heli setVariable ["bmkhs_gen1On",            !_sys, true];
+    _heli setVariable ["bmkhs_rect1On",           !_sys, true];
     //--Gen 2 and RTRU 2
-    _heli setVariable ["bmkhs_gen2On",            false, true];
-    _heli setVariable ["bmkhs_rect2On",           false, true];
+    _heli setVariable ["bmkhs_gen2On",            !_sys, true];
+    _heli setVariable ["bmkhs_rect2On",           !_sys, true];
 
-    //APU
-    _heli setVariable ["bmkhs_apuBtnOn",          false, true];
-    _heli setVariable ["bmkhs_apuRPM_pct",        0.0, true];
-    _heli setVariable ["bmkhs_apuOn",             false, true];
+    //APU - the engine controller shuts the engines down without it
+    _heli setVariable ["bmkhs_apuBtnOn",          !_sys, true];
+    _heli setVariable ["bmkhs_apuRPM_pct",        [1.0, 0.0] select _sys, true];
+    _heli setVariable ["bmkhs_apuOn",             !_sys, true];
 
 
     //Hydraulics

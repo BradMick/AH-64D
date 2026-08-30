@@ -21,8 +21,14 @@ params ["_heli"];
 if (!(_heli getVariable ["bmkhs_engineInitialised", false]) && local _heli) then {
     _heli setVariable ["bmkhs_engineInitialised", true, true];
 
-    _heli setVariable ["bmkhs_engPowerLeverState",    ["OFF", "OFF"], true]; //OFF, IDLE, FLY
-    _heli setVariable ["bmkhs_engState",              ["OFF", "OFF"], true]; //OFF, STARTING, ON
+    //Without a modelled electrical system and APU there is no start procedure, so
+    //the aircraft comes up running the way vanilla Arma does.
+    private _running = !(_heli getVariable ["bmkhs_useSystems", false]);
+    private _lever   = ["OFF", "FLY"] select _running;
+    private _state   = ["OFF", "ON"]  select _running;
+
+    _heli setVariable ["bmkhs_engPowerLeverState",    [_lever, _lever], true]; //OFF, IDLE, FLY
+    _heli setVariable ["bmkhs_engState",              [_state, _state], true]; //OFF, STARTING, ON
 };
 
 if(isMultiplayer) then {

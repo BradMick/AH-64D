@@ -53,13 +53,14 @@ private _yawBreakout        = false;
 private _kbPedalLeftRight   = _heli getVariable "bmkhs_kbPedalLeftRight";
 
 private _priHydPumpDamage   = _heli getHitPointDamage "hit_hyd_pripump";
-private _priHydPSI          = _heli getVariable ["bmkhs_priHydPsi", (_heli getVariable "bmkhs_hydMinPsi")];
+//No systems modelled -> full pressure, not the failure threshold
+private _priHydPSI          = _heli getVariable ["bmkhs_priHydPsi", 3000];
 
 private _utilHydPumpDamage  = _heli getHitPointDamage "hit_hyd_utilpump";
-private _utilHydPSI         = _heli getVariable ["bmkhs_utilHydPsi", (_heli getVariable "bmkhs_hydMinPsi")];
+private _utilHydPSI         = _heli getVariable ["bmkhs_utilHydPsi", 3000];
 private _utilLevel_pct      = _heli getVariable ["bmkhs_utilLevel_pct", 1.0];
 
-private _emerHydOn          = _heli getVariable "bmkhs_emerHydOn";
+private _emerHydOn          = _heli getVariable ["bmkhs_emerHydOn", false];
 private _apuOn              = _heli getVariable ["bmkhs_apuOn", true];
 
 /////////////////////////////////////////////////////////////////////////////////////////////
