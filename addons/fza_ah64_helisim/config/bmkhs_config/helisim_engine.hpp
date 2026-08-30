@@ -19,7 +19,7 @@
     engStartNP  = 0.10;
     engIdleNP   = 0.57;
     engFlyNP    = 1.01;
-    engOvrspdNP = 1.50;
+    engOvrspdNP = 1.196;
 
     //--------------------0-NG-----1-TGT----2-TQ----3-NP----4-Oil
     //Power, governing and limits used by the engine2 / BET models
