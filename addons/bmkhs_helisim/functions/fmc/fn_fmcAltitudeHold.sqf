@@ -30,7 +30,7 @@ if ( _heli getVariable "bmkhs_altHoldActive") then {
     private _collRef_hi  = _collRef * 1.05;
     if ((_heli getVariable "bmkhs_collectiveOutput") >= _collRef_hi || (_heli getVariable "bmkhs_collectiveOutput") <= _collRef_low) then {
         [_heli, "bmkhs_altHoldActive", false] call bmkhs_fnc_updateNetworkGlobal;
-        [_heli] spawn fza_audio_fnc_flightTone;
+        [_heli, "holdModeDisengaged"] call bmkhs_fnc_notify;
     };
 
     //If the helicopters radar altitude is < 1428ft (435.25m) and current velocity is < 40kts

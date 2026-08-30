@@ -1,7 +1,7 @@
 params ["_heli"];
 
 if (_heli getVariable "bmkhs_altHoldActive" || _heli getVariable "bmkhs_attHoldActive") then {
-    [_heli] spawn fza_audio_fnc_flightTone;
+    [_heli, "holdModeDisengaged"] call bmkhs_fnc_notify;
 };
 
 //De-activate attitude hold and set the reference back to 0

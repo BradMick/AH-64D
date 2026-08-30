@@ -35,5 +35,5 @@ if (_heli getVariable "bmkhs_altHoldActive" == false) then {
     [_heli, "bmkhs_altHoldDesiredAlt", 0.0] call bmkhs_fnc_updateNetworkGlobal;
     [_heli, "bmkhs_altHoldActive", false] call bmkhs_fnc_updateNetworkGlobal;
     [_heli, "bmkhs_altHoldCollRef", 0.0] call bmkhs_fnc_updateNetworkGlobal;
-    [_heli] spawn fza_audio_fnc_flightTone;
+    [_heli, "holdModeDisengaged"] call bmkhs_fnc_notify;
 };
