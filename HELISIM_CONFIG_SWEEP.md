@@ -141,7 +141,7 @@ Plus the **15 PID gain sets** in `fn_coreConfig.sqf`, all CONFIG.
 
 | Group | Values | Notes |
 |---|---|---|
-| Root (`fn_getInput`) | 10 | Keyboard input deadbands ±0.1 — CONFIG |
+| Root (`fn_getInput`) | 10 | Keyboard input deadbands ±0.1 — CORE |
 | Damage | 3 | NR/TQ thresholds 0.50/0.30/0.9 — CORE |
 | Environment | 1 | Altimeter 29.92 inHg — CORE (ISA constant) |
 | Transmission | 1 | Gear ratio 72.29 — CONFIG, duplicates the rotor value |
@@ -156,8 +156,8 @@ Plus the **15 PID gain sets** in `fn_coreConfig.sqf`, all CONFIG.
 
 | Verdict | Count |
 |---|---|
-| CONFIG | ~86 |
-| CORE | ~34 |
+| CONFIG | ~76 |
+| CORE | ~44 |
 | MOD | 6 |
 | CHECK | 1 |
 
