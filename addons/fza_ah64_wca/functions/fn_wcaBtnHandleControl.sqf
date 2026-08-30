@@ -3,7 +3,7 @@ params ["_heli", "_system", "_control"];
 
 private _onGnd      = [_heli] call bmkhs_fnc_onGround;
 private _gndOrideOn = _heli getVariable "fza_ah64_gndOrideOn";
-private _battBusOn = _heli getVariable "fza_systems_battBusOn";
+private _battBusOn = _heli getVariable "bmkhs_battBusOn";
 
 if !(_battBusOn) exitWith {};
 

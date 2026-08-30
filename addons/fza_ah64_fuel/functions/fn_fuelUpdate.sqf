@@ -62,7 +62,7 @@ private _stn3FuelMass = _heli getVariable "bmkhs_stn3FuelMass";
 private _stn4FuelMass = _heli getVariable "bmkhs_stn4FuelMass";
 
 // Fuel flow
-private _apuFF_kgs  = _heli getVariable "fza_systems_apuFF_kgs";
+private _apuFF_kgs  = _heli getVariable "bmkhs_apuFF_kgs";
 private _engFF      = _heli getVariable "bmkhs_engFF";
 private _eng1FF_kgs = _engFF select 0;
 private _eng2FF_kgs = _engFF select 1;
@@ -111,7 +111,7 @@ private _aftFuelAvailLastFrame = _aftFuelBefore > _eps;
 private _xferStep   = XFER_RATE_KGS * _deltaTime;
 private _fwdLow     = _fwdFuelMass < FWD_FUEL_LOW_VAL_KG;
 private _aftLow     = _aftFuelMass < AFT_FUEL_LOW_VAL_KG;
-private _apuOn      = _heli getVariable ["fza_systems_apuOn", false];
+private _apuOn      = _heli getVariable ["bmkhs_apuOn", false];
 private _engBleedOn = _eng1On || _eng2On;
 private _airAvail   = _apuOn || _engBleedOn;
 private _xferMode   = _heli getVariable ["fza_fuel_xferMode", "OFF"];

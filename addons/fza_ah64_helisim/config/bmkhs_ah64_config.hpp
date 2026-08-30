@@ -1,4 +1,10 @@
 class BMKHS_HeliSim {
+    //Subsystem gates
+    useSystems          = 1;
+    useAPU              = 1;
+    useElectricalSystem = 1;
+    useHydraulicSystem  = 1;
+    useDrivetrain       = 1;
     //FCR
     emptyMassFCR      = 6609; //kg
     emptyMomFCR       = 35608.268;   //-> 212.12 in

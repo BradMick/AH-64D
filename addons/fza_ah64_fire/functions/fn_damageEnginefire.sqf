@@ -88,7 +88,7 @@ do {
         };
         case "apu": {
             private _apuArm = (_heli getVariable "fza_ah64_fireArmedApu") #0;
-            private _apuOn        = _heli getVariable "fza_systems_apuOn";
+            private _apuOn        = _heli getVariable "bmkhs_apuOn";
             private _apuDamage    = _heli getHitPointDamage "hit_apu";
             if (_apuArm && (_primaryFBActioned || _reserveFBActioned)) then {breakOut  "fza_fireHandleScope"};
             if (!_apuOn && _rand >= 9.96) then {breakOut  "fza_fireHandleScope"};

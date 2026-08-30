@@ -19,15 +19,15 @@ Author:
     unknown
 ---------------------------------------------------------------------------- */
 #include "\fza_ah64_controls\headers\systemConstants.h"
-#include "\fza_ah64_systems\headers\systems.hpp"
+#include "\bmkhs_helisim\headers\systems.hpp"
 #include "\fza_ah64_dms\headers\constants.h"
 params ["_heli"];
 
 #define SCALE_METERS_FEET 3.28084
 #define SCALE_MPS_KNOTS 1.94
 
-private _acBusOn        = _heli getVariable "fza_systems_acBusOn";
-private _dcBusOn        = _heli getVariable "fza_systems_dcBusOn";
+private _acBusOn        = _heli getVariable "bmkhs_acBusOn";
+private _dcBusOn        = _heli getVariable "bmkhs_dcBusOn";
 private _powerOnState   = (_acBusOn && _dcBusOn);
 private _weaponWas      = _heli getVariable "fza_ah64_was";
 private _ntsPosition    = (_heli getVariable "fza_ah64_fcrNts")#1;

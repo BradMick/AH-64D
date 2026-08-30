@@ -37,7 +37,7 @@ params["_heli"];
 
 //flight setup
 [_heli] call fza_ah64_helisim_fnc_setup;
-[_heli] call fza_systems_fnc_coreVariables;
+[_heli] call bmkhs_fnc_systemsVariables;
 
 if (!(isNil "fza_ah64_noinit")) exitWith {};
 _heli addAction ["<t color='#ff0000'>Weapons inhibited</t>", {}, [], -10, false, false, "DefaultAction", "count (_target getVariable ""fza_ah64_weaponInhibited"") != 0"];

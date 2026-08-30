@@ -18,12 +18,12 @@ Author:
 ---------------------------------------------------------------------------- */
 params ["_heli"];
 #include "\bmkhs_helisim\headers\core.hpp"
-#include "\fza_ah64_systems\headers\systems.hpp"
+#include "\bmkhs_helisim\headers\systems.hpp"
 
 private _config         = configOf _heli >> "BMKHS_HeliSim";
 private _configVehicles = configOf _heli;
 
-private _apuOn     = _heli getVariable "fza_systems_apuOn";
+private _apuOn     = _heli getVariable ["bmkhs_apuOn", true];
 private _onGnd     = [_heli] call bmkhs_fnc_onGround;
 
 private _engState  = _heli getVariable "bmkhs_engState";
@@ -117,7 +117,7 @@ if (isMultiplayer && (currentPilot _heli == player || local _heli) && (_heli get
     {
         _heli setVariable [_x, _heli getVariable _x, true];
     } forEach [
-        "fza_systems_apuRPM_pct",
+        "bmkhs_apuRPM_pct",
         "bmkhs_engFF",
         "bmkhs_engPctNG",
         "bmkhs_engPctNP",

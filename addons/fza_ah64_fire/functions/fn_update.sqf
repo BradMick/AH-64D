@@ -17,7 +17,7 @@ Author:
 ---------------------------------------------------------------------------- */
 params ["_heli"];
 
-private _battBusOn          = _heli getVariable "fza_systems_battBusOn";
+private _battBusOn          = _heli getVariable "bmkhs_battBusOn";
 private _engineOneArm       = (_heli getVariable "fza_ah64_fireArmed1") #0;
 private _engineOneArmTimer  = (_heli getVariable "fza_ah64_fireArmed1") #2;
 private _engineTwoArm       = (_heli getVariable "fza_ah64_fireArmed2") #0;
@@ -38,7 +38,7 @@ if (_engineTwoArm && _engineTwoArmTimer <= CBA_missionTime - 2) then {
     [_heli, "bmkhs_engState", 1, "OFF", true] call fza_fnc_setArrayVariable;
 };
 if (_apuArm && _apuArmTimer <= CBA_missionTime - 2) then {
-    [_heli, "fza_systems_apuBtnOn", false] call fza_fnc_updateNetworkGlobal;
+    [_heli, "bmkhs_apuBtnOn", false] call fza_fnc_updateNetworkGlobal;
 };
 
 //Fire test switch

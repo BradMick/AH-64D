@@ -79,11 +79,11 @@ for "_x" from 0 to 4 do {
 };
 
 //Hydraulics
-private _priHydPSI       = round(_heli getVariable "fza_systems_priHydPsi");
+private _priHydPSI       = round(_heli getVariable "bmkhs_priHydPsi");
 private _priHydPSI_text  = format["%1", [str _priHydPSI, 4] call fza_fnc_padString];
-private _utilHydPSI      = round(_heli getVariable "fza_systems_utilHydPsi");
+private _utilHydPSI      = round(_heli getVariable "bmkhs_utilHydPsi");
 private _utilHydPSI_text = format["%1", [str _utilHydPSI, 4] call fza_fnc_padString];
-private _accHydPSI       = round((_heli getVariable "fza_systems_accHydPsi") / 10) * 10;
+private _accHydPSI       = round((_heli getVariable "bmkhs_accHydPsi") / 10) * 10;
 private _accHydPSI_text  = format["%1", [str _accHydPSI, 4] call fza_fnc_padString];
 
 _heli setUserMFDText [MFD_INDEX_OFFSET(MFD_TEXT_IND_ENG_PRI_HYD_PSI),  _priHydPSI_text];

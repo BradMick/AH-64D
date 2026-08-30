@@ -156,6 +156,52 @@ class CfgFunctions
             class simpleRotorTail {R;};
             class simpleRotorVariables {R;};
         };
+        class systems {
+            file = "\bmkhs_helisim\functions\systems";
+            class systemsUpdate {R;};
+            class systemsVariables {R;};
+        };
+        class systemsApu {
+            file = "\bmkhs_helisim\functions\systems\apu";
+            class apu {R;};
+        };
+        class systemsElectrical {
+            file = "\bmkhs_helisim\functions\systems\electrical";
+            class electricalACBus {R;};
+            class electricalBattery {R;};
+            class electricalController {R;};
+            class electricalDCBus {R;};
+            class electricalGenerator1 {R;};
+            class electricalGenerator2 {R;};
+            class electricalRectifier1 {R;};
+            class electricalRectifier2 {R;};
+        };
+        class systemsHydraulics {
+            file = "\bmkhs_helisim\functions\systems\hydraulics";
+            class hydraulicsAccumulator {R;};
+            class hydraulicsController {R;};
+            class hydraulicsPriPump {R;};
+            class hydraulicsPriReservoir {R;};
+            class hydraulicsUtilPump {R;};
+            class hydraulicsUtilReservoir {R;};
+        };
+        class systemsDrivetrain {
+            file = "\bmkhs_helisim\functions\systems\drivetrain";
+            class drivetrainController {R;};
+            class drivetrainNoseGearbox1 {R;};
+            class drivetrainNoseGearbox2 {R;};
+            class drivetrainTailRotorGearboxes {R;};
+            class drivetrainTransmission {R;};
+        };
+        class systemsRepair {
+            file = "\bmkhs_helisim\functions\systems\repair";
+            class repair {R;};
+        };
+        class systemsInteract {
+            file = "\bmkhs_helisim\functions\systems\interact";
+            class interactAPUButton {R;};
+            class interactBattSwitch {R;};
+        };
         class transmission {
             file = "\bmkhs_helisim\functions\transmission";
             class transmission {R;};

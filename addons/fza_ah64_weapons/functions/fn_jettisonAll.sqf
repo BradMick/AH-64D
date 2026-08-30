@@ -1,5 +1,5 @@
 params ["_heli"];
-if !(_heli getVariable "fza_systems_battBusOn") exitWith {};
+if !(_heli getVariable "bmkhs_battBusOn") exitWith {};
 sleep 0.5;
 {
     _x params ["_pylon", "_position"];

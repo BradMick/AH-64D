@@ -18,7 +18,7 @@ Author:
 ---------------------------------------------------------------------------- */
 params ["_heli"];
 #include "\bmkhs_helisim\headers\core.hpp"
-#include "\fza_ah64_systems\headers\systems.hpp"
+#include "\bmkhs_helisim\headers\systems.hpp"
 
 if (currentPilot _heli != player || !local _heli) exitWith {};
 
@@ -52,14 +52,14 @@ private _yawBreakout        = false;
 private _kbPedalLeftRight   = _heli getVariable "bmkhs_kbPedalLeftRight";
 
 private _priHydPumpDamage   = _heli getHitPointDamage "hit_hyd_pripump";
-private _priHydPSI          = _heli getVariable "fza_systems_priHydPsi";
+private _priHydPSI          = _heli getVariable ["bmkhs_priHydPsi", SYS_MIN_HYD_PSI];
 
 private _utilHydPumpDamage  = _heli getHitPointDamage "hit_hyd_utilpump";
-private _utilHydPSI         = _heli getVariable "fza_systems_utilHydPsi";
-private _utilLevel_pct      = _heli getVariable "fza_systems_utilLevel_pct";
+private _utilHydPSI         = _heli getVariable ["bmkhs_utilHydPsi", SYS_MIN_HYD_PSI];
+private _utilLevel_pct      = _heli getVariable ["bmkhs_utilLevel_pct", 1.0];
 
 private _emerHydOn          = _heli getVariable "fza_ah64_emerHydOn";
-private _apuOn              = _heli getVariable "fza_systems_apuOn";
+private _apuOn              = _heli getVariable ["bmkhs_apuOn", true];
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Cyclic & Pedal Input /////////////////////////////////////////////////////////////////////

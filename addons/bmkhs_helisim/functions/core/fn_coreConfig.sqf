@@ -102,6 +102,13 @@ _heli setVariable ["bmkhs_accelZ",            0.0];
 _heli setVariable ["bmkhs_accelZ_avg",        [bmkhs_movingAverageSize] call bmkhs_fnc_smoothAverageInit];
 
 
+//Subsystem gates - the aircraft config decides which systems Core runs
+_heli setVariable ["bmkhs_useSystems",          getNumber (_config >> "useSystems")          > 0];
+_heli setVariable ["bmkhs_useAPU",              getNumber (_config >> "useAPU")              > 0];
+_heli setVariable ["bmkhs_useElectricalSystem", getNumber (_config >> "useElectricalSystem") > 0];
+_heli setVariable ["bmkhs_useHydraulicSystem",  getNumber (_config >> "useHydraulicSystem")  > 0];
+_heli setVariable ["bmkhs_useDrivetrain",       getNumber (_config >> "useDrivetrain")       > 0];
+
 _heli setVariable ["bmkhs_emptyMassFCR",       getNumber (_config >> "emptyMassFCR")];        //kg
 _heli setVariable ["bmkhs_emptyMomFCR",        getNumber (_config >> "emptyMomFCR")];
 

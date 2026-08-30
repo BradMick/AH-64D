@@ -23,22 +23,22 @@ Author:
 #include "\fza_ah64_controls\headers\engineConstants.h"
 params ["_heli", "_system", "_control"];
 
-private _apuBtnOn     = _heli getVariable "fza_systems_apuBtnOn";
-private _battSwitchOn = _heli getVariable "fza_systems_battSwitchOn";
-private _battBusOn    = _heli getVariable "fza_systems_battBusOn";
+private _apuBtnOn     = _heli getVariable "bmkhs_apuBtnOn";
+private _battSwitchOn = _heli getVariable "bmkhs_battSwitchOn";
+private _battBusOn    = _heli getVariable "bmkhs_battBusOn";
 
 if (player != driver _heli) exitWith {};
 
 switch(_control) do {
     case "apu": {
         if (!_apuBtnOn && _battBusOn) then {
-            [_heli] call fza_systems_fnc_interactAPUButton;
+            [_heli] call bmkhs_fnc_interactAPUButton;
             playSound "fza_ah64_apubutton";
             [_heli] spawn fza_fnc_fxLoops;
             [_heli, ["fza_ah64_apustart_3D", 200]] remoteExec["say3D"];
         } else {
             if (_apuBtnOn) then {
-                [_heli] call fza_systems_fnc_interactAPUButton;
+                [_heli] call bmkhs_fnc_interactAPUButton;
                 //If either of the apache's engines are in a mode where they are using APU, turn it off.
                 _heliData = _heli getVariable "fza_ah64_engineStates";
                 (_heliData # 0) params ["_e1state"];
@@ -55,11 +55,11 @@ switch(_control) do {
     };
     case "power": {
         if (_battSwitchOn) then {
-            [_heli] call fza_systems_fnc_interactBattSwitch;
+            [_heli] call bmkhs_fnc_interactBattSwitch;
             [_heli] spawn fza_fnc_fxLoops;
             playSound "fza_ah64_battery";
         } else {
-            [_heli] call fza_systems_fnc_interactBattSwitch;
+            [_heli] call bmkhs_fnc_interactBattSwitch;
             [_heli, ["fza_ah64_fake_3D", 10]] remoteExec["say3D"];
             playSound "fza_ah64_battery";
         };

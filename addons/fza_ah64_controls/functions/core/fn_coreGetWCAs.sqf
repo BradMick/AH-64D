@@ -31,7 +31,7 @@ Author:
 ---------------------------------------------------------------------------- */
 #include "\fza_ah64_controls\headers\wcaConstants.h"
 #include "\fza_ah64_controls\headers\systemConstants.h"
-#include "\fza_ah64_systems\headers\systems.hpp"
+#include "\bmkhs_helisim\headers\systems.hpp"
 #include "\bmkhs_helisim\headers\core.hpp"
 #include "\fza_ah64_fuel\headers\fuelConstants.hpp"
 #include "\fza_ah64_ase\headers\ase.h"
@@ -52,16 +52,16 @@ private _mags = _heli weaponsTurret [-1];
 private _wcas       = [];
 private _activeCaut = _heli getVariable "fza_ah64_activeCaut";
 private _activeWarn = _heli getVariable "fza_ah64_activeWarn";
-private _acBusOn    = _heli getVariable "fza_systems_acBusOn";
-private _dcBusOn    = _heli getVariable "fza_systems_dcBusOn";
+private _acBusOn    = _heli getVariable "bmkhs_acBusOn";
+private _dcBusOn    = _heli getVariable "bmkhs_dcBusOn";
 /////////////////////////////////////////////////////////////////////////////////////////////
 // System States    /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 private _playCautAudio = false;
 //--APU
-private _apuBtnOn    = _heli getVariable "fza_systems_apuBtnOn";
-private _apuOn       = _heli getVariable "fza_systems_apuOn";
-private _apuRPM_pct  = _heli getVariable "fza_systems_apuRPM_pct";
+private _apuBtnOn    = _heli getVariable "bmkhs_apuBtnOn";
+private _apuOn       = _heli getVariable "bmkhs_apuOn";
+private _apuRPM_pct  = _heli getVariable "bmkhs_apuRPM_pct";
 private _apuDamage   = _heli getHitPointDamage "hit_apu";
 //--FCR
 private _fcrState    = _heli getVariable "fza_ah64_fcrState";
@@ -103,12 +103,12 @@ private _battDamage = _heli getHitPointDamage "hit_elec_battery";
 private _stabDamage = _heli getHitPointDamage "hit_stabilator";
 //-Hydraulics
 private _priHydPumpDamage    = _heli getHitPointDamage "hit_hyd_pripump";
-private _priHydPSI           = _heli getVariable "fza_systems_priHydPsi";
-private _priLevel_pct        = _heli getVariable "fza_systems_priLevel_pct";
+private _priHydPSI           = _heli getVariable "bmkhs_priHydPsi";
+private _priLevel_pct        = _heli getVariable "bmkhs_priLevel_pct";
 
 private _utilHydPumpDamage   = _heli getHitPointDamage "hit_hyd_utilpump";
-private _utilHydPSI          = _heli getVariable "fza_systems_utilHydPsi";
-private _utilLevel_pct       = _heli getVariable "fza_systems_utilLevel_pct";
+private _utilHydPSI          = _heli getVariable "bmkhs_utilHydPsi";
+private _utilLevel_pct       = _heli getVariable "bmkhs_utilLevel_pct";
 //ASE
 private _msnEquipState       = _heli getVariable "fza_ah64_ase_msnEquipPwr";
 

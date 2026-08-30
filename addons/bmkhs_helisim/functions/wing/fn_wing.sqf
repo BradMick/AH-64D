@@ -1,5 +1,5 @@
 #include "\bmkhs_helisim\headers\core.hpp"
-#include "\fza_ah64_systems\headers\systems.hpp"
+#include "\bmkhs_helisim\headers\systems.hpp"
 
 params ["_heli","_wingPos","_pitch","_roll","_span","_chord","_sweep","_twist","_tipWidthScalar","_wingLiftScalarTable",["_isStab", false]];
 
@@ -33,7 +33,7 @@ private _liftScalar             = 1.0;
 
 if (_isStab) then {
     private _stabDamage = _heli getHitPointDamage "hit_stabilator";
-    private _dcBusOn    = _heli getVariable "fza_systems_dcBusOn";
+    private _dcBusOn    = _heli getVariable ["bmkhs_dcBusOn", true];
 
     private _stabOutputTable = [[]];
     private _desiredTheta    = 0.0;
