@@ -96,7 +96,7 @@ missing decimal point — worth checking against intent before externalising.
 | NP overspeed | 1.196 | CONFIG |
 | TGT limits | 867 / 896 | CONFIG |
 | NG start threshold | 0.52 | CONFIG |
-| `_govGain` | 6.0 | CHECK — governor tuning |
+| `_govGain` | 6.0 | CONFIG |
 | `_engFriction` | 0.0 | CONFIG |
 
 The UH-60 config has direct equivalents for most of these
@@ -156,14 +156,13 @@ Plus the **15 PID gain sets** in `fn_coreConfig.sqf`, all CONFIG.
 
 | Verdict | Count |
 |---|---|
-| CONFIG | ~85 |
+| CONFIG | ~86 |
 | CORE | ~34 |
 | MOD | 6 |
-| CHECK | 2 |
+| CHECK | 1 |
 
-Remaining CHECK items: `_kFlapLat` (flapback gain) and `_govGain` (governor
-tuning). Both are model shaping rather than aircraft data, so both likely
-resolve to CORE when read in context.
+One CHECK item left: `_kFlapLat` (flapback gain, 10.0) in the simple rotor.
+Decide it in context when the rotor is externalised.
 
 ## Notable findings
 
