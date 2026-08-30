@@ -68,4 +68,4 @@ private _accTime = SYS_ACC_TIMER * 60;
 _heli setVariable ["bmkhs_accTimer",          _accTime];
 
 _heli setVariable ["bmkhs_emerHydOn",         false, true];
-_heli setVariable ["bmkhs_engineOverspeed",   false, true];
+_heli setVariable ["bmkhs_engineOverspeed",   [false, false], true];
