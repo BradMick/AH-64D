@@ -135,6 +135,21 @@ _heli setVariable ["bmkhs_armStation02",   getArray  (_config >> "armStation02")
 _heli setVariable ["bmkhs_armStation03",   getArray  (_config >> "armStation03")];
 _heli setVariable ["bmkhs_armStation04",   getArray  (_config >> "armStation04")];
 
+//Wings - per-wing arrays, Core loops over numWings
+_heli setVariable ["bmkhs_numWings",          getNumber (_config >> "numWings")];
+_heli setVariable ["bmkhs_wingIsStabilator",  getArray (_config >> "wingIsStabilator")];
+_heli setVariable ["bmkhs_wingPos",           getArray (_config >> "wingPos")];
+_heli setVariable ["bmkhs_wingPitch",         getArray (_config >> "wingPitch")];
+_heli setVariable ["bmkhs_wingRoll",          getArray (_config >> "wingRoll")];
+_heli setVariable ["bmkhs_wingSpan",          getArray (_config >> "wingSpan")];
+_heli setVariable ["bmkhs_wingChord",         getArray (_config >> "wingChord")];
+_heli setVariable ["bmkhs_wingSweep",         getArray (_config >> "wingSweep")];
+_heli setVariable ["bmkhs_wingTwist",         getArray (_config >> "wingTwist")];
+_heli setVariable ["bmkhs_wingTipWidthScalar",getArray (_config >> "wingTipWidthScalar")];
+_heli setVariable ["bmkhs_wingNumElements",   getArray (_config >> "wingNumElements")];
+_heli setVariable ["bmkhs_wingChordLinePos",  getArray (_config >> "wingChordLinePos")];
+
+
 //Mass and balance - datum, CG limits, crew mass and station arms
 _heli setVariable ["bmkhs_fsDatum",        getNumber (_config >> "fsDatum")];
 _heli setVariable ["bmkhs_fwdCgLimit",     getNumber (_config >> "fwdCgLimit")];
@@ -231,8 +246,6 @@ _heli setVariable ["bmkhs_emptyMomFCR",        getNumber (_config >> "emptyMomFC
 _heli setVariable ["bmkhs_emptyMassNonFCR",    getNumber (_config >> "emptyMassNonFCR")];     //kg
 _heli setVariable ["bmkhs_emptyMomNonFCR",     getNumber (_config >> "emptyMomNonFCR")];
 
-_heli setVariable ["bmkhs_stabWidth",          getNumber (_config >> "stabWidth")];           //m
-_heli setVariable ["bmkhs_stabLength",         getNumber (_config >> "stabLength")];          //m
 
 _heli setVariable ["bmkhs_aerodynamicCenter",  getArray  (_config >> "aerodynamicCenter")];   //m
 

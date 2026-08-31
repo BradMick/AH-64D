@@ -19,5 +19,5 @@ class BMKHS_HeliSim {
     #include "bmkhs_config\helisim_misc.hpp"
     #include "bmkhs_config\helisim_rotor.hpp"
     #include "bmkhs_config\helisim_simpleRotor.hpp"
-    #include "bmkhs_config\helisim_stabilator.hpp"
+    #include "bmkhs_config\helisim_wings.hpp"
 };

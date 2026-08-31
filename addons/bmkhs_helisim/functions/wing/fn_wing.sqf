@@ -1,7 +1,7 @@
 #include "\bmkhs_helisim\headers\core.hpp"
 #include "\bmkhs_helisim\headers\systems.hpp"
 
-params ["_heli","_wingPos","_pitch","_roll","_span","_chord","_sweep","_twist","_tipWidthScalar","_wingLiftScalarTable",["_isStab", false]];
+params ["_heli","_wingPos","_pitch","_roll","_span","_chord","_sweep","_twist","_tipWidthScalar",["_isStab", false],["_wingIndex", 0]];
 
 if (!local _heli) exitWith {};
 
@@ -11,8 +11,8 @@ private _sfmPlusConfig = _cfg >> "BMKHS_HeliSim";
 private _deltaTime      = _heli getVariable "bmkhs_deltaTime";
 private _rho            = _heli getVariable "bmkhs_rho";
 private _heliCom        = getCenterOfMass _heli;
-private _numElements    = 5;
-private _chordLinePos   = 0.25;
+private _numElements    = (_heli getVariable "bmkhs_wingNumElements")  select _wingIndex;
+private _chordLinePos   = (_heli getVariable "bmkhs_wingChordLinePos") select _wingIndex;
 
 private _debugLineScale = 1.0 / 30.0;
 
@@ -28,7 +28,6 @@ private _B_wingTipLeadingEdge   = [];
 private _C_wingTipTrailingEdge  = [];
 private _D_wingRootTrailingEdge = [];
 private _airfoilTable           = [];
-private _liftScalar             = 1.0;
 
 
 if (_isStab) then {
@@ -187,8 +186,7 @@ for "_j" from 0 to (_numElements - 1) do {
     private _liftVector = _relativeWindNormalized vectorCrossProduct _up;
     _liftVector = _liftVector vectorCrossProduct _relativeWindNormalized;
     _liftVector = vectorNormalized _liftVector;
-    _liftScalar = [_wingLiftScalarTable, _v] call bmkhs_fnc_linearInterp select 1;
-    _liftVector = _liftVector vectorMultiply (_lift * _liftScalar * _deltaTime);
+    _liftVector = _liftVector vectorMultiply (_lift * _deltaTime);
 
     private _dragVector = _relativeWind;
     _dragVector = (vectorNormalized _dragVector) vectorMultiply -1.0;

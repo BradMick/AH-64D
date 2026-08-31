@@ -17,97 +17,30 @@ if (bmkhs_rotorModel == 1) then {
 [_heli] call bmkhs_fnc_fuselage;
 
 //Right Wing
-[ _heli
- ,[1.5,1.9,-1.4]
- ,12.0
- ,0.0
- ,2.00
- ,1.0
- ,0.0
- ,0.0
- ,1.0
- ,
- [
-  [ 0.00, 1.000]
- ,[10.29, 1.000]
- ,[20.58, 1.000]
- ,[36.01, 1.000]
- ,[46.30, 1.000]
- ,[51.44, 1.000]
- ,[61.73, 1.000]
- ,[66.88, 1.000]
- ,[72.02, 1.000]
- ]
- ,false ] call bmkhs_fnc_wing;
-//Left Wing
-[ _heli
- ,[-1.5,1.9,-1.4]
- ,12.0
- ,0.0
- ,2.00
- ,1.0
- ,0.0
- ,0.0
- ,1.0
- ,
-  [
-  [ 0.00, 1.000]
- ,[10.29, 1.000]
- ,[20.58, 1.000]
- ,[36.01, 1.000]
- ,[46.30, 1.000]
- ,[51.44, 1.000]
- ,[61.73, 1.000]
- ,[66.88, 1.000]
- ,[72.02, 1.000]
- ]
- ,false ] call bmkhs_fnc_wing;
+//Lifting surfaces - wings, fins and the stabilator. Config declares as many as
+//the aircraft has; an aircraft with none sets numWings = 0.
+private _numWings           = _heli getVariable "bmkhs_numWings";
+private _wingIsStabilator   = _heli getVariable "bmkhs_wingIsStabilator";
+private _wingPos            = _heli getVariable "bmkhs_wingPos";
+private _wingPitch          = _heli getVariable "bmkhs_wingPitch";
+private _wingRoll           = _heli getVariable "bmkhs_wingRoll";
+private _wingSpan           = _heli getVariable "bmkhs_wingSpan";
+private _wingChord          = _heli getVariable "bmkhs_wingChord";
+private _wingSweep          = _heli getVariable "bmkhs_wingSweep";
+private _wingTwist          = _heli getVariable "bmkhs_wingTwist";
+private _wingTipWidthScalar = _heli getVariable "bmkhs_wingTipWidthScalar";
 
-//Vertical fin
-[ _heli
- ,[0.0, -7.45, -0.75]   //pos
- ,0.0                   //pitch
- ,90.0                  //roll
- ,2.25                  //span
- ,0.95                  //chord
- ,1.4                   //sweep
- ,0.0                   //twist
- ,1.0                   //tipWidthScalar
- ,
-[
-  [ 0.00, 1.000]
- ,[10.29, 1.000]
- ,[20.58, 1.000]
- ,[36.01, 1.000]
- ,[46.30, 1.000]
- ,[51.44, 1.000]
- ,[61.73, 1.000]
- ,[66.88, 1.000]
- ,[72.02, 1.000]
- ]
- ,false ] call bmkhs_fnc_wing;
-
-//Stabilator
-[ _heli
- ,[0.0, -6.45, -1.85]
- ,0.0
- ,0.0
- ,(_heli getVariable "bmkhs_stabWidth")
- ,(_heli getVariable "bmkhs_stabLength")
- ,0.0
- ,0.0
- ,1.0
- ,
-[
-  [ 0.00, 1.000]
- ,[10.29, 1.000]
- ,[20.58, 1.000]
- ,[36.01, 1.000]
- ,[46.30, 1.000]
- ,[51.44, 1.000]
- ,[61.73, 1.000]
- ,[66.88, 1.000]
- ,[72.02, 1.000]
- ]
- ,true
- ] call bmkhs_fnc_wing;
+for "_i" from 0 to (_numWings - 1) do {
+    [ _heli
+     ,_wingPos            select _i
+     ,_wingPitch          select _i
+     ,_wingRoll           select _i
+     ,_wingSpan           select _i
+     ,_wingChord          select _i
+     ,_wingSweep          select _i
+     ,_wingTwist          select _i
+     ,_wingTipWidthScalar select _i
+     ,(_wingIsStabilator  select _i) > 0
+     ,_i
+     ] call bmkhs_fnc_wing;
+};
