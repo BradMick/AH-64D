@@ -15,23 +15,6 @@
     fwdCgLimit          = 1.117;    //m
     aftCgLimit          = 0.964;    //m
 
-    //Crew
-    crewMass            = 113.4;    //kg per seat
-
-    //Station arms, {lateral, longitudinal} in m, right-positive.
-    //Crew seats first, then the internal cells, then the wing stations.
-    //LEGACY - superseded by the Seats/Tanks/Stations classes below. Still read by
-    //fn_massUpdate; removed once that is converted.
-    armCpg[]            = { 0.000,  4.312};
-    armPlt[]            = { 0.000,  2.760};
-    armFwdFuelCell[]    = { 0.000,  2.542};
-    armAmmoBay[]        = { 0.000,  0.944};
-    armAftFuelCell[]    = { 0.000, -0.077};
-    armStation01[]      = {-2.160,  1.345};
-    armStation02[]      = {-1.500,  1.345};
-    armStation03[]      = { 1.500,  1.345};
-    armStation04[]      = { 2.160,  1.345};
-
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Indexed mass items ///////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
