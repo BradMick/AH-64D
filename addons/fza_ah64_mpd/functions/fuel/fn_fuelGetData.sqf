@@ -13,7 +13,7 @@ private _stn4FuelWeight      = _heli getVariable "bmkhs_auxTank4Mass";
 
 private _mainFuelCellWeight  = _fwdCellWeight + _aftCellWeight;
 private _totalFuelCellWeight = _fwdCellWeight + _ctrFuelWeight + _aftCellWeight + _stn1FuelWeight + _stn2FuelWeight + _stn3FuelWeight + _stn4FuelWeight;
-_fwdCellWeight   = _fwdCellWeight * KG_TO_LBS;
+_fwdCellWeight       = _fwdCellWeight * KG_TO_LBS;
 _ctrFuelWeight       = _ctrFuelWeight * KG_TO_LBS;
 _aftCellWeight       = _aftCellWeight * KG_TO_LBS;
 _mainFuelCellWeight  = _mainFuelCellWeight * KG_TO_LBS;

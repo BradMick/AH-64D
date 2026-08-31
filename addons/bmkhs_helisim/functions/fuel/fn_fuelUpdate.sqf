@@ -35,10 +35,6 @@ if (_deltaTime <= 0) exitWith {};
 private _IAFSInstalled = _heli getVariable ["bmkhs_fuelTank2Installed", false];
 if (isNil "_IAFSInstalled") exitWith {};
 
-private _maxFwdFuelMass = _heli getVariable "bmkhs_fuelTank1Max";
-private _maxCtrFuelMass = _heli getVariable "bmkhs_fuelTank2Max";
-private _maxAftFuelMass = _heli getVariable "bmkhs_fuelTank3Max";
-private _maxTnkFuelMass = _heli getVariable ["bmkhs_auxTank1Max", 0];
 private _maxTotFuelMass = _heli getVariable "bmkhs_maxTotFuelMass";
 if (_maxTotFuelMass <= 0) exitWith {};
 
@@ -52,14 +48,50 @@ if (abs (_armaFuelFrac - _storedFuelFrac) > 0.01) then {
     _maxTotFuelMass = _heli getVariable "bmkhs_maxTotFuelMass";
 };
 
-// Current cell masses
-private _fwdFuelMass  = _heli getVariable "bmkhs_fuelTank1Mass";
-private _ctrFuelMass  = _heli getVariable "bmkhs_fuelTank2Mass";
-private _aftFuelMass  = _heli getVariable "bmkhs_fuelTank3Mass";
-private _stn1FuelMass = _heli getVariable "bmkhs_auxTank1Mass";
-private _stn2FuelMass = _heli getVariable "bmkhs_auxTank2Mass";
-private _stn3FuelMass = _heli getVariable "bmkhs_auxTank3Mass";
-private _stn4FuelMass = _heli getVariable "bmkhs_auxTank4Mass";
+//Tank state as arrays - index 0 is tank 1. The transfer logic below still names the
+//AH-64's cells, but everything uniform (read, leak, clamp, total, write-back) loops.
+private _fuelTanks = _heli getVariable ["bmkhs_fuelTanks", []];
+private _auxTanks  = _heli getVariable ["bmkhs_auxTanks",  []];
+private _nFuel     = count _fuelTanks;
+private _nAux      = count _auxTanks;
+
+private _fuelMass = [];
+private _fuelMax  = [];
+private _fuelLow  = [];
+for "_i" from 1 to _nFuel do {
+    _fuelMass pushBack (_heli getVariable [format ["bmkhs_fuelTank%1Mass", _i], 0]);
+    _fuelMax  pushBack (_heli getVariable [format ["bmkhs_fuelTank%1Max",  _i], 0]);
+    _fuelLow  pushBack (_heli getVariable [format ["bmkhs_fuelTank%1Low",  _i], 0]);
+};
+
+private _auxMass = [];
+private _auxMax  = [];
+for "_i" from 1 to _nAux do {
+    _auxMass pushBack (_heli getVariable [format ["bmkhs_auxTank%1Mass", _i], 0]);
+    _auxMax  pushBack (_heli getVariable [format ["bmkhs_auxTank%1Max",  _i], 0]);
+};
+
+//AIRCRAFT-SPECIFIC FROM HERE. The transfer topology below - which tank feeds which engine,
+//the XFER modes, the IAFS gravity feed and the L/R aux ganging - is the AH-64's plumbing
+//expressed as code. Generalising it needs a config-declared fuel network and is the next
+//step of this refactor; until then these named locals are views onto the arrays above and
+//are written back into them before the generic tail runs.
+#define TANK_FWD 0
+#define TANK_CTR 1
+#define TANK_AFT 2
+
+private _fwdFuelMass  = _fuelMass param [TANK_FWD, 0];
+private _ctrFuelMass  = _fuelMass param [TANK_CTR, 0];
+private _aftFuelMass  = _fuelMass param [TANK_AFT, 0];
+private _maxFwdFuelMass = _fuelMax param [TANK_FWD, 0];
+private _maxCtrFuelMass = _fuelMax param [TANK_CTR, 0];
+private _maxAftFuelMass = _fuelMax param [TANK_AFT, 0];
+
+private _stn1FuelMass = _auxMass param [0, 0];
+private _stn2FuelMass = _auxMass param [1, 0];
+private _stn3FuelMass = _auxMass param [2, 0];
+private _stn4FuelMass = _auxMass param [3, 0];
+private _maxTnkFuelMass = _auxMax param [0, 0];
 
 // Fuel flow
 private _apuFF_kgs  = _heli getVariable "bmkhs_apuFF_kgs";
@@ -109,8 +141,8 @@ private _aftFuelAvailLastFrame = _aftFuelBefore > _eps;
 
 // XFER pump — Table 2-6 logic
 private _xferStep   = XFER_RATE_KGS * _deltaTime;
-private _fwdLow     = _fwdFuelMass < (_heli getVariable "bmkhs_fuelTank1Low");
-private _aftLow     = _aftFuelMass < (_heli getVariable "bmkhs_fuelTank3Low");
+private _fwdLow     = _fwdFuelMass < (_fuelLow param [TANK_FWD, 0]);
+private _aftLow     = _aftFuelMass < (_fuelLow param [TANK_AFT, 0]);
 private _apuOn      = _heli getVariable ["bmkhs_apuOn", false];
 private _engBleedOn = _eng1On || _eng2On;
 private _airAvail   = _apuOn || _engBleedOn;
@@ -152,7 +184,7 @@ switch (_xferMode) do {
                 && _airAvail
                 && (_fwdFuelMass < AUTO_FILL_THRESH_KG)
                 && !_aftLow
-                && (_aftFuelMass > (_heli getVariable "bmkhs_fuelTank1Low"))
+                && (_aftFuelMass > (_fuelLow param [TANK_FWD, 0]))
                 && _aftLeadEnough
                 // HALT guards
                 && (_aftMinusFwd >= AUTO_SPLIT_STOP_KG) && (_fwdFuelMass < (_maxFwdFuelMass - 0.1))) then {
@@ -224,40 +256,57 @@ if (_IAFSInstalled && (_heli getVariable ["bmkhs_fuelTank2XferOn", false]) && !_
     };
 };
 
-// Tank leaks — onset at 60% hitpoint damage, linear ramp to max rate
-private _fwdLeakDamage = (_heli getHitPointDamage "hit_fuel_forward") max 0;
-if (_fwdFuelMass > 0 && _fwdLeakDamage > TANK_LEAK_START_DMG) then {
-    private _damageFrac = ((_fwdLeakDamage - TANK_LEAK_START_DMG) / (1 - TANK_LEAK_START_DMG)) min 1;
-    private _leakMass = (TANK_LEAK_MAX_RATE_KGS * _damageFrac * _deltaTime) min _fwdFuelMass;
-    _fwdFuelMass = _fwdFuelMass - _leakMass;
-};
+//Fold the plumbing results back into the arrays.
+_fuelMass set [TANK_FWD, _fwdFuelMass];
+_fuelMass set [TANK_CTR, _ctrFuelMass];
+_fuelMass set [TANK_AFT, _aftFuelMass];
 
-private _ctrLeakDamage = (_heli getHitPointDamage "hit_msnEquip_magandrobbie") max 0;
-if (_IAFSInstalled && _maxCtrFuelMass > 0 && _ctrFuelMass > 0 && _ctrLeakDamage > TANK_LEAK_START_DMG) then {
-    private _damageFrac = ((_ctrLeakDamage - TANK_LEAK_START_DMG) / (1 - TANK_LEAK_START_DMG)) min 1;
-    private _leakMass = (TANK_LEAK_MAX_RATE_KGS * _damageFrac * _deltaTime) min _ctrFuelMass;
-    _ctrFuelMass = _ctrFuelMass - _leakMass;
-};
-
-private _aftLeakDamage = (_heli getHitPointDamage "hit_fuel_aft") max 0;
-if (_aftFuelMass > 0 && _aftLeakDamage > TANK_LEAK_START_DMG) then {
-    private _damageFrac = ((_aftLeakDamage - TANK_LEAK_START_DMG) / (1 - TANK_LEAK_START_DMG)) min 1;
-    private _leakMass = (TANK_LEAK_MAX_RATE_KGS * _damageFrac * _deltaTime) min _aftFuelMass;
-    _aftFuelMass = _aftFuelMass - _leakMass;
-};
+// Tank leaks - onset at TANK_LEAK_START_DMG hitpoint damage, linear ramp to max rate.
+//The hitpoint per tank is still named here; it belongs in the tank config with the topology.
+{
+    _x params ["_idx", "_hitPoint", "_gated"];
+    private _m = _fuelMass param [_idx, 0];
+    if (_gated && _m > 0) then {
+        private _dmg = (_heli getHitPointDamage _hitPoint) max 0;
+        if (_dmg > TANK_LEAK_START_DMG) then {
+            private _frac = ((_dmg - TANK_LEAK_START_DMG) / (1 - TANK_LEAK_START_DMG)) min 1;
+            _fuelMass set [_idx, _m - ((TANK_LEAK_MAX_RATE_KGS * _frac * _deltaTime) min _m)];
+        };
+    };
+} forEach [
+    [TANK_FWD, "hit_fuel_forward",           true],
+    [TANK_CTR, "hit_msnEquip_magandrobbie",  _IAFSInstalled && _maxCtrFuelMass > 0],
+    [TANK_AFT, "hit_fuel_aft",               true]
+];
+//Leaks ran on the arrays, so refresh the named views the aux transfer below still uses.
+_fwdFuelMass = _fuelMass param [TANK_FWD, 0];
+_ctrFuelMass = _fuelMass param [TANK_CTR, 0];
+_aftFuelMass = _fuelMass param [TANK_AFT, 0];
 
 // External tank transfer — L aux → FWD, R aux → AFT; outer requires inner present
+//Presence per aux tank, from the pylons of the station it hangs on. A tank that is gone
+//(jettisoned or never fitted) holds no fuel.
 private _pylonMagazines = getPylonMagazines _heli;
-private _stn1HasTank = ["auxTank", _pylonMagazines select 0]  call BIS_fnc_inString;
-private _stn2HasTank = ["auxTank", _pylonMagazines select 4]  call BIS_fnc_inString;
-private _stn3HasTank = ["auxTank", _pylonMagazines select 8]  call BIS_fnc_inString;
-private _stn4HasTank = ["auxTank", _pylonMagazines select 12] call BIS_fnc_inString;
+private _stations       = _heli getVariable ["bmkhs_stations", []];
+private _auxHasTank     = [];
+{
+    _x params ["_station"];
+    private _pylons  = (_stations param [_station - 1, [[], []]]) param [1, []];
+    private _present = _pylons findIf {
+        ["auxTank", _pylonMagazines param [_x - 1, ""]] call BIS_fnc_inString
+    } > -1;
+    _auxHasTank pushBack _present;
+    if (!_present) then { _auxMass set [_forEachIndex, 0] };
+} forEach _auxTanks;
 
-// Zero fuel for any station whose tank is gone (jettisoned or removed)
-if (!_stn1HasTank) then { _stn1FuelMass = 0; };
-if (!_stn2HasTank) then { _stn2FuelMass = 0; };
-if (!_stn3HasTank) then { _stn3FuelMass = 0; };
-if (!_stn4HasTank) then { _stn4FuelMass = 0; };
+private _stn1HasTank = _auxHasTank param [0, false];
+private _stn2HasTank = _auxHasTank param [1, false];
+private _stn3HasTank = _auxHasTank param [2, false];
+private _stn4HasTank = _auxHasTank param [3, false];
+_stn1FuelMass = _auxMass param [0, 0];
+_stn2FuelMass = _auxMass param [1, 0];
+_stn3FuelMass = _auxMass param [2, 0];
+_stn4FuelMass = _auxMass param [3, 0];
 
 private _fwdRoom = _maxFwdFuelMass - _fwdFuelMass;
 private _aftRoom = _maxAftFuelMass - _aftFuelMass;
@@ -297,14 +346,17 @@ if (_stn4HasTank && _rAuxOn && _stn3HasTank && _stn4FuelMass > 0 && _aftRoom > 0
 private _lAuxFlowing = _lAuxFlowTotal > 0;
 private _rAuxFlowing = _rAuxFlowTotal > 0;
 
-// Clamp
-_fwdFuelMass  = 0 max _fwdFuelMass  min _maxFwdFuelMass;
-_aftFuelMass  = 0 max _aftFuelMass  min _maxAftFuelMass;
-_ctrFuelMass  = 0 max _ctrFuelMass  min _maxCtrFuelMass;
-_stn1FuelMass = 0 max _stn1FuelMass min _maxTnkFuelMass;
-_stn2FuelMass = 0 max _stn2FuelMass min _maxTnkFuelMass;
-_stn3FuelMass = 0 max _stn3FuelMass min _maxTnkFuelMass;
-_stn4FuelMass = 0 max _stn4FuelMass min _maxTnkFuelMass;
+//Fold the aux transfer results back into the arrays, then clamp every tank to its capacity.
+_fuelMass set [TANK_FWD, _fwdFuelMass];
+_fuelMass set [TANK_CTR, _ctrFuelMass];
+_fuelMass set [TANK_AFT, _aftFuelMass];
+_auxMass set [0, _stn1FuelMass];
+_auxMass set [1, _stn2FuelMass];
+_auxMass set [2, _stn3FuelMass];
+_auxMass set [3, _stn4FuelMass];
+
+{ _fuelMass set [_forEachIndex, 0 max _x min (_fuelMax param [_forEachIndex, 0])] } forEach _fuelMass;
+{ _auxMass  set [_forEachIndex, 0 max _x min (_auxMax  param [_forEachIndex, 0])] } forEach _auxMass;
 
 private _eng1FuelAvail = (_eng1Req <= _eps) || ([_aftFuelAvailLastFrame, _fwdFuelAvailLastFrame] select (_eng1Source == "FWD"));
 private _eng2FuelAvail = (_eng2Req <= _eps) || ([_aftFuelAvailLastFrame, _fwdFuelAvailLastFrame] select (_eng2Source == "FWD"));
@@ -337,34 +389,25 @@ _heli setVariable ["bmkhs_lAuxFlowing",            _lAuxFlowing];
 _heli setVariable ["bmkhs_rAuxFlowing",            _rAuxFlowing];
 
 // Write back
-private _totFuelMass = _fwdFuelMass + _ctrFuelMass + _aftFuelMass
-                     + _stn1FuelMass + _stn2FuelMass + _stn3FuelMass + _stn4FuelMass;
+private _totFuelMass = 0;
+{ _totFuelMass = _totFuelMass + _x } forEach (_fuelMass + _auxMass);
 if (local _heli) then {
     _heli setFuel (_totFuelMass / _maxTotFuelMass);
 };
 
-_heli setVariable ["bmkhs_fuelTank1Mass",  _fwdFuelMass];
-_heli setVariable ["bmkhs_fuelTank2Mass",  _ctrFuelMass];
-_heli setVariable ["bmkhs_fuelTank3Mass",  _aftFuelMass];
-_heli setVariable ["bmkhs_auxTank1Mass", _stn1FuelMass];
-_heli setVariable ["bmkhs_auxTank2Mass", _stn2FuelMass];
-_heli setVariable ["bmkhs_auxTank3Mass", _stn3FuelMass];
-_heli setVariable ["bmkhs_auxTank4Mass", _stn4FuelMass];
-_heli setVariable ["bmkhs_totFuelMass",  _totFuelMass];
+{ _heli setVariable [format ["bmkhs_fuelTank%1Mass", _forEachIndex + 1], _x] } forEach _fuelMass;
+{ _heli setVariable [format ["bmkhs_auxTank%1Mass",  _forEachIndex + 1], _x] } forEach _auxMass;
+_heli setVariable ["bmkhs_totFuelMass", _totFuelMass];
 
 //Whether the crew can see the fuel page is the aircraft's business - it sets this
 //if it wants empty-tank advisories to re-arm only while the page is displayed.
 private _fuelPageOpen = _heli getVariable ["bmkhs_fuelPageOpen", false];
 {
-    _x params ["_present", "_mass", "_var"];
-    if (!_present || _mass >= EXT_EMPTY_ADV_THRESH_KG) then {
+    private _present = _auxHasTank param [_forEachIndex, false];
+    private _var     = format ["bmkhs_auxTank%1EmptyArmed", _forEachIndex + 1];
+    if (!_present || _x >= EXT_EMPTY_ADV_THRESH_KG) then {
         _heli setVariable [_var, true];
     } else {
         if (_fuelPageOpen) then { _heli setVariable [_var, false]; };
     };
-} forEach [
-    [_stn1HasTank, _stn1FuelMass, "bmkhs_auxTank1EmptyArmed"],
-    [_stn2HasTank, _stn2FuelMass, "bmkhs_auxTank2EmptyArmed"],
-    [_stn3HasTank, _stn3FuelMass, "bmkhs_auxTank3EmptyArmed"],
-    [_stn4HasTank, _stn4FuelMass, "bmkhs_auxTank4EmptyArmed"]
-];
+} forEach _auxMass;
