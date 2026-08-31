@@ -22,7 +22,7 @@ Parameters:
     _fuelLow   - Per-tank low-level thresholds [Array]
     _fuelTanks - Fuel tank table, for the per-tank variable names [Array]
     _mains     - Indices of the tanks with role "main" [Array]
-    _transfers - Indices of the tanks with role "transfer" [Array]
+    _transfers - Indices of the tanks with role "xfer" [Array]
     _auxArmed  - True if any armed auxiliary tank still holds fuel [Bool]
     _deltaTime - Frame time [Number]
 

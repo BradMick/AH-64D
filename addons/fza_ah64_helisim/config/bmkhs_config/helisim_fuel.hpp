@@ -32,7 +32,7 @@
     //              number. The AH-64's plumbing asks for its forward and aft mains and its
     //              transfer cell by role and gets whatever index those happen to be:
     //                "main"     - a primary cell an engine can draw from
-    //                "transfer" - gravity/pump feeds the mains, engines never draw directly
+    //                "xfer"     - gravity/pump feeds the mains, engines never draw directly
     //              An aircraft with four mains gives all four role = "main".
     //  leakPoint - hitpoint whose damage makes this tank leak; "" for none.
 
@@ -58,7 +58,7 @@
             capacity  = 300.9;      //663lbs
             lowFuelKg = 0.0;
             removable = 1;
-            role      = "transfer";
+            role      = "xfer";
             leakPoint = "hit_msnEquip_magandrobbie";
         };
         class FuelTank03 {

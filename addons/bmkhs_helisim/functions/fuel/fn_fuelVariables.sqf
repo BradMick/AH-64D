@@ -72,7 +72,7 @@ private _transfers = [];
 {
     switch (_x select 5) do {
         case "main":     { _mains     pushBack _forEachIndex };
-        case "transfer": { _transfers pushBack _forEachIndex };
+        case "xfer":     { _transfers pushBack _forEachIndex };
     };
 } forEach _fuelTanks;
 _heli setVariable ["bmkhs_fuelMains",     _mains];
