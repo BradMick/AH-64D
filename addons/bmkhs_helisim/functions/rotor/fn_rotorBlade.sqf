@@ -18,9 +18,12 @@ private _liftTbl  = _heli getVariable [(["bmkhs_betMainLiftTable", "bmkhs_betTai
 private _bladeScale = if (_liftTbl isEqualTo []) then { 1.0 } else { [_liftTbl, _velBet] call bmkhs_fnc_mathLinearInterp select 1 };
 //Tail airspeed trim/reversal: additive to the tail LIFT scalar (the ~100kt tail-thrust reversal
 //the simple model dials in via tailTrimTable; BET had no equivalent). Only for the tail rotor.
+//NOT WIRED UP: _trimTbl is stubbed to [] so the branch below never runs. The table it should
+//read, bmkhs_betTailTrimTable, is initialised in fn_rotorVariables (all-zero bands) and is
+//never read anywhere. To enable, replace the stub with the getVariable and populate the bands.
 if (_isTail) then {
     private _trimTbl = [];
-    if !(_trimTbl isEqualTo []) then { _bladeScale = _bladeScale + ([_trimTbl, _velBet] call bmkhs_fnc_mathLinearInterp select 1); };
+    if (_trimTbl isNotEqualTo []) then { _bladeScale = _bladeScale + ([_trimTbl, _velBet] call bmkhs_fnc_mathLinearInterp select 1); };
 };
 
 [_heli, "bmkhs_rotorFlapMoment", _rotorIndex, _bladeIndex, 0.0] call bmkhs_fnc_utilSetMultiArrayVariable;
