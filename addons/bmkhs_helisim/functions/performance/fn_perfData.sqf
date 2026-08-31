@@ -18,7 +18,7 @@ Author:
     BradMick
 ---------------------------------------------------------------------------- */
 params ["_heli"];
-#include "\bmkhs_helisim\headers\core.hpp"
+#include "\bmkhs_helisim\functions\core\core.hpp"
 
 private _config    = configOf _heli >> "BMKHS_HeliSim";
 private _curGWT_kg = _heli getVariable "bmkhs_GWT";

@@ -1,5 +1,5 @@
 private _projName = "AH-64D Official Project";
-#include "\bmkhs_helisim\headers\core.hpp"
+#include "\bmkhs_helisim\functions\core\core.hpp"
 
 [
     "fza_ah64_showPopupv2_3",

@@ -1,4 +1,4 @@
-#include "\bmkhs_helisim\headers\core.hpp"
+#include "\bmkhs_helisim\functions\core\core.hpp"
 params ["_heli", "_bladeIndex", "_rotorIndex", "_deltaTime", "_numElements", "_numBlades", "_pos", "_uVec", "_omega", "_airfoilTable", "_bladeCutout", "_bladeLength", "_inflowAlpha", "_a_rootPos", "_b_tipPos", "_c_rootLeadingEdge", "_d_tipLeadingEdge", "_e_tipTrailingEdge", "_f_rootTrailingEdge"];
 
 private _rho              = _heli getVariable "bmkhs_rho";

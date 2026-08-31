@@ -18,7 +18,7 @@ Author:
 ---------------------------------------------------------------------------- */
 params ["_heli", "_config"];
 
-#include "\bmkhs_helisim\headers\systems.hpp"
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 
 if (!(_heli getVariable ["bmkhs_systemsInitialised", false]) && local _heli) then {
     _heli setVariable ["bmkhs_systemsInitialised", true, true];

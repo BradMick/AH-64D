@@ -26,7 +26,7 @@ Returns:
 Author:
     BradMick / FZA Development Team
 ---------------------------------------------------------------------------- */
-#include "\bmkhs_helisim\headers\fuelConstants.hpp"
+#include "\bmkhs_helisim\functions\fuel\fuel.hpp"
 params ["_heli"];
 
 private _deltaTime     = _heli getVariable "bmkhs_deltaTime";

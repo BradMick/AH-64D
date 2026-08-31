@@ -13,7 +13,7 @@ Returns:
 Author:
     Snow(Dryden)
 ---------------------------------------------------------------------------- */
-#include "\bmkhs_helisim\headers\systems.hpp"
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 params ["_heli"];
 
 _heli call fza_fcr_fnc_resolveDisplay;

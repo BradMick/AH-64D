@@ -1,7 +1,7 @@
 #include "\fza_ah64_controls\headers\systemConstants.h"
-#include "\bmkhs_helisim\headers\systems.hpp"
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 #include "\fza_ah64_mpd\headers\mfdConstants.h"
-#include "\bmkhs_helisim\headers\core.hpp"
+#include "\bmkhs_helisim\functions\core\core.hpp"
 
 params["_name", "_value"];
 if !(vehicle player isKindOf "fza_ah64base") exitWith {};

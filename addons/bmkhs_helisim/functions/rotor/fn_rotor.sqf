@@ -1,6 +1,6 @@
-#include "\bmkhs_helisim\headers\core.hpp"
+#include "\bmkhs_helisim\functions\core\core.hpp"
 #include "\bmkhs_helisim\functions\rotor\rotor.hpp"
-#include "\bmkhs_helisim\headers\systems.hpp"
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 
 params ["_heli", "_rotorIndex", "_pivot", "_rot", "_type", "_dir", "_numBlades", "_numElements", "_mastLength", "_gearRatio", "_flapTimeConst", "_inflowAlpha", "_delta3", "_airfoilTable", "_bladeCutout", "_bladeLength", "_bladeChord", "_bladeTwist", "_bladeMass", "_pitchMin", "_pitchMid", "_pitchMax", "_rollMin", "_rollMid", "_rollMax", "_collMin", "_collMid", "_collMax", "_animSource", "_hitPoint", "_dmgThreshold"];
 

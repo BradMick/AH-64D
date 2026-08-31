@@ -14,7 +14,7 @@ Returns:
 Author:
     FZA Development Team
 ---------------------------------------------------------------------------- */
-#include "\bmkhs_helisim\headers\core.hpp"
+#include "\bmkhs_helisim\functions\core\core.hpp"
 params ["_heli"];
 
 private _checkRunning = _heli getVariable ["bmkhs_checkRunning", false];

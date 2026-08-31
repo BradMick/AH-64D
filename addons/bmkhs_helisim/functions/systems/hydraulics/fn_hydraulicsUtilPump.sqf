@@ -17,7 +17,7 @@ Author:
     BradMick
 ---------------------------------------------------------------------------- */
 params ["_heli"];
-#include "\bmkhs_helisim\headers\systems.hpp"
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 
 private _utilHydPumpDamage = _heli getHitPointDamage "hit_hyd_utilPump";
 private _utilHydPSI_pct    = _heli getVariable "bmkhs_utilHydPSI_pct";

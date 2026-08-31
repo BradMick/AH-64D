@@ -1,6 +1,6 @@
 params ["_heli"];
-#include "\bmkhs_helisim\headers\core.hpp"
-#include "\bmkhs_helisim\headers\systems.hpp"
+#include "\bmkhs_helisim\functions\core\core.hpp"
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 
 private _mechanicalMixing = false;
 

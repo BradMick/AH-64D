@@ -17,7 +17,7 @@ Author:
     BradMick
 ---------------------------------------------------------------------------- */
 params ["_heli", "_deltaTime"];
-#include "\bmkhs_helisim\headers\systems.hpp"
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 
 private _battSwitchOn = _heli getVariable "bmkhs_battSwitchOn";
 private _battPower    = _heli getVariable "bmkhs_battPower_pct";

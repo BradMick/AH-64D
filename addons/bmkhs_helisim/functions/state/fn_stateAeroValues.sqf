@@ -24,7 +24,7 @@ Author:
 ---------------------------------------------------------------------------- */
 params ["_heli"];
 
-#include "\bmkhs_helisim\headers\core.hpp"
+#include "\bmkhs_helisim\functions\core\core.hpp"
 
 private _totVel   = _heli getVariable "bmkhs_velModelSpace";
 private _totVelX  = _totVel # 0;

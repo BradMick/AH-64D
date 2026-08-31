@@ -20,7 +20,7 @@ Examples:
 Author:
     Snow(Dryden)
 ---------------------------------------------------------------------------- */
-#include "\bmkhs_helisim\headers\systems.hpp"
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 params ["_heli", "_system", "_damage"];
 
 private _largeAmmoClass = "fza_ah64_auxtank_explosion_large";

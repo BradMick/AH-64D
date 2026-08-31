@@ -16,7 +16,7 @@ Examples:
 Author:
     BradMick, Snow(Dryden)
 ---------------------------------------------------------------------------- */
-#include "\bmkhs_helisim\headers\systems.hpp"
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 #include "\fza_ah64_ase\headers\ase.h"
 
 params ["_heli", "_deltaTime"];

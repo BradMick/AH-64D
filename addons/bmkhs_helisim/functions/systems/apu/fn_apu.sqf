@@ -17,7 +17,7 @@ Author:
     BradMick
 ---------------------------------------------------------------------------- */
 params ["_heli", "_deltaTime"];
-#include "\bmkhs_helisim\headers\systems.hpp"
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 
 private _apuBtnOn   = _heli getVariable "bmkhs_apuBtnOn";
 private _battBusOn  = _heli getVariable "bmkhs_battBusOn";

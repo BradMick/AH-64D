@@ -1,5 +1,5 @@
-#include "\bmkhs_helisim\headers\core.hpp"
-#include "\bmkhs_helisim\headers\fuelConstants.hpp"
+#include "\bmkhs_helisim\functions\core\core.hpp"
+#include "\bmkhs_helisim\functions\fuel\fuel.hpp"
 params ["_heli"];
 
 private _fwdCellWeight       = _heli getVariable "bmkhs_fwdFuelMass";

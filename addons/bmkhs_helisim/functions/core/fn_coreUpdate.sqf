@@ -17,7 +17,7 @@ Author:
     BradMick
 ---------------------------------------------------------------------------- */
 params ["_heli"];
-#include "\bmkhs_helisim\headers\core.hpp"
+#include "\bmkhs_helisim\functions\core\core.hpp"
 
 if (isGamePaused || CBA_missionTime < 0.1) exitWith {
     _heli setVariable ["bmkhs_previousTime",  diag_tickTime];
@@ -39,7 +39,6 @@ if (isAutoHoverOn _heli) then {
 
 //Input
 [_heli] call bmkhs_fnc_fmc;
-[_heli] call bmkhs_fnc_getConnectedAxes;
 [_heli] call bmkhs_fnc_inputUpdate;
 
 //Preston AI Pilot

@@ -1,5 +1,5 @@
 params ["_heli"];
-#include "\bmkhs_helisim\headers\core.hpp"
+#include "\bmkhs_helisim\functions\core\core.hpp"
 
 if (currentPilot _heli != player || !local _heli) exitWith {};
 

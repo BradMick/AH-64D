@@ -1,4 +1,4 @@
-#include "\bmkhs_helisim\headers\core.hpp"
+#include "\bmkhs_helisim\functions\core\core.hpp"
 
 #define BMKHS_SETTINGS_CATEGORY "BradMick's HeliSim"
 

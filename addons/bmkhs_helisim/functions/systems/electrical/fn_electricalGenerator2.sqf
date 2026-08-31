@@ -17,7 +17,7 @@ Author:
     BradMick
 ---------------------------------------------------------------------------- */
 params ["_heli", "_apuOn", "_rtrRPM"];
-#include "\bmkhs_helisim\headers\systems.hpp"
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 
 private _gen2On  = _heli getVariable "bmkhs_gen2On";
 private _gen2Damage = _heli getHitPointDamage "hit_elec_generator2";

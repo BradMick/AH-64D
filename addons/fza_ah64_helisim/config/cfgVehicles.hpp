@@ -1,4 +1,4 @@
-#include "\bmkhs_helisim\headers\fmOverride.hpp"
+#include "\bmkhs_helisim\fmOverride.hpp"
 
 class CfgVehicles {
     class Helicopter_Base_F;

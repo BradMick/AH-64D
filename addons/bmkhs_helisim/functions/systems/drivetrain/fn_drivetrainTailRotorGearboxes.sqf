@@ -17,7 +17,7 @@ Author:
     BradMick
 ---------------------------------------------------------------------------- */
 params ["_heli"];
-#include "\bmkhs_helisim\headers\systems.hpp"
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 
 private _IGBDamage  = _heli getHitPointDamage "hit_drives_intermediategearbox";
 private _TGBDamage  = _heli getHitPointDamage "hit_drives_tailrotorgearbox";

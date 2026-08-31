@@ -14,7 +14,7 @@ Examples:
 Author:
     BradMick, Snow(Dryden), Ampersand
 ---------------------------------------------------------------------------- */
-#include "\bmkhs_helisim\headers\core.hpp"
+#include "\bmkhs_helisim\functions\core\core.hpp"
 params ["_heli", "_deltaTime"];
 
 #define INPUT_MAX 10.0

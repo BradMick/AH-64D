@@ -1,5 +1,5 @@
 params ["_heli"];
-#include "\bmkhs_helisim\headers\core.hpp"
+#include "\bmkhs_helisim\functions\core\core.hpp"
 
 //pos/vel use pid_roll/pid_pitch (posRoll/posPitch gains); att uses pid_roll_att/pid_pitch_att (attRoll/attPitch).
 //Roll

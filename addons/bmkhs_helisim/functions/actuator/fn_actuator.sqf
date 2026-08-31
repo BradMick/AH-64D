@@ -17,7 +17,7 @@ Author:
     BradMick
 ---------------------------------------------------------------------------- */
 params ["_heli", "_inputAxis", "_input", "_lagVal"];
-#include "\bmkhs_helisim\headers\systems.hpp"
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 
 //SAS SERVO = a FAST ELECTRICAL path. When SCAS is available (that axis's FMC channel on AND
 //primary hydraulics good), the pilot command reaches the swashplate through this electrical

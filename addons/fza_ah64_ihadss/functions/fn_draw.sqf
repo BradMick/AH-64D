@@ -19,7 +19,7 @@ Author:
     unknown
 ---------------------------------------------------------------------------- */
 #include "\fza_ah64_controls\headers\systemConstants.h"
-#include "\bmkhs_helisim\headers\systems.hpp"
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 #include "\fza_ah64_dms\headers\constants.h"
 params ["_heli"];
 

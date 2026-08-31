@@ -17,7 +17,7 @@ Author:
     BradMick
 ---------------------------------------------------------------------------- */
 params ["_heli", "_deltaTime"];
-#include "\bmkhs_helisim\headers\systems.hpp"
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 
 private _priReservoirDamage = _heli getHitPointDamage "hit_hyd_priReservoir";
 private _priHydLevel_pct    = _heli getVariable "bmkhs_priLevel_pct";

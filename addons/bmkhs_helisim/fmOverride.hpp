@@ -1,5 +1,5 @@
-#ifndef BMKHS_HELISIM_HEADERS_FMOVERRIDE_HPP
-#define BMKHS_HELISIM_HEADERS_FMOVERRIDE_HPP
+#ifndef BMKHS_HELISIM_FMOVERRIDE_HPP
+#define BMKHS_HELISIM_FMOVERRIDE_HPP
 
 //HeliSim IS the flight model. These zero out Arma's built-in rotor-lib forces so
 //the two are not fighting each other. Every HeliSim pack must invoke this macro

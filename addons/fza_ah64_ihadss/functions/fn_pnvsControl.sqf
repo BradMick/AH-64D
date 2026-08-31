@@ -18,7 +18,7 @@ Examples:
 Author:
     Unknown
 ---------------------------------------------------------------------------- */
-#include "\bmkhs_helisim\headers\systems.hpp"
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 params["_heli"];
 
 if (player != driver _heli && (_heli animationPhase "plt_nvsmode" == 0 && (_heli animationPhase "cpg_nvsmode" != 0))) exitWith {};

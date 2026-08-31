@@ -17,7 +17,7 @@ Author:
     BradMick
 ---------------------------------------------------------------------------- */
 params ["_heli", "_deltaTime"];
-#include "\bmkhs_helisim\headers\systems.hpp"
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 
 private _engPctTq         = _heli getVariable "bmkhs_engPctTQ" select 0;
 private _isSingleEng      = _heli getVariable "bmkhs_isSingleEng";

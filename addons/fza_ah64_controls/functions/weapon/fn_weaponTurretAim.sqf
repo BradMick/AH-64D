@@ -17,8 +17,8 @@ Author:
     Snow(Dryden)
 ---------------------------------------------------------------------------- */
 #include "\fza_ah64_controls\headers\systemConstants.h"
-#include "\bmkhs_helisim\headers\systems.hpp"
-#include "\bmkhs_helisim\headers\core.hpp"
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
+#include "\bmkhs_helisim\functions\core\core.hpp"
 params["_heli"];
 
 #define WEP_TYPE(_mag) (if ((_mag) == "") then {""} else {getText (configFile >> "cfgMagazines" >> (_mag) >> "fza_pylonType")})

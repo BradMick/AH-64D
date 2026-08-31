@@ -1,5 +1,5 @@
-#include "\bmkhs_helisim\headers\core.hpp"
-#include "\bmkhs_helisim\headers\systems.hpp"
+#include "\bmkhs_helisim\functions\core\core.hpp"
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 
 params ["_heli","_wingPos","_pitch","_roll","_span","_chord","_sweep","_twist","_tipWidthScalar",["_isStab", false],["_wingIndex", 0]];
 

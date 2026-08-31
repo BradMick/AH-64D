@@ -1,5 +1,5 @@
 params ["_heli"];
-#include "\bmkhs_helisim\headers\core.hpp"
+#include "\bmkhs_helisim\functions\core\core.hpp"
 
 private _pidSASPitch = _heli getVariable "bmkhs_pid_sas_pitch";
 private _pidSASRoll  = _heli getVariable "bmkhs_pid_sas_roll";

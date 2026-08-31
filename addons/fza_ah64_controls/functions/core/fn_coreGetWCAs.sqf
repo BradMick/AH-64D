@@ -31,9 +31,9 @@ Author:
 ---------------------------------------------------------------------------- */
 #include "\fza_ah64_controls\headers\wcaConstants.h"
 #include "\fza_ah64_controls\headers\systemConstants.h"
-#include "\bmkhs_helisim\headers\systems.hpp"
-#include "\bmkhs_helisim\headers\core.hpp"
-#include "\bmkhs_helisim\headers\fuelConstants.hpp"
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
+#include "\bmkhs_helisim\functions\core\core.hpp"
+#include "\bmkhs_helisim\functions\fuel\fuel.hpp"
 #include "\fza_ah64_ase\headers\ase.h"
 
 params ["_heli"];
