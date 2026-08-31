@@ -43,8 +43,15 @@ for "_i" from 1 to _numFuelTanks do {
     _heli setVariable [format ["bmkhs_fuelTank%1Mass", _i], 0.0];
     _heli setVariable [format ["bmkhs_fuelTank%1Max",  _i], _capacity];
     _heli setVariable [format ["bmkhs_fuelTank%1Low",  _i], getNumber (_t >> "lowFuelKg")];
-    //A removable tank starts absent; the aircraft installs it. Fixed tanks are always fitted.
-    _heli setVariable [format ["bmkhs_fuelTank%1Installed", _i], !_removable];
+    //Fixed tanks are always fitted. A removable one defaults to absent, but the aircraft may
+    //have already declared it installed BEFORE coreConfig runs (fn_setup does exactly that
+    //for the centre cell), so only seed the flag when it has not been set.
+    private _installedVar = format ["bmkhs_fuelTank%1Installed", _i];
+    if (!_removable) then {
+        _heli setVariable [_installedVar, true];
+    } else {
+        _heli setVariable [_installedVar, _heli getVariable [_installedVar, false]];
+    };
 };
 _heli setVariable ["bmkhs_numFuelTanks", _numFuelTanks];
 _heli setVariable ["bmkhs_fuelTanks",    _fuelTanks];
