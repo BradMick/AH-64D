@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
-Function: bmkhs_fnc_calculateAeroValues
+Function: bmkhs_fnc_stateAeroValues
 
 Description:
     Calculates and returns _alpha (angle of attack) and _beta_g (sideslip) for the

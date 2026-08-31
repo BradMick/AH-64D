@@ -23,7 +23,7 @@ private _engPid             = _heli getVariable "bmkhs_pid_engine" select _engNu
 private _rtrTqReq           = _heli getVariable "bmkhs_reqEngTorque" select 0;
 private _engOverspeed       = _heli getVariable "bmkhs_engineOverspeed" select _engNum;
 private _randomTq           = _heli getVariable "bmkhs_randomTq";
-private _onGnd              = [_heli] call bmkhs_fnc_onGround;
+private _onGnd              = [_heli] call bmkhs_fnc_stateOnGround;
 private _engPctNp           = _heli getVariable "bmkhs_engPctNP" select _engNum;
 
 private _npTrimRef          = 0.0;

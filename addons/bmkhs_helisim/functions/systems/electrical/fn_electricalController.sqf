@@ -21,7 +21,7 @@ params ["_heli", "_deltaTime"];
 private _configVehicles = configOf _heli;
 
 private _apuOn  = _heli getVariable "bmkhs_apuOn";
-private _rtrRPM = [_heli] call bmkhs_fnc_getRtrRPM;
+private _rtrRPM = [_heli] call bmkhs_fnc_stateRtrRPM;
 
 //Update the Battery
 [_heli, _deltaTime] call bmkhs_fnc_electricalBattery;

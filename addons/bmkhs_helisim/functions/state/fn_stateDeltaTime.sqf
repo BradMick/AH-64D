@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
-Function: bmkhs_fnc_getDeltaTime
+Function: bmkhs_fnc_stateDeltaTime
 
 Description:
     Custom time handler

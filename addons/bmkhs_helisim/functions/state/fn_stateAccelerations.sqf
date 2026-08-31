@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
-Function: bmkhs_fnc_getAccelerations
+Function: bmkhs_fnc_stateAccelerations
 
 Description:
 

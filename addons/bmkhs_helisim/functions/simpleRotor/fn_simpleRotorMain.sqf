@@ -142,7 +142,7 @@ private _rtrThrustScalarTable =
 //Published for the force overlay/dump readout only - the array above is the source of truth.
 _heli setVariable ["bmkhs_mainThrustTable", _rtrThrustScalarTable];
 
-private _isOnGnd                = [_heli] call bmkhs_fnc_onGround;
+private _isOnGnd                = [_heli] call bmkhs_fnc_stateOnGround;
 
 private _pitchTorqueScalar      = 2.50 * 1.3;
 private _rollTorqueScalar       = 0.75 * 1.3;

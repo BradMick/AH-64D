@@ -392,7 +392,7 @@ if (_collective == "scalar") then {
 };
 _speedkts = format["%1", (_heli getVariable "bmkhs_vel2D")];
 
-([_heli] call bmkhs_fnc_getAltitude)
+([_heli] call bmkhs_fnc_stateAltitude)
     params ["_barAlt", "_radAlt"];
 _baraltft = format["%1",  _barAlt toFixed 0];
 _radaltft = format["%1", [_radAlt toFixed 0, ""] select (_radAlt == 1420)];

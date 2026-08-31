@@ -7,7 +7,7 @@ params ["_heli", "_mpdIndex"];
 
 private _config  = configOf _heli >> "BMKHS_HeliSim";
 
-([_heli] call bmkhs_fnc_getAltitude)
+([_heli] call bmkhs_fnc_stateAltitude)
     params ["_barAlt", "_radAlt"];
 private _pa      = _barAlt;  //feet
 private _fat     = _heli getVariable "bmkhs_FAT";

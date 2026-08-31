@@ -83,12 +83,12 @@ private _eng2Np          = _heli getVariable "bmkhs_engPctNP" select 1;
 private _eng2State       = _heli getVariable "bmkhs_engState" select 1;
 //--Rotor RPM
 private _pwrLvrAtfly     = false;
-private _onGnd           = [_heli] call bmkhs_fnc_onGround;
+private _onGnd           = [_heli] call bmkhs_fnc_stateOnGround;
 if (_eng1PwrLvrState == "FLY" || _eng2PwrLvrState == "FLY") then {
     _pwrLvrAtFly = true;
 };
 
-private _rtrRPM     = [_heli] call bmkhs_fnc_getRtrRPM;
+private _rtrRPM     = [_heli] call bmkhs_fnc_stateRtrRPM;
 //--Transmission
 private _xmsnDamage = _heli getHitPointDamage "hit_drives_transmission";
 //--Tail rotor & Intermediate gearboxes

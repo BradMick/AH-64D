@@ -7,7 +7,7 @@ params["_name", "_value"];
 if !(vehicle player isKindOf "fza_ah64base") exitWith {};
 private _heli = vehicle player;
 
-private _onGnd      = [_heli] call bmkhs_fnc_onGround;
+private _onGnd      = [_heli] call bmkhs_fnc_stateOnGround;
 private _gndOrideOn = _heli getVariable "fza_ah64_gndOrideOn";
 
 if (_value) then {
@@ -64,7 +64,7 @@ if (_value) then {
         };
         case "fza_ah64_fcrSingleScan": {
             private _fcrState = _heli getVariable "fza_ah64_fcrState";
-            private _onGnd = [_heli] call bmkhs_fnc_onGround;
+            private _onGnd = [_heli] call bmkhs_fnc_stateOnGround;
             private _gndOrideOn  = _heli getVariable "fza_ah64_gndOrideOn";
             if (!_gndOrideOn && _onGnd || _fcrState#0 == FCR_MODE_FAULT) exitWith {};
             if (_fcrState#0 != FCR_MODE_ON_SINGLE) exitWith {

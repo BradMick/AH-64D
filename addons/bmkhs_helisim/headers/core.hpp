@@ -273,7 +273,7 @@
 //it is BOTH high enough AND fast enough - i.e. genuinely in cruise. Altitude alone is not sufficient:
 //NOE flight can sit well above 50ft while masked behind terrain or trees and is still a nose-to-tail
 //regime. Each gate is a BAND, not a step, so the handover ramps instead of jolting the tail.
-//Altitude is blended against the RAW radar altitude from bmkhs_fnc_getAltitude (3rd return):
+//Altitude is blended against the RAW radar altitude from bmkhs_fnc_stateAltitude (3rd return):
 //the displayed _radAlt is rounded to 10ft above 50ft, which would quantize this band into a staircase.
 #define AUTOPEDAL_NTT_AGL_FT          40.0    //ft  - below this: nose-to-tail
 #define AUTOPEDAL_AERO_AGL_FT         60.0    //ft  - above this: high enough for aero trim

@@ -47,7 +47,7 @@ _heli setUserMFDText [MFD_INDEX_OFFSET(MFD_TEXT_IND_ENG_TGT_2), _e2tgt toFixed 0
 _heli setUserMFDText [MFD_INDEX_OFFSET(MFD_TEXT_IND_ENG_NG_2), (_e2ng/10) toFixed 1];
 _heli setUserMFDText [MFD_INDEX_OFFSET(MFD_TEXT_IND_ENG_OIL_PSI_2), _e2opsi toFixed 0];
 
-private _rotorRpm = ([_heli] call bmkhs_fnc_getRtrRPM) * 100;
+private _rotorRpm = ([_heli] call bmkhs_fnc_stateRtrRPM) * 100;
 
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_ENG_NR), round _rotorRpm];
 _heli setUserMFDText  [MFD_INDEX_OFFSET(MFD_TEXT_IND_ENG_NR), _rotorRpm toFixed 0];
@@ -66,7 +66,7 @@ if (_engineStates # 1 in ["STARTING", "STARTED"]) then {
     _engineStarted = 2;
 };
 
-private _pagemode = [2,1] select ([_heli] call bmkhs_fnc_onGround);
+private _pagemode = [2,1] select ([_heli] call bmkhs_fnc_stateOnGround);
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_ENG_START), _engineStarted];
 private _wcas = [_heli] call fza_fnc_coreGetWCAs;
 _wcas = _wcas select {!(WCA_ADVISORY in _x)};

@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
-Function: bmkhs_fnc_onGround
+Function: bmkhs_fnc_stateOnGround
 
 Description:
     Returns true or false based on being in contact with the ground.
@@ -18,7 +18,7 @@ Author:
 ---------------------------------------------------------------------------- */
 params ["_heli"];
 
-([_heli] call bmkhs_fnc_getAltitude)
+([_heli] call bmkhs_fnc_stateAltitude)
     params ["_barAlt", "_radAlt"];
 
 private _onGround = false;

@@ -27,7 +27,7 @@ _heli getVariable "fza_ah64_fcrState" params ["_fcrScanState", "_fcrScanStartTim
 _heli getVariable "fza_ah64_fcrLastScan" params ["_dir", "_scanPos", "_time"];
 private _armaRadarOn = isVehicleRadarOn _heli;
 private _updateDelay = [1.6,3.2] select (_fcrMode == 2);
-private _onGnd       = [_heli] call bmkhs_fnc_onGround;
+private _onGnd       = [_heli] call bmkhs_fnc_stateOnGround;
 private _gndOrideOn  = _heli getVariable "fza_ah64_gndOrideOn";
 
 if (_armaRadarOn) then {

@@ -24,7 +24,7 @@ private _fcrEnabled = _heli animationPhase "fcr_enable" == 1;
 private _fcrDamage  = _heli getHitPointDamage "hit_msnequip_fcr";
 private _acBusOn    = _heli getVariable "bmkhs_acBusOn";
 private _dcBusOn    = _heli getVariable "bmkhs_dcBusOn";
-private _onGnd      = [_heli] call bmkhs_fnc_onGround;
+private _onGnd      = [_heli] call bmkhs_fnc_stateOnGround;
 private _gndOrideOn = _heli getVariable "fza_ah64_gndOrideOn";
 private _lockout    = _fcrDamage >= SYS_FCR_DMG_THRESH || !_acBusOn || !_dcBusOn || (_onGnd && !_gndOrideOn);
 

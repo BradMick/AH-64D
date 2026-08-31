@@ -89,7 +89,7 @@ private _betaG    = _heli getVariable "bmkhs_aero_beta_g";     // g,   + = accel
 private _betaDeg  = _heli getVariable "bmkhs_aero_beta_deg";   // deg, + = flow from right
 //Use the RAW (3rd) return - the displayed radalt is rounded to 10ft above 50ft, which would
 //turn the blend below into a staircase.
-([_heli] call bmkhs_fnc_getAltitude) params ["", "", "_radAltRaw"];
+([_heli] call bmkhs_fnc_stateAltitude) params ["", "", "_radAltRaw"];
 
 //Slip setpoints are zero, error formed (desired - actual). Heading keeps (actual - desired).
 private _desiredSlip = 0.0;

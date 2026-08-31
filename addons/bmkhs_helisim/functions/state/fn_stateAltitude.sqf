@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
-Function: bmkhs_fnc_getAltitude
+Function: bmkhs_fnc_stateAltitude
 
 Description:
     Returns the current AGL and MSL altitude of the helicopter

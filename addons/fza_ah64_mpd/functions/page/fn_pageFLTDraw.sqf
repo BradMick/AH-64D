@@ -21,7 +21,7 @@ _heli setUserMFDText [MFD_INDEX_OFFSET(MFD_TEXT_IND_FLT_TORQUE), ( _torque * 100
 //Altitude and speed
 private _groundSpeed = (_heli getVariable "bmkhs_gndSpeed");//vectorMagnitude (velocity _heli call _2dvectTo3D);
 private _airspeed    = (_heli getVariable "bmkhs_vel2D");//vectorMagnitude (velocity _heli vectorDiff wind);
-([_heli] call bmkhs_fnc_getAltitude)
+([_heli] call bmkhs_fnc_stateAltitude)
     params ["_barAlt", "_radAlt"];
 _heli setUserMFDText [MFD_INDEX_OFFSET(MFD_TEXT_IND_FLT_BALT),  _barAlt toFixed 0];
 _heli setUserMFDText [MFD_INDEX_OFFSET(MFD_TEXT_IND_FLT_GALT), [_radAlt toFixed 0, ""] select (_radAlt == 1420)];

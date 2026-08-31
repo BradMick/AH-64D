@@ -49,7 +49,7 @@ private _autorange = [(ASLToAGL _tadsPosition)#2 /sin(-_elevation),0,50000] call
 
 private _range = -1;
 private _laserPos = getPosASL laserTarget _heli;
-if (_elevation < -1 && ([_heli] call bmkhs_fnc_getAltitude)#1 < 1428) then {
+if (_elevation < -1 && ([_heli] call bmkhs_fnc_stateAltitude)#1 < 1428) then {
     _range = _autorange;
 };
 if (_laserPos isNotEqualTo [0,0,0]) then {

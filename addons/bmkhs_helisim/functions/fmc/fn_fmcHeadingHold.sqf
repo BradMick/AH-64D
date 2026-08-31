@@ -45,7 +45,7 @@ private _trnOutput     = 0.0;
 private _yawOutput     = 0.0;
 private _output        = 0.0;
 
-private _onGnd         = [_heli] call bmkhs_fnc_onGround;
+private _onGnd         = [_heli] call bmkhs_fnc_stateOnGround;
 //Breakout values expand as the aircraft goes faster to provide good pedal response
 //at a hover. The expanded range is meant to de-sensitize the pedals in order to
 //prevent disengaging the heading hold mode during cruise flight

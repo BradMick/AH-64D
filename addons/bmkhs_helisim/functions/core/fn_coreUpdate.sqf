@@ -26,7 +26,7 @@ if (isGamePaused || CBA_missionTime < 0.1) exitWith {
 
 private _config      = configOf _heli;
 
-[_heli] call bmkhs_fnc_getDeltaTime;
+[_heli] call bmkhs_fnc_stateDeltaTime;
 
 if (isAutoHoverOn _heli) then {
     _heli action ["AutoHoverCancel", _heli];
@@ -36,8 +36,8 @@ if (isAutoHoverOn _heli) then {
 [_heli] call bmkhs_fnc_environment;
 
 //Velocities
-[_heli] call bmkhs_fnc_getVelocities;
-[_heli] call bmkhs_fnc_getAccelerations;
+[_heli] call bmkhs_fnc_stateVelocities;
+[_heli] call bmkhs_fnc_stateAccelerations;
 
 //Input
 [_heli] call bmkhs_fnc_fmc;
@@ -45,7 +45,7 @@ if (isAutoHoverOn _heli) then {
 [_heli] call bmkhs_fnc_inputUpdate;
 
 //Preston AI Pilot
-[_heli] call bmkhs_fnc_calculateAeroValues;
+[_heli] call bmkhs_fnc_stateAeroValues;
 
 //Fuel
 [_heli] call bmkhs_fnc_fuelUpdate;

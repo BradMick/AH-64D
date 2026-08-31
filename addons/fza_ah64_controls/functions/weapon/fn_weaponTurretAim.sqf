@@ -49,7 +49,7 @@ _heli setVariable ["fza_ah64_lastTimePropagated", time, true];
 
 private _was             = _heli getVariable "fza_ah64_was";
 private _sight           = [_heli, "fza_ah64_sight"] call fza_fnc_getSeatVariable;
-private _onGnd           = [_heli] call bmkhs_fnc_onGround;
+private _onGnd           = [_heli] call bmkhs_fnc_stateOnGround;
 private _nts             = (_heli getVariable "fza_ah64_fcrNts") # 0;
 private _ntspos          = (_heli getVariable "fza_ah64_fcrNts") # 1;
 private _pylonMagazines  = getPylonMagazines _heli;

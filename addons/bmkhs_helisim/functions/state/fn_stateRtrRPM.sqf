@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
-Function: bmkhs_fnc_getRtrRPM
+Function: bmkhs_fnc_stateRtrRPM
 
 Description:
     Returns the rotor RPM depending on the simulation being used

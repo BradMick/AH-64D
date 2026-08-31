@@ -24,7 +24,7 @@ private _config         = configOf _heli >> "BMKHS_HeliSim";
 private _configVehicles = configOf _heli;
 
 private _apuOn     = _heli getVariable ["bmkhs_apuOn", true];
-private _onGnd     = [_heli] call bmkhs_fnc_onGround;
+private _onGnd     = [_heli] call bmkhs_fnc_stateOnGround;
 
 private _engState  = _heli getVariable "bmkhs_engState";
 private _eng1State = _engState select 0;

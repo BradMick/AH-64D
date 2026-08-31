@@ -53,7 +53,7 @@ if (_active) then {
     _gndSpd = (_heli getVariable "bmkhs_gndSpeed") * KNOTS_TO_MPS;
     //RAW radar altitude (3rd return), not the displayed one - the displayed value is rounded to
     //10ft above 50ft, which would turn this blend into a staircase as the aircraft bobs.
-    ([_heli] call bmkhs_fnc_getAltitude) params ["", "", "_aaRadAlt"];
+    ([_heli] call bmkhs_fnc_stateAltitude) params ["", "", "_aaRadAlt"];
     _agl = _aaRadAlt;
 
     (_heli getVariable "bmkhs_velModelSpaceNoWind") params ["_aaVelX", "_aaVelY"];

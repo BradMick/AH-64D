@@ -194,13 +194,13 @@ class CfgFunctions
         };
         class state {
             file = "\bmkhs_helisim\functions\state";
-            class calculateAeroValues {R;};
-            class getAccelerations {R;};
-            class getDeltaTime {R;};
-            class getAltitude {R;};
-            class getRtrRPM {R;};
-            class getVelocities {R;};
-            class onGround {R;};
+            class stateAeroValues {R;};
+            class stateAccelerations {R;};
+            class stateDeltaTime {R;};
+            class stateAltitude {R;};
+            class stateRtrRPM {R;};
+            class stateVelocities {R;};
+            class stateOnGround {R;};
         };
         class systems {
             file = "\bmkhs_helisim\functions\systems";
