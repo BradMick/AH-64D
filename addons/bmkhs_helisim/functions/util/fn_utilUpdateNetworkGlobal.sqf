@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
-Function: bmkhs_fnc_updateNetworkGlobal
+Function: bmkhs_fnc_utilUpdateNetworkGlobal
 
 Description:
     helps to reduce the network impact of using Public Variables
@@ -13,7 +13,7 @@ Returns:
     ...
 
 Examples:
-    [_heli, "FUNCTION", 1] call bmkhs_fnc_updateNetworkGlobal;
+    [_heli, "FUNCTION", 1] call bmkhs_fnc_utilUpdateNetworkGlobal;
 
 Author:
     Snow(Dryden)

@@ -18,7 +18,7 @@ private _output     = 0.0;
 //If the total torque exceeds 98%, de-activate altitude hold and don't allow its
 //activation until it it is below 98%
 if (_tq >= 0.98) then {
-    [_heli, "bmkhs_altHoldActive", false] call bmkhs_fnc_updateNetworkGlobal;
+    [_heli, "bmkhs_altHoldActive", false] call bmkhs_fnc_utilUpdateNetworkGlobal;
     [_pidRadAlt] call bmkhs_fnc_pidReset;
     [_pidBarAlt] call bmkhs_fnc_pidReset;
 };
@@ -29,17 +29,17 @@ if ( _heli getVariable "bmkhs_altHoldActive") then {
     private _collRef_low = _collRef * 0.95;
     private _collRef_hi  = _collRef * 1.05;
     if ((_heli getVariable "bmkhs_collectiveOutput") >= _collRef_hi || (_heli getVariable "bmkhs_collectiveOutput") <= _collRef_low) then {
-        [_heli, "bmkhs_altHoldActive", false] call bmkhs_fnc_updateNetworkGlobal;
-        [_heli, "holdModeDisengaged"] call bmkhs_fnc_notify;
+        [_heli, "bmkhs_altHoldActive", false] call bmkhs_fnc_utilUpdateNetworkGlobal;
+        [_heli, "holdModeDisengaged"] call bmkhs_fnc_utilNotify;
     };
 
     //If the helicopters radar altitude is < 1428ft (435.25m) and current velocity is < 40kts
     //then set the desired altitude to the current AGL altitude, otherwise set it to the
     //current ASL altitude.
     if (_curAltAGL < RAD_ALT_MAX_ALT && _gndSpeed < ALT_HOLD_SPEED_SWITCH) then {
-        [_heli, "bmkhs_altHoldSubMode", "rad"] call bmkhs_fnc_updateNetworkGlobal;
+        [_heli, "bmkhs_altHoldSubMode", "rad"] call bmkhs_fnc_utilUpdateNetworkGlobal;
     } else {
-        [_heli, "bmkhs_altHoldSubMode", "bar"] call bmkhs_fnc_updateNetworkGlobal;
+        [_heli, "bmkhs_altHoldSubMode", "bar"] call bmkhs_fnc_utilUpdateNetworkGlobal;
     };
 
     if (_subMode == "rad") then {

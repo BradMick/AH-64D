@@ -48,7 +48,7 @@ if (_apuRPM_pct > SYS_MIN_RPM) then {
 };
 _heli setVariable ["bmkhs_apuOn", _apuOn];
 //Cockpit indication is the aircraft's business - Core only reports the state
-[_heli, "apuStateChanged"] call bmkhs_fnc_notify;
+[_heli, "apuStateChanged"] call bmkhs_fnc_utilNotify;
 
 if (_apuOn) then {
     _apuFF_kgs = 0.0220;//175pph

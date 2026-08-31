@@ -19,11 +19,11 @@ Author:
 params ["_heli"];
 
 if (_heli getHitPointDamage "hitengine1" == 0) then {
-    [_heli, "bmkhs_engineOverspeed", 0.0, false, true] call bmkhs_fnc_setArrayVariable;
+    [_heli, "bmkhs_engineOverspeed", 0.0, false, true] call bmkhs_fnc_utilSetArrayVariable;
     _heli setHitPointDamage ["hitengine1", 0.000001, false]
 };
 if (_heli getHitPointDamage "hitengine2" == 0) then {
-    [_heli, "bmkhs_engineOverspeed", 1.0, false, true] call bmkhs_fnc_setArrayVariable;
+    [_heli, "bmkhs_engineOverspeed", 1.0, false, true] call bmkhs_fnc_utilSetArrayVariable;
     _heli setHitPointDamage ["hitengine2", 0.000001, false]
 };
 if (_heli getHitPointDamage "hit_elec_battery" == 0) then {

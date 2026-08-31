@@ -88,8 +88,8 @@ private _dmg       = _xmsnHitPtDmg + _dmgPerSec;
 
 _heli setHitPointDamage ["hit_drives_transmission", _dmg];
 
-[_heli, "bmkhs_randomTq", 2, _randomTq1, false] call bmkhs_fnc_setArrayVariable;
-[_heli, "bmkhs_randomTq", 3, _randomTq2, false] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_randomTq", 2, _randomTq1, false] call bmkhs_fnc_utilSetArrayVariable;
+[_heli, "bmkhs_randomTq", 3, _randomTq2, false] call bmkhs_fnc_utilSetArrayVariable;
 
 if (_xmsnHitPtDmg == 1.0) then {
     _heli setHitPointDamage ["hithrotor",           1.0];

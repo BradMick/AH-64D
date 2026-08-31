@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
-Function: bmkhs_fnc_setMultiArrayVariable
+Function: bmkhs_fnc_utilSetMultiArrayVariable
 
 Description:
   Sets a value in a 2D (nested) array variable stored on an object.
@@ -16,7 +16,7 @@ Returns:
   Nothing
 
 Examples:
-  [_heli, "bmkhs_rotorBladeAzimuth", 0, 2, 45.0] call bmkhs_fnc_setMultiArrayVariable;
+  [_heli, "bmkhs_rotorBladeAzimuth", 0, 2, 45.0] call bmkhs_fnc_utilSetMultiArrayVariable;
 
 Author:
   BradMick
@@ -27,6 +27,6 @@ private _temp = +(_heli getVariable _variableName);
 (_temp select _index0) set [_index1, _value];
 
 if _public then {
-    [_heli, _variableName, _temp] call bmkhs_fnc_updateNetworkGlobal;
+    [_heli, _variableName, _temp] call bmkhs_fnc_utilUpdateNetworkGlobal;
 };
 _heli setVariable [_variableName, _temp];

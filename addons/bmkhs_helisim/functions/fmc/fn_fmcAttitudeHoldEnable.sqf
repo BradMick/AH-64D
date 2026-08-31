@@ -31,5 +31,5 @@ if (_heli getVariable "bmkhs_attHoldActive" == false) then {
     _heli setVariable ["bmkhs_attHoldActive", true, true];
 } else {
     _heli setVariable ["bmkhs_attHoldActive", false, true];
-    [_heli, "holdModeDisengaged"] call bmkhs_fnc_notify;
+    [_heli, "holdModeDisengaged"] call bmkhs_fnc_utilNotify;
 };

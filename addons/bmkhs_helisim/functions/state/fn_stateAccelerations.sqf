@@ -34,9 +34,9 @@ private _wAccX_avg = _heli getVariable "bmkhs_worldAccelX_avg";
 private _wAccY_avg = _heli getVariable "bmkhs_worldAccelY_avg";
 private _wAccZ_avg = _heli getVariable "bmkhs_worldAccelZ_avg";
 private _worldAccelF = [
-    [_wAccX_avg, _worldAccel # 0] call bmkhs_fnc_getSmoothAverage,
-    [_wAccY_avg, _worldAccel # 1] call bmkhs_fnc_getSmoothAverage,
-    [_wAccZ_avg, _worldAccel # 2] call bmkhs_fnc_getSmoothAverage
+    [_wAccX_avg, _worldAccel # 0] call bmkhs_fnc_utilSmoothAverage,
+    [_wAccY_avg, _worldAccel # 1] call bmkhs_fnc_utilSmoothAverage,
+    [_wAccZ_avg, _worldAccel # 2] call bmkhs_fnc_utilSmoothAverage
 ];
 _heli setVariable ["bmkhs_worldAccelFiltered", _worldAccelF];
 
@@ -54,17 +54,17 @@ private _accelZ_avg = _heli getVariable "bmkhs_accelZ_avg";
 
 //X Axis Acceleration
 private _velX = (_heli getVariable "bmkhs_velModelSpaceNoWind") select 0;
-_accelX       = [_accelX_avg, (_velX - _velX_prev) / _deltaTime] call bmkhs_fnc_getSmoothAverage;
+_accelX       = [_accelX_avg, (_velX - _velX_prev) / _deltaTime] call bmkhs_fnc_utilSmoothAverage;
 _velX_prev    = _velX;
 
 //Y Axis Acceleration
 private _velY = (_heli getVariable "bmkhs_velModelSpaceNoWind") select 1;
-_accelY       = [_accelY_avg, (_velY - _velY_prev) / _deltaTime] call bmkhs_fnc_getSmoothAverage;
+_accelY       = [_accelY_avg, (_velY - _velY_prev) / _deltaTime] call bmkhs_fnc_utilSmoothAverage;
 _velY_prev    = _velY;
 
 //Z Axis Acceleration
 private _velZ = (_heli getVariable "bmkhs_velModelSpaceNoWind") select 2;
-_accelZ       = [_accelZ_avg, (_velZ - _velZ_prev) / _deltaTime] call bmkhs_fnc_getSmoothAverage;
+_accelZ       = [_accelZ_avg, (_velZ - _velZ_prev) / _deltaTime] call bmkhs_fnc_utilSmoothAverage;
 _velZ_prev    = _velZ;
 
 _heli setVariable ["bmkhs_velX_prev", _velX_prev];

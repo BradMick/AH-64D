@@ -50,8 +50,8 @@ if (_engState in ["STARTING", "ON"]) then {
             _engPctTQ = _tqOutput / _engRefTq;
 
             if (_engPctNP >= (_heli getVariable "bmkhs_engOvrspdNP")) then {
-                [_heli, "bmkhs_engState",     _engNum, "OFF", true] call bmkhs_fnc_setArrayVariable;
-                [_heli, "bmkhs_engineOverspeed", _engNum, false, true] call bmkhs_fnc_setArrayVariable;
+                [_heli, "bmkhs_engState",     _engNum, "OFF", true] call bmkhs_fnc_utilSetArrayVariable;
+                [_heli, "bmkhs_engineOverspeed", _engNum, false, true] call bmkhs_fnc_utilSetArrayVariable;
             };
         } else {
             // ── Available shaft power from Ng ─────────────────────────────────
@@ -132,7 +132,7 @@ if (_engState in ["STARTING", "ON"]) then {
 };
 
 // ── Write outputs ─────────────────────────────────────────────────────────────
-[_heli, "bmkhs_engOutputTq", _engNum, _tqOutput,  true] call bmkhs_fnc_setArrayVariable;
-[_heli, "bmkhs_engPctNP",    _engNum, _engPctNP       ] call bmkhs_fnc_setArrayVariable;
-[_heli, "bmkhs_engFF",       _engNum, _engFF          ] call bmkhs_fnc_setArrayVariable;
-[_heli, "bmkhs_engPctTQ",    _engNum, _engPctTQ + (_randomTq select _engNum) + (_randomTq select (_engNum + 2))] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_engOutputTq", _engNum, _tqOutput,  true] call bmkhs_fnc_utilSetArrayVariable;
+[_heli, "bmkhs_engPctNP",    _engNum, _engPctNP       ] call bmkhs_fnc_utilSetArrayVariable;
+[_heli, "bmkhs_engFF",       _engNum, _engFF          ] call bmkhs_fnc_utilSetArrayVariable;
+[_heli, "bmkhs_engPctTQ",    _engNum, _engPctTQ + (_randomTq select _engNum) + (_randomTq select (_engNum + 2))] call bmkhs_fnc_utilSetArrayVariable;

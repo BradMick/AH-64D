@@ -46,6 +46,11 @@ class CfgFunctions
             class coreUpdate  {R;};
             class coreUpdateFlightModel {R;};
         };
+        class ctrlVis {
+            file = "\bmkhs_helisim\functions\ctrlVis";
+            class ctrlVisToggle {R;};
+            class ctrlVisUpdate {R;};
+        };
         class damage {
             file = "\bmkhs_helisim\functions\damage";
             class damageApply {R;};
@@ -145,13 +150,11 @@ class CfgFunctions
         };
         class util {
             file = "\bmkhs_helisim\functions\util";
-            class ctrlVisToggle {R;};
-            class ctrlVisUpdate {R;};
-            class getSmoothAverage {R;};
-            class notify {R;};
-            class setArrayVariable {R;};
-            class setMultiArrayVariable {R;};
-            class updateNetworkGlobal {R;};
+            class utilSmoothAverage {R;};
+            class utilNotify {R;};
+            class utilSetArrayVariable {R;};
+            class utilSetMultiArrayVariable {R;};
+            class utilUpdateNetworkGlobal {R;};
         };
         class debug {
             file = "\bmkhs_helisim\functions\debug";

@@ -99,10 +99,10 @@ if (local _heli) then {
 
 if !_apuOn then {
     if (_eng1State == "STARTING") then {
-		[_heli, "bmkhs_engState", 0, "OFF", true] call bmkhs_fnc_setArrayVariable;
+		[_heli, "bmkhs_engState", 0, "OFF", true] call bmkhs_fnc_utilSetArrayVariable;
     };
     if (_eng2State == "STARTING") then {
-		[_heli, "bmkhs_engState", 1, "OFF", true] call bmkhs_fnc_setArrayVariable;
+		[_heli, "bmkhs_engState", 1, "OFF", true] call bmkhs_fnc_utilSetArrayVariable;
     };
 };
 
@@ -152,11 +152,11 @@ private _no1EngDmg = _heli getHitPointDamage "hitengine1";
 private _no2EngDmg = _heli getHitPointDamage "hitengine2";
 
 if (_no1EngDmg > SYS_ENG_DMG_THRESH || !_eng1FuelAvail) then {
-	[_heli, "bmkhs_engState", 0, "OFF", true] call bmkhs_fnc_setArrayVariable;
+	[_heli, "bmkhs_engState", 0, "OFF", true] call bmkhs_fnc_utilSetArrayVariable;
 };
 
 if (_no2EngDmg > SYS_ENG_DMG_THRESH || !_eng2FuelAvail) then {
-	[_heli, "bmkhs_engState", 1, "OFF", true] call bmkhs_fnc_setArrayVariable;
+	[_heli, "bmkhs_engState", 1, "OFF", true] call bmkhs_fnc_utilSetArrayVariable;
 };
 
 //Autorotation handler

@@ -26,11 +26,11 @@ if (_heli getVariable ["bmkhs_rotorBrakeOn", false]) exitWith {};
 private _engState = _heli getVariable "bmkhs_engState" select _engNum;
 
 if (_state == "OFF") then {
-    [_heli, "powerLeverMoved", [_engNum, 0.0]] call bmkhs_fnc_notify;
-    [_heli, "bmkhs_engPowerLeverState", _engNum, _state, true] call bmkhs_fnc_setArrayVariable;
+    [_heli, "powerLeverMoved", [_engNum, 0.0]] call bmkhs_fnc_utilNotify;
+    [_heli, "bmkhs_engPowerLeverState", _engNum, _state, true] call bmkhs_fnc_utilSetArrayVariable;
 
     if (_engState == "ON") then {
-        [_heli, "bmkhs_engState", _engNum, "OFF", true] call bmkhs_fnc_setArrayVariable;
+        [_heli, "bmkhs_engState", _engNum, "OFF", true] call bmkhs_fnc_utilSetArrayVariable;
     };
 
     //HeliSim
@@ -38,8 +38,8 @@ if (_state == "OFF") then {
 };
 
 if (_state == "IDLE") then {
-    [_heli, "powerLeverMoved", [_engNum, 0.25]] call bmkhs_fnc_notify;
-    [_heli, "bmkhs_engPowerLeverState", _engNum, _state, true] call bmkhs_fnc_setArrayVariable;
+    [_heli, "powerLeverMoved", [_engNum, 0.25]] call bmkhs_fnc_utilNotify;
+    [_heli, "bmkhs_engPowerLeverState", _engNum, _state, true] call bmkhs_fnc_utilSetArrayVariable;
 
     //HeliSim
     //[_heli, _engNum, 0.25] call bmk_fnc_engineSetThrottle;
@@ -47,6 +47,6 @@ if (_state == "IDLE") then {
 
 if (_state == "FLY") then {
     //0.063 sets the power levers to fly in 16 seconds
-    [_heli, "powerLeverMoved", [_engNum, 1.0]] call bmkhs_fnc_notify;
-    [_heli, "bmkhs_engPowerLeverState", _engNum, _state, true] call bmkhs_fnc_setArrayVariable;
+    [_heli, "powerLeverMoved", [_engNum, 1.0]] call bmkhs_fnc_utilNotify;
+    [_heli, "bmkhs_engPowerLeverState", _engNum, _state, true] call bmkhs_fnc_utilSetArrayVariable;
 };

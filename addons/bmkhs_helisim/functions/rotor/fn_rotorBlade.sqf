@@ -23,7 +23,7 @@ if (_isTail) then {
     if !(_trimTbl isEqualTo []) then { _bladeScale = _bladeScale + ([_trimTbl, _velBet] call bmkhs_fnc_linearInterp select 1); };
 };
 
-[_heli, "bmkhs_rotorFlapMoment", _rotorIndex, _bladeIndex, 0.0] call bmkhs_fnc_setMultiArrayVariable;
+[_heli, "bmkhs_rotorFlapMoment", _rotorIndex, _bladeIndex, 0.0] call bmkhs_fnc_utilSetMultiArrayVariable;
 
 for "_i" from 0 to (_numElements - 1) do {
 	private _spanInboard  =  _i      / _numElements;
@@ -140,7 +140,7 @@ for "_i" from 0 to (_numElements - 1) do {
 		[_raw, -25.0, 25.0] call BIS_fnc_clamp
 	} else { 0.0 };
 	private _viAccum = ((_heli getVariable "bmkhs_rotorInducedFlowAccum") select _rotorIndex) select _i;
-	[_heli, "bmkhs_rotorInducedFlowAccum", _rotorIndex, _i, (_viAccum + _viRaw)] call bmkhs_fnc_setMultiArrayVariable;
+	[_heli, "bmkhs_rotorInducedFlowAccum", _rotorIndex, _i, (_viAccum + _viRaw)] call bmkhs_fnc_utilSetMultiArrayVariable;
 
 	_totalFlapMoment = _totalFlapMoment + (_lift * _r);
 
@@ -162,7 +162,7 @@ for "_i" from 0 to (_numElements - 1) do {
 
 
 	private _thrustAccum = (_heli getVariable "bmkhs_rotorThrustAccum") select _rotorIndex;
-	[_heli, "bmkhs_rotorThrustAccum", _rotorIndex, (_thrustAccum + (_lift * _bladeScale))] call bmkhs_fnc_setArrayVariable;
+	[_heli, "bmkhs_rotorThrustAccum", _rotorIndex, (_thrustAccum + (_lift * _bladeScale))] call bmkhs_fnc_utilSetArrayVariable;
 
 	_liftVector = _liftDir vectorMultiply (_lift * _deltaTime * _bladeScale);
 
@@ -179,6 +179,6 @@ for "_i" from 0 to (_numElements - 1) do {
 	};
 };
 
-[_heli, "bmkhs_rotorFlapMoment", _rotorIndex, _bladeIndex, _totalFlapMoment] call bmkhs_fnc_setMultiArrayVariable;
+[_heli, "bmkhs_rotorFlapMoment", _rotorIndex, _bladeIndex, _totalFlapMoment] call bmkhs_fnc_utilSetMultiArrayVariable;
 
-[_heli, "bmkhs_rotorReactionTorque", _rotorIndex, _totalPower] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_rotorReactionTorque", _rotorIndex, _totalPower] call bmkhs_fnc_utilSetArrayVariable;

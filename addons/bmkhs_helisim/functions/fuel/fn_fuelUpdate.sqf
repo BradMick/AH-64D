@@ -323,9 +323,9 @@ if (!_eng2FuelAvail) then {
     _eng2FuelAvail = (CBA_missionTime - _eng2StarvedSince) < 2;
 } else { _heli setVariable ["bmkhs_eng2StarvedSince", -1]; };
 
-[_heli, "bmkhs_eng1FuelAvail", _eng1FuelAvail] call bmkhs_fnc_updateNetworkGlobal;
-[_heli, "bmkhs_eng2FuelAvail", _eng2FuelAvail] call bmkhs_fnc_updateNetworkGlobal;
-[_heli, "bmkhs_apuFuelAvail",  _apuFuelAvail]  call bmkhs_fnc_updateNetworkGlobal;
+[_heli, "bmkhs_eng1FuelAvail", _eng1FuelAvail] call bmkhs_fnc_utilUpdateNetworkGlobal;
+[_heli, "bmkhs_eng2FuelAvail", _eng2FuelAvail] call bmkhs_fnc_utilUpdateNetworkGlobal;
+[_heli, "bmkhs_apuFuelAvail",  _apuFuelAvail]  call bmkhs_fnc_utilUpdateNetworkGlobal;
 
 // Status flags
 _heli setVariable ["bmkhs_intercellTransferActive", _intercellTransferActive];

@@ -43,18 +43,18 @@ if (_targetSec > 0 && _elapsed >= _targetSec) then {
         format ["%1:%2L", _h, [floor ((_dt % 24 - _h) * 60), 2] call CBA_fnc_formatNumber]
     };
 
-    [_heli, "bmkhs_checkRunning", false]     call bmkhs_fnc_updateNetworkGlobal;
-    [_heli, "bmkhs_checkDone",     true]      call bmkhs_fnc_updateNetworkGlobal;
+    [_heli, "bmkhs_checkRunning", false]     call bmkhs_fnc_utilUpdateNetworkGlobal;
+    [_heli, "bmkhs_checkDone",     true]      call bmkhs_fnc_utilUpdateNetworkGlobal;
 
     //Core reports the fuel check finished; whether that warrants an advisory
     //depends on what the crew is looking at, which is the aircraft's business.
     if (!(_heli getVariable ["bmkhs_checkActivePlt", false]) &&
         !(_heli getVariable ["bmkhs_checkActiveCpg", false])) then {
-        [_heli, "bmkhs_checkPendingAdvisory", true] call bmkhs_fnc_updateNetworkGlobal;
+        [_heli, "bmkhs_checkPendingAdvisory", true] call bmkhs_fnc_utilUpdateNetworkGlobal;
     };
-    [_heli, "fuelCheckComplete"] call bmkhs_fnc_notify;
-    [_heli, "bmkhs_checkBurnRate", _burnRate] call bmkhs_fnc_updateNetworkGlobal;
-    [_heli, "bmkhs_checkBurnoutZulu", [dayTime + _burnoutHours]        call _fnZulu] call bmkhs_fnc_updateNetworkGlobal;
-    [_heli, "bmkhs_checkVFRZulu",    [dayTime + _burnoutHours - 20/60] call _fnZulu] call bmkhs_fnc_updateNetworkGlobal;
-    [_heli, "bmkhs_checkIFRZulu",    [dayTime + _burnoutHours - 30/60] call _fnZulu] call bmkhs_fnc_updateNetworkGlobal;
+    [_heli, "fuelCheckComplete"] call bmkhs_fnc_utilNotify;
+    [_heli, "bmkhs_checkBurnRate", _burnRate] call bmkhs_fnc_utilUpdateNetworkGlobal;
+    [_heli, "bmkhs_checkBurnoutZulu", [dayTime + _burnoutHours]        call _fnZulu] call bmkhs_fnc_utilUpdateNetworkGlobal;
+    [_heli, "bmkhs_checkVFRZulu",    [dayTime + _burnoutHours - 20/60] call _fnZulu] call bmkhs_fnc_utilUpdateNetworkGlobal;
+    [_heli, "bmkhs_checkIFRZulu",    [dayTime + _burnoutHours - 30/60] call _fnZulu] call bmkhs_fnc_utilUpdateNetworkGlobal;
 };

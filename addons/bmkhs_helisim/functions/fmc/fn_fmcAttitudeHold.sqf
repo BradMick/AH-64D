@@ -41,17 +41,17 @@ private _attHoldCycRollOut  = 0.0;
 //Submode selection: speed-driven.
 //Position hold
 if (_gndSpeed <= POS_HOLD_SPEED_SWITCH) then {
-    [_heli, "bmkhs_attHoldSubMode", "pos"] call bmkhs_fnc_updateNetworkGlobal;
+    [_heli, "bmkhs_attHoldSubMode", "pos"] call bmkhs_fnc_utilUpdateNetworkGlobal;
 };
 //Velocity hold
 //This needs to check if accelerating or decelerating...really it's
 //5 to 40 knots accelerating, 30 to 5 knots decelerating
 if (_gndSpeed > POS_HOLD_SPEED_SWITCH && _gndSpeed <= VEL_HOLD_SPEED_SWITCH_ACCEL) then {
-    [_heli, "bmkhs_attHoldSubMode", "vel"] call bmkhs_fnc_updateNetworkGlobal;
+    [_heli, "bmkhs_attHoldSubMode", "vel"] call bmkhs_fnc_utilUpdateNetworkGlobal;
 };
 //Attitude hold
 if (_gndSpeed > VEL_HOLD_SPEED_SWITCH_ACCEL) then {
-    [_heli, "bmkhs_attHoldSubMode", "att"] call bmkhs_fnc_updateNetworkGlobal;
+    [_heli, "bmkhs_attHoldSubMode", "att"] call bmkhs_fnc_utilUpdateNetworkGlobal;
 };
 
 if (_heli getVariable "bmkhs_attHoldActive" && !(_heli getVariable "bmkhs_forceTrimInterupted")) then {

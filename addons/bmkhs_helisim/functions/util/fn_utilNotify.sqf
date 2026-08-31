@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
-Function: bmkhs_fnc_notify
+Function: bmkhs_fnc_utilNotify
 
 Description:
     Raises a HeliSim event for the aircraft pack to react to. Core has no

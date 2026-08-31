@@ -41,11 +41,11 @@ private _velModelSpaceX_avg  = _heli getVariable "bmkhs_velModelSpaceX_avg";
 private _velModelSpaceY_avg  = _heli getVariable "bmkhs_velModelSpaceY_avg";
 private _velModelSpaceZ_avg  = _heli getVariable "bmkhs_velModelSpaceZ_avg";
 private _velModelSpaceX      = velocityModelSpace _heli select 0;
-_velModelSpaceX              = [_velModelSpaceX_avg, _velModelSpaceX] call bmkhs_fnc_getSmoothAverage;
+_velModelSpaceX              = [_velModelSpaceX_avg, _velModelSpaceX] call bmkhs_fnc_utilSmoothAverage;
 private _velModelSpaceY      = velocityModelSpace _heli select 1;
-_velModelSpaceY              = [_velModelSpaceY_avg, _velModelSpaceY] call bmkhs_fnc_getSmoothAverage;
+_velModelSpaceY              = [_velModelSpaceY_avg, _velModelSpaceY] call bmkhs_fnc_utilSmoothAverage;
 private _velModelSpaceZ      = velocityModelSpace _heli select 2;
-_velModelSpaceZ              = [_velModelSpaceZ_avg, _velModelSpaceZ] call bmkhs_fnc_getSmoothAverage;
+_velModelSpaceZ              = [_velModelSpaceZ_avg, _velModelSpaceZ] call bmkhs_fnc_utilSmoothAverage;
 private _velModelSpace       = [_velModelSpaceX, _velModelSpaceY, _velModelSpaceZ] vectorDiff _velWindModelSpace;
 private _velModelSpaceNoWind = [_velModelSpaceX, _velModelSpaceY, _velModelSpaceZ];
 //Ground speed
@@ -60,11 +60,11 @@ private _velWorldSpaceY_avg  = _heli getVariable "bmkhs_velWorldSpaceY_avg";
 private _velWorldSpaceZ_avg  = _heli getVariable "bmkhs_velWorldSpaceZ_avg";
 
 private _velWorldSpaceX      = velocity _heli select 0;
-_velWorldSpaceX              = [_velWorldSpaceX_avg, _velWorldSpaceX] call bmkhs_fnc_getSmoothAverage;
+_velWorldSpaceX              = [_velWorldSpaceX_avg, _velWorldSpaceX] call bmkhs_fnc_utilSmoothAverage;
 private _velWorldSpaceY      = velocity _heli select 1;
-_velWorldSpaceY              = [_velWorldSpaceY_avg, _velWorldSpaceY] call bmkhs_fnc_getSmoothAverage;
+_velWorldSpaceY              = [_velWorldSpaceY_avg, _velWorldSpaceY] call bmkhs_fnc_utilSmoothAverage;
 private _velWorldSpaceZ      = velocity _heli select 2;
-_velWorldSpaceZ              = [_velWorldSpaceZ_avg, _velWorldSpaceZ] call bmkhs_fnc_getSmoothAverage;
+_velWorldSpaceZ              = [_velWorldSpaceZ_avg, _velWorldSpaceZ] call bmkhs_fnc_utilSmoothAverage;
 private _velWorldSpace       = [_velWorldSpaceX, _velWorldSpaceY, _velWorldSpaceZ] vectorDiff _velWindWorldSpace;
 private _velWorldSpaceNoWind = [_velWorldSpaceX, _velWorldSpaceY, _velWorldSpaceZ];
 //Climb velocity
@@ -75,11 +75,11 @@ private _angVelModelSpaceY_avg = _heli getVariable "bmkhs_angVelModelSpaceY_avg"
 private _angVelModelSpaceZ_avg = _heli getVariable "bmkhs_angVelModelSpaceZ_avg";
 
 private _angVelModelSpaceX     = angularVelocityModelSpace _heli select 0;
-_angVelModelSpaceX             = [_angVelModelSpaceX_avg, _angVelModelSpaceX] call bmkhs_fnc_getSmoothAverage;
+_angVelModelSpaceX             = [_angVelModelSpaceX_avg, _angVelModelSpaceX] call bmkhs_fnc_utilSmoothAverage;
 private _angVelModelSpaceY     = angularVelocityModelSpace _heli select 1;
-_angVelModelSpaceY             = [_angVelModelSpaceY_avg, _angVelModelSpaceY] call bmkhs_fnc_getSmoothAverage;
+_angVelModelSpaceY             = [_angVelModelSpaceY_avg, _angVelModelSpaceY] call bmkhs_fnc_utilSmoothAverage;
 private _angVelModelSpaceZ     = angularVelocityModelSpace _heli select 2;
-_angVelModelSpaceZ             = [_angVelModelSpaceZ_avg, _angVelModelSpaceZ] call bmkhs_fnc_getSmoothAverage;
+_angVelModelSpaceZ             = [_angVelModelSpaceZ_avg, _angVelModelSpaceZ] call bmkhs_fnc_utilSmoothAverage;
 private _angVelModelSpace      = [_angVelModelSpaceX, _angVelModelSpaceY, _angVelModelSpaceZ];
 //Angular velocity in world space
 private _angVelWorldSpace      = angularVelocity _heli;

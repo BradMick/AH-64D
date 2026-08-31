@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
-Function: bmkhs_fnc_setArrayVariable
+Function: bmkhs_fnc_utilSetArrayVariable
 
 Description:
   Sets a multi-variable array.
@@ -22,6 +22,6 @@ private _temp = +(_heli getVariable _variableName);
 _temp set [_index, _value];
 
 if _public then {
-    [_heli, _variableName, _temp] call bmkhs_fnc_updateNetworkGlobal;
+    [_heli, _variableName, _temp] call bmkhs_fnc_utilUpdateNetworkGlobal;
 };
 _heli setVariable[_variableName, _temp];

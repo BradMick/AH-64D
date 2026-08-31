@@ -109,9 +109,9 @@ private _grbxDmg   = _grbxHitPtDmg + _dmgPerSec;
 
 _heli setHitPointDamage ["hit_drives_noseGearbox1", _grbxDmg];
 
-[_heli, "bmkhs_randomTq", 0, _randomTq, true] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_randomTq", 0, _randomTq, true] call bmkhs_fnc_utilSetArrayVariable;
 
 if (_grbxHitPtDmg == 1.0) then {
     _engOverspeed = true;
-    [_heli, "bmkhs_engineOverspeed", 0, _engOverspeed, false] call bmkhs_fnc_setArrayVariable;
+    [_heli, "bmkhs_engineOverspeed", 0, _engOverspeed, false] call bmkhs_fnc_utilSetArrayVariable;
 };

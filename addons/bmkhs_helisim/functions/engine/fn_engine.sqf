@@ -92,13 +92,13 @@ switch (_engState) do {
 		//Transition state to ON
 		if (_engPctNG > (_heli getVariable "bmkhs_engRunNG")) then {
 			_engState = "ON";
-			[_heli, "bmkhs_engState", _engNum, "ON", true] call bmkhs_fnc_setArrayVariable;
+			[_heli, "bmkhs_engState", _engNum, "ON", true] call bmkhs_fnc_utilSetArrayVariable;
 		};
 	};
 	case "ON": {
 		if (_engPowerLeverState == "OFF") then {
 			_engState = "OFF";
-			[_heli, "bmkhs_engState", _engNum, "ON", true] call bmkhs_fnc_setArrayVariable;
+			[_heli, "bmkhs_engState", _engNum, "ON", true] call bmkhs_fnc_utilSetArrayVariable;
 		};
 		//Ng
 		_engSetNG = _engBaseNG + (_engMaxNG - _engBaseNG) * _engThrottle * _collectiveOutput;
@@ -134,10 +134,10 @@ _engFF     = [getArray (_sfmPlusConfig >> "engFFTable"), _engPctTQ] call bmkhs_f
 
 
 //Update variables
-[_heli, "bmkhs_engPctNG",      _engNum, _engPctNG] call bmkhs_fnc_setArrayVariable;
-[_heli, "bmkhs_engBaseTGT",    _engNum, _engBaseTGT] call bmkhs_fnc_setArrayVariable;
-[_heli, "bmkhs_engBaseOilPSI", _engNum, _engBaseOilPSI] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_engPctNG",      _engNum, _engPctNG] call bmkhs_fnc_utilSetArrayVariable;
+[_heli, "bmkhs_engBaseTGT",    _engNum, _engBaseTGT] call bmkhs_fnc_utilSetArrayVariable;
+[_heli, "bmkhs_engBaseOilPSI", _engNum, _engBaseOilPSI] call bmkhs_fnc_utilSetArrayVariable;
 
-[_heli, "bmkhs_engTGT",        _engNum, _engTGT] call bmkhs_fnc_setArrayVariable;
-[_heli, "bmkhs_engOilPSI",     _engNum, _engOilPSI] call bmkhs_fnc_setArrayVariable;
-[_heli, "bmkhs_engFF",         _engNum, _engFF] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_engTGT",        _engNum, _engTGT] call bmkhs_fnc_utilSetArrayVariable;
+[_heli, "bmkhs_engOilPSI",     _engNum, _engOilPSI] call bmkhs_fnc_utilSetArrayVariable;
+[_heli, "bmkhs_engFF",         _engNum, _engFF] call bmkhs_fnc_utilSetArrayVariable;

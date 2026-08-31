@@ -67,8 +67,8 @@ if (_engState in ["STARTING", "ON"]) then {
 
         if (_engPctNP >= (_heli getVariable "bmkhs_engOvrspdNP")) then {
             _engState     = "OFF";
-            [_heli, "bmkhs_engState", _engNum, _engState, true] call bmkhs_fnc_setArrayVariable;
-            [_heli, "bmkhs_engineOverspeed", _engNum, false, true] call bmkhs_fnc_setArrayVariable;
+            [_heli, "bmkhs_engState", _engNum, _engState, true] call bmkhs_fnc_utilSetArrayVariable;
+            [_heli, "bmkhs_engineOverspeed", _engNum, false, true] call bmkhs_fnc_utilSetArrayVariable;
         };
     } else {
         if (_xmsnRpm > _npTrimRef || _xmsnRpm < _npTrimRef) then {
@@ -83,8 +83,8 @@ if (_engState in ["STARTING", "ON"]) then {
     };
 };
 
-[_heli, "bmkhs_engOutputTq", _engNum, _tqOutput, true] call bmkhs_fnc_setArrayVariable;
-[_heli, "bmkhs_engPctNP",    _engNum, _engPctNp] call bmkhs_fnc_setArrayVariable;
-[_heli, "bmkhs_engPctTQ", _engNum, _engPctTq + (_randomTq select _engNum) + (_randomTq select _engNum + 2)] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_engOutputTq", _engNum, _tqOutput, true] call bmkhs_fnc_utilSetArrayVariable;
+[_heli, "bmkhs_engPctNP",    _engNum, _engPctNp] call bmkhs_fnc_utilSetArrayVariable;
+[_heli, "bmkhs_engPctTQ", _engNum, _engPctTq + (_randomTq select _engNum) + (_randomTq select _engNum + 2)] call bmkhs_fnc_utilSetArrayVariable;
 //systemChat format ["_engRefTq = %1 -- _maxPowerInWatts = %2 -- _maxOutputTq = %3", _engRefTq, _maxPowerInWatts, _maxTorque];
 //systemChat format ["Engine %3 -- _trimTq = %1 -- _tqOutput = %2 -- _maxTorque = %4", _trimTq toFixed 2, _tqOutput toFixed 2, _engNum, _maxTorque];

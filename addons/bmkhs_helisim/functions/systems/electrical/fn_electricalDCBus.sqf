@@ -29,7 +29,7 @@ if (_rect1On || _rect2On) then {
 } else {
     _dcBusOn = false;
 };
-[_heli, "bmkhs_dcBusOn", _dcBusOn] call bmkhs_fnc_updateNetworkGlobal;
+[_heli, "bmkhs_dcBusOn", _dcBusOn] call bmkhs_fnc_utilUpdateNetworkGlobal;
 
 //DC Bus powers the following
 //--(1) PSP/LPRF (FCR)

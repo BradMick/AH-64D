@@ -24,18 +24,18 @@ if (_heli getVariable ["bmkhs_rotorBrakeOn", false]) exitWith {};
 
 private _engState = _heli getVariable "bmkhs_engState" select _engNum;
 
-[_heli, "startSwitchPressed", [_engNum]] call bmkhs_fnc_notify;
+[_heli, "startSwitchPressed", [_engNum]] call bmkhs_fnc_utilNotify;
 
 switch (_action) do {
     case "START": {
         if (_engState isEqualTo "OFF") exitWith {
-            [_heli, "bmkhs_engState", _engNum, "STARTING", true] call bmkhs_fnc_setArrayVariable;
+            [_heli, "bmkhs_engState", _engNum, "STARTING", true] call bmkhs_fnc_utilSetArrayVariable;
         };
         true;
     };
     case "IGN ORDIE": {
         if (_engState isEqualTo "STARTING") exitWith {
-            [_heli, "bmkhs_engState", _engNum, "OFF", true] call bmkhs_fnc_setArrayVariable;
+            [_heli, "bmkhs_engState", _engNum, "OFF", true] call bmkhs_fnc_utilSetArrayVariable;
         };
         true;
     };

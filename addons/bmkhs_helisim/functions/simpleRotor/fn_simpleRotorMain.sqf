@@ -155,7 +155,7 @@ private _Iy   = (1.0 / 12.0) * _bladeMass * (_bladeChord * _bladeChord);
 private _md2  = _bladeMass * (_bladeHingeOffset * _bladeHingeOffset);
 private _Itot = _Icm + _md2;
 private _Jtot = (_Iy + _Itot) * _rtrNumBlades;
-[_heli, "bmkhs_rtrMoi", 0, _Jtot, true] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_rtrMoi", 0, _Jtot, true] call bmkhs_fnc_utilSetArrayVariable;
 
 //Thrust produced
 private _bladePitch_cur                = _bladePitch_min + (_bladePitch_max - _bladePitch_min) * _fmcCollOut;
@@ -279,7 +279,7 @@ _torque_req                               = (_torque_req * _inputRpmPct) + _auto
 //systemChat format ["_velZ = %1 -- _autorotationTorque = %2", _velZ * 196.85, _autorotationTorque];
 
 private _rtrTorque   = _torque_req * _rtrGearRatio;
-[_heli, "bmkhs_reqEngTorque", 0, _torque_req, true] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_reqEngTorque", 0, _torque_req, true] call bmkhs_fnc_utilSetArrayVariable;
 
 private _axisX = [1.0, 0.0, 0.0];
 private _axisY = [0.0, 1.0, 0.0];
@@ -344,7 +344,7 @@ private _climbThrust     = _baseThrust * _RoCScalar;
 private _tipLossScalar   = [_rtrTipLossTable, _heli getVariable "bmkhs_GWT"] call bmkhs_fnc_linearInterp select 1;
 private _totThrust       = (_rtrThrust + _gndEffThrust + _climbThrust) * _tipLossScalar;
 if ([_totThrust] call bmkhs_fnc_isNAN || [_totThrust] call bmkhs_fnc_isINF) then { _totThrust = 0.0; };
-[_heli, "bmkhs_rtrThrust", 0, _totThrust, true] call bmkhs_fnc_setArrayVariable;
+[_heli, "bmkhs_rtrThrust", 0, _totThrust, true] call bmkhs_fnc_utilSetArrayVariable;
 //Main-thrust scalar. In forward flight: the airspeed-banded table. In HOVER (low
 //forward speed): blend the IGE and OGE hover thrust values by AGL height (IGE at
 //5 ft, OGE at 80 ft) so ground effect gets its own tuned thrust at each height.
