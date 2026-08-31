@@ -70,7 +70,7 @@ _heli setVariable ["bmkhs_fuelTanks",    _fuelTanks];
 private _mains     = [];
 private _transfers = [];
 {
-    switch (_x select 5) do {
+    switch (_x select 4) do {                       //slot 4 is role
         case "main":     { _mains     pushBack _forEachIndex };
         case "xfer":     { _transfers pushBack _forEachIndex };
     };
