@@ -2,68 +2,54 @@
 Function: bmkhs_fnc_massUpdateStation
 
 Description:
-    Updates the mass and moment of a wing station
+    Totals the mass carried on one wing station: the launcher, its remaining
+    rounds, and the fuel in an external tank.
+
+    What a store weighs comes from the aircraft's Stores table, not from Core.
 
 Parameters:
-    _heli - The helicopter to get information from [Unit].
+    _heli      - The helicopter to get information from [Unit].
+    _pylons    - 1-based pylon indices this station carries [Array].
+    _stationNo - 1-based station number, used to find its external fuel [Number].
 
 Returns:
-    ...
-
-Examples:
-    ...
+    Station mass in kg [Number].
 
 Author:
     BradMick
 ---------------------------------------------------------------------------- */
-params ["_heli", "_magIndex", "_pylonIndexStart", "_pylonIndexEnd", "_stationFuelMass"];
+params ["_heli", "_pylons", "_stationNo"];
 
 private _pylonMagazines = getPylonMagazines _heli;
+private _stores         = _heli getVariable ["bmkhs_stores", []];
 private _stationMass    = 0.0;
 
-//M299 Hellfire Missile Launcher
-if (["agm114", _pylonMagazines select _magIndex] call BIS_fnc_inString) then {
-    private _m299launcherMass = 64.9;   //kg
-    private _agm114Mass       = 46.71;  //kg - 103lbs (99lbs to 106lbs, average of 102.5lbs = 103lbs)
-    private _magAmmo          = 0;
+//The store fitted to this station is whatever its first loaded pylon carries.
+private _fittedMag = "";
+{
+    private _mag = _pylonMagazines param [_x - 1, ""];   //getPylonMagazines is 0-based
+    if (_mag != "") exitWith { _fittedMag = toLower _mag };
+} forEach _pylons;
 
-    for "_i" from _pylonIndexStart to _pylonIndexEnd do {
-        private _magName = _pylonMagazines select (_i - 1);
-        if (_magName == "") then {
-            _magAmmo = _magAmmo;
-        } else {
-            _magAmmo = _magAmmo + (_heli ammoOnPylon format["pylons%1",_i]);
+if (_fittedMag == "") exitWith { 0.0 };
+
+private _storeIdx = _stores findIf { [_x select 0, _fittedMag] call BIS_fnc_inString };
+if (_storeIdx < 0) exitWith { 0.0 };
+
+(_stores select _storeIdx) params ["", "_launcherMass", "_massPerRound", "_isTank"];
+
+_stationMass = _launcherMass;
+
+if (_isTank) then {
+    _stationMass = _stationMass + (_heli getVariable [format ["bmkhs_stn%1FuelMass", _stationNo], 0.0]);
+} else {
+    private _rounds = 0;
+    {
+        if ((_pylonMagazines param [_x - 1, ""]) != "") then {
+            _rounds = _rounds + (_heli ammoOnPylon format ["pylons%1", _x]);
         };
-    };
-    _stationMass = _m299launcherMass + (_magAmmo * _agm114Mass);
-    //systemChat format ["Mag Ammo = %1 -- Station 1 Mass = %2", _magAmmo, _stationMass];
+    } forEach _pylons;
+    _stationMass = _stationMass + (_rounds * _massPerRound);
 };
 
-//M261 Rocket Pod
-if (["275", _pylonMagazines select _magIndex] call BIS_fnc_inString) then {
-    private _m261launcherMass = 39.4;   //kg
-    private _hydraMass        = 10.4;   //kg - 23lbs (10.4kg) for the M151, 27.5lbs for M255A1, 27.4lbs for M261, 24.3lbs for M257/M278
-    private _magAmmo          = 0;
-
-    for "_i" from _pylonIndexStart to _pylonIndexEnd do {
-        private _magName = _pylonMagazines select (_i - 1);
-        if (_magName == "") then {
-            _magAmmo = _magAmmo;
-        } else {
-            _magAmmo = _magAmmo + (_heli ammoOnPylon format["pylons%1",_i]);
-        };
-    };
-    _stationMass = _m261launcherMass + (_magAmmo * _hydraMass);
-    //systemChat format ["Mag Ammo = %1 -- Station 1 Mass = %2", _magAmmo, _stationMass];
-};
-
-//230-gal Auxiliary Tanks
-if (["auxTank", _pylonMagazines select _magIndex] call BIS_fnc_inString) then {
-    private _auxTankEmptyMass = 63.5;   //kg
-    private _fuelMass         = _stationFuelMass;  //kg - 1541 lbs
-
-    _stationMass = _auxTankEmptyMass + _fuelMass;
-    //systemChat format ["Fuel Mass = %1 -- Station 1 Mass = %2", _fuelMass, _stationMass];
-};
-
-_stationMass;
+_stationMass

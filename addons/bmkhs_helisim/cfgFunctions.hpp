@@ -133,7 +133,6 @@ class CfgFunctions
             file = "\bmkhs_helisim\functions\mass";
             class massUpdate {R;};
             class massVariables {R;};
-            class massUpdateMagazine {R;};
             class massUpdateStation {R;};
         };
         class math {

@@ -2,16 +2,17 @@
 Function: bmkhs_fnc_massUpdate
 
 Description:
-    Updates the mass and moment of a wing station
+    Totals the aircraft's mass and moments and applies the resulting gross
+    weight and centre of mass.
+
+    Every contributor is an indexed table loaded by fn_massVariables, so the
+    airframe's seat, tank and station counts are config, not code.
 
 Parameters:
     _heli - The helicopter to get information from [Unit].
 
 Returns:
-    ...
-
-Examples:
-    ...
+    Nothing
 
 Author:
     BradMick
@@ -21,27 +22,18 @@ params ["_heli"];
 
 if (!local _heli) exitWith {};
 
-private _fs0            = _heli getVariable "bmkhs_fsDatum";
+private _fs0    = _heli getVariable "bmkhs_fsDatum";
+private _fwdCg  = _heli getVariable "bmkhs_fwdCgLimit";
+private _aftCg  = _heli getVariable "bmkhs_aftCgLimit";
 
-private _fwdCg          = _heli getVariable "bmkhs_fwdCgLimit";
-private _aftCg          = _heli getVariable "bmkhs_aftCgLimit";
+private _curMass = 0;
+private _latMom  = 0;
+private _longMom = 0;
 
-private _armCPG         = _heli getVariable "bmkhs_armCpg";
-private _armPLT         = _heli getVariable "bmkhs_armPlt";
-private _armFwdFuelCell = _heli getVariable "bmkhs_armFwdFuelCell";
-private _armAmmoBay     = _heli getVariable "bmkhs_armAmmoBay";
-private _armAftFuelCell = _heli getVariable "bmkhs_armAftFuelCell";
-
-private _armStation01   = _heli getVariable "bmkhs_armStation01";
-private _armStation02   = _heli getVariable "bmkhs_armStation02";
-private _armStation03   = _heli getVariable "bmkhs_armStation03";
-private _armStation04   = _heli getVariable "bmkhs_armStation04";
-
-private _curMass   = 0;
-private _curMom    = 0;
+//Empty airframe. The config moment is measured about the datum, so it converts to
+//model space here; the payload arms below are already in model space.
 private _emptyMass = 0;
 private _emptyMom  = 0;
-
 if (_heli animationPhase "fcr_enable" == 1) then {
     _emptyMass = _heli getVariable "bmkhs_emptyMassFCR";
     _emptyMom  = (_emptyMass * _fs0) - (_heli getVariable "bmkhs_emptyMomFCR");
@@ -49,110 +41,109 @@ if (_heli animationPhase "fcr_enable" == 1) then {
     _emptyMass = _heli getVariable "bmkhs_emptyMassNonFCR";
     _emptyMom  = (_emptyMass * _fs0) - (_heli getVariable "bmkhs_emptyMomNonFCR");
 };
+_curMass = _emptyMass;
+_longMom = _emptyMom;
 
-private _cpgMass     = _heli getVariable "bmkhs_crewMass";
-private _cpgMom      = _cpgMass * (_armCPG select 1);
+//Seats. A seat contributes only when someone is in it, matched against fullCrew by the
+//identity the config declares, so the CG reflects who is actually aboard.
+//Single-argument fullCrew returns ONLY occupied positions, so every entry here is a real
+//occupant - do not switch to the [_heli, "", true] form without adding an isNull check.
+//Entries are [unit, role, cargoIndex, turretPath, isPersonTurret]; role is "driver",
+//"gunner", "commander", "Turret" or "cargo". Turret seats are matched on the PATH rather
+//than the role string, since a second turret reports "Turret" where the first reports
+//"gunner" and both are the same kind of seat.
+private _crew = fullCrew _heli;
+{
+    _x params ["_arm", "_mass", "_role", "_turret", "_cargoIndex"];
 
-private _pltMass     = _heli getVariable "bmkhs_crewMass";
-private _pltMom      = _pltMass * (_armPLT select 1);
+    private _occupied = _crew findIf {
+        _x params ["", "_cRole", "_cCargo", "_cTurret"];
+        private _cRoleL = toLower _cRole;
+        switch (_role) do {
+            case "cargo":  { _cRoleL == "cargo" && {_cCargo == _cargoIndex} };
+            case "driver": { _cRoleL == "driver" };
+            default        { _cRoleL != "cargo" && {_cTurret isEqualTo _turret} };
+        };
+    } > -1;
 
-private _crewMass    = _cpgMass + _pltMass;//(count (fullcrew _heli)) * 113.4; //kg - 250lbs per individual
+    if (_occupied) then {
+        _curMass = _curMass + _mass;
+        _latMom  = _latMom  + (_mass * (_arm select 0));
+        _longMom = _longMom + (_mass * (_arm select 1));
+    };
+} forEach (_heli getVariable ["bmkhs_seats", []]);
 
-//Fuel
-private _fwdFuelMass  = _heli getVariable "bmkhs_fwdFuelMass";
-private _aftFuelMass  = _heli getVariable "bmkhs_aftFuelMass";
-private _ctrFuelMass  = _heli getVariable "bmkhs_ctrFuelMass";
-private _stn1FuelMass = _heli getVariable "bmkhs_stn1FuelMass";
-private _stn2FuelMass = _heli getVariable "bmkhs_stn2FuelMass";
-private _stn3FuelMass = _heli getVariable "bmkhs_stn3FuelMass";
-private _stn4FuelMass = _heli getVariable "bmkhs_stn4FuelMass";
+//Internal fuel. Each tank carries its own arm, so a tank is a mass at a position.
+//The quantity still comes from the fuel system's named per-cell variables; converting fuel
+//itself to indexed tanks is a separate refactor, so the name maps to the variable here.
+{
+    _x params ["_name", "_arm", "", "_station"];
+    if (_station == 0) then {
+        private _mass = _heli getVariable [format ["bmkhs_%1FuelMass", toLower _name], 0.0];
+        _curMass = _curMass + _mass;
+        _latMom  = _latMom  + (_mass * (_arm select 0));
+        _longMom = _longMom + (_mass * (_arm select 1));
+    };
+} forEach (_heli getVariable ["bmkhs_tanks", []]);
 
-private _fwdFuelMom   = _fwdFuelMass * (_armFwdFuelCell select 1);
-private _ctrFuelMom   = _ctrFuelMass * (_armAmmoBay select 1);
-private _aftFuelMom   = _aftFuelMass * (_armAftFuelCell select 1);
+//Internal magazines - rounds carried in the airframe rather than on a pylon.
+private _magsAmmo = magazinesAmmo _heli;
+{
+    _x params ["_match", "_arm", "_massPerRound"];
+    private _rounds = 0;
+    {
+        _x params ["_magName", "_magAmmo"];
+        if ([_match, toLower str _magName] call BIS_fnc_inString) then {
+            _rounds = _rounds + _magAmmo;
+        };
+    } forEach _magsAmmo;
 
-private _fuelMass     = _fwdFuelMass + _aftFuelMass;
+    private _mass = _rounds * _massPerRound;
+    _curMass = _curMass + _mass;
+    _latMom  = _latMom  + (_mass * (_arm select 0));
+    _longMom = _longMom + (_mass * (_arm select 1));
+} forEach (_heli getVariable ["bmkhs_magazines", []]);
 
-//1200rd Magazine or Robbie Tank
-private _magMass         = [_heli] call bmkhs_fnc_massUpdateMagazine;
-private _magMom          = _magMass * (_armAmmoBay select 1);
+//Wing stations - launcher, remaining rounds, and external tank fuel.
+{
+    _x params ["_arm", "_pylons"];
+    private _stationNo = _forEachIndex + 1;
+    private _mass = [_heli, _pylons, _stationNo] call bmkhs_fnc_massUpdateStation;
 
-private _ammoBayMass     = _ctrFuelMass + _magMass;
-private _ammoBayMom      = _ctrFuelMom + _magMom;
+    _curMass = _curMass + _mass;
+    _latMom  = _latMom  + (_mass * (_arm select 0));
+    _longMom = _longMom + (_mass * (_arm select 1));
+} forEach (_heli getVariable ["bmkhs_stations", []]);
 
-//Station 1
-private _stn1Mass    = [_heli,  0,  1,  4, _stn1FuelMass] call bmkhs_fnc_massUpdateStation;
-private _stn1LatMom  = _stn1Mass * (_armStation01 select 0);
-private _stn1LongMom = _stn1Mass * (_armStation01 select 1);
-//Station 2
-private _stn2Mass    = [_heli,  4,  5,  8, _stn2FuelMass] call bmkhs_fnc_massUpdateStation;
-private _stn2LatMom  = _stn2Mass * (_armStation02 select 0);
-private _stn2LongMom = _stn2Mass * (_armStation02 select 1);
-//Station 3
-private _stn3Mass    = [_heli,  8,  9, 12, _stn3FuelMass] call bmkhs_fnc_massUpdateStation;
-private _stn3LatMom  = _stn3Mass * (_armStation03 select 0);
-private _stn3LongMom = _stn3Mass * (_armStation03 select 1);
-//Station 4
-private _stn4Mass    = [_heli, 12, 13, 16, _stn4FuelMass] call bmkhs_fnc_massUpdateStation;
-private _stn4LatMom  = _stn4Mass * (_armStation04 select 0);
-private _stn4LongMom = _stn4Mass * (_armStation04 select 1);
+private _curLongCG = _longMom / _curMass;
+private _curLatCG  = _latMom  / _curMass;
 
-private _stnMass     = _stn1Mass + _stn2Mass + _stn3Mass + _stn4Mass;
-
-//Calculate the total current mass of the helicopter
-_curMass    = _emptyMass + _crewMass + _fuelMass + _ammoBayMass + _stnMass;
-_curLongMom = _emptyMom + _cpgMom + _pltMom + _fwdFuelMom + _ammoBayMom + _aftFuelMom + _stn1LongMom + _stn2LongMom + _stn3LongMom + _stn4LongMom;
-_curLongCG  = _curLongMom / _curMass;
-
-_curLatMom  = _stn1LatMom + _stn2LatMom + _stn3LatMom + _stn4LatMom;
-_curLatCG   = _curLatMom / _curMass;
-
-private _comOffX = 0.0;
-private _comOffY = 0.0;
-private _comOffZ = 0.0;
-
+//setCenterOfMass works in the engine's shifted frame, so the surveyed CG has boundingCenter
+//removed before it goes in. See the debug readout below, which adds it back.
 private _comDatum = boundingCenter _heli;
-//systemChat format ["Datum [%1, %2, %3 ]", (_comDatum select 0) toFixed 3, (_comDatum select 1) toFixed 3, (_comDatum select 2) toFixed 3];
+_heli setCenterOfMass [
+    _curLatCG  - (_comDatum select 0),
+    _curLongCG - (_comDatum select 1),
+               - (_comDatum select 2)
+];
 
-//if (bmkhs_helisimRealismSetting == REALISTIC) then {
-    _heli setCenterOfMass [
-        _curLatCG  + _comOffX - (_comDatum select 0),
-        _curLongCG + _comOffY - (_comDatum select 1),
-                   + _comOffZ - (_comDatum select 2)
-    ];
-/*
-} else {
-    _heli setCenterOfMass [ 0.0 + _comOffX, _curLongCG + _comOffY, -1.34 + _comOffZ];
-};
-*/
-//systemChat format ["Total Mass = %1 lbs (%2 kg) -- Total Moment = %3 -- Long CG = %4 in -- Lat CG = %5 in", (_curMass * 2.20462) toFixed 1, _curMass toFixed 1, _curLongMom toFixed 3, (_curLongCG * 39.3701) toFixed 1, (_curLatCG * 39.3701) toFixed 1];
-//systemChat format ["Center of Mass = %1", getCenterOfMass _heli];
-
-private _curCom = (getCenterOfMass _heli) vectorAdd _comDatum;
-
-//_curMass = 4535;//8165;
-if (false) then {
-    _curMass = _curMass;
-};
 _heli setMass _curMass;
-//systemChat format ["_curMass %1 - _boundingBoxReal = %2 - _boundingCenter = %3", (getMass _heli) toFixed 0, boundingBoxReal [_heli, "Geometry"], boundingCenter _heli];
 
 _heli setVariable ["bmkhs_GWT", _curMass,   true];
 _heli setVariable ["bmkhs_CG",  _curLongCG, true];
 
 if (BMKHS_FM_DEBUG) then {
-private _vecX = [5.0, 0.0, 0.0];
-private _vecY = [0.0, 5.0, 0.0];
-private _vecZ = [0.0, 0.0, 5.0];
+    private _vecX = [5.0, 0.0, 0.0];
+    private _vecY = [0.0, 5.0, 0.0];
+    private _vecZ = [0.0, 0.0, 5.0];
 
-private _heliCoM = getCenterOfMass _heli;
+    private _heliCoM = getCenterOfMass _heli;
 
-[_heli, _heliCoM, _heliCoM vectorAdd _vecX, "red"]   call bmkhs_fnc_debugDrawLine;
-[_heli, _heliCoM, _heliCoM vectorAdd _vecY, "green"] call bmkhs_fnc_debugDrawLine;
-[_heli, _heliCoM, _heliCoM vectorAdd _vecZ, "blue"]  call bmkhs_fnc_debugDrawLine;
+    [_heli, _heliCoM, _heliCoM vectorAdd _vecX, "red"]   call bmkhs_fnc_debugDrawLine;
+    [_heli, _heliCoM, _heliCoM vectorAdd _vecY, "green"] call bmkhs_fnc_debugDrawLine;
+    [_heli, _heliCoM, _heliCoM vectorAdd _vecZ, "blue"]  call bmkhs_fnc_debugDrawLine;
 
-[_heli, [0.0, _fs0   - (_comDatum select 1),-5], [0.0, _fs0   - (_comDatum select 1), 5], "green"]  call bmkhs_fnc_debugDrawLine;
-[_heli, [0.0, _fwdCg - (_comDatum select 1),-5], [0.0, _fwdCg - (_comDatum select 1), 5], "red"]  call bmkhs_fnc_debugDrawLine;
-[_heli, [0.0, _aftCg - (_comDatum select 1),-5], [0.0, _aftCg - (_comDatum select 1), 5], "red"]  call bmkhs_fnc_debugDrawLine;
-
+    [_heli, [0.0, _fs0   - (_comDatum select 1),-5], [0.0, _fs0   - (_comDatum select 1), 5], "green"] call bmkhs_fnc_debugDrawLine;
+    [_heli, [0.0, _fwdCg - (_comDatum select 1),-5], [0.0, _fwdCg - (_comDatum select 1), 5], "red"]   call bmkhs_fnc_debugDrawLine;
+    [_heli, [0.0, _aftCg - (_comDatum select 1),-5], [0.0, _aftCg - (_comDatum select 1), 5], "red"]   call bmkhs_fnc_debugDrawLine;
 };
