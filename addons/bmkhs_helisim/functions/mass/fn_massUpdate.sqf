@@ -54,7 +54,11 @@ _longMom = _emptyMom;
 //"gunner" and both are the same kind of seat.
 private _crew = fullCrew _heli;
 {
-    _x params ["_arm", "_mass", "_role", "_turret", "_cargoIndex"];
+    private _arm        = _x get "arm";
+    private _mass       = _x get "mass";
+    private _role       = _x get "role";
+    private _turret     = _x get "turret";
+    private _cargoIndex = _x get "cargoIndex";
 
     private _occupied = _crew findIf {
         _x params ["", "_cRole", "_cCargo", "_cTurret"];
@@ -92,7 +96,9 @@ private _crew = fullCrew _heli;
 //Internal magazines - rounds carried in the airframe rather than on a pylon.
 private _magsAmmo = magazinesAmmo _heli;
 {
-    _x params ["_match", "_arm", "_massPerRound"];
+    private _match        = _x get "match";
+    private _arm          = _x get "arm";
+    private _massPerRound = _x get "massPerRound";
     private _rounds = 0;
     {
         _x params ["_magName", "_magAmmo"];
@@ -109,7 +115,8 @@ private _magsAmmo = magazinesAmmo _heli;
 
 //Wing stations - launcher, remaining rounds, and external tank fuel.
 {
-    _x params ["_arm", "_pylons"];
+    private _arm    = _x get "arm";
+    private _pylons = _x get "pylons";
     private _stationNo = _forEachIndex + 1;
     private _mass = [_heli, _pylons, _stationNo] call bmkhs_fnc_massUpdateStation;
 

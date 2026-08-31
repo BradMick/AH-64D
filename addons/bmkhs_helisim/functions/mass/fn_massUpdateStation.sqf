@@ -33,15 +33,26 @@ private _fittedMag = "";
 
 if (_fittedMag == "") exitWith { 0.0 };
 
-private _storeIdx = _stores findIf { [_x select 0, _fittedMag] call BIS_fnc_inString };
+private _storeIdx = _stores findIf { [_x get "match", _fittedMag] call BIS_fnc_inString };
 if (_storeIdx < 0) exitWith { 0.0 };
 
-(_stores select _storeIdx) params ["", "_launcherMass", "_massPerRound", "_isTank"];
+private _store = _stores select _storeIdx;
+private _launcherMass = _store get "launcherMass";
+private _massPerRound = _store get "massPerRound";
+private _isTank       = _store get "isTank";
 
 _stationMass = _launcherMass;
 
 if (_isTank) then {
-    _stationMass = _stationMass + (_heli getVariable [format ["bmkhs_stn%1FuelMass", _stationNo], 0.0]);
+    //Find the aux tank sitting on this station and add whatever fuel it is holding. The
+    //tank owns its variable name, so nothing here assumes one.
+    private _fuelMass = 0.0;
+    {
+        if ((_x get "station") == _stationNo) exitWith {
+            _fuelMass = _heli getVariable [(_x get "varName") + "Mass", 0.0];
+        };
+    } forEach (_heli getVariable ["bmkhs_auxTanks", []]);
+    _stationMass = _stationMass + _fuelMass;
 } else {
     private _rounds = 0;
     {

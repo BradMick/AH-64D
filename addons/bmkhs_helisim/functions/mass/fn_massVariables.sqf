@@ -25,8 +25,9 @@ _heli setVariable ["bmkhs_emptyMomFCR",        getNumber (_config >> "emptyMomFC
 _heli setVariable ["bmkhs_emptyMassNonFCR",    getNumber (_config >> "emptyMassNonFCR")];     //kg
 _heli setVariable ["bmkhs_emptyMomNonFCR",     getNumber (_config >> "emptyMomNonFCR")];
 
-//Indexed mass items. Each table is flattened to a plain array at load so the per-frame
-//massUpdate never touches config.
+//Indexed mass items. Each table is flattened at load so the per-frame massUpdate never
+//touches config. Entries are HASHMAPS keyed by the config property name, not positional
+//arrays: adding or removing a field then cannot silently shift what a reader sees.
 //Class names are zero-padded to two digits (Seat01, Store01) so they sort correctly.
 private _readClass = {
     params ["_parent", "_prefix", "_count"];
@@ -37,51 +38,51 @@ private _readClass = {
     _out
 };
 
-//SEATS: [arm, mass, role, turretPath, cargoIndex]
+//SEATS
 private _seats = [];
 {
-    _seats pushBack [
-        getArray  (_x >> "arm"),
-        getNumber (_x >> "mass"),
-        toLower getText (_x >> "role"),
-        getArray  (_x >> "turret"),
-        getNumber (_x >> "cargoIndex")
-    ];
+    _seats pushBack (createHashMapFromArray [
+        ["arm",        getArray  (_x >> "arm")],
+        ["mass",       getNumber (_x >> "mass")],
+        ["role",       toLower getText (_x >> "role")],
+        ["turret",     getArray  (_x >> "turret")],
+        ["cargoIndex", getNumber (_x >> "cargoIndex")]
+    ]);
 } forEach ([_config >> "Seats", "Seat", getNumber (_config >> "numSeats")] call _readClass);
 _heli setVariable ["bmkhs_seats", _seats];
 
 //Tanks are not read here - fn_fuelVariables owns them and publishes bmkhs_fuelTanks,
 //which massUpdate walks for the arms.
 
-//STATIONS: [arm, pylons]
+//STATIONS
 private _stations = [];
 {
-    _stations pushBack [
-        getArray (_x >> "arm"),
-        getArray (_x >> "pylons")
-    ];
+    _stations pushBack (createHashMapFromArray [
+        ["arm",    getArray (_x >> "arm")],
+        ["pylons", getArray (_x >> "pylons")]
+    ]);
 } forEach ([_config >> "Stations", "Station", getNumber (_config >> "numStations")] call _readClass);
 _heli setVariable ["bmkhs_stations", _stations];
 
-//MAGAZINES: [match, arm, massPerRound]
+//MAGAZINES
 private _magazines = [];
 {
-    _magazines pushBack [
-        toLower getText (_x >> "match"),
-        getArray  (_x >> "arm"),
-        getNumber (_x >> "massPerRound")
-    ];
+    _magazines pushBack (createHashMapFromArray [
+        ["match",        toLower getText (_x >> "match")],
+        ["arm",          getArray  (_x >> "arm")],
+        ["massPerRound", getNumber (_x >> "massPerRound")]
+    ]);
 } forEach ([_config >> "Magazines", "Mag", getNumber (_config >> "numMagazines")] call _readClass);
 _heli setVariable ["bmkhs_magazines", _magazines];
 
-//STORES: [match, launcherMass, massPerRound, isTank]
+//STORES
 private _stores = [];
 {
-    _stores pushBack [
-        toLower getText (_x >> "match"),
-        getNumber (_x >> "launcherMass"),
-        getNumber (_x >> "massPerRound"),
-        getNumber (_x >> "isTank") > 0
-    ];
+    _stores pushBack (createHashMapFromArray [
+        ["match",        toLower getText (_x >> "match")],
+        ["launcherMass", getNumber (_x >> "launcherMass")],
+        ["massPerRound", getNumber (_x >> "massPerRound")],
+        ["isTank",       getNumber (_x >> "isTank") > 0]
+    ]);
 } forEach ([_config >> "Stores", "Store", getNumber (_config >> "numStores")] call _readClass);
 _heli setVariable ["bmkhs_stores", _stores];
