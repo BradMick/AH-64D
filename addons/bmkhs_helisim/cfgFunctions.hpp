@@ -110,6 +110,8 @@ class CfgFunctions
         };
         class interact {
             file = "\bmkhs_helisim\functions\interact";
+            class interactAPUButton {R;};
+            class interactBattSwitch {R;};
             class interactPowerLever {R;};
             class interactStartSwitch {R;};
         };
@@ -245,11 +247,6 @@ class CfgFunctions
         class systemsRepair {
             file = "\bmkhs_helisim\functions\systems\repair";
             class repair {R;};
-        };
-        class systemsInteract {
-            file = "\bmkhs_helisim\functions\systems\interact";
-            class interactAPUButton {R;};
-            class interactBattSwitch {R;};
         };
         class transmission {
             file = "\bmkhs_helisim\functions\transmission";

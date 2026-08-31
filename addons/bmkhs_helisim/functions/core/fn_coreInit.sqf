@@ -32,7 +32,7 @@ if (!(_heli getVariable ["bmkhs_initialised", false]) && local _heli) then {
     _heli setVariable ["bmkhs_forceTrimInterupted",       false, true];
     _heli setVariable ["bmkhs_forceTrimPosPitch",         0.0,   true];
     _heli setVariable ["bmkhs_forceTrimPosRoll",          0.0,   true];
-    _heli setVariable ["bmkhs_forceTrimPosYaw",         0.0,   true];
+    _heli setVariable ["bmkhs_forceTrimPosYaw",           0.0,   true];
     //Attitude Hold
     _heli setVariable ["bmkhs_attHoldActive",             false, true];
     _heli setVariable ["bmkhs_attHoldDesiredPos",         getPos _heli, true];
@@ -51,5 +51,5 @@ if (!(_heli getVariable ["bmkhs_initialised", false]) && local _heli) then {
     _heli setVariable ["bmkhs_hdgHoldSubMode",            "hdg", true];    //hdg, trn, yaw, aut
     _heli setVariable ["bmkhs_hdgHoldPedalRef",           0.0,   true];    //<-- probably not needed, kept just in case...
 
-    _heli setVariable ["bmkhs_stabilatorPosition",           0.0,   true];
+    _heli setVariable ["bmkhs_stabilatorPosition",        0.0,   true];
 };

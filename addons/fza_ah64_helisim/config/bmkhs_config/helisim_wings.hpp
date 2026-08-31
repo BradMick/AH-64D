@@ -44,8 +44,19 @@ wingChord[]         = {
                     ,  1.07
                     };
 
-wingSweep[]         = {    0.0,     0.0,    1.4,        0.0};   //deg
-wingTwist[]         = {    0.0,     0.0,    0.0,        0.0};   //deg
+wingSweep[]         = {
+                      0.0
+                    , 0.0
+                    , 1.4
+                    , 0.0
+                    };
+
+wingTwist[]         = {
+                      0.0
+                    , 0.0
+                    , 0.0
+                    , 0.0
+                    };
 wingTipWidthScalar[]= {    1.0,     1.0,    1.0,        1.0};
 wingNumElements[]   = {      5,       5,      5,          5};
 wingChordLinePos[]  = {   0.25,    0.25,   0.25,       0.25};
