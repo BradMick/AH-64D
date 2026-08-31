@@ -32,7 +32,6 @@ _heli setVariable ["bmkhs_useSystems",          getNumber (_config >> "useSystem
 [_heli, _config] call bmkhs_fnc_fmcVariables;
 [_heli, _config] call bmkhs_fnc_systemsVariables;
 [_heli, _config] call bmkhs_fnc_fuelVariables;
-[_heli] call bmkhs_fnc_fuelMgmtVariables;
 [_heli] call bmkhs_fnc_fuelSet;
 [_heli, _config] call bmkhs_fnc_engineVariables;
 [_heli, _config] call bmkhs_fnc_fuselageVariables;
