@@ -19,9 +19,9 @@ Author:
 params ["_heli", "_deltaTime"];
 #include "\bmkhs_helisim\functions\systems\systems.hpp"
 
-private _apuBtnOn   = _heli getVariable "bmkhs_apuBtnOn";
-private _battBusOn  = _heli getVariable "bmkhs_battBusOn";
-private _apuOn      = _heli getVariable "bmkhs_apuOn";
+private _apuBtnOn      = _heli getVariable "bmkhs_apuBtnOn";
+private _battBusOn     = _heli getVariable "bmkhs_battBusOn";
+private _apuOn         = _heli getVariable "bmkhs_apuOn";
 private _apuDamage     = _heli getHitPointDamage "hit_apu";
 private _apuStartDelay = _heli getVariable "bmkhs_apuStartDelay";
 private _apuRPM_pct    = _heli getVariable "bmkhs_apuRPM_pct";
