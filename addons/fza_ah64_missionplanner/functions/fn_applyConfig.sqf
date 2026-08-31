@@ -58,9 +58,9 @@ if !(_heli isKindOf "Helicopter") exitWith {false};
     private _sfmPlusCfg = configOf _heli >> "BMKHS_HeliSim";
     private _ctrEnabled = [0, 1] select _iafsInstalled;
     private _tankCapacityKg =
-        getNumber (_sfmPlusCfg >> "maxFwdFuelMass") +
-        getNumber (_sfmPlusCfg >> "maxAftFuelMass") +
-        (_ctrEnabled * getNumber (_sfmPlusCfg >> "maxCtrFuelMass"));
+        getNumber (_sfmPlusCfg >> "fuelTank1Max") +
+        getNumber (_sfmPlusCfg >> "fuelTank3Max") +
+        (_ctrEnabled * getNumber (_sfmPlusCfg >> "fuelTank2Max"));
 
     private _targetFuelPct = if (_tankCapacityKg > 0) then { (_targetFuelKgClamped / _tankCapacityKg) max 0 min 1 } else { fuel _heli };
 
@@ -79,7 +79,7 @@ if !(_heli isKindOf "Helicopter") exitWith {false};
 
     private _currentFcrState = [0, 1] select ((_heli animationPhase "fcr_enable") > 0.5);
     private _needsFcr = _desiredFcrState != _currentFcrState;
-    private _needsCenterStore = (_heli getVariable ["bmkhs_ctrTankInstalled", true]) != _iafsInstalled;
+    private _needsCenterStore = (_heli getVariable ["bmkhs_fuelTank2Installed", true]) != _iafsInstalled;
     private _needsFuel = _fuelDeltaKg > 1;
     private _needsCannon = _cannonDelta > 0;
     // ACE rearm supply mode (0=unlimited, 1=caliber pool, 2=magazine-inventory)
@@ -593,7 +593,7 @@ if !(_heli isKindOf "Helicopter") exitWith {false};
         };
     };
 
-    private _currentIafsInstalled = _heli getVariable ["bmkhs_ctrTankInstalled", true];
+    private _currentIafsInstalled = _heli getVariable ["bmkhs_fuelTank2Installed", true];
 
     if (_needsCenterStore && _iafsInstalled && !_currentIafsInstalled) then {
         // magazine → IAFS: unload cannon first (if loaded), then swap

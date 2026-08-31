@@ -127,20 +127,20 @@ if (_battBusOn || _dcBusOn) then {
         _numExtTanks  = _numExtTanks + 1;
     };
 
-    if (_heli getVariable ["bmkhs_ctrTankInstalled", false]) then {
+    if (_heli getVariable ["bmkhs_fuelTank2Installed", false]) then {
         _heli setUserMFDValue [MFD_IND_IAFS_INSTALLED, _numExtTanks];
     } else {
         _heli setUserMFDValue [MFD_IND_IAFS_INSTALLED, (_numExtTanks + 5)];
     };
 
     private _ufdTotalFuelLbs = (
-          (_heli getVariable ["bmkhs_fwdFuelMass", 0])
-        + (_heli getVariable ["bmkhs_aftFuelMass", 0])
-        + (_heli getVariable ["bmkhs_ctrFuelMass", 0])
-        + (_heli getVariable ["bmkhs_stn1FuelMass", 0])
-        + (_heli getVariable ["bmkhs_stn2FuelMass", 0])
-        + (_heli getVariable ["bmkhs_stn3FuelMass", 0])
-        + (_heli getVariable ["bmkhs_stn4FuelMass", 0])
+          (_heli getVariable ["bmkhs_fuelTank1Mass", 0])
+        + (_heli getVariable ["bmkhs_fuelTank3Mass", 0])
+        + (_heli getVariable ["bmkhs_fuelTank2Mass", 0])
+        + (_heli getVariable ["bmkhs_auxTank1Mass", 0])
+        + (_heli getVariable ["bmkhs_auxTank2Mass", 0])
+        + (_heli getVariable ["bmkhs_auxTank3Mass", 0])
+        + (_heli getVariable ["bmkhs_auxTank4Mass", 0])
     ) * 2.20462;
     _heli setUserMFDText [MFD_TEXT_IND_UFD_FUEL, str (round (_ufdTotalFuelLbs / 10) * 10)];
 } else {

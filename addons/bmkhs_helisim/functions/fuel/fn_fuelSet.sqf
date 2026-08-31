@@ -24,11 +24,13 @@ params ["_heli"];
 private _pylonMagazines = getPylonMagazines _heli;
 
 private _percentFuel    = fuel _heli;
-private _IAFSInstalled  = _heli getVariable ["bmkhs_ctrTankInstalled", false];
-private _maxFwdFuelMass = _heli getVariable ["bmkhs_maxFwdFuelMass", 0];
-private _maxCtrFuelMass = _heli getVariable ["bmkhs_maxCtrFuelMass", 0];
-private _maxAftFuelMass = _heli getVariable ["bmkhs_maxAftFuelMass", 0];
-private _maxTnkFuelMass = _heli getVariable ["bmkhs_maxExtFuelMass", 0];
+private _IAFSInstalled  = _heli getVariable ["bmkhs_fuelTank2Installed", false];
+private _maxFwdFuelMass = _heli getVariable ["bmkhs_fuelTank1Max", 0];
+private _maxCtrFuelMass = _heli getVariable ["bmkhs_fuelTank2Max", 0];
+private _maxAftFuelMass = _heli getVariable ["bmkhs_fuelTank3Max", 0];
+//Initial load assumes every aux tank is the same size; the per-station capacities are in
+//bmkhs_auxTank<N>Max if that ever needs to differ.
+private _maxTnkFuelMass = _heli getVariable ["bmkhs_auxTank1Max", 0];
 
 private _totFuelMass    = 0.0;
 private _fwdFuelMass    = 0.0;
@@ -78,14 +80,14 @@ if (_numExtTanks > 0) then {
     if (_stn3HasTank) then { _stn3FuelMass = _perTank; };
     if (_stn4HasTank) then { _stn4FuelMass = _perTank; };
 };
-_heli setVariable ["bmkhs_fwdFuelMass",    _fwdFuelMass];
-_heli setVariable ["bmkhs_ctrFuelMass",    _ctrFuelMass];
-_heli setVariable ["bmkhs_aftFuelMass",    _aftFuelMass];
+_heli setVariable ["bmkhs_fuelTank1Mass",    _fwdFuelMass];
+_heli setVariable ["bmkhs_fuelTank2Mass",    _ctrFuelMass];
+_heli setVariable ["bmkhs_fuelTank3Mass",    _aftFuelMass];
 
-_heli setVariable ["bmkhs_stn1FuelMass",   _stn1FuelMass];
-_heli setVariable ["bmkhs_stn2FuelMass",   _stn2FuelMass];
-_heli setVariable ["bmkhs_stn3FuelMass",   _stn3FuelMass];
-_heli setVariable ["bmkhs_stn4FuelMass",   _stn4FuelMass];
+_heli setVariable ["bmkhs_auxTank1Mass",   _stn1FuelMass];
+_heli setVariable ["bmkhs_auxTank2Mass",   _stn2FuelMass];
+_heli setVariable ["bmkhs_auxTank3Mass",   _stn3FuelMass];
+_heli setVariable ["bmkhs_auxTank4Mass",   _stn4FuelMass];
 
 private _actualTotFuelMass = _fwdFuelMass + _ctrFuelMass + _aftFuelMass
                            + _stn1FuelMass + _stn2FuelMass + _stn3FuelMass + _stn4FuelMass;

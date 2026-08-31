@@ -48,30 +48,9 @@
         };
     };
 
-    //FUEL TANKS. A tank is a mass at a position, so the arm lives here rather than being
-    //inferred from a cell name. capacity is kg of usable fuel.
-    //  station - wing station index for external tanks; 0 for internal tanks
-    numTanks = 3;
-    class Tanks {
-        class Tank01 {
-            name     = "FWD";
-            arm[]    = {0.000, 2.542, 0.000};
-            capacity = 473.1;
-            station  = 0;
-        };
-        class Tank02 {  //centre cell shares the ammo bay position
-            name     = "CTR";
-            arm[]    = {0.000, 0.944, 0.000};
-            capacity = 300.9;
-            station  = 0;
-        };
-        class Tank03 {
-            name     = "AFT";
-            arm[]    = {0.000, -0.077, 0.000};
-            capacity = 668.6;
-            station  = 0;
-        };
-    };
+    //FUEL TANKS are defined in helisim_fuel.hpp - a tank's arm, capacity and caution
+    //threshold belong together, so the mass model reads that table rather than keeping
+    //a second copy of the arms here.
 
     //WING STATIONS. pylons[] lists the Arma pylon indices this station carries, so Core can
     //total the ammo without hardcoded index ranges. Indices are 1-BASED, matching the

@@ -74,17 +74,19 @@ private _crew = fullCrew _heli;
 } forEach (_heli getVariable ["bmkhs_seats", []]);
 
 //Internal fuel. Each tank carries its own arm, so a tank is a mass at a position.
-//The quantity still comes from the fuel system's named per-cell variables; converting fuel
-//itself to indexed tanks is a separate refactor, so the name maps to the variable here.
+//A removable tank that is not fitted contributes nothing. Auxiliary tanks are counted
+//with their wing station instead.
 {
-    _x params ["_name", "_arm", "", "_station"];
-    if (_station == 0) then {
-        private _mass = _heli getVariable [format ["bmkhs_%1FuelMass", toLower _name], 0.0];
+    _x params ["", "_arm", "", "", "_removable"];
+    private _tankNo = _forEachIndex + 1;
+
+    if (!_removable || {_heli getVariable [format ["bmkhs_fuelTank%1Installed", _tankNo], false]}) then {
+        private _mass = _heli getVariable [format ["bmkhs_fuelTank%1Mass", _tankNo], 0.0];
         _curMass = _curMass + _mass;
         _latMom  = _latMom  + (_mass * (_arm select 0));
         _longMom = _longMom + (_mass * (_arm select 1));
     };
-} forEach (_heli getVariable ["bmkhs_tanks", []]);
+} forEach (_heli getVariable ["bmkhs_fuelTanks", []]);
 
 //Internal magazines - rounds carried in the airframe rather than on a pylon.
 private _magsAmmo = magazinesAmmo _heli;

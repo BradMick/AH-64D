@@ -39,7 +39,7 @@ private _iafsState = [1, 0] select (_settings getVariable "iafsInstalled");
 private _fuelKg = _settings getVariable "fuel";
 private _iafsState = [0, 1] select (_settings getVariable "iafsInstalled");
 private _sfmPlusCfg = configOf _heli >> "BMKHS_HeliSim";
-private _tankCapacityKg = getNumber (_sfmPlusCfg >> "maxFwdFuelMass") + getNumber (_sfmPlusCfg >> "maxAftFuelMass") + _iafsState * getNumber (_sfmPlusCfg >> "maxCtrFuelMass");
+private _tankCapacityKg = getNumber (_sfmPlusCfg >> "fuelTank1Max") + getNumber (_sfmPlusCfg >> "fuelTank3Max") + _iafsState * getNumber (_sfmPlusCfg >> "fuelTank2Max");
 _heli setFuel (_fuelKg / _tankCapacityKg);
 
 //SFM Weight sim

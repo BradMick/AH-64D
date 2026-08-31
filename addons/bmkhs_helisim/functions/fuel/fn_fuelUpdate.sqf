@@ -32,13 +32,13 @@ params ["_heli"];
 private _deltaTime     = _heli getVariable "bmkhs_deltaTime";
 if (_deltaTime <= 0) exitWith {};
 
-private _IAFSInstalled = _heli getVariable ["bmkhs_ctrTankInstalled", false];
+private _IAFSInstalled = _heli getVariable ["bmkhs_fuelTank2Installed", false];
 if (isNil "_IAFSInstalled") exitWith {};
 
-private _maxFwdFuelMass = _heli getVariable "bmkhs_maxFwdFuelMass";
-private _maxCtrFuelMass = _heli getVariable "bmkhs_maxCtrFuelMass";
-private _maxAftFuelMass = _heli getVariable "bmkhs_maxAftFuelMass";
-private _maxTnkFuelMass = _heli getVariable "bmkhs_maxExtFuelMass";
+private _maxFwdFuelMass = _heli getVariable "bmkhs_fuelTank1Max";
+private _maxCtrFuelMass = _heli getVariable "bmkhs_fuelTank2Max";
+private _maxAftFuelMass = _heli getVariable "bmkhs_fuelTank3Max";
+private _maxTnkFuelMass = _heli getVariable ["bmkhs_auxTank1Max", 0];
 private _maxTotFuelMass = _heli getVariable "bmkhs_maxTotFuelMass";
 if (_maxTotFuelMass <= 0) exitWith {};
 
@@ -53,13 +53,13 @@ if (abs (_armaFuelFrac - _storedFuelFrac) > 0.01) then {
 };
 
 // Current cell masses
-private _fwdFuelMass  = _heli getVariable "bmkhs_fwdFuelMass";
-private _ctrFuelMass  = _heli getVariable "bmkhs_ctrFuelMass";
-private _aftFuelMass  = _heli getVariable "bmkhs_aftFuelMass";
-private _stn1FuelMass = _heli getVariable "bmkhs_stn1FuelMass";
-private _stn2FuelMass = _heli getVariable "bmkhs_stn2FuelMass";
-private _stn3FuelMass = _heli getVariable "bmkhs_stn3FuelMass";
-private _stn4FuelMass = _heli getVariable "bmkhs_stn4FuelMass";
+private _fwdFuelMass  = _heli getVariable "bmkhs_fuelTank1Mass";
+private _ctrFuelMass  = _heli getVariable "bmkhs_fuelTank2Mass";
+private _aftFuelMass  = _heli getVariable "bmkhs_fuelTank3Mass";
+private _stn1FuelMass = _heli getVariable "bmkhs_auxTank1Mass";
+private _stn2FuelMass = _heli getVariable "bmkhs_auxTank2Mass";
+private _stn3FuelMass = _heli getVariable "bmkhs_auxTank3Mass";
+private _stn4FuelMass = _heli getVariable "bmkhs_auxTank4Mass";
 
 // Fuel flow
 private _apuFF_kgs  = _heli getVariable "bmkhs_apuFF_kgs";
@@ -109,8 +109,8 @@ private _aftFuelAvailLastFrame = _aftFuelBefore > _eps;
 
 // XFER pump — Table 2-6 logic
 private _xferStep   = XFER_RATE_KGS * _deltaTime;
-private _fwdLow     = _fwdFuelMass < (_heli getVariable "bmkhs_fwdFuelLowKg");
-private _aftLow     = _aftFuelMass < (_heli getVariable "bmkhs_aftFuelLowKg");
+private _fwdLow     = _fwdFuelMass < (_heli getVariable "bmkhs_fuelTank1Low");
+private _aftLow     = _aftFuelMass < (_heli getVariable "bmkhs_fuelTank3Low");
 private _apuOn      = _heli getVariable ["bmkhs_apuOn", false];
 private _engBleedOn = _eng1On || _eng2On;
 private _airAvail   = _apuOn || _engBleedOn;
@@ -152,7 +152,7 @@ switch (_xferMode) do {
                 && _airAvail
                 && (_fwdFuelMass < AUTO_FILL_THRESH_KG)
                 && !_aftLow
-                && (_aftFuelMass > (_heli getVariable "bmkhs_fwdFuelLowKg"))
+                && (_aftFuelMass > (_heli getVariable "bmkhs_fuelTank1Low"))
                 && _aftLeadEnough
                 // HALT guards
                 && (_aftMinusFwd >= AUTO_SPLIT_STOP_KG) && (_fwdFuelMass < (_maxFwdFuelMass - 0.1))) then {
@@ -205,7 +205,7 @@ private _anyAuxTransferring = (_lAuxOn && (_stn1FuelMass > EXT_EMPTY_ADV_THRESH_
 
 private _iafsAftFlowing = false;
 private _iafsFwdFlowing = false;
-if (_IAFSInstalled && (_heli getVariable ["bmkhs_ctrTankXferOn", false]) && !_anyAuxTransferring) then {
+if (_IAFSInstalled && (_heli getVariable ["bmkhs_fuelTank2XferOn", false]) && !_anyAuxTransferring) then {
     if (_ctrFuelMass > 0 && _aftFuelMass < _maxAftFuelMass) then {
         private _iafsFlow = _xferStep min _ctrFuelMass min (_maxAftFuelMass - _aftFuelMass);
         _ctrFuelMass = _ctrFuelMass - _iafsFlow;
@@ -220,7 +220,7 @@ if (_IAFSInstalled && (_heli getVariable ["bmkhs_ctrTankXferOn", false]) && !_an
     };
     // Auto-shutoff: turn off IAFS switch when CTR tank is empty
     if (_ctrFuelMass <= 0) then {
-        _heli setVariable ["bmkhs_ctrTankXferOn", false, true];
+        _heli setVariable ["bmkhs_fuelTank2XferOn", false, true];
     };
 };
 
@@ -343,13 +343,13 @@ if (local _heli) then {
     _heli setFuel (_totFuelMass / _maxTotFuelMass);
 };
 
-_heli setVariable ["bmkhs_fwdFuelMass",  _fwdFuelMass];
-_heli setVariable ["bmkhs_ctrFuelMass",  _ctrFuelMass];
-_heli setVariable ["bmkhs_aftFuelMass",  _aftFuelMass];
-_heli setVariable ["bmkhs_stn1FuelMass", _stn1FuelMass];
-_heli setVariable ["bmkhs_stn2FuelMass", _stn2FuelMass];
-_heli setVariable ["bmkhs_stn3FuelMass", _stn3FuelMass];
-_heli setVariable ["bmkhs_stn4FuelMass", _stn4FuelMass];
+_heli setVariable ["bmkhs_fuelTank1Mass",  _fwdFuelMass];
+_heli setVariable ["bmkhs_fuelTank2Mass",  _ctrFuelMass];
+_heli setVariable ["bmkhs_fuelTank3Mass",  _aftFuelMass];
+_heli setVariable ["bmkhs_auxTank1Mass", _stn1FuelMass];
+_heli setVariable ["bmkhs_auxTank2Mass", _stn2FuelMass];
+_heli setVariable ["bmkhs_auxTank3Mass", _stn3FuelMass];
+_heli setVariable ["bmkhs_auxTank4Mass", _stn4FuelMass];
 _heli setVariable ["bmkhs_totFuelMass",  _totFuelMass];
 
 //Whether the crew can see the fuel page is the aircraft's business - it sets this
@@ -363,8 +363,8 @@ private _fuelPageOpen = _heli getVariable ["bmkhs_fuelPageOpen", false];
         if (_fuelPageOpen) then { _heli setVariable [_var, false]; };
     };
 } forEach [
-    [_stn1HasTank, _stn1FuelMass, "bmkhs_ext1EmptyArmed"],
-    [_stn2HasTank, _stn2FuelMass, "bmkhs_ext2EmptyArmed"],
-    [_stn3HasTank, _stn3FuelMass, "bmkhs_ext3EmptyArmed"],
-    [_stn4HasTank, _stn4FuelMass, "bmkhs_ext4EmptyArmed"]
+    [_stn1HasTank, _stn1FuelMass, "bmkhs_auxTank1EmptyArmed"],
+    [_stn2HasTank, _stn2FuelMass, "bmkhs_auxTank2EmptyArmed"],
+    [_stn3HasTank, _stn3FuelMass, "bmkhs_auxTank3EmptyArmed"],
+    [_stn4HasTank, _stn4FuelMass, "bmkhs_auxTank4EmptyArmed"]
 ];

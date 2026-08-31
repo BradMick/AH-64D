@@ -17,8 +17,8 @@ params ["_heli"];
 //Must be set before coreConfig: that calls bmkhs_fnc_fuelSet, which reads
 //IAFSInstalled with no default to decide the tank split.
 if (local _heli) then {
-    _heli setVariable ["bmkhs_ctrTankInstalled", true,  true];
-    _heli setVariable ["bmkhs_ctrTankXferOn",    false, true];
+    _heli setVariable ["bmkhs_fuelTank2Installed", true,  true];
+    _heli setVariable ["bmkhs_fuelTank2XferOn",    false, true];
 };
 
 [_heli] call bmkhs_fnc_coreInit;

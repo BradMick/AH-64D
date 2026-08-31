@@ -50,17 +50,8 @@ private _seats = [];
 } forEach ([_config >> "Seats", "Seat", getNumber (_config >> "numSeats")] call _readClass);
 _heli setVariable ["bmkhs_seats", _seats];
 
-//TANKS: [name, arm, capacity, station]
-private _tanks = [];
-{
-    _tanks pushBack [
-        getText   (_x >> "name"),
-        getArray  (_x >> "arm"),
-        getNumber (_x >> "capacity"),
-        getNumber (_x >> "station")
-    ];
-} forEach ([_config >> "Tanks", "Tank", getNumber (_config >> "numTanks")] call _readClass);
-_heli setVariable ["bmkhs_tanks", _tanks];
+//Tanks are not read here - fn_fuelVariables owns them and publishes bmkhs_fuelTanks,
+//which massUpdate walks for the arms.
 
 //STATIONS: [arm, pylons]
 private _stations = [];

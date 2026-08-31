@@ -20,28 +20,52 @@ Author:
 ---------------------------------------------------------------------------- */
 params ["_heli", "_config"];
 
-_heli setVariable ["bmkhs_fwdFuelMass",    0.0];
-_heli setVariable ["bmkhs_ctrFuelMass",    0.0];
-_heli setVariable ["bmkhs_aftFuelMass",    0.0];
-
-_heli setVariable ["bmkhs_stn1FuelMass",   0.0];
-_heli setVariable ["bmkhs_stn2FuelMass",   0.0];
-_heli setVariable ["bmkhs_stn3FuelMass",   0.0];
-_heli setVariable ["bmkhs_stn4FuelMass",   0.0];
-
 _heli setVariable ["bmkhs_totFuelMass",    0.0];
 _heli setVariable ["bmkhs_maxTotFuelMass", 0.0];
 
-//Fuel
-_heli setVariable ["bmkhs_fwdFuelLowKg",       getNumber (_config >> "fwdFuelLowKg")];
-_heli setVariable ["bmkhs_aftFuelLowKg",       getNumber (_config >> "aftFuelLowKg")];
 _heli setVariable ["bmkhs_fuelFlowLbsPerHour", getNumber (_config >> "fuelFlowLbsPerHour")];
 
-//Tank capacities
-_heli setVariable ["bmkhs_maxFwdFuelMass",     getNumber (_config >> "maxFwdFuelMass")];  //1043lbs in kg
-_heli setVariable ["bmkhs_maxCtrFuelMass",     getNumber (_config >> "maxCtrFuelMass")];  //663lbs in kg, net yet implemented, center robbie
-_heli setVariable ["bmkhs_maxAftFuelMass",     getNumber (_config >> "maxAftFuelMass")];  //1474lbs in kg
-_heli setVariable ["bmkhs_maxExtFuelMass",     getNumber (_config >> "maxExtFuelMass")];     //1541lbs in kg, not yet implemented, 230gal external tank
+//Tanks. The table drives the loops; the per-tank numbered variables below are what the
+//cockpit displays read, so a pack with more tanks gets more of them automatically.
+private _numFuelTanks = getNumber (_config >> "numFuelTanks");
+private _fuelTanks    = [];
+for "_i" from 1 to _numFuelTanks do {
+    private _t = (_config >> "FuelTanks") >> format ["FuelTank%1%2", ["0", ""] select (_i > 9), _i];
+    private _capacity = getNumber (_t >> "capacity");
+    private _removable = getNumber (_t >> "removable") > 0;
+
+    _fuelTanks pushBack [
+        getText  (_t >> "name"),
+        getArray (_t >> "arm"),
+        _capacity,
+        getNumber (_t >> "lowFuelKg"),
+        _removable
+    ];
+
+    _heli setVariable [format ["bmkhs_fuelTank%1Mass", _i], 0.0];
+    _heli setVariable [format ["bmkhs_fuelTank%1Max",  _i], _capacity];
+    _heli setVariable [format ["bmkhs_fuelTank%1Low",  _i], getNumber (_t >> "lowFuelKg")];
+    //A removable tank starts absent; the aircraft installs it. Fixed tanks are always fitted.
+    _heli setVariable [format ["bmkhs_fuelTank%1Installed", _i], !_removable];
+};
+_heli setVariable ["bmkhs_numFuelTanks", _numFuelTanks];
+_heli setVariable ["bmkhs_fuelTanks",    _fuelTanks];
+
+//Auxiliary tanks - fuel on a wing station. The arm comes from the station, not from here.
+private _numAuxTanks = getNumber (_config >> "numAuxTanks");
+private _auxTanks    = [];
+for "_i" from 1 to _numAuxTanks do {
+    private _t = (_config >> "AuxTanks") >> format ["AuxTank%1%2", ["0", ""] select (_i > 9), _i];
+    private _capacity = getNumber (_t >> "capacity");
+
+    _auxTanks pushBack [getNumber (_t >> "station"), _capacity];
+
+    _heli setVariable [format ["bmkhs_auxTank%1Mass",       _i], 0.0];
+    _heli setVariable [format ["bmkhs_auxTank%1Max",        _i], _capacity];
+    _heli setVariable [format ["bmkhs_auxTank%1EmptyArmed", _i], false];
+};
+_heli setVariable ["bmkhs_numAuxTanks", _numAuxTanks];
+_heli setVariable ["bmkhs_auxTanks",    _auxTanks];
 
 // Crossfeed valve position: "NORM" | "FWD" | "AFT"
 _heli setVariable ["bmkhs_crossfeedMode", "NORM"];
