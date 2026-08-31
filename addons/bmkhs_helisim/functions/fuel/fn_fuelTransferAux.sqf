@@ -40,7 +40,7 @@ private _stations       = _heli getVariable ["bmkhs_stations", []];
 //jettisoned or never fitted - holds no fuel.
 private _auxPresent = [];
 {
-    _x params ["_station"];
+    private _station = _x get "station";
     private _pylons  = (_stations param [_station - 1, [[], []]]) param [1, []];
     private _present = _pylons findIf {
         ["auxTank", _pylonMagazines param [_x - 1, ""]] call BIS_fnc_inString
@@ -55,7 +55,9 @@ private _groupFlow = createHashMap;
 {
     private _wantDependent = _x;
     {
-        _x params ["", "", "_dstIdx", "_requires", "_group"];
+        private _dstIdx   = _x get "feedsIdx";
+        private _requires = _x get "requires";
+        private _group    = _x get "group";
         private _idx = _forEachIndex;
         if ((_requires >= 0) != _wantDependent) then { continue };
         if (_dstIdx < 0) then { continue };            //unresolved feedsTank, already logged

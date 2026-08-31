@@ -77,7 +77,9 @@ private _crew = fullCrew _heli;
 //A removable tank that is not fitted contributes nothing. Auxiliary tanks are counted
 //with their wing station instead.
 {
-    _x params ["_arm", "", "", "_removable", "", "", "_varName"];
+    private _arm       = _x get "arm";
+    private _removable = _x get "removable";
+    private _varName   = _x get "varName";
 
     if (!_removable || {_heli getVariable [_varName + "Installed", false]}) then {
         private _mass = _heli getVariable [_varName + "Mass", 0.0];

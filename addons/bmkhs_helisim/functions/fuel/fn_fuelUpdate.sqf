@@ -50,7 +50,7 @@ private _fuelMass = [];
 private _fuelMax  = [];
 private _fuelLow  = [];
 for "_i" from 1 to (count _fuelTanks) do {
-    private _v = (_fuelTanks select (_i - 1)) select 6;
+    private _v = (_fuelTanks select (_i - 1)) get "varName";
     _fuelMass pushBack (_heli getVariable [_v + "Mass", 0]);
     _fuelMax  pushBack (_heli getVariable [_v + "Max",  0]);
     _fuelLow  pushBack (_heli getVariable [_v + "Low",  0]);
@@ -59,7 +59,7 @@ for "_i" from 1 to (count _fuelTanks) do {
 private _auxMass = [];
 private _auxMax  = [];
 for "_i" from 1 to (count _auxTanks) do {
-    private _v = (_auxTanks select (_i - 1)) select 5;
+    private _v = (_auxTanks select (_i - 1)) get "varName";
     _auxMass pushBack (_heli getVariable [_v + "Mass", 0]);
     _auxMax  pushBack (_heli getVariable [_v + "Max",  0]);
 };
@@ -68,7 +68,7 @@ for "_i" from 1 to (count _auxTanks) do {
 //Core reads bmkhs_<group>AuxOn for whatever groups the tanks declare.
 private _groupOn = createHashMap;
 {
-    private _g = _x select 4;
+    private _g = _x get "group";
     if !(_g in _groupOn) then {
         _groupOn set [_g, _heli getVariable [format ["bmkhs_%1AuxOn", toLower _g], false]];
     };
@@ -78,7 +78,7 @@ private _groupOn = createHashMap;
 //findIf does NOT provide _forEachIndex, so the index comes from a plain counter.
 private _auxArmed = false;
 {
-    if ((_groupOn getOrDefault [_x select 4, false])
+    if ((_groupOn getOrDefault [_x get "group", false])
             && {(_auxMass param [_forEachIndex, 0]) > EXT_EMPTY_ADV_THRESH_KG}) exitWith {
         _auxArmed = true;
     };
@@ -136,8 +136,8 @@ if (local _heli) then {
     _heli setFuel (_totFuelMass / _maxTotFuelMass);
 };
 
-{ _heli setVariable [((_fuelTanks select _forEachIndex) select 6) + "Mass", _x] } forEach _fuelMass;
-{ _heli setVariable [((_auxTanks  select _forEachIndex) select 5) + "Mass", _x] } forEach _auxMass;
+{ _heli setVariable [((_fuelTanks select _forEachIndex) get "varName") + "Mass", _x] } forEach _fuelMass;
+{ _heli setVariable [((_auxTanks  select _forEachIndex) get "varName") + "Mass", _x] } forEach _auxMass;
 _heli setVariable ["bmkhs_totFuelMass", _totFuelMass];
 
 //Whether the crew can see the fuel page is the aircraft's business - it sets this if it
@@ -145,7 +145,7 @@ _heli setVariable ["bmkhs_totFuelMass", _totFuelMass];
 private _fuelPageOpen = _heli getVariable ["bmkhs_fuelPageOpen", false];
 {
     private _present = _auxPresent param [_forEachIndex, false];
-    private _var     = ((_auxTanks select _forEachIndex) select 5) + "EmptyArmed";
+    private _var     = ((_auxTanks select _forEachIndex) get "varName") + "EmptyArmed";
     if (!_present || _x >= EXT_EMPTY_ADV_THRESH_KG) then {
         _heli setVariable [_var, true];
     } else {

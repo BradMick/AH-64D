@@ -23,7 +23,9 @@ Author:
 params ["_heli", "_fuelMass", "_fuelTanks", "_deltaTime"];
 
 {
-    _x params ["", "", "", "_removable", "", "_leakPoint", "_varName"];
+    private _removable = _x get "removable";
+    private _leakPoint = _x get "leakPoint";
+    private _varName   = _x get "varName";
     private _idx = _forEachIndex;
     private _m   = _fuelMass param [_idx, 0];
 

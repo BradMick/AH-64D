@@ -125,7 +125,7 @@ private _cellFlowing = false;
 if (!_auxArmed) then {
     {
         private _cellIdx = _x;
-        private _varName   = (_fuelTanks select _cellIdx) select 6;
+        private _varName   = (_fuelTanks select _cellIdx) get "varName";
         private _switchOn  = _heli getVariable [_varName + "XferOn",    false];
         private _installed = _heli getVariable [_varName + "Installed", false];
 

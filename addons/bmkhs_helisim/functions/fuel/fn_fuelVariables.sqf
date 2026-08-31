@@ -39,15 +39,17 @@ for "_i" from 1 to _numFuelTanks do {
     private _lowFuel   = getNumber (_t >> "lowFuelKg");
     private _removable = getNumber (_t >> "removable") > 0;
 
-    _fuelTanks pushBack [
-        getArray (_t >> "arm"),
-        _capacity,
-        _lowFuel,
-        _removable,
-        toLower getText (_t >> "role"),
-        getText (_t >> "leakPoint"),
-        _varName
-    ];
+    //Hashmap, not a positional array: adding or removing a field cannot silently shift
+    //what every reader sees. Keys are the config property names.
+    _fuelTanks pushBack (createHashMapFromArray [
+        ["arm",        getArray (_t >> "arm")],
+        ["capacity",   _capacity],
+        ["lowFuelKg",  _lowFuel],
+        ["removable",  _removable],
+        ["role",       toLower getText (_t >> "role")],
+        ["leakPoint",  getText (_t >> "leakPoint")],
+        ["varName",    _varName]
+    ]);
 
     _heli setVariable [_varName + "Mass", 0.0];
     _heli setVariable [_varName + "Max",  _capacity];
@@ -70,9 +72,9 @@ _heli setVariable ["bmkhs_fuelTanks",    _fuelTanks];
 private _mains     = [];
 private _transfers = [];
 {
-    switch (_x select 4) do {                       //slot 4 is role
-        case "main":     { _mains     pushBack _forEachIndex };
-        case "xfer":     { _transfers pushBack _forEachIndex };
+    switch (_x get "role") do {
+        case "main": { _mains     pushBack _forEachIndex };
+        case "xfer": { _transfers pushBack _forEachIndex };
     };
 } forEach _fuelTanks;
 _heli setVariable ["bmkhs_fuelMains",     _mains];
@@ -97,14 +99,14 @@ for "_i" from 1 to _numAuxTanks do {
 
     private _capacity = getNumber (_t >> "capacity");
 
-    _auxTanks pushBack [
-        getNumber (_t >> "station"),
-        _capacity,
-        -1,                                     //feedsTank index, resolved below
-        -1,                                     //requires index, resolved below
-        toUpper getText (_t >> "group"),
-        _varName
-    ];
+    _auxTanks pushBack (createHashMapFromArray [
+        ["station",   getNumber (_t >> "station")],
+        ["capacity",  _capacity],
+        ["feedsIdx",  -1],                      //resolved below
+        ["requires",  -1],                      //resolved below
+        ["group",     toUpper getText (_t >> "group")],
+        ["varName",   _varName]
+    ]);
     _auxRefs pushBack [getText (_t >> "feedsTank"), getText (_t >> "requires")];
 
     _heli setVariable [_varName + "Mass",       0.0];
@@ -114,7 +116,7 @@ for "_i" from 1 to _numAuxTanks do {
 
 //Resolve the named references. A name that matches nothing is a config error, not a
 //silently dead tank.
-private _fuelNames = _fuelTanks apply {_x select 6};
+private _fuelNames = _fuelTanks apply {_x get "varName"};
 {
     _x params ["_feedsName", "_requiresName"];
     private _tank = _auxTanks select _forEachIndex;
@@ -126,7 +128,7 @@ private _fuelNames = _fuelTanks apply {_x select 6};
             _forEachIndex + 1, _feedsName
         ];
     };
-    _tank set [2, _feedsIdx];
+    _tank set ["feedsIdx", _feedsIdx];
 
     //An empty requires is legitimate - the tank has no prerequisite.
     private _requiresIdx = -1;
@@ -139,7 +141,7 @@ private _fuelNames = _fuelTanks apply {_x select 6};
             ];
         };
     };
-    _tank set [3, _requiresIdx];
+    _tank set ["requires", _requiresIdx];
 } forEach _auxRefs;
 
 _heli setVariable ["bmkhs_numAuxTanks", _numAuxTanks];
