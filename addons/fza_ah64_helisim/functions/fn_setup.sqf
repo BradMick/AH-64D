@@ -21,5 +21,5 @@ if (local _heli) then {
     _heli setVariable ["bmkhs_ctrTankXferOn",    false, true];
 };
 
-[_heli] call bmkhs_fnc_init;
+[_heli] call bmkhs_fnc_coreInit;
 [_heli, configOf _heli >> "BMKHS_HeliSim"] call bmkhs_fnc_coreConfig;

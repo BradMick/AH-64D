@@ -16,7 +16,7 @@ Examples:
 Author:
     BradMick
 ---------------------------------------------------------------------------- */
-params ["_heli"];
+params ["_heli", "_config"];
 
 if (!(_heli getVariable ["bmkhs_engineInitialised", false]) && local _heli) then {
     _heli setVariable ["bmkhs_engineInitialised", true, true];
@@ -57,3 +57,19 @@ _heli setVariable ["bmkhs_engOilPSI",             [0.0, 0.0]];
 _heli setVariable ["bmkhs_engOutputTq",           [0.0, 0.0]];
 
 _heli setVariable ["bmkhs_randomTq",              [0.0, 0.0, 0.0, 0.0]];
+
+//Engine - power, governing and limits
+_heli setVariable ["bmkhs_engContPwrKW",    getNumber (_config >> "engContPwrKW")];
+_heli setVariable ["bmkhs_engCntgncyPwrKW", getNumber (_config >> "engCntgncyPwrKW")];
+_heli setVariable ["bmkhs_engDesignRPM",    getNumber (_config >> "engDesignRPM")];
+_heli setVariable ["bmkhs_engFriction",     getNumber (_config >> "engFriction")];
+_heli setVariable ["bmkhs_engGovGain",      getNumber (_config >> "engGovGain")];
+_heli setVariable ["bmkhs_engRunNG",        getNumber (_config >> "engRunNG")];
+_heli setVariable ["bmkhs_engMaxTGT_DE",    getNumber (_config >> "engMaxTGT_DE")];
+_heli setVariable ["bmkhs_engMaxTGT_SE",    getNumber (_config >> "engMaxTGT_SE")];
+//Np/Ng references already exist as engIdleNP/engFlyNP/engOvrspdNP/engIdleNG/engFlyNG
+_heli setVariable ["bmkhs_engIdleNP",       getNumber (_config >> "engIdleNP")];
+_heli setVariable ["bmkhs_engFlyNP",        getNumber (_config >> "engFlyNP")];
+_heli setVariable ["bmkhs_engOvrspdNP",     getNumber (_config >> "engOvrspdNP")];
+_heli setVariable ["bmkhs_engIdleNG",       getNumber (_config >> "engIdleNG")];
+_heli setVariable ["bmkhs_engFlyNG",        getNumber (_config >> "engFlyNG")];

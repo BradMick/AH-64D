@@ -42,6 +42,7 @@ class CfgFunctions
         class core {
             file = "\bmkhs_helisim\functions\core";
             class coreConfig {R;};
+            class coreInit {R;};
             class coreUpdate  {R;};
             class coreUpdateFlightModel {R;};
         };
@@ -77,6 +78,7 @@ class CfgFunctions
             class fmcHeadingHold {R;};
             class fmcHoldModesDisable {R;};
             class fmcSAS {R;};
+            class fmcVariables {R;};
         };
         class prestonAi {
             file = "\bmkhs_helisim\functions\prestonAi";
@@ -106,15 +108,29 @@ class CfgFunctions
             class interactPowerLever {R;};
             class interactStartSwitch {R;};
         };
+        class input {
+            file = "\bmkhs_helisim\functions\input";
+            class analogHandler {R;};
+            class centerTrimMode {R;};
+            class controlHandle {R;};
+            class getInput {R;};
+            class getInterpInput {R;};
+            class inputVariables {R;};
+            class nonAnalogHandler {R;};
+            class stickyInterrupt {R;};
+        };
         class mass {
             file = "\bmkhs_helisim\functions\mass";
             class massUpdate {R;};
+            class massVariables {R;};
             class massUpdateMagazine {R;};
             class massUpdateStation {R;};
         };
         class math {
             file = "\bmkhs_helisim\functions\math";
             class getArea {R;};
+            class isINF {R;};
+            class isNAN {R;};
             class linearInterp {R;};
             class linearInterpFromCenter {R;};
             class rotateVector {R;};
@@ -131,6 +147,7 @@ class CfgFunctions
             file = "\bmkhs_helisim\functions\util";
             class ctrlVisToggle {R;};
             class ctrlVisUpdate {R;};
+            class getSmoothAverage {R;};
             class notify {R;};
             class setArrayVariable {R;};
             class setMultiArrayVariable {R;};
@@ -174,6 +191,16 @@ class CfgFunctions
             class simpleRotorMain {R;};
             class simpleRotorTail {R;};
             class simpleRotorVariables {R;};
+        };
+        class state {
+            file = "\bmkhs_helisim\functions\state";
+            class calculateAeroValues {R;};
+            class getAccelerations {R;};
+            class getDeltaTime {R;};
+            class getAltitude {R;};
+            class getRtrRPM {R;};
+            class getVelocities {R;};
+            class onGround {R;};
         };
         class systems {
             file = "\bmkhs_helisim\functions\systems";
@@ -228,24 +255,6 @@ class CfgFunctions
         };
         class utility {
             file = "\bmkhs_helisim\functions";
-            class analogHandler {R;};
-            class calculateAeroValues {R;};
-            class centerTrimMode {R;};
-            class getAccelerations {R;};
-            class controlHandle {R;};
-            class stickyInterrupt {R;};
-            class getAltitude {R;};
-            class getDeltaTime {R;};
-            class getInput {R;};
-            class getInterpInput {R;};
-            class getRtrRPM {R;};
-            class getSmoothAverage {R;};
-            class getVelocities {R;};
-            class init {R;};
-            class isINF {R;};
-            class isNAN {R;};
-            class nonAnalogHandler {R;};
-            class onGround {R;};
         };
     };
 };

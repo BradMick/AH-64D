@@ -16,7 +16,7 @@ Examples:
 Author:
     BradMick
 ---------------------------------------------------------------------------- */
-params ["_heli"];
+params ["_heli", "_config"];
 
 _heli setVariable ["bmkhs_fwdFuelMass",    0.0];
 _heli setVariable ["bmkhs_ctrFuelMass",    0.0];
@@ -29,3 +29,8 @@ _heli setVariable ["bmkhs_stn4FuelMass",   0.0];
 
 _heli setVariable ["bmkhs_totFuelMass",    0.0];
 _heli setVariable ["bmkhs_maxTotFuelMass", 0.0];
+
+//Fuel
+_heli setVariable ["bmkhs_fwdFuelLowKg",       getNumber (_config >> "fwdFuelLowKg")];
+_heli setVariable ["bmkhs_aftFuelLowKg",       getNumber (_config >> "aftFuelLowKg")];
+_heli setVariable ["bmkhs_fuelFlowLbsPerHour", getNumber (_config >> "fuelFlowLbsPerHour")];

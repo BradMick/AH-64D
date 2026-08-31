@@ -16,7 +16,7 @@ Examples:
 Author:
     BradMick
 ---------------------------------------------------------------------------- */
-params ["_heli"];
+params ["_heli", "_config"];
 
 #include "\bmkhs_helisim\headers\systems.hpp"
 
@@ -74,3 +74,22 @@ _heli setVariable ["bmkhs_accTimer",          _accTime];
 
 _heli setVariable ["bmkhs_emerHydOn",         false, true];
 _heli setVariable ["bmkhs_engineOverspeed",   [false, false], true];
+
+//Systems tuning - the aircraft supplies these, Core keeps damage thresholds fixed
+_heli setVariable ["bmkhs_hydMinPsi",       getNumber (_config >> "hydMinPsi")];
+_heli setVariable ["bmkhs_hydMinAccPsi",    getNumber (_config >> "hydMinAccPsi")];
+_heli setVariable ["bmkhs_hydMinLevel",     getNumber (_config >> "hydMinLevel")];
+_heli setVariable ["bmkhs_hydAccTimerMin",  getNumber (_config >> "hydAccTimerMin")];
+_heli setVariable ["bmkhs_hydLeakTimerMin", getNumber (_config >> "hydLeakTimerMin")];
+_heli setVariable ["bmkhs_elecBattTimerMin",getNumber (_config >> "elecBattTimerMin")];
+_heli setVariable ["bmkhs_apuStartDelay",   getNumber (_config >> "apuStartDelay")];
+
+//Drivetrain torque limits and timers
+_heli setVariable ["bmkhs_ngbContTqLimit",    getNumber (_config >> "ngbContTqLimit")];
+_heli setVariable ["bmkhs_ngbContTimer",      getNumber (_config >> "ngbContTimer")];
+_heli setVariable ["bmkhs_ngbTransTqLimit",   getNumber (_config >> "ngbTransTqLimit")];
+_heli setVariable ["bmkhs_ngbTransTimer",     getNumber (_config >> "ngbTransTimer")];
+_heli setVariable ["bmkhs_ngbMaxTqLimit",     getNumber (_config >> "ngbMaxTqLimit")];
+_heli setVariable ["bmkhs_xmsnContTqLimit",   getNumber (_config >> "xmsnContTqLimit")];
+_heli setVariable ["bmkhs_xmsnTransTqLimit",  getNumber (_config >> "xmsnTransTqLimit")];
+_heli setVariable ["bmkhs_xmsnTransTimer",    getNumber (_config >> "xmsnTransTimer")];

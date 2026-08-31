@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
-Function: bmkhs_fnc_init
+Function: bmkhs_fnc_coreInit
 
 Description:
     Initialize public variables on mission startup
@@ -12,7 +12,7 @@ Returns:
     Nothing
 
 Examples:
-    [_heli] call bmkhs_fnc_init
+    [_heli] call bmkhs_fnc_coreInit
 
 Author:
     Snow(Dryden)
