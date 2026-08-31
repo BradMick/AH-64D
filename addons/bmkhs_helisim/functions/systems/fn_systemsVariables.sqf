@@ -65,12 +65,6 @@ _heli setVariable ["bmkhs_utilHydPsi",        1.0];
 _heli setVariable ["bmkhs_dmgTimerCont",      0.0];
 _heli setVariable ["bmkhs_dmgTimerTrans",     0.0];
 _heli setVariable ["bmkhs_accHydPsi",         0.0];
-private _battTime = (_heli getVariable "bmkhs_elecBattTimerMin") * 60;
-_heli setVariable ["bmkhs_battTimer",         _battTime];
-private _leakTimer = (_heli getVariable "bmkhs_hydLeakTimerMin") * 60;
-_heli setVariable ["bmkhs_hydLeakTimer",      _leakTimer];
-private _accTime = (_heli getVariable "bmkhs_hydAccTimerMin") * 60;
-_heli setVariable ["bmkhs_accTimer",          _accTime];
 
 _heli setVariable ["bmkhs_emerHydOn",         false, true];
 _heli setVariable ["bmkhs_engineOverspeed",   [false, false], true];
@@ -83,6 +77,13 @@ _heli setVariable ["bmkhs_hydAccTimerMin",  getNumber (_config >> "hydAccTimerMi
 _heli setVariable ["bmkhs_hydLeakTimerMin", getNumber (_config >> "hydLeakTimerMin")];
 _heli setVariable ["bmkhs_elecBattTimerMin",getNumber (_config >> "elecBattTimerMin")];
 _heli setVariable ["bmkhs_apuStartDelay",   getNumber (_config >> "apuStartDelay")];
+
+//Countdown timers, seeded full. These are DERIVED from the config values above, so they
+//have to be set after them - reading them earlier returns nil and the multiply throws,
+//which aborts the rest of this function and leaves the aircraft uninitialised.
+_heli setVariable ["bmkhs_battTimer",    (_heli getVariable ["bmkhs_elecBattTimerMin", 0]) * 60];
+_heli setVariable ["bmkhs_hydLeakTimer", (_heli getVariable ["bmkhs_hydLeakTimerMin", 0]) * 60];
+_heli setVariable ["bmkhs_accTimer",     (_heli getVariable ["bmkhs_hydAccTimerMin",  0]) * 60];
 
 //Drivetrain torque limits and timers
 _heli setVariable ["bmkhs_ngbContTqLimit",    getNumber (_config >> "ngbContTqLimit")];
