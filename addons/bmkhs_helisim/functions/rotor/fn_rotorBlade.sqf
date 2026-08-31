@@ -14,7 +14,7 @@ private _totalPower       = (_heli getVariable "bmkhs_rotorReactionTorque") sele
 //LIFT scalar only (thrust). The TORQUE scalar is applied to the reaction couple in fn_rotor.
 private _velBet   = vectorMagnitude [(_heli getVariable "bmkhs_velModelSpace" select 0), (_heli getVariable "bmkhs_velModelSpace" select 1)];
 private _isTail   = _rotorIndex == 1;
-private _liftTbl  = _heli getVariable [(if (_isTail) then { "bmkhs_betTailLiftTable" } else { "bmkhs_betMainLiftTable" }), []];
+private _liftTbl  = _heli getVariable [(["bmkhs_betMainLiftTable", "bmkhs_betTailLiftTable"] select _isTail), []];
 private _bladeScale = if (_liftTbl isEqualTo []) then { 1.0 } else { [_liftTbl, _velBet] call bmkhs_fnc_mathLinearInterp select 1 };
 //Tail airspeed trim/reversal: additive to the tail LIFT scalar (the ~100kt tail-thrust reversal
 //the simple model dials in via tailTrimTable; BET had no equivalent). Only for the tail rotor.

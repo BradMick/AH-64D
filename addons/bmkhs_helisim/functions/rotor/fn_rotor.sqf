@@ -189,7 +189,7 @@ private _Jtot = (_Iy + _Itot) * _numBlades;
 // Use the smoothed value so BET noise doesn't shake the airframe.
 private _reactionMoment = [0,0,0];
 if (_type == MAIN) then {
-    private _torqueSign = if (_dir == CW) then { 1.0 } else { -1.0 };
+    private _torqueSign = [-1.0, 1.0] select (_dir == CW);
     //BET TORQUE tuning scalar (yaw knob) - multiplies ONLY this fuselage reaction couple, NOT the
     //engine load (_totalPower stays physics-true). Airspeed-banded; 1.0 = pure physics. Lets the
     private _velBet   = vectorMagnitude [(_heli getVariable "bmkhs_velModelSpace" select 0), (_heli getVariable "bmkhs_velModelSpace" select 1)];
