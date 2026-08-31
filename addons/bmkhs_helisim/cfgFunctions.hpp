@@ -36,6 +36,8 @@ class CfgFunctions
         class wing {
             file = "\bmkhs_helisim\functions\wing";
             class wing {R;};
+            class wingUpdate {R;};
+            class wingVariables {R;};
         };
         class core {
             file = "\bmkhs_helisim\functions\core";
@@ -93,7 +95,7 @@ class CfgFunctions
         };
         class fuselage {
             file = "\bmkhs_helisim\functions\fuselage";
-            class fuselage {R;};
+            class fuselageUpdate {R;};
             class fuselageFront {R;};
             class fuselageSide {R;};
             class fuselageTop {R;};
@@ -221,7 +223,7 @@ class CfgFunctions
         };
         class transmission {
             file = "\bmkhs_helisim\functions\transmission";
-            class transmission {R;};
+            class transmissionUpdate {R;};
             class transmissionVariables {R;};
         };
         class utility {

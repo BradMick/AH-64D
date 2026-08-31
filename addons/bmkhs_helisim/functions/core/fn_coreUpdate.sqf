@@ -61,7 +61,7 @@ if (isAutoHoverOn _heli) then {
 [_heli] call bmkhs_fnc_engineController;
 
 //Transmission
-[_heli] call bmkhs_fnc_transmission;
+[_heli] call bmkhs_fnc_transmissionUpdate;
 
 //Damage
 [_heli] call bmkhs_fnc_damageApply;
