@@ -2,94 +2,83 @@
 Function: bmkhs_fnc_fuelSet
 
 Description:
-    Sets the initial fuel state of the aircraft.
+    Distributes Arma's fuel fraction across the aircraft's tanks and publishes
+    the resulting per-tank masses.
+
+    Internal capacity fills first; whatever is left over goes to the auxiliary
+    tanks actually fitted. Each tank takes a share of the load proportional to
+    its own capacity, so the split works for any number of tanks of any size.
+
+    An uninstalled removable tank holds nothing and contributes no capacity.
 
 Parameters:
     _heli - The helicopter to get information from [Unit].
 
 Returns:
-    The mass of the forward and aft fuel cells.
-
-Examples:
-    ...
-    _fuelMass = [_heli] call bmkhs_fnc_fuelSet;
-    _fwdFuelMass = _fuelMass select 0;
-    _aftFuelMass = _fuelMass select 1;
+    Nothing
 
 Author:
     BradMick
 ---------------------------------------------------------------------------- */
 params ["_heli"];
 
+private _percentFuel = fuel _heli;
+private _fuelTanks   = _heli getVariable ["bmkhs_fuelTanks", []];
+private _auxTanks    = _heli getVariable ["bmkhs_auxTanks",  []];
+private _stations    = _heli getVariable ["bmkhs_stations",  []];
+
+//Internal capacity, counting only the tanks that are actually fitted.
+private _fuelFitted   = [];
+private _fuelCapacity = [];
+{
+    _x params ["", "", "_capacity", "", "_removable"];
+    private _fitted = !_removable
+                   || {_heli getVariable [format ["bmkhs_fuelTank%1Installed", _forEachIndex + 1], false]};
+    _fuelFitted   pushBack _fitted;
+    _fuelCapacity pushBack ([0, _capacity] select _fitted);
+} forEach _fuelTanks;
+
+//Auxiliary capacity, counting only the stations carrying a tank.
 private _pylonMagazines = getPylonMagazines _heli;
+private _auxFitted      = [];
+private _auxCapacity    = [];
+{
+    _x params ["_station", "_capacity"];
+    private _pylons  = (_stations param [_station - 1, [[], []]]) param [1, []];
+    private _present = _pylons findIf {
+        ["auxTank", _pylonMagazines param [_x - 1, ""]] call BIS_fnc_inString
+    } > -1;
+    _auxFitted   pushBack _present;
+    _auxCapacity pushBack ([0, _capacity] select _present);
+} forEach _auxTanks;
 
-private _percentFuel    = fuel _heli;
-private _IAFSInstalled  = _heli getVariable ["bmkhs_fuelTank2Installed", false];
-private _maxFwdFuelMass = _heli getVariable ["bmkhs_fuelTank1Max", 0];
-private _maxCtrFuelMass = _heli getVariable ["bmkhs_fuelTank2Max", 0];
-private _maxAftFuelMass = _heli getVariable ["bmkhs_fuelTank3Max", 0];
-//Initial load assumes every aux tank is the same size; the per-station capacities are in
-//bmkhs_auxTank<N>Max if that ever needs to differ.
-private _maxTnkFuelMass = _heli getVariable ["bmkhs_auxTank1Max", 0];
+private _maxIntFuelMass = 0;
+{ _maxIntFuelMass = _maxIntFuelMass + _x } forEach _fuelCapacity;
+private _maxExtFuelMass = 0;
+{ _maxExtFuelMass = _maxExtFuelMass + _x } forEach _auxCapacity;
 
-private _totFuelMass    = 0.0;
-private _fwdFuelMass    = 0.0;
-private _aftFuelMass    = 0.0;
-private _ctrFuelMass    = 0.0;
-private _extFuelMass    = 0.0;
-private _maxIntFuelMass = 0.0;
-private _maxTotFuelMass = 0.0;
+private _maxTotFuelMass = _maxIntFuelMass + _maxExtFuelMass;
+if (_maxTotFuelMass <= 0) exitWith {};
 
-// Station presence — outer tanks need inner present (pressurised air path)
-private _stn1HasTank = ["auxTank", _pylonMagazines select 0]  call BIS_fnc_inString;
-private _stn2HasTank = ["auxTank", _pylonMagazines select 4]  call BIS_fnc_inString;
-private _stn3HasTank = ["auxTank", _pylonMagazines select 8]  call BIS_fnc_inString;
-private _stn4HasTank = ["auxTank", _pylonMagazines select 12] call BIS_fnc_inString;
+private _totFuelMass = _maxTotFuelMass * _percentFuel;
 
-private _stn1FuelMass = 0.0;
-private _stn2FuelMass = 0.0;
-private _stn3FuelMass = 0.0;
-private _stn4FuelMass = 0.0;
-
-private _numExtTanks    = {_x} count [_stn1HasTank, _stn2HasTank, _stn3HasTank, _stn4HasTank];
-private _maxExtFuelMass = _numExtTanks * _maxTnkFuelMass;
-if (isNil "_IAFSInstalled") exitWith {};
-
-// Initial load — distribute fuel across cells based on capacity
-if (_IAFSInstalled) then {
-    _maxIntFuelMass = _maxFwdFuelMass + _maxCtrFuelMass + _maxAftFuelMass;
-} else {
-    _maxIntFuelMass = _maxFwdFuelMass + _maxAftFuelMass;
-};
-_maxTotFuelMass = _maxIntFuelMass + _maxExtFuelMass;
-
-_totFuelMass    = _maxTotFuelMass * _percentFuel;
-// Internal fills first; external gets whatever remains above internal capacity
+//Internal fills first; the aux tanks get whatever is above internal capacity.
 private _intFuelMass = _totFuelMass min _maxIntFuelMass;
-_extFuelMass    = 0 max (_totFuelMass - _intFuelMass) min _maxExtFuelMass;
-_fwdFuelMass    = [_intFuelMass / 2,                             0, _maxFwdFuelMass] call BIS_fnc_clamp;
-_aftFuelMass    = [_intFuelMass - _fwdFuelMass,                  0, _maxAftFuelMass] call BIS_fnc_clamp;
-if (_IAFSInstalled) then {
-    _ctrFuelMass = [_intFuelMass - (_fwdFuelMass + _aftFuelMass), 0, _maxCtrFuelMass] call BIS_fnc_clamp;
-};
-// External tank initial fuel
-if (_numExtTanks > 0) then {
-    private _perTank = _extFuelMass / _numExtTanks;
-    if (_stn1HasTank) then { _stn1FuelMass = _perTank; };
-    if (_stn2HasTank) then { _stn2FuelMass = _perTank; };
-    if (_stn3HasTank) then { _stn3FuelMass = _perTank; };
-    if (_stn4HasTank) then { _stn4FuelMass = _perTank; };
-};
-_heli setVariable ["bmkhs_fuelTank1Mass",    _fwdFuelMass];
-_heli setVariable ["bmkhs_fuelTank2Mass",    _ctrFuelMass];
-_heli setVariable ["bmkhs_fuelTank3Mass",    _aftFuelMass];
+private _extFuelMass = 0 max (_totFuelMass - _intFuelMass) min _maxExtFuelMass;
 
-_heli setVariable ["bmkhs_auxTank1Mass",   _stn1FuelMass];
-_heli setVariable ["bmkhs_auxTank2Mass",   _stn2FuelMass];
-_heli setVariable ["bmkhs_auxTank3Mass",   _stn3FuelMass];
-_heli setVariable ["bmkhs_auxTank4Mass",   _stn4FuelMass];
+//Each tank takes its share of the load in proportion to its capacity.
+private _actualTotFuelMass = 0;
+{
+    private _mass = if (_maxIntFuelMass > 0) then { _intFuelMass * (_x / _maxIntFuelMass) } else { 0 };
+    _heli setVariable [format ["bmkhs_fuelTank%1Mass", _forEachIndex + 1], _mass];
+    _actualTotFuelMass = _actualTotFuelMass + _mass;
+} forEach _fuelCapacity;
 
-private _actualTotFuelMass = _fwdFuelMass + _ctrFuelMass + _aftFuelMass
-                           + _stn1FuelMass + _stn2FuelMass + _stn3FuelMass + _stn4FuelMass;
-_heli setVariable ["bmkhs_totFuelMass"   , _actualTotFuelMass];
+{
+    private _mass = if (_maxExtFuelMass > 0) then { _extFuelMass * (_x / _maxExtFuelMass) } else { 0 };
+    _heli setVariable [format ["bmkhs_auxTank%1Mass", _forEachIndex + 1], _mass];
+    _actualTotFuelMass = _actualTotFuelMass + _mass;
+} forEach _auxCapacity;
+
+_heli setVariable ["bmkhs_totFuelMass",    _actualTotFuelMass];
 _heli setVariable ["bmkhs_maxTotFuelMass", _maxTotFuelMass];

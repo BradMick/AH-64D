@@ -37,7 +37,9 @@ for "_i" from 1 to _numFuelTanks do {
         getArray (_t >> "arm"),
         _capacity,
         getNumber (_t >> "lowFuelKg"),
-        _removable
+        _removable,
+        toLower getText (_t >> "role"),
+        getText (_t >> "leakPoint")
     ];
 
     _heli setVariable [format ["bmkhs_fuelTank%1Mass", _i], 0.0];
@@ -56,6 +58,22 @@ for "_i" from 1 to _numFuelTanks do {
 _heli setVariable ["bmkhs_numFuelTanks", _numFuelTanks];
 _heli setVariable ["bmkhs_fuelTanks",    _fuelTanks];
 
+//Resolve roles to indices once, so nothing downstream has to assume a tank NUMBER.
+//An aircraft with four mains gets four entries in bmkhs_fuelMains.
+private _mains     = [];
+private _transfers = [];
+{
+    switch (_x select 5) do {
+        case "main":     { _mains     pushBack _forEachIndex };
+        case "transfer": { _transfers pushBack _forEachIndex };
+    };
+} forEach _fuelTanks;
+_heli setVariable ["bmkhs_fuelMains",     _mains];
+//Cockpit XFER labels, in main order, so Core matches the selection without knowing what
+//the labels mean.
+_heli setVariable ["bmkhs_xferDestinations", getArray (_config >> "xferDestinations") apply {toUpper _x}];
+_heli setVariable ["bmkhs_fuelTransfers", _transfers];
+
 //Auxiliary tanks - fuel on a wing station. The arm comes from the station, not from here.
 private _numAuxTanks = getNumber (_config >> "numAuxTanks");
 private _auxTanks    = [];
@@ -63,7 +81,13 @@ for "_i" from 1 to _numAuxTanks do {
     private _t = (_config >> "AuxTanks") >> format ["AuxTank%1%2", ["0", ""] select (_i > 9), _i];
     private _capacity = getNumber (_t >> "capacity");
 
-    _auxTanks pushBack [getNumber (_t >> "station"), _capacity];
+    _auxTanks pushBack [
+        getNumber (_t >> "station"),
+        _capacity,
+        getNumber (_t >> "feedsTank"),
+        getNumber (_t >> "requires"),
+        toUpper getText (_t >> "group")
+    ];
 
     _heli setVariable [format ["bmkhs_auxTank%1Mass",       _i], 0.0];
     _heli setVariable [format ["bmkhs_auxTank%1Max",        _i], _capacity];
