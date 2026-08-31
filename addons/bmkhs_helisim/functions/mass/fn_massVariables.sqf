@@ -28,3 +28,9 @@ _heli setVariable ["bmkhs_armStation01",   getArray  (_config >> "armStation01")
 _heli setVariable ["bmkhs_armStation02",   getArray  (_config >> "armStation02")];
 _heli setVariable ["bmkhs_armStation03",   getArray  (_config >> "armStation03")];
 _heli setVariable ["bmkhs_armStation04",   getArray  (_config >> "armStation04")];
+
+//Empty mass and moment
+_heli setVariable ["bmkhs_emptyMassFCR",       getNumber (_config >> "emptyMassFCR")];        //kg
+_heli setVariable ["bmkhs_emptyMomFCR",        getNumber (_config >> "emptyMomFCR")];
+_heli setVariable ["bmkhs_emptyMassNonFCR",    getNumber (_config >> "emptyMassNonFCR")];     //kg
+_heli setVariable ["bmkhs_emptyMomNonFCR",     getNumber (_config >> "emptyMomNonFCR")];

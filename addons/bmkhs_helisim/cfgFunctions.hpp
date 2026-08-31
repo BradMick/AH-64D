@@ -201,6 +201,7 @@ class CfgFunctions
             file = "\bmkhs_helisim\functions\state";
             class stateAeroValues {R;};
             class stateAccelerations {R;};
+            class stateVariables {R;};
             class stateDeltaTime {R;};
             class stateAltitude {R;};
             class stateRtrRPM {R;};

@@ -34,3 +34,9 @@ _heli setVariable ["bmkhs_maxTotFuelMass", 0.0];
 _heli setVariable ["bmkhs_fwdFuelLowKg",       getNumber (_config >> "fwdFuelLowKg")];
 _heli setVariable ["bmkhs_aftFuelLowKg",       getNumber (_config >> "aftFuelLowKg")];
 _heli setVariable ["bmkhs_fuelFlowLbsPerHour", getNumber (_config >> "fuelFlowLbsPerHour")];
+
+//Tank capacities
+_heli setVariable ["bmkhs_maxFwdFuelMass",     getNumber (_config >> "maxFwdFuelMass")];  //1043lbs in kg
+_heli setVariable ["bmkhs_maxCtrFuelMass",     getNumber (_config >> "maxCtrFuelMass")];  //663lbs in kg, net yet implemented, center robbie
+_heli setVariable ["bmkhs_maxAftFuelMass",     getNumber (_config >> "maxAftFuelMass")];  //1474lbs in kg
+_heli setVariable ["bmkhs_maxExtFuelMass",     getNumber (_config >> "maxExtFuelMass")];     //1541lbs in kg, not yet implemented, 230gal external tank

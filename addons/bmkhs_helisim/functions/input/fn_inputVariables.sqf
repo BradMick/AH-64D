@@ -69,3 +69,10 @@ _heli setVariable ["bmkhs_angVelModelSpaceY_avg", [bmkhs_movingAverageSize] call
 _heli setVariable ["bmkhs_angVelModelSpaceZ_avg", [bmkhs_movingAverageSize] call bmkhs_fnc_smoothAverageInit];
 
 _heli setVariable ["bmkhs_worldAccel",        [0.0,0.0,0.0]];
+
+//Input state
+_heli setVariable ["bmkhs_kbStickyInterupt",     false];
+_heli setVariable ["bmkhs_flightControlLockOut", false];
+_heli setVariable ["bmkhs_cyclicPitchValue",   0.0];
+_heli setVariable ["bmkhs_cyclicRollValue",    0.0];
+_heli setVariable ["bmkhs_pedalYawValue",      0.0];

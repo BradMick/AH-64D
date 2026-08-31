@@ -73,3 +73,8 @@ _heli setVariable ["bmkhs_engFlyNP",        getNumber (_config >> "engFlyNP")];
 _heli setVariable ["bmkhs_engOvrspdNP",     getNumber (_config >> "engOvrspdNP")];
 _heli setVariable ["bmkhs_engIdleNG",       getNumber (_config >> "engIdleNG")];
 _heli setVariable ["bmkhs_engFlyNG",        getNumber (_config >> "engFlyNG")];
+
+//Governor PID - one per engine
+private _engPidGains = getArray (_config >> "pidEngine");
+_heli setVariable ["bmkhs_pid_engine", [ _engPidGains call bmkhs_fnc_pidCreate
+                                       , _engPidGains call bmkhs_fnc_pidCreate]];

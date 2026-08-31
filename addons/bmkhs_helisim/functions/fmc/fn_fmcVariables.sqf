@@ -50,3 +50,11 @@ _heli setVariable ["bmkhs_autoPedalNttErr",    0.0];     //deg, kinematic sidesl
 _heli setVariable ["bmkhs_autoPedalAeroErr",   0.0];     //g,   lateral accel
 _heli setVariable ["bmkhs_autoPedalOut",       0.0];     //blended pedal output
 _heli setVariable ["bmkhs_autoPedalPrevOut",   0.0];     //pilot-feet filter state (rate limit + lag)
+
+//FMC output state
+_heli setVariable ["bmkhs_fmcAttHoldCycPitchOut", 0.0];
+_heli setVariable ["bmkhs_fmcSasPitchOut",        0.0];
+_heli setVariable ["bmkhs_fmcSasRollOut",         0.0];
+_heli setVariable ["bmkhs_fmcHdgHoldPedalYawOut", 0.0];
+_heli setVariable ["bmkhs_fmcSasYawOut",          0.0];
+_heli setVariable ["bmkhs_fmcAltHoldCollOut",     0.0];

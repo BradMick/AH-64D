@@ -16,7 +16,7 @@ Examples:
 Author:
     BradMick
 ---------------------------------------------------------------------------- */
-params ["_heli"];
+params ["_heli", "_config"];
 
 private _config = configOf _heli >> "BMKHS_HeliSim";
 
@@ -36,3 +36,6 @@ _heli setVariable ["bmkhs_fuselageFrontRotation",         getArray  (_config >> 
 _heli setVariable ["bmkhs_fuselageFrontDragCoefTable",    getArray  (_config >> "fuselageFrontDragCoefTable")];
 _heli setVariable ["bmkhs_fuselageFrontCount",            getNumber (_config >> "fuselageFrontCount")];
 _heli setVariable ["bmkhs_fuselageFront",			        getArray  (_config >> "fuselageFront")];
+
+//Aerodynamic centre
+_heli setVariable ["bmkhs_aerodynamicCenter",  getArray  (_config >> "aerodynamicCenter")];   //m
