@@ -21,7 +21,6 @@ params ["_heli", ["_configIn", configNull]];
 //Caller supplies the config; fall back to the vehicle class for legacy callers
 private _config = if (isNull _configIn) then { configOf _heli >> "BMKHS_HeliSim" } else { _configIn };
 bmkhs_movingAverageSize = 10;
-bmkhs_liftLossTimer     = 0;
 
 //Systems gate - all or nothing
 _heli setVariable ["bmkhs_useSystems",          getNumber (_config >> "useSystems")          > 0];

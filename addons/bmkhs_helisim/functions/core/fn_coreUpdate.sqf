@@ -24,13 +24,11 @@ if (isGamePaused || CBA_missionTime < 0.1) exitWith {
     _heli setVariable ["bmkhs_deltaTime_avg", [bmkhs_movingAverageSize] call bmkhs_fnc_smoothAverageInit];
 };
 
-private _config      = configOf _heli;
-
-[_heli] call bmkhs_fnc_stateDeltaTime;
-
 if (isAutoHoverOn _heli) then {
     _heli action ["AutoHoverCancel", _heli];
 };
+
+[_heli] call bmkhs_fnc_stateDeltaTime;
 
 //Environment
 [_heli] call bmkhs_fnc_environment;
@@ -63,8 +61,8 @@ if (isAutoHoverOn _heli) then {
 //Transmission
 [_heli] call bmkhs_fnc_transmissionUpdate;
 
-//Damage
-[_heli] call bmkhs_fnc_damageApply;
+//Damage - stub, see fn_damageApply
+//[_heli] call bmkhs_fnc_damageApply;
 
 if (bmkhs_fmDebug) then {
     hintSilent format [
