@@ -81,6 +81,7 @@ _heli setVariable ["bmkhs_fuelMains",     _mains];
 //Cockpit XFER labels, in main order, so Core matches the selection without knowing what
 //the labels mean.
 _heli setVariable ["bmkhs_xferDestinations", getArray (_config >> "xferDestinations") apply {toUpper _x}];
+
 _heli setVariable ["bmkhs_fuelTransfers", _transfers];
 
 //Auxiliary tanks - fuel on a wing station. The arm comes from the station, not from here.
@@ -147,8 +148,7 @@ private _fuelNames = _fuelTanks apply {_x get "varName"};
 _heli setVariable ["bmkhs_numAuxTanks", _numAuxTanks];
 _heli setVariable ["bmkhs_auxTanks",    _auxTanks];
 
-// Crossfeed valve position: "NORM" | "FWD" | "AFT"
-_heli setVariable ["bmkhs_crossfeedMode", "NORM"];
+//Crossfeed valve position is seeded by engineVariables, which owns the position table.
 
 // XFER pump selection: "OFF" | "AFT" | "FWD" | "AUTO"
 _heli setVariable ["bmkhs_xferMode", "AUTO"];

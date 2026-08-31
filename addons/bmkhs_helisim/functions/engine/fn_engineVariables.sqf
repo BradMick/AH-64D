@@ -78,3 +78,17 @@ _heli setVariable ["bmkhs_engFlyNG",        getNumber (_config >> "engFlyNG")];
 private _engPidGains = getArray (_config >> "pidEngine");
 _heli setVariable ["bmkhs_pid_engine", [ _engPidGains call bmkhs_fnc_pidCreate
                                        , _engPidGains call bmkhs_fnc_pidCreate]];
+
+//Crossfeed positions - which main each engine draws from in each valve position. Static
+//aircraft data, resolved once here rather than rebuilt every frame. The valve starts in
+//the first position declared.
+private _crossfeed  = createHashMap;
+private _defaultPos = "";
+for "_i" from 1 to (getNumber (_config >> "numCrossfeedModes")) do {
+    private _c   = (_config >> "CrossfeedModes") select (_i - 1);
+    private _pos = toUpper getText (_c >> "position");
+    if (_defaultPos == "") then { _defaultPos = _pos };
+    _crossfeed set [_pos, getArray (_c >> "engSources")];
+};
+_heli setVariable ["bmkhs_crossfeedSources", _crossfeed];
+_heli setVariable ["bmkhs_crossfeedMode",    _defaultPos];

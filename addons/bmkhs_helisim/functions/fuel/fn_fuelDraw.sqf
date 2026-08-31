@@ -8,11 +8,12 @@ Description:
     Each consumer names the MAIN it feeds from, by position in _mains - not by
     any fore/aft or left/right meaning, which is the aircraft's to assign:
 
-      bmkhs_engFuelSource   main index per engine, default [0, 1]
-      bmkhs_apuFuelSource   main index for the APU,  default 1
+      bmkhs_crossfeedSources  valve position -> main index per engine
+      bmkhs_crossfeedMode     the position the crew has selected
+      bmkhs_apuFuelSource     main index for the APU
 
-    The aircraft rewrites those when its crossfeed valve moves; with one main
-    every consumer simply points at 0.
+    All three come from the aircraft's config; with one main every consumer
+    simply points at 0.
 
     Mutates _fuelMass in place.
 
@@ -38,8 +39,9 @@ private _engFF    = _heli getVariable "bmkhs_engFF";
 private _engState = _heli getVariable "bmkhs_engState";
 
 //Demand per consumer, paired with the main it draws from.
-private _engSource = _heli getVariable ["bmkhs_engFuelSource", [0, 1]];
-private _apuSource = _heli getVariable ["bmkhs_apuFuelSource", 1];
+private _crossfeed = _heli getVariable ["bmkhs_crossfeedSources", createHashMap];
+private _engSource = _crossfeed getOrDefault [_heli getVariable ["bmkhs_crossfeedMode", ""], []];
+private _apuSource = _heli getVariable ["bmkhs_apuFuelSource", 0];
 
 private _demand = [];
 {

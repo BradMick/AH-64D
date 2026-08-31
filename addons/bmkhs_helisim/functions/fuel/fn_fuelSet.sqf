@@ -45,7 +45,8 @@ private _auxCapacity    = [];
 {
     private _station  = _x get "station";
     private _capacity = _x get "capacity";
-    private _pylons  = (_stations param [_station - 1, [[], []]]) param [1, []];
+    private _stn     = _stations param [_station - 1, createHashMap];
+    private _pylons  = _stn getOrDefault ["pylons", []];
     private _present = _pylons findIf {
         ["auxTank", _pylonMagazines param [_x - 1, ""]] call BIS_fnc_inString
     } > -1;

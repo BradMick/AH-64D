@@ -6,6 +6,19 @@
     /////////////////////////////////////////////////////////////////////////////////////////////
     engSimTime  = 8.0;
 
+    //CROSSFEED positions - which main tank each engine feeds from in each valve position.
+    //Mains are referenced by position in the "main" tanks declared in helisim_fuel.hpp, so
+    //nothing here means forward or aft; the aircraft's labels are its own.
+    //  position     - the value bmkhs_crossfeedMode carries for this setting
+    //  engSources[] - main index per engine, in engine order
+    //The first entry is the default the valve starts in.
+    numCrossfeedModes = 3;
+    class CrossfeedModes {
+        class Norm { position = "NORM"; engSources[] = {0, 1}; };   //each engine its own main
+        class Fwd  { position = "FWD";  engSources[] = {0, 0}; };   //both from the first main
+        class Aft  { position = "AFT";  engSources[] = {1, 1}; };   //both from the second
+    };
+
     engIdleTQ   = 0.055;
     engFlyTQ    = 0.18;
     engMaxTQ    = 1.50;
