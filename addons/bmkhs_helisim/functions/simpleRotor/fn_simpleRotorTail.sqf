@@ -103,7 +103,7 @@ private _pedalLeftRight     = _heli getVariable "bmkhs_pedalLeftRight";
 private _pedalLeftRightTrim = 0.0;
 _pedalLeftRightTrim         = _heli getVariable "bmkhs_forceTrimPosYaw";
 
-private _pedalInput         = ([_pedalLeftRight, _pedalLeftRightTrim] call bmkhs_fnc_getInterpInput) + _fmcYawOut;
+private _pedalInput         = ([_pedalLeftRight, _pedalLeftRightTrim] call bmkhs_fnc_inputGetInterp) + _fmcYawOut;
 _pedalInput                 = [_pedalInput, -1.0, 1.0] call BIS_fnc_clamp;
 //Publish the total tail-rotor yaw input (manual pedal + trim + FMC) so the
 private _bladePitchInducedThrustScalar = [_bladePitchInducedThrustTable, _pedalInput] call bmkhs_fnc_linearInterp select 1;//linearConversion [_bladePitch_min, _bladePitch_max, _bladePitch_cur, _rtrThrustScalar_min, _rtrThrustScalar_max, true];

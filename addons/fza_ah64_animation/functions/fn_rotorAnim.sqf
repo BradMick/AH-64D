@@ -21,7 +21,7 @@ Description:
       • Swashplate translation (trsw, model range -5…+5) ← effective pedal ×5
       • Blade pitch (tr_blade1-4_pitch)                  ← effective pedal
 
-    "Effective" cyclic/pedal replicates bmkhs_fnc_getInterpInput so the
+    "Effective" cyclic/pedal replicates bmkhs_fnc_inputGetInterp so the
     model visuals match the flight model at all trim positions.
 
 Parameters:

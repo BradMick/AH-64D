@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
-Function: bmkhs_fnc_getInput
+Function: bmkhs_fnc_inputUpdate
 
 Description:
     Handles keyboard and HOTAS input for the simulation.
@@ -95,7 +95,7 @@ if (bmkhs_keyboardStickyPitch) then {
     private _prevCyclicPitchValue = _heli getVariable "bmkhs_prevCyclicPitchValue";
 
     if (_kbStickyInterupt) then {
-        _cyclicFwdAft         = [_cyclicFwdAft, _prevCyclicPitchValue] call bmkhs_fnc_getInterpInput;
+        _cyclicFwdAft         = [_cyclicFwdAft, _prevCyclicPitchValue] call bmkhs_fnc_inputGetInterp;
     } else {
         if (_cyclicFwdAft > 0.1) then {
             _cyclicPitchValue = _cyclicPitchValue + 0.01;
@@ -117,7 +117,7 @@ if (bmkhs_keyboardStickyRoll) then {
     private _prevCyclicRollValue = _heli getVariable "bmkhs_prevCyclicRollValue";
 
     if (_kbStickyInterupt) then {
-        _cyclicLeftRight     = [_cyclicLeftRight, _prevCyclicRollValue] call bmkhs_fnc_getInterpInput;
+        _cyclicLeftRight     = [_cyclicLeftRight, _prevCyclicRollValue] call bmkhs_fnc_inputGetInterp;
     } else {
         if (_cyclicLeftRight > 0.1) then {
             _cyclicRollValue = _cyclicRollValue + 0.01;
@@ -137,7 +137,7 @@ if (bmkhs_keyboardStickyYaw && !bmkhs_autoPedal) then {
     private _prevPedalYawValue = _heli getVariable "bmkhs_prevPedalYawValue";
 
     if (_kbStickyInterupt) then {
-        _pedalLeftRight    = [_pedalLeftRight, _prevPedalYawValue] call bmkhs_fnc_getInterpInput;
+        _pedalLeftRight    = [_pedalLeftRight, _prevPedalYawValue] call bmkhs_fnc_inputGetInterp;
     } else {
         if (_pedalLeftRight > 0.1) then {
             _pedalYawValue = _pedalYawValue + 0.01;

@@ -14,7 +14,7 @@ private _autoAttOwns = bmkhs_helisimRealismSetting != REALISTIC;
 if (!_autoAttOwns) then {
     private _curCyclicFwdAft  = (_heli getVariable "bmkhs_cyclicFwdAft");
     private _prevCyclicFwdAft = _heli getVariable "bmkhs_forceTrimPosPitch";
-    private _pitchTrimVal     = [_curCyclicFwdAft, _prevCyclicFwdAft] call bmkhs_fnc_getInterpInput;
+    private _pitchTrimVal     = [_curCyclicFwdAft, _prevCyclicFwdAft] call bmkhs_fnc_inputGetInterp;
     if (bmkhs_springlessCyclic || bmkhs_keyboardStickyPitch) then {
         _heli setVariable ["bmkhs_forceTrimPosPitch", 0.0];
     } else {
@@ -25,7 +25,7 @@ if (!_autoAttOwns) then {
 if (!_autoAttOwns) then {
     private _curCyclicLeftRight  = (_heli getVariable "bmkhs_cyclicLeftRight");
     private _prevCyclicLeftRight = _heli getVariable "bmkhs_forceTrimPosRoll";
-    private _rollTrimVal         = [_curCyclicLeftRight, _prevCyclicLeftRight] call bmkhs_fnc_getInterpInput;
+    private _rollTrimVal         = [_curCyclicLeftRight, _prevCyclicLeftRight] call bmkhs_fnc_inputGetInterp;
     if (bmkhs_springlessCyclic || bmkhs_keyboardStickyRoll) then {
         _heli setVariable ["bmkhs_forceTrimPosRoll",  0.0];
     } else {
@@ -35,7 +35,7 @@ if (!_autoAttOwns) then {
 //Pedal trim
 private _curPedalLeftRight  = (_heli getVariable "bmkhs_pedalLeftRight");
 private _prevPedalLeftRight = _heli getVariable "bmkhs_forceTrimPosYaw";
-private _pedalTrimVal       = [_curPedalLeftRight, _prevPedalLeftRight] call bmkhs_fnc_getInterpInput;
+private _pedalTrimVal       = [_curPedalLeftRight, _prevPedalLeftRight] call bmkhs_fnc_inputGetInterp;
 if (bmkhs_springlessPedals || bmkhs_keyboardStickyYaw) then {
     _heli setVariable ["bmkhs_forceTrimPosYaw", 0.0];
 } else {

@@ -1,12 +1,12 @@
 //Flight control bindings. These belong to HeliSim rather than to any aircraft:
-//they drive the flight model directly through bmkhs_fnc_analogHandler and
-//bmkhs_fnc_nonAnalogHandler, which read them by these exact names.
+//they drive the flight model directly through bmkhs_fnc_inputAnalogHandler and
+//bmkhs_fnc_inputNonAnalogHandler, which read them by these exact names.
 
 #define BMKHS_ANALOG(vname, vdisplayName, vtooltip) \
 class vname {\
     displayName           = vdisplayName;\
     tooltip               = vtooltip;\
-    onAnalog              = __EVAL(format["['%1', _this] call bmkhs_fnc_analogHandler", #vname]);\
+    onAnalog              = __EVAL(format["['%1', _this] call bmkhs_fnc_inputAnalogHandler", #vname]);\
     analogChangeThreshold = 0.01; \
 }
 
@@ -14,11 +14,11 @@ class vname {\
 class vname {\
     displayName           = vdisplayName;\
     tooltip               = vtooltip;\
-    onActivate            = __EVAL(format["['%1', true]  call bmkhs_fnc_nonAnalogHandler", #vname]);\
-    onDeactivate          = __EVAL(format["['%1', false] call bmkhs_fnc_nonAnalogHandler", #vname]);\
+    onActivate            = __EVAL(format["['%1', true]  call bmkhs_fnc_inputNonAnalogHandler", #vname]);\
+    onDeactivate          = __EVAL(format["['%1', false] call bmkhs_fnc_inputNonAnalogHandler", #vname]);\
 }
 
-#define BMKHS_ACTION(vname, vdisplayName, vtooltip) class vname {    displayName           = vdisplayName;    tooltip               = vtooltip;    onActivate            = __EVAL(format["['%1', true]  call bmkhs_fnc_controlHandle", #vname]);    onDeactivate          = __EVAL(format["['%1', false] call bmkhs_fnc_controlHandle", #vname]);}
+#define BMKHS_ACTION(vname, vdisplayName, vtooltip) class vname {    displayName           = vdisplayName;    tooltip               = vtooltip;    onActivate            = __EVAL(format["['%1', true]  call bmkhs_fnc_inputControlHandle", #vname]);    onDeactivate          = __EVAL(format["['%1', false] call bmkhs_fnc_inputControlHandle", #vname]);}
 
 class CfgUserActions {
     BMKHS_ANALOG(bmkhs_cyclicForward,"Cyclic Forward","Cyclic Forward");

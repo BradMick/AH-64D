@@ -110,13 +110,13 @@ class CfgFunctions
         };
         class input {
             file = "\bmkhs_helisim\functions\input";
-            class analogHandler {R;};
-            class centerTrimMode {R;};
-            class controlHandle {R;};
-            class getInput {R;};
-            class getInterpInput {R;};
+            class inputAnalogHandler {R;};
+            class inputCenterTrimMode {R;};
+            class inputControlHandle {R;};
+            class inputUpdate {R;};
+            class inputGetInterp {R;};
             class inputVariables {R;};
-            class nonAnalogHandler {R;};
+            class inputNonAnalogHandler {R;};
             class stickyInterrupt {R;};
         };
         class mass {

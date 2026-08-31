@@ -279,8 +279,8 @@ CTRL(5134) ctrlSetTextColor _colFT;
 CTRL(5134) ctrlCommit 0;
 
 // Actual physical stick (green ring) – top layer; transparency baked in ring_act_ca.paa
-private _effPitch = [_cycFwdAft,    _ftPitch] call bmkhs_fnc_getInterpInput;
-private _effRoll  = [_cycLeftRight, _ftRoll]  call bmkhs_fnc_getInterpInput;
+private _effPitch = [_cycFwdAft,    _ftPitch] call bmkhs_fnc_inputGetInterp;
+private _effRoll  = [_cycLeftRight, _ftRoll]  call bmkhs_fnc_inputGetInterp;
 private _szActW = _szAct * _circleWAdj;
 private _actX = _cxCtr - _effRoll  * _cxHW;
 private _actY = _cyCtr - _effPitch * _cyHH;
@@ -330,7 +330,7 @@ CTRL(5141) ctrlSetTextColor _colFT;
 CTRL(5141) ctrlCommit 0;
 
 // Actual pedal (green "|")
-private _effPedal = [_pedal, _ftPedal] call bmkhs_fnc_getInterpInput;
+private _effPedal = [_pedal, _ftPedal] call bmkhs_fnc_inputGetInterp;
 private _actPedX  = _yawCtrX + _effPedal * _yawHW - _indW * 0.5;
 private _actPedY = _yawCtrY - _fontSz * 0.50;
 CTRL(5142) ctrlSetPosition [_actPedX, _actPedY, _indW, _indH];

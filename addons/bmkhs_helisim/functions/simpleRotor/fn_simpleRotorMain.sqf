@@ -393,7 +393,7 @@ private _cyclicFwdAftTrim = 0.0;
 _cyclicFwdAftTrim         = _heli getVariable "bmkhs_forceTrimPosPitch";
 
 private _pitchTorque      = linearConversion [0.0, 1.0, _inputRpmPct, 0.0, 100000 * _pitchTorqueScalar * _deltaTime, true];
-private _pitchInput       = ([_cyclicFwdAft, _cyclicFwdAftTrim] call bmkhs_fnc_getInterpInput) + _fmcPitchOut;
+private _pitchInput       = ([_cyclicFwdAft, _cyclicFwdAftTrim] call bmkhs_fnc_inputGetInterp) + _fmcPitchOut;
 _pitchInput               = [_pitchInput, -1.0, 1.0] call BIS_fnc_clamp;
 
 private _momentX          = _pitchTorque * _pitchInput;
@@ -405,7 +405,7 @@ private _cyclicLeftRightTrim = 0.0;
 _cyclicLeftRightTrim         = _heli getVariable "bmkhs_forceTrimPosRoll";
 
 private _rollTorque          = linearConversion [0.0, 1.0, _inputRpmPct, 0.0, 100000 * _rollTorqueScalar * _deltaTime, true];
-private _rollInput           = ([_cyclicLeftRight, _cyclicLeftRightTrim] call bmkhs_fnc_getInterpInput) + _fmcRollOut;
+private _rollInput           = ([_cyclicLeftRight, _cyclicLeftRightTrim] call bmkhs_fnc_inputGetInterp) + _fmcRollOut;
 _rollInput                   = [_rollInput, -1.0, 1.0] call BIS_fnc_clamp;
 
 private _momentY             = _rollTorque * _rollInput;

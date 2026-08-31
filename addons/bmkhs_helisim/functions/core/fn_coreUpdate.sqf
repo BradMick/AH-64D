@@ -42,7 +42,7 @@ if (isAutoHoverOn _heli) then {
 //Input
 [_heli] call bmkhs_fnc_fmc;
 [_heli] call bmkhs_fnc_getConnectedAxes;
-[_heli] call bmkhs_fnc_getInput;
+[_heli] call bmkhs_fnc_inputUpdate;
 
 //Preston AI Pilot
 [_heli] call bmkhs_fnc_calculateAeroValues;

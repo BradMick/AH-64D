@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
-Function: bmkhs_fnc_controlHandle
+Function: bmkhs_fnc_inputControlHandle
 
 Description:
     Dispatches HeliSim's discrete flight-control actions - force trim, hold

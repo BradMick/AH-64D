@@ -35,4 +35,4 @@ _heli setVariable ["bmkhs_hdgHoldDesiredHdg",      getDir _heli,          true];
 _heli setVariable ["bmkhs_hdgHoldDesiredSideslip", 0.0,                   true];
 
 [_heli] call bmkhs_fnc_fmcForceTrimSet;
-[_heli] call bmkhs_fnc_centerTrimMode;
+[_heli] call bmkhs_fnc_inputCenterTrimMode;
