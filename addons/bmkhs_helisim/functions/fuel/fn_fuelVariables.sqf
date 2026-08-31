@@ -23,8 +23,6 @@ params ["_heli", "_config"];
 _heli setVariable ["bmkhs_totFuelMass",    0.0];
 _heli setVariable ["bmkhs_maxTotFuelMass", 0.0];
 
-_heli setVariable ["bmkhs_fuelFlowLbsPerHour", getNumber (_config >> "fuelFlowLbsPerHour")];
-
 //Tanks. The table drives the loops; the per-tank numbered variables below are what the
 //cockpit displays read, so a pack with more tanks gets more of them automatically.
 private _numFuelTanks = getNumber (_config >> "numFuelTanks");

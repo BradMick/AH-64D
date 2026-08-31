@@ -19,13 +19,17 @@ _aftCellWeight       = _aftCellWeight * KG_TO_LBS;
 _mainFuelCellWeight  = _mainFuelCellWeight * KG_TO_LBS;
 _totalFuelCellWeight = _totalFuelCellWeight * KG_TO_LBS;
 
+//bmkhs_engFF is kg/s straight off the engine's engFFTable, so the display conversion is
+//seconds-to-hours then kg-to-lbs. It is NOT a 0-1 fraction of some rated flow.
+#define KGS_TO_LBS_PER_HOUR (3600 * KG_TO_LBS)
+
 private _eng1FF = _heli getVariable "bmkhs_engFF" select 0;
 private _eng2FF = _heli getVariable "bmkhs_engFF" select 1;
 
 private _eng1FuelCons = 0;
 private _eng1State    = _heli getVariable "bmkhs_engState" select 0;
 if (_eng1State == "ON") then {
-    _eng1FuelCons = _eng1FF * (_heli getVariable "bmkhs_fuelFlowLbsPerHour");
+    _eng1FuelCons = _eng1FF * KGS_TO_LBS_PER_HOUR;
 } else {
     _eng1FuelCons = 0;
 };
@@ -33,7 +37,7 @@ if (_eng1State == "ON") then {
 private _eng2FuelCons = 0;
 private _eng2State    = _heli getVariable "bmkhs_engState" select 1;
 if (_eng2State == "ON") then {
-    _eng2FuelCons = _eng2FF * (_heli getVariable "bmkhs_fuelFlowLbsPerHour");
+    _eng2FuelCons = _eng2FF * KGS_TO_LBS_PER_HOUR;
 } else {
     _eng2FuelCons = 0;
 };
