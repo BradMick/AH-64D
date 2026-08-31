@@ -33,9 +33,9 @@ _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_ENDR_INT_LOW), BOOLTONUM(_e
 _heli setUserMFDText [MFD_INDEX_OFFSET(MFD_TEXT_IND_FUEL_SFR), _sfrText];
 
 // IAFS / centre tank
-private _IAFSInstalled = BOOLTONUM(_heli getVariable ["bmkhs_fuelTank2Installed", false]);
+private _IAFSInstalled = BOOLTONUM(_heli getVariable ["bmkhs_ctrTankInstalled", false]);
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_IAFS_INSTALLED), _IAFSInstalled];
-private _IAFSOn = _heli getVariable ["bmkhs_fuelTank2XferOn", false];
+private _IAFSOn = _heli getVariable ["bmkhs_ctrTankXferOn", false];
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_IAFS_ON), BOOLTONUM(_IAFSOn)];
 _heli setUserMFDText [MFD_INDEX_OFFSET(MFD_TEXT_IND_FUEL_IAFS), str (round (_ctrFuelWeight / 10) * 10)];
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_IAFS_EMPTY), _ctrFuelWeight];
@@ -80,11 +80,11 @@ _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_INTERCELL_XFER_PHASE), _int
 private _lAuxOn = _heli getVariable ["bmkhs_lAuxOn", false];
 private _rAuxOn = _heli getVariable ["bmkhs_rAuxOn", false];
 
-if (_lAuxOn && (_heli getVariable ["bmkhs_auxTank1Mass", 0] <= 0) && (_heli getVariable ["bmkhs_auxTank2Mass", 0] <= 0)) then {
+if (_lAuxOn && (_heli getVariable ["bmkhs_stn1TankMass", 0] <= 0) && (_heli getVariable ["bmkhs_stn2TankMass", 0] <= 0)) then {
     [_heli, "bmkhs_lAuxOn", false] call fza_fnc_updateNetworkGlobal;
     _lAuxOn = false;
 };
-if (_rAuxOn && (_heli getVariable ["bmkhs_auxTank3Mass", 0] <= 0) && (_heli getVariable ["bmkhs_auxTank4Mass", 0] <= 0)) then {
+if (_rAuxOn && (_heli getVariable ["bmkhs_stn3TankMass", 0] <= 0) && (_heli getVariable ["bmkhs_stn4TankMass", 0] <= 0)) then {
     [_heli, "bmkhs_rAuxOn", false] call fza_fnc_updateNetworkGlobal;
     _rAuxOn = false;
 };
@@ -150,10 +150,10 @@ _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_ENG1_FLOWING), BOOLTONUM(_e
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_ENG2_FLOWING), BOOLTONUM(_eng2FuelCons > 0 && _eng2SrcHasFuel)];
 
 // Aux tank fuel masses (fetch early for use in IAFS and Aux logic)
-private _stn1FuelMassRaw = _heli getVariable ["bmkhs_auxTank1Mass", 0];
-private _stn2FuelMassRaw = _heli getVariable ["bmkhs_auxTank2Mass", 0];
-private _stn3FuelMassRaw = _heli getVariable ["bmkhs_auxTank3Mass", 0];
-private _stn4FuelMassRaw = _heli getVariable ["bmkhs_auxTank4Mass", 0];
+private _stn1FuelMassRaw = _heli getVariable ["bmkhs_stn1TankMass", 0];
+private _stn2FuelMassRaw = _heli getVariable ["bmkhs_stn2TankMass", 0];
+private _stn3FuelMassRaw = _heli getVariable ["bmkhs_stn3TankMass", 0];
+private _stn4FuelMassRaw = _heli getVariable ["bmkhs_stn4TankMass", 0];
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_STN1_MASS), if (_stn1Present) then {_stn1FuelMassRaw * 2.205} else {-1}];
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_STN2_MASS), if (_stn2Present) then {_stn2FuelMassRaw * 2.205} else {-1}];
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_STN3_MASS), if (_stn3Present) then {_stn3FuelMassRaw * 2.205} else {-1}];

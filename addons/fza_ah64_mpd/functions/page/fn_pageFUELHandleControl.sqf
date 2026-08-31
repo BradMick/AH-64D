@@ -19,8 +19,8 @@ switch(_control) do {
             _state set ["xferMenuOpen", 0];
         } else {
             private _lAuxOn   = _heli getVariable ["bmkhs_lAuxOn", false];
-            private _lHasFuel = (_heli getVariable ["bmkhs_auxTank1Mass", 0] > 0)
-                             || (_heli getVariable ["bmkhs_auxTank2Mass", 0] > 0);
+            private _lHasFuel = (_heli getVariable ["bmkhs_stn1TankMass", 0] > 0)
+                             || (_heli getVariable ["bmkhs_stn2TankMass", 0] > 0);
             // Can turn off freely; can only turn on when a left-side tank has fuel
             if (_lAuxOn || _lHasFuel) then {
                 [_heli, "bmkhs_lAuxOn", !_lAuxOn] call fza_fnc_updateNetworkGlobal;
@@ -34,12 +34,12 @@ switch(_control) do {
             [_heli, "bmkhs_xferMode", "OFF"] call fza_fnc_updateNetworkGlobal;
             _state set ["xferMenuOpen", 0];
         } else {
-            if (_heli getVariable ["bmkhs_fuelTank2Installed", false]) then {
-                private _iafsOn  = _heli getVariable ["bmkhs_fuelTank2XferOn", false];
-                private _ctrMass = _heli getVariable ["bmkhs_fuelTank2Mass", 0];
+            if (_heli getVariable ["bmkhs_ctrTankInstalled", false]) then {
+                private _iafsOn  = _heli getVariable ["bmkhs_ctrTankXferOn", false];
+                private _ctrMass = _heli getVariable ["bmkhs_ctrTankMass", 0];
                 // Can turn off freely; can only turn on when CTR has fuel
                 if (_iafsOn || _ctrMass > 0) then {
-                    _heli setVariable ["bmkhs_fuelTank2XferOn", !_iafsOn];
+                    _heli setVariable ["bmkhs_ctrTankXferOn", !_iafsOn];
                 };
             };
         };
@@ -66,8 +66,8 @@ switch(_control) do {
     // r1 — AUX R (stn3 inner-right) on/off
     case "r1": {
         private _rAuxOn   = _heli getVariable ["bmkhs_rAuxOn", false];
-        private _rHasFuel = (_heli getVariable ["bmkhs_auxTank3Mass", 0] > 0)
-                         || (_heli getVariable ["bmkhs_auxTank4Mass", 0] > 0);
+        private _rHasFuel = (_heli getVariable ["bmkhs_stn3TankMass", 0] > 0)
+                         || (_heli getVariable ["bmkhs_stn4TankMass", 0] > 0);
         // Can turn off freely; can only turn on when a right-side tank has fuel
         if (_rAuxOn || _rHasFuel) then {
             [_heli, "bmkhs_rAuxOn", !_rAuxOn] call fza_fnc_updateNetworkGlobal;

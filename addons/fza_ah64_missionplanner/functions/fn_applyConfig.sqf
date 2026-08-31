@@ -79,7 +79,7 @@ if !(_heli isKindOf "Helicopter") exitWith {false};
 
     private _currentFcrState = [0, 1] select ((_heli animationPhase "fcr_enable") > 0.5);
     private _needsFcr = _desiredFcrState != _currentFcrState;
-    private _needsCenterStore = (_heli getVariable ["bmkhs_fuelTank2Installed", true]) != _iafsInstalled;
+    private _needsCenterStore = (_heli getVariable ["bmkhs_ctrTankInstalled", true]) != _iafsInstalled;
     private _needsFuel = _fuelDeltaKg > 1;
     private _needsCannon = _cannonDelta > 0;
     // ACE rearm supply mode (0=unlimited, 1=caliber pool, 2=magazine-inventory)
@@ -593,7 +593,7 @@ if !(_heli isKindOf "Helicopter") exitWith {false};
         };
     };
 
-    private _currentIafsInstalled = _heli getVariable ["bmkhs_fuelTank2Installed", true];
+    private _currentIafsInstalled = _heli getVariable ["bmkhs_ctrTankInstalled", true];
 
     if (_needsCenterStore && _iafsInstalled && !_currentIafsInstalled) then {
         // magazine → IAFS: unload cannon first (if loaded), then swap

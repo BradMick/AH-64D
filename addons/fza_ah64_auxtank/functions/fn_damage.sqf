@@ -30,9 +30,9 @@ private _ammoClass = _largeAmmoClass;
 
 if (_system == "hit_msnEquip_pylon1" && _damage > SYS_WPN_DMG_THRESH) then {
     if !(["auxTank", (getPylonMagazines _heli)#0] call BIS_fnc_inString) exitWith {};
-    if (_heli getVariable "bmkhs_auxTank1Mass" < 450) then {_ammoClass = _mediumAmmoClass;};
-    if (_heli getVariable "bmkhs_auxTank1Mass" < 200) then {_ammoClass = _smallAmmoClass;};
-    if (_heli getVariable "bmkhs_auxTank1Mass" < 90) exitWith {};
+    if (_heli getVariable "bmkhs_stn1TankMass" < 450) then {_ammoClass = _mediumAmmoClass;};
+    if (_heli getVariable "bmkhs_stn1TankMass" < 200) then {_ammoClass = _smallAmmoClass;};
+    if (_heli getVariable "bmkhs_stn1TankMass" < 90) exitWith {};
     _auxtankExplosion = _ammoClass createVehicle (_heli modelToWorld [-2.38,2.3,-2]);
     triggerAmmo _auxtankExplosion;
     _heli setPylonLoadout [1, ""];
@@ -40,27 +40,27 @@ if (_system == "hit_msnEquip_pylon1" && _damage > SYS_WPN_DMG_THRESH) then {
 };
 if (_system == "hit_msnEquip_pylon2" && _damage > SYS_WPN_DMG_THRESH) then {
     if !(["auxTank", (getPylonMagazines _heli)#4] call BIS_fnc_inString) exitWith {};
-    if (_heli getVariable "bmkhs_auxTank2Mass" < 450) then {_ammoClass = _mediumAmmoClass;};
-    if (_heli getVariable "bmkhs_auxTank2Mass" < 200) then {_ammoClass = _smallAmmoClass;};
-    if (_heli getVariable "bmkhs_auxTank2Mass" < 90) exitWith {};
+    if (_heli getVariable "bmkhs_stn2TankMass" < 450) then {_ammoClass = _mediumAmmoClass;};
+    if (_heli getVariable "bmkhs_stn2TankMass" < 200) then {_ammoClass = _smallAmmoClass;};
+    if (_heli getVariable "bmkhs_stn2TankMass" < 90) exitWith {};
     _auxtankExplosion = _ammoClass createVehicle (_heli modelToWorld [-1.66,2.3,-2]);
     triggerAmmo _auxtankExplosion;
     _heli setPylonLoadout [5, ""];
 };
 if (_system == "hit_msnEquip_pylon3" && _damage > SYS_WPN_DMG_THRESH) then {
     if !(["auxTank", (getPylonMagazines _heli)#8] call BIS_fnc_inString) exitWith {};
-    if (_heli getVariable "bmkhs_auxTank3Mass" < 450) then {_ammoClass = _mediumAmmoClass;};
-    if (_heli getVariable "bmkhs_auxTank3Mass" < 200) then {_ammoClass = _smallAmmoClass;};
-    if (_heli getVariable "bmkhs_auxTank3Mass" < 90) exitWith {};
+    if (_heli getVariable "bmkhs_stn3TankMass" < 450) then {_ammoClass = _mediumAmmoClass;};
+    if (_heli getVariable "bmkhs_stn3TankMass" < 200) then {_ammoClass = _smallAmmoClass;};
+    if (_heli getVariable "bmkhs_stn3TankMass" < 90) exitWith {};
     _auxtankExplosion = _ammoClass createVehicle (_heli modelToWorld [1.66,2.3,-2]);
     triggerAmmo _auxtankExplosion;
     _heli setPylonLoadout [9, ""];
 };
 if (_system == "hit_msnEquip_pylon4" && _damage > SYS_WPN_DMG_THRESH) then {
     if !(["auxTank", (getPylonMagazines _heli)#12] call BIS_fnc_inString) exitWith {};
-    if (_heli getVariable "bmkhs_auxTank4Mass" < 450) then {_ammoClass = _mediumAmmoClass;};
-    if (_heli getVariable "bmkhs_auxTank4Mass" < 200) then {_ammoClass = _smallAmmoClass;};
-    if (_heli getVariable "bmkhs_auxTank4Mass" < 90) exitWith {};
+    if (_heli getVariable "bmkhs_stn4TankMass" < 450) then {_ammoClass = _mediumAmmoClass;};
+    if (_heli getVariable "bmkhs_stn4TankMass" < 200) then {_ammoClass = _smallAmmoClass;};
+    if (_heli getVariable "bmkhs_stn4TankMass" < 90) exitWith {};
     _auxtankExplosion = _ammoClass createVehicle (_heli modelToWorld [2.38,2.3,-2]);
     triggerAmmo _auxtankExplosion;
     _heli setPylonLoadout [13, ""];

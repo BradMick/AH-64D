@@ -99,6 +99,7 @@ class CfgFunctions
         class fuel {
             file = "\bmkhs_helisim\functions\fuel";
             class fuelDraw {R;};
+            class fuelTankVarName {R;};
             class fuelLeak {R;};
             class fuelMgmtUpdate {R;};
             class fuelSet {R;};

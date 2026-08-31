@@ -52,7 +52,7 @@ if !(_tailNum isEqualType "") then { _tailNum = "00000" };
 // ── FCR / IAFS ──────────────────────────────────────────────────────────────
 private _fcrActive = (_heli animationPhase "fcr_enable") > 0.5;
 private _fcrJson = ["false", "true"] select (_fcrActive);
-private _iafsInstalled = _heli getVariable ["bmkhs_fuelTank2Installed", true];
+private _iafsInstalled = _heli getVariable ["bmkhs_ctrTankInstalled", true];
 private _robbieMode = ["magazine", "iafs"] select _iafsInstalled;
 
 // ── Cannon ───────────────────────────────────────────────────────────────────
@@ -61,13 +61,13 @@ private _cannonRds = _heli ammo "fza_m230";
 // ── Fuel (per-tank kg → gallons) ─────────────────────────────────────────────
 // Max kg values come from vehicle variables set by bmkhs_fnc_coreConfig.
 // Fallback to typical Apache values if not yet set.
-private _maxFwdKg = _heli getVariable ["bmkhs_fuelTank1Max", 473.1];
-private _maxAftKg = _heli getVariable ["bmkhs_fuelTank3Max", 668.5];
-private _maxCtrKg = _heli getVariable ["bmkhs_fuelTank2Max", 300.7];
+private _maxFwdKg = _heli getVariable ["bmkhs_fwdTankMax", 473.1];
+private _maxAftKg = _heli getVariable ["bmkhs_aftTankMax", 668.5];
+private _maxCtrKg = _heli getVariable ["bmkhs_ctrTankMax", 300.7];
 
-private _fwdKg = _heli getVariable ["bmkhs_fuelTank1Mass", 0];
-private _aftKg = _heli getVariable ["bmkhs_fuelTank3Mass", 0];
-private _ctrKg = _heli getVariable ["bmkhs_fuelTank2Mass", 0];
+private _fwdKg = _heli getVariable ["bmkhs_fwdTankMass", 0];
+private _aftKg = _heli getVariable ["bmkhs_aftTankMass", 0];
+private _ctrKg = _heli getVariable ["bmkhs_ctrTankMass", 0];
 
 private _fwdGal = if (_maxFwdKg > 0) then { (round (_fwdKg / _maxFwdKg * 155)) min 155 max 0 } else { 0 };
 private _aftGal = if (_maxAftKg > 0) then { (round (_aftKg / _maxAftKg * 220)) min 220 max 0 } else { 0 };

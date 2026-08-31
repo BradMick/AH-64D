@@ -2,14 +2,14 @@
 #include "\bmkhs_helisim\functions\fuel\fuel.hpp"
 params ["_heli"];
 
-private _fwdCellWeight       = _heli getVariable "bmkhs_fuelTank1Mass";
-private _ctrFuelWeight       = _heli getVariable "bmkhs_fuelTank2Mass";
-private _aftCellWeight       = _heli getVariable "bmkhs_fuelTank3Mass";
+private _fwdCellWeight       = _heli getVariable "bmkhs_fwdTankMass";
+private _ctrFuelWeight       = _heli getVariable "bmkhs_ctrTankMass";
+private _aftCellWeight       = _heli getVariable "bmkhs_aftTankMass";
 
-private _stn1FuelWeight      = _heli getVariable "bmkhs_auxTank1Mass";
-private _stn2FuelWeight      = _heli getVariable "bmkhs_auxTank2Mass";
-private _stn3FuelWeight      = _heli getVariable "bmkhs_auxTank3Mass";
-private _stn4FuelWeight      = _heli getVariable "bmkhs_auxTank4Mass";
+private _stn1FuelWeight      = _heli getVariable "bmkhs_stn1TankMass";
+private _stn2FuelWeight      = _heli getVariable "bmkhs_stn2TankMass";
+private _stn3FuelWeight      = _heli getVariable "bmkhs_stn3TankMass";
+private _stn4FuelWeight      = _heli getVariable "bmkhs_stn4TankMass";
 
 private _mainFuelCellWeight  = _fwdCellWeight + _aftCellWeight;
 private _totalFuelCellWeight = _fwdCellWeight + _ctrFuelWeight + _aftCellWeight + _stn1FuelWeight + _stn2FuelWeight + _stn3FuelWeight + _stn4FuelWeight;

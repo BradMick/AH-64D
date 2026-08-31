@@ -50,16 +50,18 @@ private _fuelMass = [];
 private _fuelMax  = [];
 private _fuelLow  = [];
 for "_i" from 1 to (count _fuelTanks) do {
-    _fuelMass pushBack (_heli getVariable [format ["bmkhs_fuelTank%1Mass", _i], 0]);
-    _fuelMax  pushBack (_heli getVariable [format ["bmkhs_fuelTank%1Max",  _i], 0]);
-    _fuelLow  pushBack (_heli getVariable [format ["bmkhs_fuelTank%1Low",  _i], 0]);
+    private _v = (_fuelTanks select (_i - 1)) select 6;
+    _fuelMass pushBack (_heli getVariable [_v + "Mass", 0]);
+    _fuelMax  pushBack (_heli getVariable [_v + "Max",  0]);
+    _fuelLow  pushBack (_heli getVariable [_v + "Low",  0]);
 };
 
 private _auxMass = [];
 private _auxMax  = [];
 for "_i" from 1 to (count _auxTanks) do {
-    _auxMass pushBack (_heli getVariable [format ["bmkhs_auxTank%1Mass", _i], 0]);
-    _auxMax  pushBack (_heli getVariable [format ["bmkhs_auxTank%1Max",  _i], 0]);
+    private _v = (_auxTanks select (_i - 1)) select 5;
+    _auxMass pushBack (_heli getVariable [_v + "Mass", 0]);
+    _auxMax  pushBack (_heli getVariable [_v + "Max",  0]);
 };
 
 //Which aux switch groups are armed. The switch variable per group is the aircraft's;
@@ -81,7 +83,7 @@ private _auxArmed = _auxTanks findIf {
 ([_heli, _fuelMass, _mains, _deltaTime] call bmkhs_fnc_fuelDraw)
     params ["_eng1FuelAvail", "_eng2FuelAvail", "_apuFuelAvail"];
 
-([_heli, _fuelMass, _fuelMax, _fuelLow, _mains, _transfers, _auxArmed, _deltaTime] call bmkhs_fnc_fuelTransfer)
+([_heli, _fuelMass, _fuelMax, _fuelLow, _fuelTanks, _mains, _transfers, _auxArmed, _deltaTime] call bmkhs_fnc_fuelTransfer)
     params ["_intercellActive", "_intercellDir", "_cellFlowing"];
 
 [_heli, _fuelMass, _fuelTanks, _deltaTime] call bmkhs_fnc_fuelLeak;
@@ -130,8 +132,8 @@ if (local _heli) then {
     _heli setFuel (_totFuelMass / _maxTotFuelMass);
 };
 
-{ _heli setVariable [format ["bmkhs_fuelTank%1Mass", _forEachIndex + 1], _x] } forEach _fuelMass;
-{ _heli setVariable [format ["bmkhs_auxTank%1Mass",  _forEachIndex + 1], _x] } forEach _auxMass;
+{ _heli setVariable [((_fuelTanks select _forEachIndex) select 6) + "Mass", _x] } forEach _fuelMass;
+{ _heli setVariable [((_auxTanks  select _forEachIndex) select 5) + "Mass", _x] } forEach _auxMass;
 _heli setVariable ["bmkhs_totFuelMass", _totFuelMass];
 
 //Whether the crew can see the fuel page is the aircraft's business - it sets this if it
@@ -139,7 +141,7 @@ _heli setVariable ["bmkhs_totFuelMass", _totFuelMass];
 private _fuelPageOpen = _heli getVariable ["bmkhs_fuelPageOpen", false];
 {
     private _present = _auxPresent param [_forEachIndex, false];
-    private _var     = format ["bmkhs_auxTank%1EmptyArmed", _forEachIndex + 1];
+    private _var     = ((_auxTanks select _forEachIndex) select 5) + "EmptyArmed";
     if (!_present || _x >= EXT_EMPTY_ADV_THRESH_KG) then {
         _heli setVariable [_var, true];
     } else {

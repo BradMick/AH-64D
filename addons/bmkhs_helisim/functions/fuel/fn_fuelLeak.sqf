@@ -23,14 +23,13 @@ Author:
 params ["_heli", "_fuelMass", "_fuelTanks", "_deltaTime"];
 
 {
-    _x params ["", "", "", "", "_removable", "", "_leakPoint"];
+    _x params ["", "", "", "_removable", "", "_leakPoint", "_varName"];
     private _idx = _forEachIndex;
     private _m   = _fuelMass param [_idx, 0];
 
     if (_leakPoint == "" || _m <= 0) then { continue };
 
-    private _fitted = !_removable
-                   || {_heli getVariable [format ["bmkhs_fuelTank%1Installed", _idx + 1], false]};
+    private _fitted = !_removable || {_heli getVariable [_varName + "Installed", false]};
     if (!_fitted) then { continue };
 
     private _dmg = (_heli getHitPointDamage _leakPoint) max 0;

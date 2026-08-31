@@ -55,16 +55,15 @@ private _groupFlow = createHashMap;
 {
     private _wantDependent = _x;
     {
-        _x params ["", "", "_feedsTank", "_requires", "_group"];
+        _x params ["", "", "_dstIdx", "_requires", "_group"];
         private _idx = _forEachIndex;
-        if ((_requires != 0) != _wantDependent) then { continue };
-
-        private _dstIdx = _feedsTank - 1;
+        if ((_requires >= 0) != _wantDependent) then { continue };
+        if (_dstIdx < 0) then { continue };            //unresolved feedsTank, already logged
         private _src    = _auxMass  param [_idx,    0];
         private _dst    = _fuelMass param [_dstIdx, 0];
         private _room   = (_fuelMax param [_dstIdx, 0]) - _dst;
         private _armed  = _groupOn getOrDefault [_group, false];
-        private _ready  = _requires == 0 || {_auxPresent param [_requires - 1, false]};
+        private _ready  = _requires < 0 || {_auxPresent param [_requires, false]};
 
         if ((_auxPresent param [_idx, false]) && _armed && _ready && _src > 0 && _room > 0) then {
             private _flow = _xferStep min _src min _room;

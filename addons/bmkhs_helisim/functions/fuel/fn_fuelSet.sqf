@@ -31,9 +31,8 @@ private _stations    = _heli getVariable ["bmkhs_stations",  []];
 private _fuelFitted   = [];
 private _fuelCapacity = [];
 {
-    _x params ["", "", "_capacity", "", "_removable"];
-    private _fitted = !_removable
-                   || {_heli getVariable [format ["bmkhs_fuelTank%1Installed", _forEachIndex + 1], false]};
+    _x params ["", "_capacity", "", "_removable", "", "", "_varName"];
+    private _fitted = !_removable || {_heli getVariable [_varName + "Installed", false]};
     _fuelFitted   pushBack _fitted;
     _fuelCapacity pushBack ([0, _capacity] select _fitted);
 } forEach _fuelTanks;
@@ -70,13 +69,13 @@ private _extFuelMass = 0 max (_totFuelMass - _intFuelMass) min _maxExtFuelMass;
 private _actualTotFuelMass = 0;
 {
     private _mass = if (_maxIntFuelMass > 0) then { _intFuelMass * (_x / _maxIntFuelMass) } else { 0 };
-    _heli setVariable [format ["bmkhs_fuelTank%1Mass", _forEachIndex + 1], _mass];
+    _heli setVariable [((_fuelTanks select _forEachIndex) select 6) + "Mass", _mass];
     _actualTotFuelMass = _actualTotFuelMass + _mass;
 } forEach _fuelCapacity;
 
 {
     private _mass = if (_maxExtFuelMass > 0) then { _extFuelMass * (_x / _maxExtFuelMass) } else { 0 };
-    _heli setVariable [format ["bmkhs_auxTank%1Mass", _forEachIndex + 1], _mass];
+    _heli setVariable [((_auxTanks select _forEachIndex) select 5) + "Mass", _mass];
     _actualTotFuelMass = _actualTotFuelMass + _mass;
 } forEach _auxCapacity;
 

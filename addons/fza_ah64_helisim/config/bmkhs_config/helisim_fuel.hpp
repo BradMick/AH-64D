@@ -12,7 +12,12 @@
     //caution threshold are defined together here; the mass model reads the same table for
     //the arm rather than keeping a second copy.
     //
-    //  name      - short label for the FUEL page
+    //  variableName - the aircraft NAMES its own tank variables. Core prefixes bmkhs_ and
+    //              appends the field, so variableName = "fwdTank" publishes
+    //              bmkhs_fwdTankMass, bmkhs_fwdTankMax, bmkhs_fwdTankLow and
+    //              bmkhs_fwdTankInstalled. What a display reads is then obvious from this
+    //              file with no index arithmetic. Names must be unique; a duplicate is an
+    //              error at load. Do not include the bmkhs_ prefix - Core adds it.
     //  arm[]     - {lateral, longitudinal, vertical} in m, right-positive / nose-positive
     //  capacity  - kg of usable fuel
     //  lowFuelKg - low-level caution threshold in kg; 0 for no caution on this tank
@@ -39,7 +44,7 @@
     numFuelTanks = 3;
     class FuelTanks {
         class FuelTank01 {
-            name      = "FWD";
+            variableName = "fwdTank";
             arm[]     = {0.000, 2.542, 0.000};
             capacity  = 473.1;      //1043lbs
             lowFuelKg = 109.0;
@@ -48,7 +53,7 @@
             leakPoint = "hit_fuel_forward";
         };
         class FuelTank02 {          //centre cell (robbie), shares the ammo bay position
-            name      = "CTR";
+            variableName = "ctrTank";
             arm[]     = {0.000, 0.944, 0.000};
             capacity  = 300.9;      //663lbs
             lowFuelKg = 0.0;
@@ -57,7 +62,7 @@
             leakPoint = "hit_msnEquip_magandrobbie";
         };
         class FuelTank03 {
-            name      = "AFT";
+            variableName = "aftTank";
             arm[]     = {0.000, -0.077, 0.000};
             capacity  = 668.6;      //1474lbs
             lowFuelKg = 118.0;
@@ -69,16 +74,18 @@
 
     //AUXILIARY TANKS - fuel carried on a wing station. station is the 1-based station index
     //from helisim_mass.hpp, which supplies the arm, so no arm is repeated here.
-    //  feedsTank - 1-based FuelTank index this tank transfers into
-    //  requires  - 1-based AuxTank index that must be present first, or 0 for none. The
-    //              AH-64's outboard tanks need the inboard one fitted for the pressurised
-    //              air path, and this is how that dependency is declared rather than coded.
+    //  variableName - names this tank's variables, exactly as for the fuel tanks above:
+    //              "stn1Tank" publishes bmkhs_stn1TankMass and bmkhs_stn1TankMax.
+    //  feedsTank - variableName of the fuel tank this one transfers into
+    //  requires  - variableName of the aux tank that must be present first, or "" for none.
+    //              The AH-64's outboard tanks need the inboard one fitted for the
+    //              pressurised air path, declared here rather than coded.
     //  group     - transfer switch that arms this tank. The AH-64 gangs its tanks left and
     //              right; an aircraft with one switch puts every tank in the same group.
     numAuxTanks = 4;
     class AuxTanks {
-        class AuxTank01 { station = 1; capacity = 699.0; feedsTank = 1; requires = 2; group = "L"; };
-        class AuxTank02 { station = 2; capacity = 699.0; feedsTank = 1; requires = 0; group = "L"; };
-        class AuxTank03 { station = 3; capacity = 699.0; feedsTank = 3; requires = 0; group = "R"; };
-        class AuxTank04 { station = 4; capacity = 699.0; feedsTank = 3; requires = 3; group = "R"; };
+        class AuxTank01 { variableName = "stn1Tank"; station = 1; capacity = 699.0; feedsTank = "fwdTank"; requires = "stn2Tank"; group = "L"; };
+        class AuxTank02 { variableName = "stn2Tank"; station = 2; capacity = 699.0; feedsTank = "fwdTank"; requires = "";         group = "L"; };
+        class AuxTank03 { variableName = "stn3Tank"; station = 3; capacity = 699.0; feedsTank = "aftTank"; requires = "";         group = "R"; };
+        class AuxTank04 { variableName = "stn4Tank"; station = 4; capacity = 699.0; feedsTank = "aftTank"; requires = "stn3Tank"; group = "R"; };
     };

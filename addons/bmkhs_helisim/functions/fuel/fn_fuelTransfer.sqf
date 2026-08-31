@@ -20,6 +20,7 @@ Parameters:
     _fuelMass  - Per-tank masses, mutated [Array]
     _fuelMax   - Per-tank capacities [Array]
     _fuelLow   - Per-tank low-level thresholds [Array]
+    _fuelTanks - Fuel tank table, for the per-tank variable names [Array]
     _mains     - Indices of the tanks with role "main" [Array]
     _transfers - Indices of the tanks with role "transfer" [Array]
     _auxArmed  - True if any armed auxiliary tank still holds fuel [Bool]
@@ -33,7 +34,7 @@ Author:
     BradMick / FZA Development Team
 ---------------------------------------------------------------------------- */
 #include "\bmkhs_helisim\functions\fuel\fuel.hpp"
-params ["_heli", "_fuelMass", "_fuelMax", "_fuelLow", "_mains", "_transfers", "_auxArmed", "_deltaTime"];
+params ["_heli", "_fuelMass", "_fuelMax", "_fuelLow", "_fuelTanks", "_mains", "_transfers", "_auxArmed", "_deltaTime"];
 
 //Two mains to balance between. A is the first, B the second; neither has any fore/aft or
 //left/right meaning - the aircraft decides what its XFER labels map onto.
@@ -124,8 +125,9 @@ private _cellFlowing = false;
 if (!_auxArmed) then {
     {
         private _cellIdx = _x;
-        private _switchOn = _heli getVariable [format ["bmkhs_fuelTank%1XferOn", _cellIdx + 1], false];
-        private _installed = _heli getVariable [format ["bmkhs_fuelTank%1Installed", _cellIdx + 1], false];
+        private _varName   = (_fuelTanks select _cellIdx) select 6;
+        private _switchOn  = _heli getVariable [_varName + "XferOn",    false];
+        private _installed = _heli getVariable [_varName + "Installed", false];
 
         if (_switchOn && _installed) then {
             {
@@ -144,7 +146,7 @@ if (!_auxArmed) then {
 
             //Auto-shutoff once the cell is dry.
             if ((_fuelMass param [_cellIdx, 0]) <= 0) then {
-                _heli setVariable [format ["bmkhs_fuelTank%1XferOn", _cellIdx + 1], false, true];
+                _heli setVariable [_varName + "XferOn", false, true];
             };
         };
     } forEach _transfers;

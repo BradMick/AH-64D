@@ -113,12 +113,12 @@ private _utilLevel_pct       = _heli getVariable "bmkhs_utilLevel_pct";
 private _msnEquipState       = _heli getVariable "fza_ah64_ase_msnEquipPwr";
 
 private _pylonMagazines = getPylonMagazines _heli;
-private _fwdFuelMass = _heli getVariable ["bmkhs_fuelTank1Mass", 0];
-private _aftFuelMass = _heli getVariable ["bmkhs_fuelTank3Mass", 0];
-private _auxTank1FuelMass = _heli getVariable ["bmkhs_auxTank1Mass", 0];
-private _auxTank2FuelMass = _heli getVariable ["bmkhs_auxTank2Mass", 0];
-private _auxTank3FuelMass = _heli getVariable ["bmkhs_auxTank3Mass", 0];
-private _auxTank4FuelMass = _heli getVariable ["bmkhs_auxTank4Mass", 0];
+private _fwdFuelMass = _heli getVariable ["bmkhs_fwdTankMass", 0];
+private _aftFuelMass = _heli getVariable ["bmkhs_aftTankMass", 0];
+private _auxTank1FuelMass = _heli getVariable ["bmkhs_stn1TankMass", 0];
+private _auxTank2FuelMass = _heli getVariable ["bmkhs_stn2TankMass", 0];
+private _auxTank3FuelMass = _heli getVariable ["bmkhs_stn3TankMass", 0];
+private _auxTank4FuelMass = _heli getVariable ["bmkhs_stn4TankMass", 0];
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -357,7 +357,7 @@ if (_xmsnDamage >= 0.75) then {
     [_activeCaut, "XMSN CHIPS"] call fza_wca_fnc_wcaDelCaution;
 };
 //--Fuel low cautions
-if (_fwdFuelMass < (_heli getVariable "bmkhs_fuelTank1Low")) then {
+if (_fwdFuelMass < (_heli getVariable "bmkhs_fwdTankLow")) then {
     ([_heli, _activeCaut, "FORWARD FUEL LOW", "FWD FUEL LO", _playCautAudio] call fza_wca_fnc_wcaAddCaution)
         params ["_wcaAddCaution", "_playAudio"];
     _playCautAudio = _playAudio;
@@ -365,7 +365,7 @@ if (_fwdFuelMass < (_heli getVariable "bmkhs_fuelTank1Low")) then {
 } else {
     [_activeCaut, "FWD FUEL LO"] call fza_wca_fnc_wcaDelCaution;
 };
-if (_aftFuelMass < (_heli getVariable "bmkhs_fuelTank3Low")) then {
+if (_aftFuelMass < (_heli getVariable "bmkhs_aftTankLow")) then {
     ([_heli, _activeCaut, "AFT FUEL LOW", "AFT FUEL LO", _playCautAudio] call fza_wca_fnc_wcaAddCaution)
         params ["_wcaAddCaution", "_playAudio"];
     _playCautAudio = _playAudio;
@@ -537,16 +537,16 @@ if (_onGnd) then {
 };
 
 //Auxilary Fuel tanks
-if (("auxTank" in (_pylonMagazines select 0))  && _auxTank1FuelMass < EXT_EMPTY_ADV_THRESH_KG && (_heli getVariable ["bmkhs_auxTank1EmptyArmed", true])) then {
+if (("auxTank" in (_pylonMagazines select 0))  && _auxTank1FuelMass < EXT_EMPTY_ADV_THRESH_KG && (_heli getVariable ["bmkhs_stn1TankEmptyArmed", true])) then {
     _wcas pushBack [WCA_ADVISORY, "EXTERNAL 1 EMPTY", "EXT1 EMPTY"];
 };
-if (("auxTank" in (_pylonMagazines select 4))  && _auxTank2FuelMass < EXT_EMPTY_ADV_THRESH_KG && (_heli getVariable ["bmkhs_auxTank2EmptyArmed", true])) then {
+if (("auxTank" in (_pylonMagazines select 4))  && _auxTank2FuelMass < EXT_EMPTY_ADV_THRESH_KG && (_heli getVariable ["bmkhs_stn2TankEmptyArmed", true])) then {
     _wcas pushBack [WCA_ADVISORY, "EXTERNAL 2 EMPTY", "EXT2 EMPTY"];
 };
-if (("auxTank" in (_pylonMagazines select 8))  && _auxTank3FuelMass < EXT_EMPTY_ADV_THRESH_KG && (_heli getVariable ["bmkhs_auxTank3EmptyArmed", true])) then {
+if (("auxTank" in (_pylonMagazines select 8))  && _auxTank3FuelMass < EXT_EMPTY_ADV_THRESH_KG && (_heli getVariable ["bmkhs_stn3TankEmptyArmed", true])) then {
     _wcas pushBack [WCA_ADVISORY, "EXTERNAL 3 EMPTY", "EXT3 EMPTY"];
 };
-if (("auxTank" in (_pylonMagazines select 12)) && _auxTank4FuelMass < EXT_EMPTY_ADV_THRESH_KG && (_heli getVariable ["bmkhs_auxTank4EmptyArmed", true])) then {
+if (("auxTank" in (_pylonMagazines select 12)) && _auxTank4FuelMass < EXT_EMPTY_ADV_THRESH_KG && (_heli getVariable ["bmkhs_stn4TankEmptyArmed", true])) then {
     _wcas pushBack [WCA_ADVISORY, "EXTERNAL 4 EMPTY", "EXT4 EMPTY"];
 };
 

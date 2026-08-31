@@ -27,7 +27,7 @@ sleep 0.5;
         _pylons pushBack _pylonDummy;
     };
 
-    private _stationFuelmass = ["bmkhs_auxTank1Mass", "bmkhs_auxTank2Mass", "bmkhs_auxTank3Mass", "bmkhs_auxTank4Mass"] # _foreachindex;
+    private _stationFuelmass = ["bmkhs_stn1TankMass", "bmkhs_stn2TankMass", "bmkhs_stn3TankMass", "bmkhs_stn4TankMass"] # _foreachindex;
     private _pylonmass = [_heli,  (_pylon - 1),  _pylon,  (_pylon + 3), _stationFuelmass] call bmkhs_fnc_massUpdateStation;
     _pylonDummyMain setMass _pylonmass;
     _pylonDummyMain attachTo [_heli, _position];
