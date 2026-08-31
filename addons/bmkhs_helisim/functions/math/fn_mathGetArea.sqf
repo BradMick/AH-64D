@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
-Function: bmkhs_fnc_getArea
+Function: bmkhs_fnc_mathGetArea
 
 Description:
     Returns the area of a four point polygon.

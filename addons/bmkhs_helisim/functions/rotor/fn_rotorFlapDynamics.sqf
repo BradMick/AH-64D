@@ -40,7 +40,7 @@ private _M0   = 0.0;
 private _Mlat = 0.0;
 private _Mlon = 0.0;
 for "_bladeIndex" from 0 to (_numBlades - 1) do {
-    private _bDir_i = [_rVec, _uVec, (_bladeAzimuths select _bladeIndex)] call bmkhs_fnc_vectorRotateAroundAxis;
+    private _bDir_i = [_rVec, _uVec, (_bladeAzimuths select _bladeIndex)] call bmkhs_fnc_mathVectorRotateAroundAxis;
     private _m      = _flapMoments select _bladeIndex;
     _M0   = _M0   + _m;
     _Mlat = _Mlat + (_m * (_bDir_i vectorDotProduct _rVec));

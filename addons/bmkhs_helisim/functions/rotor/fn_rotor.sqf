@@ -27,9 +27,9 @@ private _p = _rot select 0;
 private _r = _rot select 1;
 private _y = _rot select 2;
 
-private _fVec = [[0.0, 1.0, 0.0], _p, _r, _y] call bmkhs_fnc_vectorRotate;
-private _rVec = [[1.0, 0.0, 0.0], _p, _r, _y] call bmkhs_fnc_vectorRotate;
-private _uVec = [[0.0, 0.0, 1.0], _p, _r, _y] call bmkhs_fnc_vectorRotate;
+private _fVec = [[0.0, 1.0, 0.0], _p, _r, _y] call bmkhs_fnc_mathVectorRotate;
+private _rVec = [[1.0, 0.0, 0.0], _p, _r, _y] call bmkhs_fnc_mathVectorRotate;
+private _uVec = [[0.0, 0.0, 1.0], _p, _r, _y] call bmkhs_fnc_mathVectorRotate;
 
 private _pos          = _pivot vectorAdd (_uVec vectorMultiply _mastLength);
 private _xmsnRpm      = _heli getVariable "bmkhs_xmsnOutputRpm";
@@ -71,8 +71,8 @@ private _bladeSpacing = 360.0 / _numBlades;
 for "_bladeIndex" from 0 to (_numBlades - 1) do {
 	private _psi = _rotorAzimuth + (_bladeSpacing * _bladeIndex);
 
-	private _bladeDir = [_rVec, _uVec, _psi] call bmkhs_fnc_vectorRotateAroundAxis;
-	private _chordDir = [_fVec, _uVec, _psi] call bmkhs_fnc_vectorRotateAroundAxis;
+	private _bladeDir = [_rVec, _uVec, _psi] call bmkhs_fnc_mathVectorRotateAroundAxis;
+	private _chordDir = [_fVec, _uVec, _psi] call bmkhs_fnc_mathVectorRotateAroundAxis;
 	private _dirSign  = if (_dir == CW) then { _chordDir = _chordDir vectorMultiply -1; -1 } else { 1 };
 
 	// Per-blade flap angle from fixed body-frame coefficients.
@@ -95,12 +95,12 @@ for "_bladeIndex" from 0 to (_numBlades - 1) do {
 	// its original root reference. (_tipTwist already carries _dirSign, so this stays sign-consistent.)
 	private _rootIncidence      = if (_type == MAIN) then { -_tipTwist * 0.5 } else { 0.0 };
 
-	private _a_rootPos          = _pos       vectorAdd  ([_bladeDir vectorMultiply _bladeCutout,          _chordDir, _flapAngle]              call bmkhs_fnc_vectorRotateAroundAxis);
-	private _b_tipPos           = _pos       vectorAdd  ([_bladeDir vectorMultiply _bladeLength,          _chordDir, _flapAngle]              call bmkhs_fnc_vectorRotateAroundAxis);
-	private _c_rootLeadingEdge  = _a_rootPos vectorAdd  ([_chordDir vectorMultiply (_bladeChord * 0.25), _bladeDir, -(_featherAngle + _rootIncidence)]              call bmkhs_fnc_vectorRotateAroundAxis);
-	private _d_tipLeadingEdge   = _b_tipPos  vectorAdd  ([_chordDir vectorMultiply (_bladeChord * 0.25), _bladeDir, -(_featherAngle + _rootIncidence + _tipTwist)] call bmkhs_fnc_vectorRotateAroundAxis);
-	private _e_tipTrailingEdge  = _b_tipPos  vectorDiff ([_chordDir vectorMultiply (_bladeChord * 0.75), _bladeDir, -(_featherAngle + _rootIncidence + _tipTwist)] call bmkhs_fnc_vectorRotateAroundAxis);
-	private _f_rootTrailingEdge = _a_rootPos vectorDiff ([_chordDir vectorMultiply (_bladeChord * 0.75), _bladeDir, -(_featherAngle + _rootIncidence)]              call bmkhs_fnc_vectorRotateAroundAxis);
+	private _a_rootPos          = _pos       vectorAdd  ([_bladeDir vectorMultiply _bladeCutout,          _chordDir, _flapAngle]              call bmkhs_fnc_mathVectorRotateAroundAxis);
+	private _b_tipPos           = _pos       vectorAdd  ([_bladeDir vectorMultiply _bladeLength,          _chordDir, _flapAngle]              call bmkhs_fnc_mathVectorRotateAroundAxis);
+	private _c_rootLeadingEdge  = _a_rootPos vectorAdd  ([_chordDir vectorMultiply (_bladeChord * 0.25), _bladeDir, -(_featherAngle + _rootIncidence)]              call bmkhs_fnc_mathVectorRotateAroundAxis);
+	private _d_tipLeadingEdge   = _b_tipPos  vectorAdd  ([_chordDir vectorMultiply (_bladeChord * 0.25), _bladeDir, -(_featherAngle + _rootIncidence + _tipTwist)] call bmkhs_fnc_mathVectorRotateAroundAxis);
+	private _e_tipTrailingEdge  = _b_tipPos  vectorDiff ([_chordDir vectorMultiply (_bladeChord * 0.75), _bladeDir, -(_featherAngle + _rootIncidence + _tipTwist)] call bmkhs_fnc_mathVectorRotateAroundAxis);
+	private _f_rootTrailingEdge = _a_rootPos vectorDiff ([_chordDir vectorMultiply (_bladeChord * 0.75), _bladeDir, -(_featherAngle + _rootIncidence)]              call bmkhs_fnc_mathVectorRotateAroundAxis);
 
 	// Store this blade's azimuth so the decomposition next frame uses the correct position
 	[_heli, "bmkhs_rotorBladeAzimuth", _rotorIndex, _bladeIndex, _psi] call bmkhs_fnc_utilSetMultiArrayVariable;
@@ -194,7 +194,7 @@ if (_type == MAIN) then {
     //engine load (_totalPower stays physics-true). Airspeed-banded; 1.0 = pure physics. Lets the
     private _velBet   = vectorMagnitude [(_heli getVariable "bmkhs_velModelSpace" select 0), (_heli getVariable "bmkhs_velModelSpace" select 1)];
     private _torqTbl  = [];
-    private _torqueScale = if (_torqTbl isEqualTo []) then { 1.0 } else { [_torqTbl, _velBet] call bmkhs_fnc_linearInterp select 1 };
+    private _torqueScale = if (_torqTbl isEqualTo []) then { 1.0 } else { [_torqTbl, _velBet] call bmkhs_fnc_mathLinearInterp select 1 };
     _reactionMoment = _uVec vectorMultiply (_tqSmoothed * _gearRatio * _torqueSign * _deltaTime * _torqueScale);
     _heli addTorque (_heli vectorModelToWorld _reactionMoment);
 };

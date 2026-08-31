@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
-Function: bmkhs_fnc_isNAN
+Function: bmkhs_fnc_mathIsNAN
 
 Description:
     Returns true or false if a value is not a number

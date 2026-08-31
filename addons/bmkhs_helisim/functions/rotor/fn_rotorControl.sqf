@@ -39,12 +39,12 @@ private _collFeather            = 0.0;
 
 switch (_type) do {
 	case MAIN: {
-		_pitchFeather  = [-1, 1, _pitchInput, _pitchMin, _pitchMid, _pitchMax] call bmkhs_fnc_linearInterpFromCenter;
-		_rollFeather   = [-1, 1, _rollInput,  _rollMin,  _rollMid,  _rollMax]  call bmkhs_fnc_linearInterpFromCenter;
+		_pitchFeather  = [-1, 1, _pitchInput, _pitchMin, _pitchMid, _pitchMax] call bmkhs_fnc_mathLinearInterpFromCenter;
+		_rollFeather   = [-1, 1, _rollInput,  _rollMin,  _rollMid,  _rollMax]  call bmkhs_fnc_mathLinearInterpFromCenter;
 		_collFeather   = linearConversion[ 0, 1, _collInput,  _collMin, _collMax, true];
 	};
 	case TAIL: {
-		_collFeather   = [-1, 1, -_yawInput, _collMin, _collMid, _collMax] call bmkhs_fnc_linearInterpFromCenter;
+		_collFeather   = [-1, 1, -_yawInput, _collMin, _collMid, _collMax] call bmkhs_fnc_mathLinearInterpFromCenter;
 	};
 };
 

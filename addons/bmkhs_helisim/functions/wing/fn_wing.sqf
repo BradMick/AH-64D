@@ -38,7 +38,7 @@ if (_isStab) then {
     private _desiredTheta    = 0.0;
     private _theta           = _heli getVariable "bmkhs_stabilatorPosition";
 
-    private _intStabTable = [getArray (_sfmPlusConfig >> "heliSimStabTable"), (_heli getVariable "bmkhs_collectiveOutput")] call bmkhs_fnc_linearInterp;
+    private _intStabTable = [getArray (_sfmPlusConfig >> "heliSimStabTable"), (_heli getVariable "bmkhs_collectiveOutput")] call bmkhs_fnc_mathLinearInterp;
     _stabOutputTable = [
                         [15.43, _intStabTable select 1]   //30kts
                        ,[20.58, _intStabTable select 2]   //40kts
@@ -57,7 +57,7 @@ if (_isStab) then {
                        ];
 
     if (_stabDamage < SYS_STAB_DMG_THRESH && _dcBusOn) then {
-        _desiredTheta = [_stabOutputTable, (_heli getVariable "bmkhs_vel2D") * KNOTS_TO_MPS] call bmkhs_fnc_linearInterp select 1;
+        _desiredTheta = [_stabOutputTable, (_heli getVariable "bmkhs_vel2D") * KNOTS_TO_MPS] call bmkhs_fnc_mathLinearInterp select 1;
         _theta        = [_theta, _desiredTheta, (1.0 / 1.5) * _deltaTime] call BIS_fnc_lerp;
         _heli setVariable ["bmkhs_stabilatorPosition", _theta];
     };
@@ -75,17 +75,17 @@ if (_isStab) then {
 
     private _stabTheta  = _theta;
     private _stabRoot   = _A_wingRootLeadingEdge vectorDiff _D_wingRootTrailingEdge;
-    _stabRoot           = [_stabRoot, _vectorRight, _stabTheta] call bmkhs_fnc_vectorRotateAroundAxis;
+    _stabRoot           = [_stabRoot, _vectorRight, _stabTheta] call bmkhs_fnc_mathVectorRotateAroundAxis;
     _D_wingRootTrailingEdge = _A_wingRootLeadingEdge vectorDiff _stabRoot;
 
     private _stabTip    = _B_wingTipLeadingEdge vectorDiff _C_wingTipTrailingEdge;
-    _stabTip            = [_stabTip, _vectorRight, _stabTheta] call bmkhs_fnc_vectorRotateAroundAxis;
+    _stabTip            = [_stabTip, _vectorRight, _stabTheta] call bmkhs_fnc_mathVectorRotateAroundAxis;
     _C_wingTipTrailingEdge = _B_wingTipLeadingEdge vectorDiff _stabTip;
 
     _airfoilTable = getArray (_sfmPlusConfig >> "airfoilTable01");
 } else {
-    private _vectorRight   = [[1.0, 0.0, 0.0], _pitch, _roll, 0.0] call bmkhs_fnc_vectorRotate;
-    private _vectorForward = [[0.0, 1.0, 0.0], _pitch, _roll, 0.0] call bmkhs_fnc_vectorRotate;
+    private _vectorRight   = [[1.0, 0.0, 0.0], _pitch, _roll, 0.0] call bmkhs_fnc_mathVectorRotate;
+    private _vectorForward = [[0.0, 1.0, 0.0], _pitch, _roll, 0.0] call bmkhs_fnc_mathVectorRotate;
 
     private _wingRootCenter = _wingPos       vectorDiff (_vectorRight   vectorMultiply (_span * 0.5));
     private _wingTipCenter  = _wingPos       vectorAdd  (_vectorRight   vectorMultiply (_span * 0.5));
@@ -97,7 +97,7 @@ if (_isStab) then {
     _D_wingRootTrailingEdge = _wingRootCenter vectorDiff (_vectorForward vectorMultiply  (_chord * 0.5));
 
     private _wingTip       = _B_wingTipLeadingEdge vectorDiff _C_wingTipTrailingEdge;
-    _wingTip               = [_wingTip, _vectorRight, _twist] call bmkhs_fnc_vectorRotateAroundAxis;
+    _wingTip               = [_wingTip, _vectorRight, _twist] call bmkhs_fnc_mathVectorRotateAroundAxis;
     _B_wingTipLeadingEdge  = _wingTipCenter vectorAdd  (_wingTip vectorMultiply 0.5);
     _C_wingTipTrailingEdge = _wingTipCenter vectorDiff (_wingTip vectorMultiply 0.5);
 
@@ -174,13 +174,13 @@ for "_j" from 0 to (_numElements - 1) do {
     };
 
     //Lift coefficient
-    private _area  = [_a, _b, _c, _d] call bmkhs_fnc_getArea;
-    private _CL    = [_airfoilTable, _AoA] call bmkhs_fnc_linearInterp select 1;
+    private _area  = [_a, _b, _c, _d] call bmkhs_fnc_mathGetArea;
+    private _CL    = [_airfoilTable, _AoA] call bmkhs_fnc_mathLinearInterp select 1;
     private _v     = vectorMagnitude _relativeWind;
     private _lift  = _CL * 0.5 * _rho * _area * (_v * _v);
 
     //Drag coefficient
-    private _CD    = [_airfoilTable, _AoA] call bmkhs_fnc_linearInterp select 2;
+    private _CD    = [_airfoilTable, _AoA] call bmkhs_fnc_mathLinearInterp select 2;
     private _drag  = _CD * 0.5 * _rho * _area * (_v * _v);
 
     private _liftVector = _relativeWindNormalized vectorCrossProduct _up;

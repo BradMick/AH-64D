@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
-Function: bmkhs_fnc_isINF
+Function: bmkhs_fnc_mathIsINF
 
 Description:
     Returns true or false if a value is infinite

@@ -106,7 +106,7 @@ switch (_engState) do {
 	};
 };
 
-private _intEngBaseTable = [getArray (_sfmPlusConfig >> "engBaseTable"), _engPctNG] call bmkhs_fnc_linearInterp;
+private _intEngBaseTable = [getArray (_sfmPlusConfig >> "engBaseTable"), _engPctNG] call bmkhs_fnc_mathLinearInterp;
 //Base TGT
 private _engBaseTGT      = _intEngBaseTable select 1;
 //Base Oil
@@ -120,7 +120,7 @@ private _engTable = [[  _engBaseTQ, _engBaseTGT, _engBaseNG, _engBaseOilPSI],
                      [   _maxTQ_DE,         867,      0.990,           0.94],   //10 min
                      [   _maxTQ_SE,         896,      0.997,           0.99]];  //2.5 Min
 
-_engTGT    = [_engTable,   _engPctTQ] call bmkhs_fnc_linearInterp select 1;
+_engTGT    = [_engTable,   _engPctTQ] call bmkhs_fnc_mathLinearInterp select 1;
 if (_isSingleEng) then {
     private _tgtMax = _heli getVariable "bmkhs_engMaxTGT_SE";
     if (_engTGT > _tgtMax) then { _engTGT = _tgtMax; };
@@ -129,8 +129,8 @@ if (_isSingleEng) then {
     if (_engTGT > _tgtMax) then { _engTGT = _tgtMax; };
 };
 
-_engOilPSI = [_engTable,   _engPctTQ] call bmkhs_fnc_linearInterp select 3;
-_engFF     = [getArray (_sfmPlusConfig >> "engFFTable"), _engPctTQ] call bmkhs_fnc_linearInterp select 1;
+_engOilPSI = [_engTable,   _engPctTQ] call bmkhs_fnc_mathLinearInterp select 3;
+_engFF     = [getArray (_sfmPlusConfig >> "engFFTable"), _engPctTQ] call bmkhs_fnc_mathLinearInterp select 1;
 
 
 //Update variables

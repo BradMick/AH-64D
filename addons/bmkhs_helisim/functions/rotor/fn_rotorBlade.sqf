@@ -15,12 +15,12 @@ private _totalPower       = (_heli getVariable "bmkhs_rotorReactionTorque") sele
 private _velBet   = vectorMagnitude [(_heli getVariable "bmkhs_velModelSpace" select 0), (_heli getVariable "bmkhs_velModelSpace" select 1)];
 private _isTail   = _rotorIndex == 1;
 private _liftTbl  = _heli getVariable [(if (_isTail) then { "bmkhs_betTailLiftTable" } else { "bmkhs_betMainLiftTable" }), []];
-private _bladeScale = if (_liftTbl isEqualTo []) then { 1.0 } else { [_liftTbl, _velBet] call bmkhs_fnc_linearInterp select 1 };
+private _bladeScale = if (_liftTbl isEqualTo []) then { 1.0 } else { [_liftTbl, _velBet] call bmkhs_fnc_mathLinearInterp select 1 };
 //Tail airspeed trim/reversal: additive to the tail LIFT scalar (the ~100kt tail-thrust reversal
 //the simple model dials in via tailTrimTable; BET had no equivalent). Only for the tail rotor.
 if (_isTail) then {
     private _trimTbl = [];
-    if !(_trimTbl isEqualTo []) then { _bladeScale = _bladeScale + ([_trimTbl, _velBet] call bmkhs_fnc_linearInterp select 1); };
+    if !(_trimTbl isEqualTo []) then { _bladeScale = _bladeScale + ([_trimTbl, _velBet] call bmkhs_fnc_mathLinearInterp select 1); };
 };
 
 [_heli, "bmkhs_rotorFlapMoment", _rotorIndex, _bladeIndex, 0.0] call bmkhs_fnc_utilSetMultiArrayVariable;
@@ -115,12 +115,12 @@ for "_i" from 0 to (_numElements - 1) do {
 
 	if ((_up vectorDotProduct _relWindNormalized) < 0.0) then { _AoA = _AoA * -1.0; };
 
-	private _area = [_c, _d, _e, _f] call bmkhs_fnc_getArea;
+	private _area = [_c, _d, _e, _f] call bmkhs_fnc_mathGetArea;
 	private _v    = vectorMagnitude _relWind;
 	private _q    = 0.5 * _rho * _area * (_v * _v);
 
-	private _CL = [_airfoilTable, _AoA] call bmkhs_fnc_linearInterp select 1;
-	private _CD = [_airfoilTable, _AoA] call bmkhs_fnc_linearInterp select 2;
+	private _CL = [_airfoilTable, _AoA] call bmkhs_fnc_mathLinearInterp select 1;
+	private _CD = [_airfoilTable, _AoA] call bmkhs_fnc_mathLinearInterp select 2;
 
 	private _lift = _CL * _q;
 	private _drag = (_CD min 0.15) * _q;

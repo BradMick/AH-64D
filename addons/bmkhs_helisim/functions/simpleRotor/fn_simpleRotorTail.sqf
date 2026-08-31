@@ -106,7 +106,7 @@ _pedalLeftRightTrim         = _heli getVariable "bmkhs_forceTrimPosYaw";
 private _pedalInput         = ([_pedalLeftRight, _pedalLeftRightTrim] call bmkhs_fnc_inputGetInterp) + _fmcYawOut;
 _pedalInput                 = [_pedalInput, -1.0, 1.0] call BIS_fnc_clamp;
 //Publish the total tail-rotor yaw input (manual pedal + trim + FMC) so the
-private _bladePitchInducedThrustScalar = [_bladePitchInducedThrustTable, _pedalInput] call bmkhs_fnc_linearInterp select 1;//linearConversion [_bladePitch_min, _bladePitch_max, _bladePitch_cur, _rtrThrustScalar_min, _rtrThrustScalar_max, true];
+private _bladePitchInducedThrustScalar = [_bladePitchInducedThrustTable, _pedalInput] call bmkhs_fnc_mathLinearInterp select 1;//linearConversion [_bladePitch_min, _bladePitch_max, _bladePitch_cur, _rtrThrustScalar_min, _rtrThrustScalar_max, true];
 //systemChat format ["_bladePitchInducedThrustScalar = %1 -- _pedalInput = %2", _bladePitchInducedThrustScalar toFixed 3, _pedalInput];
 (_heli getVariable "bmkhs_engPctNP")
     params ["_eng1PctNP", "_eng2PctNp"];
@@ -153,11 +153,11 @@ private _axisZ = [0.0, 0.0, 1.0];
 //Tail rotor authority: airspeed-indexed thrust multiplier (yaw balance knob).
 //Fold it into _totThrust so the thrust vector, moment AND the force-log readout
 //all use the scaled value.
-private _tailAuthority   = [_rtrThrustScalarTable, _velYZ] call bmkhs_fnc_linearInterp select 1;
+private _tailAuthority   = [_rtrThrustScalarTable, _velYZ] call bmkhs_fnc_mathLinearInterp select 1;
 //Airspeed trim term (baseThrust-scalar units), ADDED after authority so it is INDEPENDENT
 //of the authority knob - it carries the monotonic reversal the pedal ramp cannot (see the
 //_tailTrimTable note above). At hover it is 0, so IGE/OGE is unaffected.
-private _tailTrim        = [_tailTrimTable, _velYZ] call bmkhs_fnc_linearInterp select 1;
+private _tailTrim        = [_tailTrimTable, _velYZ] call bmkhs_fnc_mathLinearInterp select 1;
 private _totThrust       = (_rtrThrust * _tailAuthority) + (_baseThrust * _tailTrim);
 //systemChat format ["_totThrust %1", _totThrust toFixed 0];
 
@@ -171,7 +171,7 @@ private _TGBDamage     = _heli getHitPointDamage "hit_drives_tailrotorgearbox";
 private _outThrust = [0.0, 0.0, 0.0];
 private _outTq     = [0.0, 0.0, 0.0];
 
-if ([vectorMagnitude _thrustVector] call bmkhs_fnc_isNAN || [vectorMagnitude _thrustVector] call bmkhs_fnc_isINF) then { _thrustVector = [0.0, 0.0, 0.0]; };
+if ([vectorMagnitude _thrustVector] call bmkhs_fnc_mathIsNAN || [vectorMagnitude _thrustVector] call bmkhs_fnc_mathIsINF) then { _thrustVector = [0.0, 0.0, 0.0]; };
 
 if (_tailRtrDamage < 0.85 && _IGBDamage < SYS_IGB_DMG_THRESH && _TGBDamage < SYS_TGB_DMG_THRESH) then {
     if (currentPilot _heli == player) then {

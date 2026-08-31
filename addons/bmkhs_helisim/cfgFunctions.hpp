@@ -133,14 +133,14 @@ class CfgFunctions
         };
         class math {
             file = "\bmkhs_helisim\functions\math";
-            class getArea {R;};
-            class isINF {R;};
-            class isNAN {R;};
-            class linearInterp {R;};
-            class linearInterpFromCenter {R;};
-            class rotateVector {R;};
-            class vectorRotate {R;};
-            class vectorRotateAroundAxis {R;};
+            class mathGetArea {R;};
+            class mathIsINF {R;};
+            class mathIsNAN {R;};
+            class mathLinearInterp {R;};
+            class mathLinearInterpFromCenter {R;};
+            class mathRotateVector {R;};
+            class mathVectorRotate {R;};
+            class mathVectorRotateAroundAxis {R;};
         };
         class pid {
             file = "\bmkhs_helisim\functions\pid";

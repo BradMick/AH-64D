@@ -23,9 +23,9 @@ private _pitch          = _rotation select 0;
 private _roll           = _rotation select 1;
 private _yaw            = _rotation select 2;
 
-private _vecRight = [[1.0, 0.0, 0.0], _pitch, _roll, _yaw] call bmkhs_fnc_rotateVector;
-private _vecFwd   = [[0.0, 1.0, 0.0], _pitch, _roll, _yaw] call bmkhs_fnc_rotateVector;
-private _vecUp    = [[0.0, 0.0, 1.0], _pitch, _roll, _yaw] call bmkhs_fnc_rotateVector;
+private _vecRight = [[1.0, 0.0, 0.0], _pitch, _roll, _yaw] call bmkhs_fnc_mathRotateVector;
+private _vecFwd   = [[0.0, 1.0, 0.0], _pitch, _roll, _yaw] call bmkhs_fnc_mathRotateVector;
+private _vecUp    = [[0.0, 0.0, 1.0], _pitch, _roll, _yaw] call bmkhs_fnc_mathRotateVector;
 
 
 for "_i" from 0 to (_count - 1) do {
@@ -51,8 +51,8 @@ for "_i" from 0 to (_count - 1) do {
 
     private _v          = (_heli getVariable "bmkhs_vel2D") min VEL_VNE;
     private _pa         = _heli getVariable "bmkhs_PA";
-    private _CD         = [_dragCoefTable, _pa] call bmkhs_fnc_linearInterp select 1;
-    private _area       = [_a, _b, _c, _d] call bmkhs_fnc_getArea;
+    private _CD         = [_dragCoefTable, _pa] call bmkhs_fnc_mathLinearInterp select 1;
+    private _area       = [_a, _b, _c, _d] call bmkhs_fnc_mathGetArea;
     private _drag       = _CD * 0.5 * _rho * _area * (_v * _v);
 
     private _dragVector = _vecFwd vectorMultiply -1.0;

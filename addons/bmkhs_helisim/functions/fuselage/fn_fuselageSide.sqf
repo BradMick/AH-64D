@@ -42,15 +42,15 @@ private _fuseSpd = vectorMagnitude [
     (_heli getVariable ["bmkhs_velModelSpace", [0,0,0]]) select 0,
     (_heli getVariable ["bmkhs_velModelSpace", [0,0,0]]) select 1
 ];
-private _sideForceScalar = [_sideForceScalarTable, _fuseSpd] call bmkhs_fnc_linearInterp select 1;
+private _sideForceScalar = [_sideForceScalarTable, _fuseSpd] call bmkhs_fnc_mathLinearInterp select 1;
 
 private _pitch          = _rotation select 0;
 private _roll           = _rotation select 1;
 private _yaw            = _rotation select 2;
 
-private _vecRight = [[1.0, 0.0, 0.0], _pitch, _roll, _yaw] call bmkhs_fnc_rotateVector;
-private _vecFwd   = [[0.0, 1.0, 0.0], _pitch, _roll, _yaw] call bmkhs_fnc_rotateVector;
-private _vecUp    = [[0.0, 0.0, 1.0], _pitch, _roll, _yaw] call bmkhs_fnc_rotateVector;
+private _vecRight = [[1.0, 0.0, 0.0], _pitch, _roll, _yaw] call bmkhs_fnc_mathRotateVector;
+private _vecFwd   = [[0.0, 1.0, 0.0], _pitch, _roll, _yaw] call bmkhs_fnc_mathRotateVector;
+private _vecUp    = [[0.0, 0.0, 1.0], _pitch, _roll, _yaw] call bmkhs_fnc_mathRotateVector;
 
 
 for "_i" from 0 to (_count - 1) do {
@@ -104,13 +104,13 @@ for "_i" from 0 to (_count - 1) do {
 	private _aoa = (_relWindNormalized select 0) atan2 (_relWindNormalized select 1);
 
     //Lift coefficient
-    private _area        = [_a, _b, _c, _d] call bmkhs_fnc_getArea;
-    private _CL          = [_airfoilTable, _aoa] call bmkhs_fnc_linearInterp select 1;
+    private _area        = [_a, _b, _c, _d] call bmkhs_fnc_mathGetArea;
+    private _CL          = [_airfoilTable, _aoa] call bmkhs_fnc_mathLinearInterp select 1;
     private _v            = (vectorMagnitude _relWind) min VEL_VNE;
     private _lift         = _CL * 0.5 * _rho * _area * (_v * _v);
 
     //Drag coefficient
-    private _CD          =  [_dragCoefTable, _aoa] call bmkhs_fnc_linearInterp select 1;
+    private _CD          =  [_dragCoefTable, _aoa] call bmkhs_fnc_mathLinearInterp select 1;
     private _drag         = _CD * 0.5 * _rho * _area * (_relWindX * _relWindX);
 
     private _liftVector = _relWindNormalized vectorCrossProduct _up;

@@ -105,7 +105,7 @@ if (_engState in ["STARTING", "ON"]) then {
 
             // ── Fuel flow schedule (display) ──────────────────────────────────
             private _wfDemand = if (_availTq > 0.0) then { [_tqOutput / _availTq, 0.0, 1.0] call BIS_fnc_clamp } else { 0.0 };
-            _engFF = [getArray (_sfmPlusConfig >> "engFFTable"), _wfDemand] call bmkhs_fnc_linearInterp select 1;
+            _engFF = [getArray (_sfmPlusConfig >> "engFFTable"), _wfDemand] call bmkhs_fnc_mathLinearInterp select 1;
 
             _engPctNP = _xmsnRpm / _designRpm;
             _engPctTQ = _tqOutput / _engRefTq;
@@ -118,7 +118,7 @@ if (_engState in ["STARTING", "ON"]) then {
         private _govTrim   = [_engPid, _deltaTime, _npTrimRef, _xmsnRpm] call bmkhs_fnc_pidRun;
         _govTrim   = [_govTrim, 0.0, _engRefTq * 0.15] call BIS_fnc_clamp;
         _tqOutput  = _govTrim;
-        _engFF     = [getArray (_sfmPlusConfig >> "engFFTable"), _engIdleTQ] call bmkhs_fnc_linearInterp select 1;
+        _engFF     = [getArray (_sfmPlusConfig >> "engFFTable"), _engIdleTQ] call bmkhs_fnc_mathLinearInterp select 1;
 
         _engPctNP = _xmsnRpm / _designRpm;
         _engPctTQ = _tqOutput / _engRefTq;
