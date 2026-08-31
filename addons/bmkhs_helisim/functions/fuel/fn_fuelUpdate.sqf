@@ -75,10 +75,14 @@ private _groupOn = createHashMap;
 } forEach _auxTanks;
 
 //An armed aux tank with fuel left inhibits the transfer cells, so aux empties first.
-private _auxArmed = _auxTanks findIf {
-    (_groupOn getOrDefault [_x select 4, false])
-        && {(_auxMass param [_forEachIndex, 0]) > EXT_EMPTY_ADV_THRESH_KG}
-} > -1;
+//findIf does NOT provide _forEachIndex, so the index comes from a plain counter.
+private _auxArmed = false;
+{
+    if ((_groupOn getOrDefault [_x select 4, false])
+            && {(_auxMass param [_forEachIndex, 0]) > EXT_EMPTY_ADV_THRESH_KG}) exitWith {
+        _auxArmed = true;
+    };
+} forEach _auxTanks;
 
 ([_heli, _fuelMass, _mains, _deltaTime] call bmkhs_fnc_fuelDraw)
     params ["_eng1FuelAvail", "_eng2FuelAvail", "_apuFuelAvail"];

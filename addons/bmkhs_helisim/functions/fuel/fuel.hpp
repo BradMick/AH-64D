@@ -5,7 +5,7 @@
 // XFER pump and AUTO mode thresholds
 #define XFER_RATE_KGS           0.378   // ~50 lb/min pump transfer rate
 #define AUTO_FILL_THRESH_KG     369.0   // ~814 lb (Table 2-6 AUTO trigger)
-#define AUTO_FWD_MIN_SRC_KG     127.0   // ~280 lb min FWD source for AUTO TO AFT
+#define AUTO_MIN_SRC_KG         127.0   // ~280 lb minimum in the source main before AUTO draws it down
 #define AUTO_SPLIT_STOP_KG      9.1     // ~20 lb
 #define AUTO_SPLIT_50_KG        22.7    // ~50 lb
 #define AUTO_SPLIT_100_KG       45.4    // ~100 lb
@@ -18,5 +18,12 @@
 
 // Seconds a consumer may run dry before it is reported starved
 #define FUEL_STARVE_GRACE_SEC   2
+
+// FUEL CHECK reserve margins, in hours before dry tanks. Regulatory minimums rather than
+// aircraft figures, so they are Core's: the check is a service the aircraft opts into.
+#define FUEL_CHECK_VFR_RESERVE_HR   (20/60)     // 20 min day VFR
+#define FUEL_CHECK_IFR_RESERVE_HR   (30/60)     // 30 min IFR
+// Hours in the day, for the Zulu wrap
+#define FUEL_HOURS_PER_DAY          24
 
 #endif

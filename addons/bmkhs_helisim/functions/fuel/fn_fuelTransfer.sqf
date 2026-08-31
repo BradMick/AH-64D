@@ -85,7 +85,7 @@ if (_xferMode == "AUTO") then {
         _doAToB = _eng1On && _eng2On
                && {_massB < AUTO_FILL_THRESH_KG}
                && {!_lowA}
-               && {_massA > AUTO_FWD_MIN_SRC_KG}
+               && {_massA > AUTO_MIN_SRC_KG}
                && {_aLeadEnough}
                && {_leadA >= AUTO_SPLIT_STOP_KG};
     };

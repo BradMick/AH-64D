@@ -15,6 +15,7 @@ Author:
     FZA Development Team
 ---------------------------------------------------------------------------- */
 #include "\bmkhs_helisim\functions\core\core.hpp"
+#include "\bmkhs_helisim\functions\fuel\fuel.hpp"
 params ["_heli"];
 
 private _checkRunning = _heli getVariable ["bmkhs_checkRunning", false];
@@ -39,8 +40,8 @@ if (_targetSec > 0 && _elapsed >= _targetSec) then {
     private _burnoutHours = if (_burnRate > 0) then { _totalLbs / _burnRate } else { 0 };
     private _fnZulu = {
         params ["_dt"];
-        private _h = floor (_dt % 24);
-        format ["%1:%2L", _h, [floor ((_dt % 24 - _h) * 60), 2] call CBA_fnc_formatNumber]
+        private _h = floor (_dt % FUEL_HOURS_PER_DAY);
+        format ["%1:%2L", _h, [floor ((_dt % FUEL_HOURS_PER_DAY - _h) * 60), 2] call CBA_fnc_formatNumber]
     };
 
     [_heli, "bmkhs_checkRunning", false]     call bmkhs_fnc_utilUpdateNetworkGlobal;
@@ -55,6 +56,6 @@ if (_targetSec > 0 && _elapsed >= _targetSec) then {
     [_heli, "fuelCheckComplete"] call bmkhs_fnc_utilNotify;
     [_heli, "bmkhs_checkBurnRate", _burnRate] call bmkhs_fnc_utilUpdateNetworkGlobal;
     [_heli, "bmkhs_checkBurnoutZulu", [dayTime + _burnoutHours]        call _fnZulu] call bmkhs_fnc_utilUpdateNetworkGlobal;
-    [_heli, "bmkhs_checkVFRZulu",    [dayTime + _burnoutHours - 20/60] call _fnZulu] call bmkhs_fnc_utilUpdateNetworkGlobal;
-    [_heli, "bmkhs_checkIFRZulu",    [dayTime + _burnoutHours - 30/60] call _fnZulu] call bmkhs_fnc_utilUpdateNetworkGlobal;
+    [_heli, "bmkhs_checkVFRZulu",    [dayTime + _burnoutHours - FUEL_CHECK_VFR_RESERVE_HR] call _fnZulu] call bmkhs_fnc_utilUpdateNetworkGlobal;
+    [_heli, "bmkhs_checkIFRZulu",    [dayTime + _burnoutHours - FUEL_CHECK_IFR_RESERVE_HR] call _fnZulu] call bmkhs_fnc_utilUpdateNetworkGlobal;
 };
