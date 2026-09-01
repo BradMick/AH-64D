@@ -259,6 +259,53 @@ This also removes a structural coupling: `fn_electricalBattery` reads
 becomes "is any non-storage source feeding my bus", which holds however the
 aircraft is wired.
 
+### Hitpoints are part of the component, not a parallel list
+
+A component declares the damage role it answers to, and the hitpoints declaring
+that role ARE its members. There is no separate count and no second list to
+keep in step:
+
+```cpp
+class Generator : BMKHS_Source {
+    damageRole = "generators";   //however many hitpoints claim this role
+    output     = "AC";
+};
+```
+
+Declare a third generator hitpoint and there is a third generator. Declare none
+and there are no generators. The hitpoint set is the component inventory.
+
+Damage acts on the component uniformly, whatever kind it is:
+
+    damage >= dmgThreshold  ->  the component supplies nothing
+
+so a failed generator stops feeding its bus, a failed converter stops passing
+through, and a holed accumulator stops discharging - all one rule on the base,
+not a check written into each system.
+
+### No components means the system is not modelled
+
+If nothing declares a role, that system does not exist on this aircraft. It is
+NOT a failed system - there is simply nothing to simulate, and the solver has
+one less input.
+
+This is the same rule already established for damage: a role nothing claims
+returns 0, undamaged, because no hitpoint means nothing can break it.
+
+It also has to preserve the `useSystems = 0` contract. With systems off, or
+with no electrical and no hydraulic components declared, the aircraft behaves
+like vanilla Arma: powered up, running, no start procedure, full control
+authority. The flight model still needs the rotor turning and the controls
+moving, so:
+
+- **hydraulics and drivetrain always run** - they are flight-model
+  infrastructure, control authority and torque limits
+- **electrical and APU are the startup systems** and can be absent entirely
+
+An aircraft declaring no power sources gets full control authority rather than
+a dead cockpit, because "no hydraulic components" means "this airframe does not
+model hydraulic failure", not "the hydraulics have failed".
+
 ### Still open
 
 Whether per-member state moves to arrays (matching engines) or keeps generated
