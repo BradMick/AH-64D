@@ -306,11 +306,59 @@ An aircraft declaring no power sources gets full control authority rather than
 a dead cockpit, because "no hydraulic components" means "this airframe does not
 model hydraulic failure", not "the hydraulics have failed".
 
-### Still open
+### Per-member state — the fuel-tank pattern is the standard
 
-Whether per-member state moves to arrays (matching engines) or keeps generated
-suffixed names (matching what the cockpit reads today). That decides whether
-the change stays inside Core or reaches the MPD and WCA code.
+Settled. The fuel tanks got there first, so they set it: a component declares
+its own `variableName` and Core publishes one variable per property per member.
+
+```cpp
+class FuelTank01 { variableName = "fwdTank"; ... };
+    ->  bmkhs_fwdTankMass, bmkhs_fwdTankMax, bmkhs_fwdTankInstalled
+```
+
+Applied to the rest:
+
+```cpp
+class Generator1 : BMKHS_Source { variableName = "gen1"; ... };
+    ->  bmkhs_gen1On
+```
+
+Those are the names that already exist - the difference is that the AIRCRAFT
+declares them rather than Core hardcoding them. A third generator declares
+`variableName = "gen3"` and publishes `bmkhs_gen3On` with no Core change.
+
+This is also the output API. 27 files outside Core read bus and system state,
+and the fuel tanks already proved a self-naming component keeps those reads
+stable and discoverable from config.
+
+**Engines are the outlier, not the generators.** They use array-per-property -
+`bmkhs_engPctTQ` is `[0.9, 0.9]`, engine 2 is index 1 - and ten external files
+read them with `select 0` / `select 1`:
+
+    fza_ah64_controls, fza_ah64_fire, fza_ah64_ihadss, fza_ah64_mpd (4 pages)
+
+Converging on the standard means engines publish `bmkhs_eng1PctTQ` /
+`bmkhs_eng2PctTQ` and those ten files change with them. That is the real cost
+of "nothing is special", and it is the right call - two conventions is how the
+generator model ended up unable to grow past two.
+
+### Solver ordering — the battery is the root
+
+Nothing starts without the battery: no bus can come up until it does, so it is
+evaluated first. That makes ordering a topological walk rather than a special
+case, because the battery is the only source needing nothing upstream - no
+shaft power, no other circuit. Everything else is downstream of something.
+
+    1. roots        storage and any source with no upstream circuit
+    2. converters   in dependency order, as their input circuits come up
+    3. dependents   sources driven by a circuit (electric backup pump, generators)
+
+The battery being a root also removes the apparent circularity. Whether it
+DRAINS depends on whether anything else supplies its bus - but that is a
+post-solve question about charge, not part of deciding whether it is a source.
+It always is, when gated on and above its spent threshold.
+
+So: solve supply first, then settle storage charge from the result.
 
 ## Not yet flown
 
