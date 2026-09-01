@@ -22,10 +22,10 @@
 class HitPoints
 {
     BMKHS_HITPOINT(hit_apu,                       "hit_apu",                        APU_HIT_ARMOR,APU_HIT_RADIUS, APU_HIT_MINRADIUS,                        0.3)
-    BMKHS_HITPOINT(hit_drives_intermediategearbox,"hit_drives_intermediategearbox", IGB_HIT_ARMOR,IGB_HIT_RADIUS, IGB_HIT_MINRADIUS,                        0.34)
+    BMKHS_HITPOINT(hit_drives_intermediateGearbox,"hit_drives_intermediateGearbox", IGB_HIT_ARMOR,IGB_HIT_RADIUS, IGB_HIT_MINRADIUS,                        0.34)
     BMKHS_HITPOINT(hit_drives_noseGearbox1,       "hit_drives_noseGearbox1",        NGB1_HIT_ARMOR,               NGB1_HIT_RADIUS,NGB1_HIT_MINRADIUS,       0.24)
     BMKHS_HITPOINT(hit_drives_noseGearbox2,       "hit_drives_noseGearbox2",        NGB2_HIT_ARMOR,               NGB2_HIT_RADIUS,NGB2_HIT_MINRADIUS,       0.24)
-    BMKHS_HITPOINT(hit_drives_tailrotorgearbox,   "hit_drives_tailrotorgearbox",    TRGB_HIT_ARMOR,               TRGB_HIT_RADIUS,TRGB_HIT_MINRADIUS,       0.34)
+    BMKHS_HITPOINT(hit_drives_tailRotorGearbox,   "hit_drives_tailRotorGearbox",    TRGB_HIT_ARMOR,               TRGB_HIT_RADIUS,TRGB_HIT_MINRADIUS,       0.34)
     BMKHS_HITPOINT(hit_drives_transmission,       "hit_drives_transmission",        XMSN_HIT_ARMOR,               XMSN_HIT_RADIUS,XMSN_HIT_MINRADIUS,       0.3)
     BMKHS_HITPOINT(hit_elec_battery,              "hit_elec_battery",               BATTERY_HIT_ARMOR,            BATTERY_HIT_RADIUS,BATTERY_HIT_MINRADIUS, 0.24)
     BMKHS_HITPOINT(hit_elec_generator1,           "hit_elec_generator1",            GEN1_HIT_ARMOR,               GEN1_HIT_RADIUS,GEN1_HIT_MINRADIUS,       0.09)
@@ -49,7 +49,7 @@ class HitPoints
     };
     BMKHS_HITPOINT(hit_fuel_aft,              "hit_fuel_aft",              FUELAFT_HIT_ARMOR,    FUELAFT_HIT_RADIUS,    FUELAFT_HIT_MINRADIUS,      0.3)
     BMKHS_HITPOINT(hit_fuel_forward,          "hit_fuel_forward",          FUELFWD_HIT_ARMOR,    FUELFWD_HIT_RADIUS,    FUELFWD_HIT_MINRADIUS,      0.3)
-    BMKHS_HITPOINT(hit_msnEquip_magandrobbie, "hit_msnEquip_magandrobbie", AMMOBAY_HIT_ARMOR,    AMMOBAY_HIT_RADIUS,    AMMOBAY_HIT_MINRADIUS,      0.3)
+    BMKHS_HITPOINT(hit_msnEquip_magAndRobbie, "hit_msnEquip_magAndRobbie", AMMOBAY_HIT_ARMOR,    AMMOBAY_HIT_RADIUS,    AMMOBAY_HIT_MINRADIUS,      0.3)
     BMKHS_HITPOINT(hit_hyd_priReservoir,      "hit_hyd_priReservoir",      PRIRES_HIT_ARMOR,     PRIRES_HIT_RADIUS,     PRIRES_HIT_MINRADIUS,       0.2)
     BMKHS_HITPOINT(hit_hyd_priPump,           "hit_hyd_priPump",           PRIPUMP_HIT_ARMOR,    PRIPUMP_HIT_RADIUS,    PRIPUMP_HIT_MINRADIUS,      0.15)
     BMKHS_HITPOINT(hit_hyd_utilReservoir,     "hit_hyd_utilReservoir",     UTILRES_HIT_ARMOR,    UTILRES_HIT_RADIUS,    UTILRES_HIT_MINRADIUS,      0.2)

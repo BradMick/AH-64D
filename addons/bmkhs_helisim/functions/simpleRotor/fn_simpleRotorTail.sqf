@@ -148,8 +148,8 @@ private _thrustVector  = _axisX vectorMultiply (_totThrust * _deltaTime);
 private _moment        = _thrustVector vectorCrossProduct _deltaPos;
 
 private _tailRtrDamage = _heli getHitPointDamage "hitvrotor";
-private _IGBDamage     = _heli getHitPointDamage "hit_drives_intermediategearbox";
-private _TGBDamage     = _heli getHitPointDamage "hit_drives_tailrotorgearbox";
+private _IGBDamage     = _heli getHitPointDamage "hit_drives_intermediateGearbox";
+private _TGBDamage     = _heli getHitPointDamage "hit_drives_tailRotorGearbox";
 
 private _outThrust = [0.0, 0.0, 0.0];
 private _outTq     = [0.0, 0.0, 0.0];

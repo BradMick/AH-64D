@@ -75,7 +75,7 @@
             lowFuelKg = 0.0;
             removable = 1;
             role      = "xfer";
-            leakPoint = "hit_msnEquip_magandrobbie";
+            leakPoint = "hit_msnEquip_magAndRobbie";
         };
         class FuelTank03 {
             variableName = "aftTank";

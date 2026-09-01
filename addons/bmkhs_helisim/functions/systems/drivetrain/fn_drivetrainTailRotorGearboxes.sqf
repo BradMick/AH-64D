@@ -19,8 +19,8 @@ Author:
 params ["_heli"];
 #include "\bmkhs_helisim\functions\systems\systems.hpp"
 
-private _IGBDamage  = _heli getHitPointDamage "hit_drives_intermediategearbox";
-private _TGBDamage  = _heli getHitPointDamage "hit_drives_tailrotorgearbox";
+private _IGBDamage  = _heli getHitPointDamage "hit_drives_intermediateGearbox";
+private _TGBDamage  = _heli getHitPointDamage "hit_drives_tailRotorGearbox";
 
 if (_IGBDamage >= SYS_IGB_DMG_THRESH || _TGBDamage >= SYS_TGB_DMG_THRESH) then {
     _heli setHitPointDamage ["hitvrotor", 1.0];

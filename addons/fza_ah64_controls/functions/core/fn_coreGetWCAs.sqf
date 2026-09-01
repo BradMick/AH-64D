@@ -92,8 +92,8 @@ private _rtrRPM     = [_heli] call bmkhs_fnc_stateRtrRPM;
 //--Transmission
 private _xmsnDamage = _heli getHitPointDamage "hit_drives_transmission";
 //--Tail rotor & Intermediate gearboxes
-private _IGBDamage  = _heli getHitPointDamage "hit_drives_intermediategearbox";
-private _TGBDamage  = _heli getHitPointDamage "hit_drives_tailrotorgearbox";
+private _IGBDamage  = _heli getHitPointDamage "hit_drives_intermediateGearbox";
+private _TGBDamage  = _heli getHitPointDamage "hit_drives_tailRotorGearbox";
 //--Nose gearboxes
 private _NGB1Damage = _heli getHitPointDamage "hit_drives_noseGearbox1";
 private _NGB2Damage = _heli getHitPointDamage "hit_drives_noseGearbox2";
