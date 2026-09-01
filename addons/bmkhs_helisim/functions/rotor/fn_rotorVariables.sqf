@@ -29,6 +29,8 @@ _heli setVariable ["bmkhs_rotorGearRatioArr",  getArray  (_config >> "rotorGearR
 _heli setVariable ["bmkhs_rotorPivot",         getArray  (_config >> "rotorPivot")];
 _heli setVariable ["bmkhs_rotorRotation",      getArray  (_config >> "rotorRotation")];
 _heli setVariable ["bmkhs_rotorFlapTimeConst", getArray  (_config >> "rotorFlapTimeConst")];
+_heli setVariable ["bmkhs_rotorFlapbackLon",   getArray  (_config >> "rotorFlapbackLon")];
+_heli setVariable ["bmkhs_rotorFlapbackLat",   getArray  (_config >> "rotorFlapbackLat")];
 _heli setVariable ["bmkhs_rotorAirfoil",       getArray  (_config >> "rotorAirfoil")];
 _heli setVariable ["bmkhs_rotorBladeCutout",   getArray  (_config >> "rotorBladeCutout")];
 _heli setVariable ["bmkhs_rotorBladeLength",   getArray  (_config >> "rotorBladeLength")];
