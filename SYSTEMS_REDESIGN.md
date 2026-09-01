@@ -141,6 +141,45 @@ Dirty-flag propagation wakes a sleeping system when a dependency changes; a
 system that is mid-transition keeps itself awake by returning true. Damage
 changes are just another dependency.
 
+### One graph, not three — electrical, hydraulic, drivetrain
+
+Electrical, hydraulics and the drivetrain are the same structure wearing
+different units: sources feed circuits, converters move capacity between them,
+storage discharges when nothing else supplies.
+
+| domain | source | circuit | converter | storage |
+|---|---|---|---|---|
+| electrical | generator, APU gen | AC / DC bus | rectifier, inverter | battery |
+| hydraulic | engine-driven pump | PRI / UTIL circuit | electric backup pump | accumulator |
+| drivetrain | engine | shaft / gearbox | gearbox (ratio) | rotor inertia |
+
+The accumulator confirms it — `fn_hydraulicsAccumulator` is the battery with
+different units: discharge only while no other source supplies the circuit,
+plus a floor below which it is spent.
+
+**This has to be one graph, not three parallel ones**, because real components
+cross domains:
+
+- an **electric backup hydraulic pump** consumes from an electrical bus and
+  produces onto a hydraulic circuit
+- a **generator** consumes shaft power from the drivetrain and produces onto an
+  electrical bus
+- an **APU** is a source in all three at once
+
+Modelling them separately means those couplings become special cases again,
+which is the thing being removed.
+
+So the base kinds are domain-agnostic:
+
+  BMKHS_Source     produces onto a circuit, given whatever drives it
+  BMKHS_Converter  consumes from one circuit, produces onto another
+  BMKHS_Storage    a source that depletes while nothing else supplies it
+  BMKHS_Circuit    a named node; the solver answers "is it supplied"
+
+`drivenBy` and `input` reference circuits in ANY domain, which is what makes
+the electric backup pump and the engine-driven generator expressible without
+Core knowing either exists.
+
 ### Electrical as a bus/source graph
 
 The current model hardcodes the AH-64's topology three ways: the AC bus is fed
@@ -173,10 +212,15 @@ class Battery1 : BMKHS_PowerSource {
 };
 ```
 
-Core then has no ACBus/DCBus functions at all — one bus solver that walks
-sources and converters and answers "is bus X powered". Bus names become the
-aircraft's to choose, and an airframe with three buses or a single-bus light
-helicopter needs no new code.
+Core then has no ACBus/DCBus functions at all — one solver that walks sources
+and converters and answers, for any circuit, whether it is supplied. Circuit
+names become the aircraft's to choose, so a three-bus transport or a single-bus
+light helicopter needs no new code.
+
+Consumers ask the solver rather than reading a hardcoded flag: "have I got AC",
+"have I got DC", "have I got both", "is PRI hydraulic up". A component that
+needs AC does not care whether it came from an AC generator directly or from a
+DC generator through an inverter.
 
 This also removes a structural coupling: `fn_electricalBattery` reads
 `bmkhs_acBusOn` directly to choose drain vs recharge. In the general form that
