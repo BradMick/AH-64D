@@ -82,6 +82,70 @@ builds names with `format`, which works but keeps two conventions alive.
 That choice — and whether the electrical model should be a bus/source graph
 rather than a fixed battery + 2 gen + 2 rect — is the discussion to have.
 
+## Direction — entity/component, event-driven
+
+Agreed shape (to be finalised):
+
+**One class per system, extending a common base.** The base carries identity,
+the damage role and threshold, enabled/failed state, and the update function.
+The hitpoint role lives on the system, so what a thing IS and what damages it
+are declared in one place.
+
+```cpp
+class Generator : BMKHS_System {
+    damageRole   = "generators";   //resolves to however many hitpoints claim it
+    dmgThreshold = 0.85;
+    dependsOn[]  = {"engines", "apu"};
+    update       = "bmkhs_fnc_electricalGenerator";
+};
+```
+
+Member count comes from the damage role, so declaring a third generator
+hitpoint gives a third generator. No suffixed function per member.
+
+**Systems sleep until something changes.** Measured on the current code, five
+of nine systems are pure state functions recomputing an unchanged answer 60
+times a second:
+
+| pure state | integrates a timer |
+|---|---|
+| generators, rectifiers, AC bus, DC bus, hydraulic pumps | battery, APU, reservoir, accumulator, transmission |
+
+A rectifier is `generatorOn && damage <= threshold` — it can only change when
+one of those changes.
+
+**Continuous is a runtime answer, not a static property.** The timer-driven
+systems are not always integrating either:
+
+| system | integrates only while |
+|---|---|
+| battery | on battery bus AND AC bus down |
+| APU | spooling up or down, not at steady RPM |
+| reservoir | actually leaking |
+| accumulator | bleeding down |
+| transmission | over a torque limit |
+
+On a healthy running aircraft **none of these are integrating** — the battery
+recharge/drain branch needs `!_acBusOn`, which is false whenever a generator is
+online. So steady-state cost should approach zero, not four ticking systems.
+
+The scheduler that expresses this: an update returns whether it wants the next
+frame.
+
+```sqf
+//true = keep me scheduled, false = sleep until a dependency changes
+[_heli, _index, _deltaTime] call bmkhs_fnc_electricalBattery
+```
+
+Dirty-flag propagation wakes a sleeping system when a dependency changes; a
+system that is mid-transition keeps itself awake by returning true. Damage
+changes are just another dependency.
+
+Open for discussion: whether the electrical model should be a generic
+bus/source graph rather than battery + N generators + N rectifiers, and whether
+per-member state moves to arrays (matching engines) or keeps generated suffixed
+names (matching what the cockpit reads today).
+
 ## Not yet flown
 
 `abe604035` touched 22 Core files and every damage check in the model. Worth
