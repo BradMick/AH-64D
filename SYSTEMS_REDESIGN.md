@@ -196,6 +196,36 @@ The accumulator behaviour is the model working as intended and worth keeping
 explicit: it discharges until spent, and then there is no hydraulic pressure
 and no flight controls. A reservoir running dry should do exactly the same.
 
+**This closes the leak chain.** A reservoir is a consumable that can be damaged,
+so the full sequence is one dependency chain with no special cases:
+
+    reservoir takes damage
+      -> leaks, level falls
+      -> level reaches empty
+      -> pump has no `consumes` left, produces nothing
+      -> circuit unsupplied
+      -> no control authority
+
+Today only the first two links exist. `fn_hydraulicsPriReservoir` already
+models the leak properly - three severity bands driving a drain rate - and
+computes `level < hydMinLevel`, but does nothing with it except a
+`//CALL WCA here` comment. The reservoir empties and the pump never notices.
+
+**A reservoir is a reservoir, whatever it holds.** Fuel tanks and hydraulic
+reservoirs are the same component running two implementations today:
+
+| | fuel tank | hydraulic reservoir |
+|---|---|---|
+| leak trigger | damage > threshold | damage > threshold |
+| rate | linear ramp from threshold | three discrete severity bands |
+| contents | kg of fuel | fraction of capacity |
+| consumer | engines | pumps |
+
+Both are "damaged reservoir drains its contents, and its consumers starve when
+it is empty". One `BMKHS_Reservoir` kind covers both, which also means the
+hydraulic side inherits the fuel tanks' `variableName` and per-tank leak
+hitpoint for free.
+
 Storage additionally discharges only while:
 
     no other source supplies its circuit
