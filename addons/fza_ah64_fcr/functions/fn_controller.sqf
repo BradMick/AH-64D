@@ -21,7 +21,7 @@ _heli call fza_fcr_fnc_resolveDisplay;
 if ((player != driver _heli) && (isPlayer driver _heli)) exitWith {};
 
 private _fcrEnabled = _heli animationPhase "fcr_enable" == 1;
-private _fcrDamage  = _heli getHitPointDamage "hit_msnequip_fcr";
+private _fcrDamage  = _heli getHitPointDamage "hit_msnEquip_fcr";
 private _acBusOn    = _heli getVariable "bmkhs_acBusOn";
 private _dcBusOn    = _heli getVariable "bmkhs_dcBusOn";
 private _onGnd      = [_heli] call bmkhs_fnc_stateOnGround;

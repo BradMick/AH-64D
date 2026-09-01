@@ -52,11 +52,11 @@ private _kbYawSwitchVel     = 5.14444 * 2.4;
 private _yawBreakout        = false;
 private _kbPedalLeftRight   = _heli getVariable "bmkhs_kbPedalLeftRight";
 
-private _priHydPumpDamage   = _heli getHitPointDamage "hit_hyd_pripump";
+private _priHydPumpDamage   = _heli getHitPointDamage "hit_hyd_priPump";
 //No systems modelled -> full pressure, not the failure threshold
 private _priHydPSI          = _heli getVariable ["bmkhs_priHydPsi", 3000];
 
-private _utilHydPumpDamage  = _heli getHitPointDamage "hit_hyd_utilpump";
+private _utilHydPumpDamage  = _heli getHitPointDamage "hit_hyd_utilPump";
 private _utilHydPSI         = _heli getVariable ["bmkhs_utilHydPsi", 3000];
 private _utilLevel_pct      = _heli getVariable ["bmkhs_utilLevel_pct", 1.0];
 

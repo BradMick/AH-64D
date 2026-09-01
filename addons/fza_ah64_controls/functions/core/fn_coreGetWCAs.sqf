@@ -95,18 +95,18 @@ private _xmsnDamage = _heli getHitPointDamage "hit_drives_transmission";
 private _IGBDamage  = _heli getHitPointDamage "hit_drives_intermediategearbox";
 private _TGBDamage  = _heli getHitPointDamage "hit_drives_tailrotorgearbox";
 //--Nose gearboxes
-private _NGB1Damage = _heli getHitPointDamage "hit_drives_nosegearbox1";
-private _NGB2Damage = _heli getHitPointDamage "hit_drives_nosegearbox2";
+private _NGB1Damage = _heli getHitPointDamage "hit_drives_noseGearbox1";
+private _NGB2Damage = _heli getHitPointDamage "hit_drives_noseGearbox2";
 //--Battery
 private _battDamage = _heli getHitPointDamage "hit_elec_battery";
 //--Stabilator
 private _stabDamage = _heli getHitPointDamage "hit_stabilator";
 //-Hydraulics
-private _priHydPumpDamage    = _heli getHitPointDamage "hit_hyd_pripump";
+private _priHydPumpDamage    = _heli getHitPointDamage "hit_hyd_priPump";
 private _priHydPSI           = _heli getVariable "bmkhs_priHydPsi";
 private _priLevel_pct        = _heli getVariable "bmkhs_priLevel_pct";
 
-private _utilHydPumpDamage   = _heli getHitPointDamage "hit_hyd_utilpump";
+private _utilHydPumpDamage   = _heli getHitPointDamage "hit_hyd_utilPump";
 private _utilHydPSI          = _heli getVariable "bmkhs_utilHydPsi";
 private _utilLevel_pct       = _heli getVariable "bmkhs_utilLevel_pct";
 //ASE
