@@ -167,6 +167,35 @@ alongside identity and damage.
 A component with no gate declared is always armed. A gated one contributes
 nothing while its gate is shut - it is not failed, just off.
 
+**A source can also depend on a consumable.** A hydraulic pump only produces
+pressure while there is fluid in the reservoir to move - a pump with a holed
+reservoir makes nothing, however healthy the pump is and whatever is driving
+it. The current `fn_hydraulicsPriPump` misses this: it checks only its own
+damage and produces 3000 PSI regardless of reservoir level.
+
+That is the same shape as the accumulator running until exhausted, so it is one
+rule rather than a hydraulics special case:
+
+```cpp
+class BackupPump : BMKHS_Source {
+    output      = "UTIL_HYD";
+    drivenBy    = "DC";                 //electrically driven
+    consumes    = "utilReservoir";      //no fluid, no pressure
+    gate        = "bmkhs_backupPumpOn";
+};
+```
+
+So a source produces only while ALL of:
+
+    damage < threshold
+    AND gate open (or no gate)
+    AND driving circuit supplied (or nothing drives it)
+    AND consumable above empty (or it consumes nothing)
+
+The accumulator behaviour is the model working as intended and worth keeping
+explicit: it discharges until spent, and then there is no hydraulic pressure
+and no flight controls. A reservoir running dry should do exactly the same.
+
 Storage additionally discharges only while:
 
     no other source supplies its circuit
