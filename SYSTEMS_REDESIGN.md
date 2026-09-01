@@ -157,6 +157,27 @@ The accumulator confirms it — `fn_hydraulicsAccumulator` is the battery with
 different units: discharge only while no other source supplies the circuit,
 plus a floor below which it is spent.
 
+Storage also needs a **gate**. The accumulator only releases pressure when the
+crew presses the emergency hydraulics button (`bmkhs_emerHydOn`); the battery
+has the same thing in `bmkhs_battSwitchOn`. So the rule is:
+
+    storage discharges while  no other source supplies its circuit
+                        AND   its gate is open
+                        AND   it is above its spent threshold
+
+A storage with no gate declared is always armed. The gate is a crew control, so
+it belongs on the component rather than being read from a named variable Core
+has to know about:
+
+```cpp
+class Accumulator : BMKHS_Storage {
+    damageRole = "accumulator";
+    output     = "PRI_HYD";
+    gate       = "bmkhs_emerHydOn";     //"" = always armed
+    spentBelow = 1650;                  //PSI
+};
+```
+
 **This has to be one graph, not three parallel ones**, because real components
 cross domains:
 
