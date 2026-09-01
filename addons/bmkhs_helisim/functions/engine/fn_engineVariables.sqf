@@ -35,6 +35,29 @@ if(isMultiplayer) then {
     _heli setVariable ["bmkhs_lastTimePropagated", 0];
 };
 
+//CONFIG - what the aircraft IS.
+//Engine - power, governing and limits
+_heli setVariable ["bmkhs_engContPwrKW",    getNumber (_config >> "engContPwrKW")];
+_heli setVariable ["bmkhs_engCntgncyPwrKW", getNumber (_config >> "engCntgncyPwrKW")];
+_heli setVariable ["bmkhs_engDesignRPM",    getNumber (_config >> "engDesignRPM")];
+_heli setVariable ["bmkhs_engFriction",     getNumber (_config >> "engFriction")];
+_heli setVariable ["bmkhs_engGovGain",      getNumber (_config >> "engGovGain")];
+_heli setVariable ["bmkhs_engRunNG",        getNumber (_config >> "engRunNG")];
+_heli setVariable ["bmkhs_engMaxTGT_DE",    getNumber (_config >> "engMaxTGT_DE")];
+_heli setVariable ["bmkhs_engMaxTGT_SE",    getNumber (_config >> "engMaxTGT_SE")];
+//Np/Ng references already exist as engIdleNP/engFlyNP/engOvrspdNP/engIdleNG/engFlyNG
+_heli setVariable ["bmkhs_engIdleNP",       getNumber (_config >> "engIdleNP")];
+_heli setVariable ["bmkhs_engFlyNP",        getNumber (_config >> "engFlyNP")];
+_heli setVariable ["bmkhs_engOvrspdNP",     getNumber (_config >> "engOvrspdNP")];
+_heli setVariable ["bmkhs_engIdleNG",       getNumber (_config >> "engIdleNG")];
+_heli setVariable ["bmkhs_engFlyNG",        getNumber (_config >> "engFlyNG")];
+
+//Governor PID - one per engine
+private _engPidGains = getArray (_config >> "pidEngine");
+_heli setVariable ["bmkhs_pid_engine", [ _engPidGains call bmkhs_fnc_pidCreate
+                                       , _engPidGains call bmkhs_fnc_pidCreate]];
+
+//RUNTIME STATE - what the model carries frame to frame.
 _heli setVariable ["bmkhs_shiftLocked",           false];
 _heli setVariable ["bmkhs_isSingleEng",           false];
 //_heli setVariable ["bmkhs_isAutorotating",        false];
@@ -57,38 +80,3 @@ _heli setVariable ["bmkhs_engOilPSI",             [0.0, 0.0]];
 _heli setVariable ["bmkhs_engOutputTq",           [0.0, 0.0]];
 
 _heli setVariable ["bmkhs_randomTq",              [0.0, 0.0, 0.0, 0.0]];
-
-//Engine - power, governing and limits
-_heli setVariable ["bmkhs_engContPwrKW",    getNumber (_config >> "engContPwrKW")];
-_heli setVariable ["bmkhs_engCntgncyPwrKW", getNumber (_config >> "engCntgncyPwrKW")];
-_heli setVariable ["bmkhs_engDesignRPM",    getNumber (_config >> "engDesignRPM")];
-_heli setVariable ["bmkhs_engFriction",     getNumber (_config >> "engFriction")];
-_heli setVariable ["bmkhs_engGovGain",      getNumber (_config >> "engGovGain")];
-_heli setVariable ["bmkhs_engRunNG",        getNumber (_config >> "engRunNG")];
-_heli setVariable ["bmkhs_engMaxTGT_DE",    getNumber (_config >> "engMaxTGT_DE")];
-_heli setVariable ["bmkhs_engMaxTGT_SE",    getNumber (_config >> "engMaxTGT_SE")];
-//Np/Ng references already exist as engIdleNP/engFlyNP/engOvrspdNP/engIdleNG/engFlyNG
-_heli setVariable ["bmkhs_engIdleNP",       getNumber (_config >> "engIdleNP")];
-_heli setVariable ["bmkhs_engFlyNP",        getNumber (_config >> "engFlyNP")];
-_heli setVariable ["bmkhs_engOvrspdNP",     getNumber (_config >> "engOvrspdNP")];
-_heli setVariable ["bmkhs_engIdleNG",       getNumber (_config >> "engIdleNG")];
-_heli setVariable ["bmkhs_engFlyNG",        getNumber (_config >> "engFlyNG")];
-
-//Governor PID - one per engine
-private _engPidGains = getArray (_config >> "pidEngine");
-_heli setVariable ["bmkhs_pid_engine", [ _engPidGains call bmkhs_fnc_pidCreate
-                                       , _engPidGains call bmkhs_fnc_pidCreate]];
-
-//Crossfeed positions - which main each engine draws from in each valve position. Static
-//aircraft data, resolved once here rather than rebuilt every frame. The valve starts in
-//the first position declared.
-private _crossfeed  = createHashMap;
-private _defaultPos = "";
-for "_i" from 1 to (getNumber (_config >> "numCrossfeedModes")) do {
-    private _c   = (_config >> "CrossfeedModes") select (_i - 1);
-    private _pos = toUpper getText (_c >> "position");
-    if (_defaultPos == "") then { _defaultPos = _pos };
-    _crossfeed set [_pos, getArray (_c >> "engSources")];
-};
-_heli setVariable ["bmkhs_crossfeedSources", _crossfeed];
-_heli setVariable ["bmkhs_crossfeedMode",    _defaultPos];

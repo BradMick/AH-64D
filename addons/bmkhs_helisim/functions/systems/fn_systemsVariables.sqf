@@ -77,8 +77,6 @@ _heli setVariable ["bmkhs_hydAccTimerMin",  getNumber (_config >> "hydAccTimerMi
 _heli setVariable ["bmkhs_hydLeakTimerMin", getNumber (_config >> "hydLeakTimerMin")];
 _heli setVariable ["bmkhs_elecBattTimerMin",getNumber (_config >> "elecBattTimerMin")];
 _heli setVariable ["bmkhs_apuStartDelay",   getNumber (_config >> "apuStartDelay")];
-//Which main tank the APU draws from, as a position in Core's list of "main" tanks.
-_heli setVariable ["bmkhs_apuFuelSource",   getNumber (_config >> "apuFuelSource")];
 
 //Countdown timers, seeded full. These are DERIVED from the config values above, so they
 //have to be set after them - reading them earlier returns nil and the multiply throws,

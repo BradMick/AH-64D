@@ -20,9 +20,6 @@ Author:
 ---------------------------------------------------------------------------- */
 params ["_heli", "_config"];
 
-_heli setVariable ["bmkhs_totFuelMass",    0.0];
-_heli setVariable ["bmkhs_maxTotFuelMass", 0.0];
-
 //Tanks. Each one NAMES its own variables through variableName, so what a display reads is
 //obvious from the config with no index arithmetic. Core owns the bmkhs_ prefix.
 private _numFuelTanks = getNumber (_config >> "numFuelTanks");
@@ -148,7 +145,22 @@ private _fuelNames = _fuelTanks apply {_x get "varName"};
 _heli setVariable ["bmkhs_numAuxTanks", _numAuxTanks];
 _heli setVariable ["bmkhs_auxTanks",    _auxTanks];
 
-//Crossfeed valve position is seeded by engineVariables, which owns the position table.
+//Crossfeed positions - which main each engine draws from in each valve position. Static
+//aircraft data, resolved once here rather than rebuilt every frame. The valve starts in
+//the first position declared.
+private _crossfeed  = createHashMap;
+private _defaultPos = "";
+for "_i" from 1 to (getNumber (_config >> "numCrossfeedModes")) do {
+    private _c   = (_config >> "CrossfeedModes") select (_i - 1);
+    private _pos = toUpper getText (_c >> "position");
+    if (_defaultPos == "") then { _defaultPos = _pos };
+    _crossfeed set [_pos, getArray (_c >> "engSources")];
+};
+_heli setVariable ["bmkhs_crossfeedSources", _crossfeed];
+_heli setVariable ["bmkhs_crossfeedMode",    _defaultPos];
+
+//Which main tank the APU draws from. Independent of the crossfeed valve.
+_heli setVariable ["bmkhs_apuFuelSource", getNumber (_config >> "apuFuelSource")];
 
 // XFER pump selection: "OFF" | "AFT" | "FWD" | "AUTO"
 _heli setVariable ["bmkhs_xferMode", "AUTO"];
@@ -185,3 +197,7 @@ _heli setVariable ["bmkhs_checkIFRZulu",     ""];
 // CHECK computed display values (lb/hr, seconds elapsed)
 _heli setVariable ["bmkhs_checkElapsedSec", 0];
 _heli setVariable ["bmkhs_checkBurnRate",   0];
+
+//RUNTIME STATE - totals the update loop maintains.
+_heli setVariable ["bmkhs_totFuelMass",    0.0];
+_heli setVariable ["bmkhs_maxTotFuelMass", 0.0];
