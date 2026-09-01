@@ -141,10 +141,53 @@ Dirty-flag propagation wakes a sleeping system when a dependency changes; a
 system that is mid-transition keeps itself awake by returning true. Damage
 changes are just another dependency.
 
-Open for discussion: whether the electrical model should be a generic
-bus/source graph rather than battery + N generators + N rectifiers, and whether
-per-member state moves to arrays (matching engines) or keeps generated suffixed
-names (matching what the cockpit reads today).
+### Electrical as a bus/source graph
+
+The current model hardcodes the AH-64's topology three ways: the AC bus is fed
+by generators by name, the DC bus by rectifiers by name, and the DIRECTION of
+conversion is assumed — generators are AC, converters go AC to DC.
+
+Not every airframe is wired that way. Some have DC generators and need
+inverters (DC to AC) rather than rectifiers (AC to DC). Same components, wired
+in reverse.
+
+Generalises to two component kinds, where direction is data:
+
+```cpp
+class Generator1 : BMKHS_PowerSource {
+    damageRole = "generators";
+    output     = "AC";        //"DC" on a DC-generator aircraft
+    drivenBy   = "engines";
+};
+
+class Rtru1 : BMKHS_PowerConverter {
+    damageRole = "rectifiers";
+    input      = "AC";
+    output     = "DC";        //swap the two and it is an inverter
+};
+
+class Battery1 : BMKHS_PowerSource {
+    damageRole = "batteries";
+    output     = "DC";
+    storage    = 1;           //drains when nothing else feeds its bus
+};
+```
+
+Core then has no ACBus/DCBus functions at all — one bus solver that walks
+sources and converters and answers "is bus X powered". Bus names become the
+aircraft's to choose, and an airframe with three buses or a single-bus light
+helicopter needs no new code.
+
+This also removes a structural coupling: `fn_electricalBattery` reads
+`bmkhs_acBusOn` directly to choose drain vs recharge. In the general form that
+becomes "is any non-storage source feeding my bus", which holds however the
+aircraft is wired.
+
+### Still open
+
+Whether per-member state moves to arrays (matching engines) or keeps generated
+suffixed names (matching what the cockpit reads today). That decides whether
+the change stays inside Core or reaches the MPD and WCA code.
 
 ## Not yet flown
 
