@@ -9,23 +9,12 @@ private _totalPower       = (_heli getVariable "bmkhs_rotorReactionTorque") sele
 //BET FORCE-OUTPUT TUNING SCALARS (physics-derived forces, multiplied at the output so the master
 //(main uses betMainLiftTable, tail uses betTailLiftTable). A SEPARATE _torqueScale (-> reaction
 //couple, applied to _totalPower below) lets thrust and yaw tune independently. Both default 1.0
-//(pure physics). Tail also carries a betTailTrimTable additive term (airspeed trim/reversal),
-//folded into the tail lift scalar. Looked up once here per blade from the aircraft's fwd speed.
+//Looked up once here per blade from the aircraft's fwd speed.
 //LIFT scalar only (thrust). The TORQUE scalar is applied to the reaction couple in fn_rotor.
 private _velBet   = vectorMagnitude [(_heli getVariable "bmkhs_velModelSpace" select 0), (_heli getVariable "bmkhs_velModelSpace" select 1)];
 private _isTail   = _rotorIndex == 1;
 private _liftTbl  = _heli getVariable [(["bmkhs_betMainLiftTable", "bmkhs_betTailLiftTable"] select _isTail), []];
 private _bladeScale = if (_liftTbl isEqualTo []) then { 1.0 } else { [_liftTbl, _velBet] call bmkhs_fnc_mathLinearInterp select 1 };
-//Tail airspeed trim/reversal: additive to the tail LIFT scalar (the ~100kt tail-thrust reversal
-//the simple model dials in via tailTrimTable; BET had no equivalent). Only for the tail rotor.
-//NOT WIRED UP: _trimTbl is stubbed to [] so the branch below never runs. The table it should
-//read, bmkhs_betTailTrimTable, is initialised in fn_rotorVariables (all-zero bands) and is
-//never read anywhere. To enable, replace the stub with the getVariable and populate the bands.
-if (_isTail) then {
-    private _trimTbl = [];
-    if (_trimTbl isNotEqualTo []) then { _bladeScale = _bladeScale + ([_trimTbl, _velBet] call bmkhs_fnc_mathLinearInterp select 1); };
-};
-
 [_heli, "bmkhs_rotorFlapMoment", _rotorIndex, _bladeIndex, 0.0] call bmkhs_fnc_utilSetMultiArrayVariable;
 
 for "_i" from 0 to (_numElements - 1) do {

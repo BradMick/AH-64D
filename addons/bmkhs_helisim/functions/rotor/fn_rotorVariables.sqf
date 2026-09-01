@@ -93,7 +93,6 @@ private _betBands = [0.00, 10.29, 20.58, 36.01, 46.30, 51.44, 61.73, 66.88, 72.0
 _heli setVariable ["bmkhs_betMainLiftTable",   _betBands apply {[_x, 1.0]}];  // main thrust
 _heli setVariable ["bmkhs_betMainTorqueTable", _betBands apply {[_x, 1.0]}];  // main yaw torque
 _heli setVariable ["bmkhs_betTailLiftTable",   _betBands apply {[_x, 1.0]}];  // tail thrust
-_heli setVariable ["bmkhs_betTailTrimTable",   _betBands apply {[_x, 0.0]}];  // tail airspeed trim/reversal (added to tail thrust scalar)
 // Fixed-frame flap coefficients (degrees) — updated each frame from decomposed blade moments
 _heli setVariable ["bmkhs_rotorBeta0",       [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]]; // collective coning
 _heli setVariable ["bmkhs_rotorA1",          [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]]; // longitudinal disc tilt

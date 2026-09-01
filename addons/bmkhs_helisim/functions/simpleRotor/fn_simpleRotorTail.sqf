@@ -83,18 +83,6 @@ private _rtrThrustScalarTable =
 ,[72.02, 1.00]
 ];
 
-private _tailTrimTable =
-[
- [ 0.00, 0.0000]   //   0 kt
-,[10.29, 0.0000]   //  20 kt
-,[20.58, 0.0000]   //  40 kt
-,[36.01, 0.0000]   //  70 kt
-,[46.30, 0.0000]   //  90 kt
-,[51.44, 0.0000]   // 100 kt
-,[61.73, 0.0000]   // 120 kt
-,[66.88, 0.0000]   // 130 kt
-,[72.02, 0.0000]   // 140 kt
-];
 private _rtrAirspeedVelocityMod = 0.4;
 private _baseThrust             = _heli getVariable "bmkhs_tailRtrBaseThrust";
 
@@ -150,15 +138,10 @@ private _axisX = [1.0, 0.0, 0.0];
 private _axisY = [0.0, 1.0, 0.0];
 private _axisZ = [0.0, 0.0, 1.0];
 
-//Tail rotor authority: airspeed-indexed thrust multiplier (yaw balance knob).
-//Fold it into _totThrust so the thrust vector, moment AND the force-log readout
-//all use the scaled value.
+//Tail rotor authority: airspeed-indexed thrust multiplier (yaw balance knob). The thrust
+//vector, the moment and the force-log readout all use the scaled value.
 private _tailAuthority   = [_rtrThrustScalarTable, _velYZ] call bmkhs_fnc_mathLinearInterp select 1;
-//Airspeed trim term (baseThrust-scalar units), ADDED after authority so it is INDEPENDENT
-//of the authority knob - it carries the monotonic reversal the pedal ramp cannot (see the
-//_tailTrimTable note above). At hover it is 0, so IGE/OGE is unaffected.
-private _tailTrim        = [_tailTrimTable, _velYZ] call bmkhs_fnc_mathLinearInterp select 1;
-private _totThrust       = (_rtrThrust * _tailAuthority) + (_baseThrust * _tailTrim);
+private _totThrust       = _rtrThrust * _tailAuthority;
 //systemChat format ["_totThrust %1", _totThrust toFixed 0];
 
 private _thrustVector  = _axisX vectorMultiply (_totThrust * _deltaTime);
