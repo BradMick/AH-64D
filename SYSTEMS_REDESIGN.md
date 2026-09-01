@@ -338,9 +338,12 @@ read them with `select 0` / `select 1`:
     fza_ah64_controls, fza_ah64_fire, fza_ah64_ihadss, fza_ah64_mpd (4 pages)
 
 Converging on the standard means engines publish `bmkhs_eng1PctTQ` /
-`bmkhs_eng2PctTQ` and those ten files change with them. That is the real cost
-of "nothing is special", and it is the right call - two conventions is how the
-generator model ended up unable to grow past two.
+`bmkhs_eng2PctTQ` and those ten files change with them.
+
+**Not part of this work.** The engine model needs a full rewrite of its own and
+that is where the conversion belongs - doing it piecemeal here would churn ten
+external files twice. Engines keep their arrays until then; the standard is
+what NEW and CONVERTED systems follow.
 
 ### Solver ordering — the battery is the root
 
