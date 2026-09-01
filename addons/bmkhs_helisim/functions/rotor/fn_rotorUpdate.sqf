@@ -4,24 +4,18 @@ params ["_heli"];
 
 if (!local _heli) exitWith {};
 
-private _cfg           = configOf _heli;
-private _sfmPlusConfig = _cfg >> "BMKHS_HeliSim";
-
-private _numRotor	   = 2;
-private _pivot         = [ [ 0.00,  2.06,  0.000]
-                         , [ 0.00, -6.98, -0.075]];
-private _rot           = [ [0.0,   0.0, 0.0]
-                         , [0.0, 90.0, 0.0]];
-private _type          = [ MAIN
-                         , TAIL];
-private _dir           = [ CCW
-                         , CCW];
+private _numRotor      = _heli getVariable "bmkhs_numRotors";
+private _pivot         = _heli getVariable "bmkhs_rotorPivot";
+private _rot           = _heli getVariable "bmkhs_rotorRotation";
+private _type          = _heli getVariable "bmkhs_rotorType";
+private _dir           = _heli getVariable "bmkhs_rotorDirection";
 private _numBlades     = _heli getVariable "bmkhs_rotorNumBlades";
 private _numElements   = _heli getVariable "bmkhs_rotorNumElements";
 private _mastLength    = _heli getVariable "bmkhs_rotorMastLength";
 private _gearRatio     = _heli getVariable "bmkhs_rotorGearRatioArr";
-private _flapTimeConst = [ [2.0, 3.0]
-                         , [0.5, 0.5]];
+private _flapTimeConst = _heli getVariable "bmkhs_rotorFlapTimeConst";
+//Dynamic-inflow smoothing rate and damage thresholds are how the MODEL behaves, not what
+//the aircraft is, so they stay in Core.
 private _inflowAlpha   = [0.05, 0.01];
 private _delta3        = _heli getVariable "bmkhs_rotorDelta3";
 //Each rotor names its section; resolve to tables once rather than per blade element.
@@ -37,16 +31,13 @@ private _bladeTwist    = _heli getVariable "bmkhs_rotorBladeTwist";
 private _bladeMass     = _heli getVariable "bmkhs_rotorBladeMassArr";
 
 private _pitchMin      = _heli getVariable "bmkhs_rotorPitchMin";
-private _pitchMid      = [  0
-                         ,  0];
+private _pitchMid      = _heli getVariable "bmkhs_rotorPitchMid";
 private _pitchMax      = _heli getVariable "bmkhs_rotorPitchMax";
 private _rollMin       = _heli getVariable "bmkhs_rotorRollMin";
-private _rollMid       = [  0
-                         ,  0];
+private _rollMid       = _heli getVariable "bmkhs_rotorRollMid";
 private _rollMax       = _heli getVariable "bmkhs_rotorRollMax";
 private _collMin       = _heli getVariable "bmkhs_rotorCollMin";
-private _collMid       = [  0
-                         ,  0];
+private _collMid       = _heli getVariable "bmkhs_rotorCollMid";
 private _collMax       = _heli getVariable "bmkhs_rotorCollMax";
 private _animSource    = _heli getVariable "bmkhs_rotorAnimSource";
 private _hitPoint      = _heli getVariable "bmkhs_rotorHitPoint";

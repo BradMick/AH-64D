@@ -11,6 +11,24 @@
     rotorNumElements[]   = {4.0,    4.0};
     rotorMastLength[]    = {0.70,   -0.87};   //m
     rotorGearRatio[]     = {72.291, 14.90};
+
+    //Hub position and disc orientation in model space. Where the mast sits and which way
+    //the disc faces is pure airframe geometry.
+    rotorPivot[]         = {
+                            { 0.00,  2.06,  0.000}    //main hub, m
+                          , { 0.00, -6.98, -0.075}    //tail hub, m
+                          };
+    rotorRotation[]      = {
+                            {0.0,  0.0, 0.0}          //main disc, deg
+                          , {0.0, 90.0, 0.0}          //tail disc, deg
+                          };
+
+    //Flap response time constants, {longitudinal, lateral} per rotor. These follow from
+    //blade inertia and hinge offset, so they belong to the airframe.
+    rotorFlapTimeConst[] = {
+                            {2.0, 3.0}                //main
+                          , {0.5, 0.5}                //tail
+                          };
     rotorAirfoil[]       = {"NACA 4418", "NACA 0012"};   //section name, see helisim_airfoils.hpp
     rotorBladeCutout[]   = {1.15,   0.15};    //m, root cutout
     rotorBladeLength[]   = {7.315,  1.402};  //m

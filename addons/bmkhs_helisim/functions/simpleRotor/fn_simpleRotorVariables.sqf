@@ -18,16 +18,7 @@ Author:
 ---------------------------------------------------------------------------- */
 params ["_heli", "_config"];
 
-_heli setVariable ["bmkhs_reqEngTorque",   [0.0, 0.0]];
-
-_heli setVariable ["bmkhs_vrsVelocityMin", 0.0];
-_heli setVariable ["bmkhs_vrsVelocityMax", 0.0];
-
-_heli setVariable ["bmkhs_rtrThrust",      [0.0, 0.0]];
-_heli setVariable ["bmkhs_rtrRPM",         0.0];
-
-_heli setVariable ["bmkhs_rtrMoi",         [0.0, 0.0]];
-
+//CONFIG - what the aircraft IS.
 //Rotor geometry
 _heli setVariable ["bmkhs_mainRtrPos",          getArray  (_config >> "mainRtrPos")];
 _heli setVariable ["bmkhs_mainRtrHeightAgl",    getNumber (_config >> "mainRtrHeightAgl")];
@@ -42,7 +33,6 @@ _heli setVariable ["bmkhs_mainRtrBladePitchMin",getNumber (_config >> "mainRtrBl
 _heli setVariable ["bmkhs_mainRtrBladePitchMax",getNumber (_config >> "mainRtrBladePitchMax")];
 _heli setVariable ["bmkhs_mainRtrBaseThrust",   getNumber (_config >> "mainRtrBaseThrust")];
 _heli setVariable ["bmkhs_mainRotorGearRatio",  getNumber (_config >> "mainRtrGearRatio")];
-
 _heli setVariable ["bmkhs_tailRtrPos",          getArray  (_config >> "tailRtrPos")];
 _heli setVariable ["bmkhs_tailRtrDesignRpm",    getNumber (_config >> "tailRtrDesignRpm")];
 _heli setVariable ["bmkhs_tailRtrRpmTrimVal",   getNumber (_config >> "tailRtrRpmTrimVal")];
@@ -51,3 +41,11 @@ _heli setVariable ["bmkhs_tailRtrNumBlades",    getNumber (_config >> "tailRtrNu
 _heli setVariable ["bmkhs_tailRtrBladeRadius",  getNumber (_config >> "tailRtrBladeRadius")];
 _heli setVariable ["bmkhs_tailRtrBladeChord",   getNumber (_config >> "tailRtrBladeChord")];
 _heli setVariable ["bmkhs_tailRtrBaseThrust",   getNumber (_config >> "tailRtrBaseThrust")];
+
+//RUNTIME STATE - what the model carries frame to frame.
+_heli setVariable ["bmkhs_reqEngTorque",   [0.0, 0.0]];
+_heli setVariable ["bmkhs_vrsVelocityMin", 0.0];
+_heli setVariable ["bmkhs_vrsVelocityMax", 0.0];
+_heli setVariable ["bmkhs_rtrThrust",      [0.0, 0.0]];
+_heli setVariable ["bmkhs_rtrRPM",         0.0];
+_heli setVariable ["bmkhs_rtrMoi",         [0.0, 0.0]];
