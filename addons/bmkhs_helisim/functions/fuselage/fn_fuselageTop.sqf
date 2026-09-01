@@ -14,7 +14,7 @@ private _debugLineScale = 1.0 / 30.0;
 private _position       = _heli getVariable "bmkhs_fuselagePosition";
 private _rotation       = _heli getVariable "bmkhs_fuselageTopRotation";
 //private _dragCoefTable  = _heli getVariable "bmkhs_fuselageTopDragCoefTable";
-private _airfoilTable   = getArray (_sfmPlusConfig >> "airfoilTable01");
+private _airfoilTable   = [_heli, _heli getVariable ["bmkhs_fuselageAirfoil", ""], "fuselage top"] call bmkhs_fnc_airfoilGet;
 private _count          = _heli getVariable "bmkhs_fuselageTopCount";
 private _coords         = _heli getVariable "bmkhs_fuselageTop";
 

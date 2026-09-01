@@ -39,6 +39,11 @@ class CfgFunctions
             class wingUpdate {R;};
             class wingVariables {R;};
         };
+        class airfoil {
+            file = "\bmkhs_helisim\functions\airfoil";
+            class airfoilGet {R;};
+            class airfoilVariables {R;};
+        };
         class core {
             file = "\bmkhs_helisim\functions\core";
             class coreConfig {R;};

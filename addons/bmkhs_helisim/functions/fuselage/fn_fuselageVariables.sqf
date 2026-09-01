@@ -37,5 +37,7 @@ _heli setVariable ["bmkhs_fuselageFrontDragCoefTable",    getArray  (_config >> 
 _heli setVariable ["bmkhs_fuselageFrontCount",            getNumber (_config >> "fuselageFrontCount")];
 _heli setVariable ["bmkhs_fuselageFront",			        getArray  (_config >> "fuselageFront")];
 
+_heli setVariable ["bmkhs_fuselageAirfoil", getText (_config >> "fuselageAirfoil")];
+
 //Aerodynamic centre
 _heli setVariable ["bmkhs_aerodynamicCenter",  getArray  (_config >> "aerodynamicCenter")];   //m

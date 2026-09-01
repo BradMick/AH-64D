@@ -1,7 +1,7 @@
 #include "\bmkhs_helisim\functions\core\core.hpp"
 #include "\bmkhs_helisim\functions\systems\systems.hpp"
 
-params ["_heli","_wingPos","_pitch","_roll","_span","_chord","_sweep","_twist","_tipWidthScalar",["_isStab", false],["_wingIndex", 0]];
+params ["_heli","_wingPos","_pitch","_roll","_span","_chord","_sweep","_twist","_tipWidthScalar",["_isStab", false],["_wingIndex", 0],["_airfoilTable", []]];
 
 if (!local _heli) exitWith {};
 
@@ -27,7 +27,6 @@ private _A_wingRootLeadingEdge  = [];
 private _B_wingTipLeadingEdge   = [];
 private _C_wingTipTrailingEdge  = [];
 private _D_wingRootTrailingEdge = [];
-private _airfoilTable           = [];
 
 
 if (_isStab) then {
@@ -82,7 +81,6 @@ if (_isStab) then {
     _stabTip            = [_stabTip, _vectorRight, _stabTheta] call bmkhs_fnc_mathVectorRotateAroundAxis;
     _C_wingTipTrailingEdge = _B_wingTipLeadingEdge vectorDiff _stabTip;
 
-    _airfoilTable = getArray (_sfmPlusConfig >> "airfoilTable01");
 } else {
     private _vectorRight   = [[1.0, 0.0, 0.0], _pitch, _roll, 0.0] call bmkhs_fnc_mathVectorRotate;
     private _vectorForward = [[0.0, 1.0, 0.0], _pitch, _roll, 0.0] call bmkhs_fnc_mathVectorRotate;
@@ -101,7 +99,6 @@ if (_isStab) then {
     _B_wingTipLeadingEdge  = _wingTipCenter vectorAdd  (_wingTip vectorMultiply 0.5);
     _C_wingTipTrailingEdge = _wingTipCenter vectorDiff (_wingTip vectorMultiply 0.5);
 
-    _airfoilTable = getArray (_sfmPlusConfig >> "airfoilTable02");
 };
 
 for "_j" from 0 to (_numElements - 1) do {

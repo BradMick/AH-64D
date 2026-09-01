@@ -18,6 +18,7 @@ params ["_heli"];
 if (!local _heli) exitWith {};
 
 private _numWings           = _heli getVariable "bmkhs_numWings";
+private _wingAirfoil      = _heli getVariable ["bmkhs_wingAirfoil", []];
 private _wingIsStabilator   = _heli getVariable "bmkhs_wingIsStabilator";
 private _wingPos            = _heli getVariable "bmkhs_wingPos";
 private _wingPitch          = _heli getVariable "bmkhs_wingPitch";
@@ -40,5 +41,6 @@ for "_i" from 0 to (_numWings - 1) do {
      ,_wingTipWidthScalar select _i
      ,(_wingIsStabilator  select _i) > 0
      ,_i
+     ,[_heli, _wingAirfoil select _i, format ["wing %1", _i + 1]] call bmkhs_fnc_airfoilGet
      ] call bmkhs_fnc_wing;
 };

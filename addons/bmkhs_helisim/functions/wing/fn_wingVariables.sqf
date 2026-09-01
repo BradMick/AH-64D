@@ -26,4 +26,5 @@ _heli setVariable ["bmkhs_wingSweep",          getArray  (_config >> "wingSweep"
 _heli setVariable ["bmkhs_wingTwist",          getArray  (_config >> "wingTwist")];
 _heli setVariable ["bmkhs_wingTipWidthScalar", getArray  (_config >> "wingTipWidthScalar")];
 _heli setVariable ["bmkhs_wingNumElements",    getArray  (_config >> "wingNumElements")];
+_heli setVariable ["bmkhs_wingAirfoil",      getArray (_config >> "wingAirfoil")];
 _heli setVariable ["bmkhs_wingChordLinePos",   getArray  (_config >> "wingChordLinePos")];

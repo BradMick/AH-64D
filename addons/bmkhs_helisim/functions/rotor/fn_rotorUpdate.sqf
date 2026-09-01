@@ -24,8 +24,12 @@ private _flapTimeConst = [ [2.0, 3.0]
                          , [0.5, 0.5]];
 private _inflowAlpha   = [0.05, 0.01];
 private _delta3        = _heli getVariable "bmkhs_rotorDelta3";
-private _airfoilTable  = [ getArray (_sfmPlusConfig >> "airfoilTable02")
-                         , getArray (_sfmPlusConfig >> "airfoilTable01")];
+//Each rotor names its section; resolve to tables once rather than per blade element.
+private _rotorAirfoil  = _heli getVariable ["bmkhs_rotorAirfoil", []];
+private _airfoilTable  = [];
+{
+    _airfoilTable pushBack ([_heli, _x, format ["rotor %1", _forEachIndex + 1]] call bmkhs_fnc_airfoilGet);
+} forEach _rotorAirfoil;
 private _bladeCutout   = _heli getVariable "bmkhs_rotorBladeCutout";
 private _bladeLength   = _heli getVariable "bmkhs_rotorBladeLength";
 private _bladeChord    = _heli getVariable "bmkhs_rotorBladeChordArr";

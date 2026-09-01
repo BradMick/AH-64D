@@ -72,6 +72,15 @@ wingNumElements[]   = {
                     , 4
                     };
 
+//Airfoil section per wing, by name from helisim_airfoils.hpp. The stabilator is a
+//symmetric section; the stub wings are cambered.
+wingAirfoil[]       = {
+                      "NACA 4418"   //right wing
+                    , "NACA 4418"   //left wing
+                    , "NACA 4418"   //vertical fin
+                    , "NACA 0012"   //stabilator
+                    };
+
 wingChordLinePos[]  = {
                       0.25
                     , 0.25

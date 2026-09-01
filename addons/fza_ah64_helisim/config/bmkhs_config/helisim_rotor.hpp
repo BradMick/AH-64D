@@ -11,7 +11,7 @@
     rotorNumElements[]   = {4.0,    4.0};
     rotorMastLength[]    = {0.70,   -0.87};   //m
     rotorGearRatio[]     = {72.291, 14.90};
-    rotorAirfoil[]       = {2,      1};          //index into the airfoil tables
+    rotorAirfoil[]       = {"NACA 4418", "NACA 0012"};   //section name, see helisim_airfoils.hpp
     rotorBladeCutout[]   = {1.15,   0.15};    //m, root cutout
     rotorBladeLength[]   = {7.315,  1.402};  //m
     rotorBladeChord[]    = {0.533,  0.253};  //m
