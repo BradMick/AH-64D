@@ -2,17 +2,28 @@
 #include "\bmkhs_helisim\functions\fuel\fuel.hpp"
 params ["_heli"];
 
-private _fwdCellWeight       = _heli getVariable "bmkhs_fwdTankMass";
-private _ctrFuelWeight       = _heli getVariable "bmkhs_ctrTankMass";
-private _aftCellWeight       = _heli getVariable "bmkhs_aftTankMass";
+//Defaults on every read: these run before coreConfig has populated them on a fresh spawn
+//or a JIP client, and a nil here propagates into the arithmetic below.
+private _fwdCellWeight       = _heli getVariable ["bmkhs_fwdTankMass", 0];
+private _ctrFuelWeight       = _heli getVariable ["bmkhs_ctrTankMass", 0];
+private _aftCellWeight       = _heli getVariable ["bmkhs_aftTankMass", 0];
 
-private _stn1FuelWeight      = _heli getVariable "bmkhs_stn1TankMass";
-private _stn2FuelWeight      = _heli getVariable "bmkhs_stn2TankMass";
-private _stn3FuelWeight      = _heli getVariable "bmkhs_stn3TankMass";
-private _stn4FuelWeight      = _heli getVariable "bmkhs_stn4TankMass";
+//MAIN endurance is flown on the mains only - the transfer cell and the aux tanks feed them
+//rather than the engines. Core publishes which tanks those are, so this does not assume
+//that the mains are tanks 1 and 3.
+private _fuelTanks          = _heli getVariable ["bmkhs_fuelTanks", []];
+private _mainFuelCellWeight = 0;
+{
+    private _tank = _fuelTanks param [_x, createHashMap];
+    private _var  = _tank getOrDefault ["varName", ""];
+    if (_var != "") then {
+        _mainFuelCellWeight = _mainFuelCellWeight + (_heli getVariable [_var + "Mass", 0]);
+    };
+} forEach (_heli getVariable ["bmkhs_fuelMains", []]);
 
-private _mainFuelCellWeight  = _fwdCellWeight + _aftCellWeight;
-private _totalFuelCellWeight = _fwdCellWeight + _ctrFuelWeight + _aftCellWeight + _stn1FuelWeight + _stn2FuelWeight + _stn3FuelWeight + _stn4FuelWeight;
+//Core already totals every tank that exists, internal and auxiliary. Re-adding a fixed
+//seven here would disagree with the flight model the moment a tank is added or removed.
+private _totalFuelCellWeight = _heli getVariable ["bmkhs_totFuelMass", 0];
 _fwdCellWeight       = _fwdCellWeight * KG_TO_LBS;
 _ctrFuelWeight       = _ctrFuelWeight * KG_TO_LBS;
 _aftCellWeight       = _aftCellWeight * KG_TO_LBS;
@@ -23,11 +34,12 @@ _totalFuelCellWeight = _totalFuelCellWeight * KG_TO_LBS;
 //seconds-to-hours then kg-to-lbs. It is NOT a 0-1 fraction of some rated flow.
 #define KGS_TO_LBS_PER_HOUR (3600 * KG_TO_LBS)
 
-private _eng1FF = _heli getVariable "bmkhs_engFF" select 0;
-private _eng2FF = _heli getVariable "bmkhs_engFF" select 1;
+private _engFF  = _heli getVariable ["bmkhs_engFF", [0, 0]];
+private _eng1FF = _engFF param [0, 0];
+private _eng2FF = _engFF param [1, 0];
 
 private _eng1FuelCons = 0;
-private _eng1State    = _heli getVariable "bmkhs_engState" select 0;
+private _eng1State    = (_heli getVariable ["bmkhs_engState", ["OFF", "OFF"]]) param [0, "OFF"];
 if (_eng1State == "ON") then {
     _eng1FuelCons = _eng1FF * KGS_TO_LBS_PER_HOUR;
 } else {
@@ -35,7 +47,7 @@ if (_eng1State == "ON") then {
 };
 
 private _eng2FuelCons = 0;
-private _eng2State    = _heli getVariable "bmkhs_engState" select 1;
+private _eng2State    = (_heli getVariable ["bmkhs_engState", ["OFF", "OFF"]]) param [1, "OFF"];
 if (_eng2State == "ON") then {
     _eng2FuelCons = _eng2FF * KGS_TO_LBS_PER_HOUR;
 } else {
