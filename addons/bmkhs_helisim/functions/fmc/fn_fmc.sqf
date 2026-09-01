@@ -57,7 +57,7 @@ if (!(_heli getVariable "bmkhs_fmcCollOn")) then {
 //hydraulics are lost, the FMC/SCAS can no longer function AT ALL - every augmentation output
 //(SAS all axes + the FMC holds incl. collective/altitude) drops to zero, leaving only the raw
 //mechanical control path (which still has its always-on actuator lag). Applies to all axes.
-private _priHydLost = (_heli getHitPointDamage "hit_hyd_priPump") >= SYS_HYD_DMG_THRESH;
+private _priHydLost = ([_heli, "priPump"] call bmkhs_fnc_damageGet) >= SYS_HYD_DMG_THRESH;
 if (_priHydLost) then {
     _SASPitchOutput     = 0.0;
     _SASRollOutput      = 0.0;

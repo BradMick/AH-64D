@@ -44,7 +44,6 @@ for "_i" from 1 to _numFuelTanks do {
         ["lowFuelKg",  _lowFuel],
         ["removable",  _removable],
         ["role",       toLower getText (_t >> "role")],
-        ["leakPoint",  getText (_t >> "leakPoint")],
         ["varName",    _varName]
     ]);
 

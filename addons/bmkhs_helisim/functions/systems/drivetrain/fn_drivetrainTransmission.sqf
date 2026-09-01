@@ -24,7 +24,7 @@ if (!local _heli) exitWith {};
 private _eng1PctTQ     = _heli getVariable "bmkhs_engPctTQ" select 0;
 private _eng2PctTQ     = _heli getVariable "bmkhs_engPctTQ" select 1;
 private _totEngTQ      = _eng1PctTQ + _eng2PctTQ;
-private _xmsnHitPtDmg  = _heli getHitPointDamage "hit_drives_transmission";
+private _xmsnHitPtDmg  = [_heli, "transmission"] call bmkhs_fnc_damageGet;
 private _dmgTimerCont  = _heli getVariable "bmkhs_dmgTimerCont";
 private _dmgTimerTrans = _heli getVariable "bmkhs_dmgTimerTrans";
 private _randomTq1     = _heli getVariable "bmkhs_randomTq" select 2;
@@ -86,18 +86,18 @@ if (_xmsnHitPtDmg > 0.75) then {
 private _dmgPerSec = (_persistentDmg + _dynamicDmgStage1 + _dynamicDmgStage2) * _deltaTime;
 private _dmg       = _xmsnHitPtDmg + _dmgPerSec;
 
-_heli setHitPointDamage ["hit_drives_transmission", _dmg];
+[_heli, "transmission", _dmg] call bmkhs_fnc_damageSet;
 
 [_heli, "bmkhs_randomTq", 2, _randomTq1, false] call bmkhs_fnc_utilSetArrayVariable;
 [_heli, "bmkhs_randomTq", 3, _randomTq2, false] call bmkhs_fnc_utilSetArrayVariable;
 
 if (_xmsnHitPtDmg == 1.0) then {
-    _heli setHitPointDamage ["hithrotor",           1.0];
-    _heli setHitPointDamage ["hitvrotor",           1.0];
-    _heli setHitPointDamage ["hit_elec_generator1", 1.0];
-    _heli setHitPointDamage ["hit_elec_generator2", 1.0];
-    _heli setHitPointDamage ["hit_hyd_priPump",     1.0];
-    _heli setHitPointDamage ["hit_hyd_utilPump",    1.0];
+    [_heli, "mainRotor", 1.0] call bmkhs_fnc_damageSet;
+    [_heli, "tailRotor", 1.0] call bmkhs_fnc_damageSet;
+    [_heli, "generators", 1.0, 0] call bmkhs_fnc_damageSet;
+    [_heli, "generators", 1.0, 1] call bmkhs_fnc_damageSet;
+    [_heli, "priPump", 1.0] call bmkhs_fnc_damageSet;
+    [_heli, "utilPump", 1.0] call bmkhs_fnc_damageSet;
 };
 
 //systemChat format ["%1 -- %2 -- %3 -- %4 -- %5 -- %6", _totEngTQ, _persistentDmg, _dynamicDmgStage1, _dynamicDmgStage2, _xmsnHitPtDmg, _dmgTimerTrans];

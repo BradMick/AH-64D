@@ -52,14 +52,14 @@ private _isSingleEng     = _heli getVariable "bmkhs_isSingleEng";
 if (local _heli) then {
 
     /*
-    if ((_heli getHitPointDamage "hithrotor") < 1.0) then {
+    if (([_heli, "mainRotor"] call bmkhs_fnc_damageGet) < 1.0) then {
         private _lastRtdUpdate = _heli getVariable ["bmkhs_lastUpdate", 0];
         if (cba_missionTime > _lastRtdUpdate + MIN_TIME_BETWEEN_UPDATES) then {
             private _realRPM = (_heli animationPhase "mainRotorRPM") * 1.08 / 10;
             if (_realRPM > _rtrRPM && _rtrRPM < 0.9) then {
-                _heli setHitPointDamage ["hithrotor", 0.9];
+                [_heli, "mainRotor", 0.9] call bmkhs_fnc_damageSet;
             } else {
-                _heli setHitPointDamage ["hithrotor", 0.0];
+                [_heli, "mainRotor", 0.0] call bmkhs_fnc_damageSet;
                 _heli engineOn true;
             };
             _heli setVariable ["bmkhs_lastUpdate", cba_missionTime];
@@ -70,10 +70,10 @@ if (local _heli) then {
 
     if (_eng1State == "OFF" && _eng2State == "OFF" && _rtrRPM < 0.5) then {
         _heli engineOn false;
-        _heli setHitPointDamage ["hithrotor", 0.9];
+        [_heli, "mainRotor", 0.9] call bmkhs_fnc_damageSet;
     };
     */
-    if ((_heli getHitPointDamage "hithrotor") > 0.9) then {
+    if (([_heli, "mainRotor"] call bmkhs_fnc_damageGet) > 0.9) then {
         _heli engineOn false;
     } else {
         if (_eng1State != "OFF" || _eng2State != "OFF" || _rtrRPM >= 0.5) then {
@@ -84,14 +84,14 @@ if (local _heli) then {
     };
     if (_eng1State == "OFF" && _eng2State == "OFF" && _rtrRPM < 0.1) then { //prevents player holding shift causing Rotor spinning
         _heli engineOn false;
-        _heli setHitPointDamage ["hithrotor", 0.9];
+        [_heli, "mainRotor", 0.9] call bmkhs_fnc_damageSet;
         if (!_shiftLocked) then {
             _heli setVariable ["bmkhs_shiftLocked", true];
         };
     } else {
         if (_shiftLocked) then {
             _heli setVariable ["bmkhs_shiftLocked", false];
-            _heli setHitPointDamage ["hithrotor", 0];
+            [_heli, "mainRotor", 0] call bmkhs_fnc_damageSet;
         };
     };
 };
@@ -148,8 +148,8 @@ if (currentPilot _heli == player || local _heli) then {
     };
 };
 
-private _no1EngDmg = _heli getHitPointDamage "hitengine1";
-private _no2EngDmg = _heli getHitPointDamage "hitengine2";
+private _no1EngDmg = [_heli, "engines", 0] call bmkhs_fnc_damageGet;
+private _no2EngDmg = [_heli, "engines", 1] call bmkhs_fnc_damageGet;
 
 if (_no1EngDmg > SYS_ENG_DMG_THRESH || !_eng1FuelAvail) then {
 	[_heli, "bmkhs_engState", 0, "OFF", true] call bmkhs_fnc_utilSetArrayVariable;

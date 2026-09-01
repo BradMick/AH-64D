@@ -28,7 +28,7 @@ params ["_heli", "_inputAxis", "_input", "_lagVal"];
 //path is gone and the command falls back to the raw MECHANICAL LAG (push/pull tubes, bell
 //cranks). The lag is therefore ONLY felt with SCAS off. (The SCAS rate augmentation itself is
 //summed on top downstream in fn_rotorControl; this function is the pilot-command path only.)
-private _priHydOk = (_heli getHitPointDamage "hit_hyd_priPump") < SYS_HYD_DMG_THRESH;
+private _priHydOk = ([_heli, "priPump"] call bmkhs_fnc_damageGet) < SYS_HYD_DMG_THRESH;
 private _scasAvail = switch (_inputAxis) do {
     case "pitch"      : { _priHydOk && (_heli getVariable "bmkhs_fmcPitchOn") };
     case "roll"       : { _priHydOk && (_heli getVariable "bmkhs_fmcRollOn")  };

@@ -22,7 +22,7 @@ params ["_heli"];
 private _gen1On      = _heli getVariable "bmkhs_gen1On";
 
 private _rect1On     = _heli getVariable "bmkhs_rect1On";
-private _rect1Damage = _heli getHitPointDamage "hit_elec_rectifier1";
+private _rect1Damage = [_heli, "rectifiers", 0] call bmkhs_fnc_damageGet;
 
 //Set RTRU 1 state
 if (_gen1On && _rect1Damage <= SYS_RECT_DMG_THRESH) then {

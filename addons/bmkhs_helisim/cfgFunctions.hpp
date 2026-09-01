@@ -59,6 +59,10 @@ class CfgFunctions
         class damage {
             file = "\bmkhs_helisim\functions\damage";
             class damageApply {R;};
+            class damageCount {R;};
+            class damageGet {R;};
+            class damageSet {R;};
+            class damageVariables {R;};
         };
         class event {
             file = "\bmkhs_helisim\functions\event";

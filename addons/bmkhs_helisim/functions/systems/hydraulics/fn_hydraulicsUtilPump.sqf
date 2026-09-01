@@ -19,7 +19,7 @@ Author:
 params ["_heli"];
 #include "\bmkhs_helisim\functions\systems\systems.hpp"
 
-private _utilHydPumpDamage = _heli getHitPointDamage "hit_hyd_utilPump";
+private _utilHydPumpDamage = [_heli, "utilPump"] call bmkhs_fnc_damageGet;
 private _utilHydPSI_pct    = _heli getVariable "bmkhs_utilHydPSI_pct";
 private _utilHydPSI        = _heli getVariable "bmkhs_utilHydPsi";
 

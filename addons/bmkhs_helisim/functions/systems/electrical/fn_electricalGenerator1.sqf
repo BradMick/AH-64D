@@ -20,7 +20,7 @@ params ["_heli", "_apuOn", "_rtrRPM"];
 #include "\bmkhs_helisim\functions\systems\systems.hpp"
 
 private _gen1On     = _heli getVariable "bmkhs_gen1On";
-private _gen1Damage = _heli getHitPointDamage "hit_elec_generator1";
+private _gen1Damage = [_heli, "generators", 0] call bmkhs_fnc_damageGet;
 
 if (_apuOn || _rtrRPM > SYS_MIN_RPM) then {
     //Generator 1

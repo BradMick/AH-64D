@@ -19,7 +19,7 @@ Author:
 params ["_heli", "_deltaTime"];
 #include "\bmkhs_helisim\functions\systems\systems.hpp"
 
-private _priReservoirDamage = _heli getHitPointDamage "hit_hyd_priReservoir";
+private _priReservoirDamage = [_heli, "priReservoir"] call bmkhs_fnc_damageGet;
 private _priHydLevel_pct    = _heli getVariable "bmkhs_priLevel_pct";
 private _curLeakTimer       = 0.0;
 private _leakTimer          = _heli getVariable "bmkhs_hydLeakTimer";

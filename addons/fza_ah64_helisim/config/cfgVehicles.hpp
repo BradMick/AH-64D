@@ -13,9 +13,9 @@ class CfgVehicles {
         altFullForce  = 1615;
         altNoForce    = 9000;
 
-        //Aircraft hitpoint values, then Core's definitions that consume them
-        #include "bmkhs_config\helisim_hitpoints.hpp"
+        //Core's macro first, then the aircraft's own hitpoint declarations that use it
         #include "\bmkhs_helisim\hitPoints.hpp"
+        #include "bmkhs_config\helisim_hitpoints.hpp"
         #include "bmkhs_ah64_config.hpp"
     };
 };

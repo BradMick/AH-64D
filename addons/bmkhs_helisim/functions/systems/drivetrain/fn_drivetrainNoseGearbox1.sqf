@@ -21,7 +21,7 @@ params ["_heli", "_deltaTime"];
 
 private _engPctTq         = _heli getVariable "bmkhs_engPctTQ" select 0;
 private _isSingleEng      = _heli getVariable "bmkhs_isSingleEng";
-private _grbxHitPtDmg     = _heli getHitPointDamage "hit_drives_noseGearbox1";
+private _grbxHitPtDmg     = [_heli, "noseGearboxes", 0] call bmkhs_fnc_damageGet;
 private _dmgTimerCont     = _heli getVariable "bmkhs_dmgTimerCont";
 private _dmgTimerTrans    = _heli getVariable "bmkhs_dmgTimerTrans";
 private _randomTq         = _heli getVariable "bmkhs_randomTq" select 0;
@@ -107,7 +107,7 @@ if (_grbxHitPtDmg > 0.75) then {
 private _dmgPerSec = (_persistentDmg + _dynamicDmgStage1 + _dynamicDmgStage2 + _dynamicDmgStage3) * _deltaTime;
 private _grbxDmg   = _grbxHitPtDmg + _dmgPerSec;
 
-_heli setHitPointDamage ["hit_drives_noseGearbox1", _grbxDmg];
+[_heli, "noseGearboxes", _grbxDmg, 0] call bmkhs_fnc_damageSet;
 
 [_heli, "bmkhs_randomTq", 0, _randomTq, true] call bmkhs_fnc_utilSetArrayVariable;
 

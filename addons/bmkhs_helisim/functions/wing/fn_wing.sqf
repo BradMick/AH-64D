@@ -30,7 +30,7 @@ private _D_wingRootTrailingEdge = [];
 
 
 if (_isStab) then {
-    private _stabDamage = _heli getHitPointDamage "hit_stabilator";
+    private _stabDamage = [_heli, "stabilator"] call bmkhs_fnc_damageGet;
     private _dcBusOn    = _heli getVariable ["bmkhs_dcBusOn", true];
 
     private _stabOutputTable = [[]];

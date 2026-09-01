@@ -420,7 +420,7 @@ private _momentZ         = _rtrTorque * _rtrTorqueScalar * _deltaTime;
 // Rotor Forces         /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 if (currentPilot _heli == player) then {
-    private _mainRtrDamage = _heli getHitPointDamage "hithrotor";
+    private _mainRtrDamage = [_heli, "mainRotor"] call bmkhs_fnc_damageGet;
 
     if (_mainRtrDamage < 0.99) then {
         private _advanceRatio = if (_bladeTipVel > 1.0) then { _velY / _bladeTipVel } else { 0.0 };

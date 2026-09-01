@@ -19,17 +19,17 @@ Author:
 params ["_heli", "_deltaTime"];
 #include "\bmkhs_helisim\functions\systems\systems.hpp"
 
-private _utilReservoirDamage = _heli getHitPointDamage "hit_hyd_utilReservoir";
+private _utilReservoirDamage = [_heli, "utilReservoir"] call bmkhs_fnc_damageGet;
 private _utilHydLevel_pct    = _heli getVariable "bmkhs_utilLevel_pct";
 private _curLeakTimer       = 0.0;
 private _pylonLeak        = 0.0;
 private _leakTimer          = _heli getVariable "bmkhs_hydLeakTimer";
-private _gunDamage          = _heli getHitPointDamage "hit_msnEquip_gun_turret";
+private _gunDamage          = [_heli, "gunTurret"] call bmkhs_fnc_damageGet;
 
-//pylon damage
-for "_i" from 0 to 3 do {
-    private _pylonDamage = _heli getHitPointDamage ("hit_msnEquip_pylon" + str(_i + 1));
-    if (_pylonDamage >= SYS_WPN_DMG_THRESH) then {
+//Pylon damage - however many the aircraft declares, or none at all.
+private _numPylons = [_heli, "pylons"] call bmkhs_fnc_damageCount;
+for "_i" from 0 to (_numPylons - 1) do {
+    if (([_heli, "pylons", _i] call bmkhs_fnc_damageGet) >= SYS_WPN_DMG_THRESH) then {
         _pylonLeak = _pylonLeak + 0.5;
     };
 };

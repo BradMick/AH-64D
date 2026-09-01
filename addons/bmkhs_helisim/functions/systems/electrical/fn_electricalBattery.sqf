@@ -23,7 +23,7 @@ private _battSwitchOn = _heli getVariable "bmkhs_battSwitchOn";
 private _battPower    = _heli getVariable "bmkhs_battPower_pct";
 private _acBusOn      = _heli getVariable "bmkhs_acBusOn";
 private _battTimer    = _heli getVariable "bmkhs_battTimer";
-private _battDamage   = _heli getHitPointDamage "hit_elec_battery";
+private _battDamage   = [_heli, "batteries", 0] call bmkhs_fnc_damageGet;
 private _battBusOn    = _heli getVariable "bmkhs_battBusOn";
 
 if (_battSwitchOn) then {

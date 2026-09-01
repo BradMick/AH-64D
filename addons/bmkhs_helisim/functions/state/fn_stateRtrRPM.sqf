@@ -22,7 +22,7 @@ params ["_heli"];
 private _deltaTime = _heli getVariable "bmkhs_deltaTime";
 private _rtrRPM    = _heli getVariable "bmkhs_rtrRPM";
 
-private _mainRtrDamage  = _heli getHitPointDamage "hithrotor";
+private _mainRtrDamage  = [_heli, "mainRotor"] call bmkhs_fnc_damageGet;
 if (_mainRtrDamage == 1.0) then {
     _rtrRPM = 0.0;
 } else {

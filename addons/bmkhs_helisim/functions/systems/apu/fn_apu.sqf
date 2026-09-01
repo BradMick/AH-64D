@@ -22,7 +22,7 @@ params ["_heli", "_deltaTime"];
 private _apuBtnOn      = _heli getVariable "bmkhs_apuBtnOn";
 private _battBusOn     = _heli getVariable "bmkhs_battBusOn";
 private _apuOn         = _heli getVariable "bmkhs_apuOn";
-private _apuDamage     = _heli getHitPointDamage "hit_apu";
+private _apuDamage     = [_heli, "apu"] call bmkhs_fnc_damageGet;
 private _apuStartDelay = _heli getVariable "bmkhs_apuStartDelay";
 private _apuRPM_pct    = _heli getVariable "bmkhs_apuRPM_pct";
 private _apuFF_kgs     = 0.0;

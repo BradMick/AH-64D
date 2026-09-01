@@ -34,7 +34,8 @@
     //                "main"     - a primary cell an engine can draw from
     //                "xfer"     - gravity/pump feeds the mains, engines never draw directly
     //              An aircraft with four mains gives all four role = "main".
-    //  leakPoint - hitpoint whose damage makes this tank leak; "" for none.
+    //A tank leaks when the hitpoint claiming role "fuelTanks" at its index is damaged;
+    //see helisim_hitpoints.hpp. A tank with no such hitpoint cannot leak.
 
     //CROSSFEED positions - which main tank each engine feeds from in each valve position.
     //Mains are referenced by position in the "main" tanks declared in helisim_fuel.hpp, so
@@ -66,7 +67,6 @@
             lowFuelKg = 109.0;
             removable = 0;
             role      = "main";
-            leakPoint = "hit_fuel_forward";
         };
         class FuelTank02 {          //centre cell (robbie), shares the ammo bay position
             variableName = "ctrTank";
@@ -75,7 +75,6 @@
             lowFuelKg = 0.0;
             removable = 1;
             role      = "xfer";
-            leakPoint = "hit_msnEquip_magAndRobbie";
         };
         class FuelTank03 {
             variableName = "aftTank";
@@ -84,7 +83,6 @@
             lowFuelKg = 118.0;
             removable = 0;
             role      = "main";
-            leakPoint = "hit_fuel_aft";
         };
     };
 
