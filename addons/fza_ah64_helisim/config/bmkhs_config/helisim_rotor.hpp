@@ -31,5 +31,5 @@
     rotorCollMax[]       = {19,     27};
 
     //Model bindings - the aircraft must provide these selections
-    rotorAnimSource[]    = {"rotorH", "rotorV"};
-    rotorHitPoint[]      = {"hithrotor", "hitvrotor"};
+    rotorAnimSource[]    = {"rotorH",       "rotorV"};
+    rotorHitPoint[]      = {"hithrotor",    "hitvrotor"};

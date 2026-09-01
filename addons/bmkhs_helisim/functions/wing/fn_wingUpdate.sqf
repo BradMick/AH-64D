@@ -18,7 +18,6 @@ params ["_heli"];
 if (!local _heli) exitWith {};
 
 private _numWings           = _heli getVariable "bmkhs_numWings";
-private _wingAirfoil      = _heli getVariable ["bmkhs_wingAirfoil", []];
 private _wingIsStabilator   = _heli getVariable "bmkhs_wingIsStabilator";
 private _wingPos            = _heli getVariable "bmkhs_wingPos";
 private _wingPitch          = _heli getVariable "bmkhs_wingPitch";
@@ -28,6 +27,7 @@ private _wingChord          = _heli getVariable "bmkhs_wingChord";
 private _wingSweep          = _heli getVariable "bmkhs_wingSweep";
 private _wingTwist          = _heli getVariable "bmkhs_wingTwist";
 private _wingTipWidthScalar = _heli getVariable "bmkhs_wingTipWidthScalar";
+private _wingAirfoil        = _heli getVariable ["bmkhs_wingAirfoil", []];
 
 for "_i" from 0 to (_numWings - 1) do {
     [ _heli
