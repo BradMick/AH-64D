@@ -29,16 +29,6 @@
                             {2.0, 3.0}                //main
                           , {0.5, 0.5}                //tail
                           };
-    //Flapback gain, degrees of disc tilt per unit advance ratio. The phenomenon is
-    //universal - the advancing blade lifts more than the retreating one, so the disc tilts
-    //with airspeed - but the gain follows from blade inertia, hinge offset and Lock number,
-    //so it belongs to the airframe like rotorFlapTimeConst above.
-    //NOTE: longitudinal is currently 0, which DISABLES the primary flapback effect (nose-up
-    //with speed). Lateral is active but its sign was never verified in the air. Both want a
-    //tuning session; see the block in fn_simpleRotorMain.
-    rotorFlapbackLon[]   = {0.0,    0.0};      //deg per unit mu
-    rotorFlapbackLat[]   = {10.0,   0.0};      //deg per unit mu
-
     rotorAirfoil[]       = {"NACA 4418", "NACA 0012"};   //section name, see helisim_airfoils.hpp
     rotorBladeCutout[]   = {1.15,   0.15};    //m, root cutout
     rotorBladeLength[]   = {7.315,  1.402};  //m

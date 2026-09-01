@@ -424,17 +424,18 @@ if (currentPilot _heli == player) then {
 
     if (_mainRtrDamage < 0.99) then {
         private _advanceRatio = if (_bladeTipVel > 1.0) then { _velY / _bladeTipVel } else { 0.0 };
-        //FLAPBACK. Gains are per-rotor config; index 0 is the main rotor.
+        //FLAPBACK. Gains come from the simple-rotor config - the BET model derives its own
+        //flapping from blade dynamics and has no use for a gain.
         //TWO OPEN ITEMS, both needing air time rather than a code change:
         //  1. Longitudinal flapback is NOT WIRED UP. _flapLon is computed and discarded -
         //     the pitch argument to mathVectorRotate below is a hardcoded 0.0 - so raising
-        //     rotorFlapbackLon does nothing until that vector call passes it. This is the
+        //     mainRtrFlapbackLon does nothing until that vector call passes it. This is the
         //     PRIMARY flapback effect (disc tilting nose-up as speed builds); only lateral,
         //     the secondary effect, is running. That is backwards from a real rotor.
         //  2. The lateral SIGN was never verified in the sim; positive tilts the thrust
         //     vector one way and nobody has confirmed it is the right way.
-        private _kFlapLon     = (_heli getVariable ["bmkhs_rotorFlapbackLon", [0.0]]) param [0, 0.0];
-        private _kFlapLat     = (_heli getVariable ["bmkhs_rotorFlapbackLat", [0.0]]) param [0, 0.0];
+        private _kFlapLon     = _heli getVariable ["bmkhs_mainRtrFlapbackLon", 0.0];
+        private _kFlapLat     = _heli getVariable ["bmkhs_mainRtrFlapbackLat", 0.0];
         private _flapLon      = _kFlapLon * _advanceRatio;
         private _flapLat      = _kFlapLat * _advanceRatio;
 

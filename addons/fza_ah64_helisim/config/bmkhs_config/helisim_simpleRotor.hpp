@@ -22,6 +22,14 @@
     mainRtrBaseThrust     = 102306;  //N, max gross weight * g
     mainRtrGearRatio      = 72.291;  //shared with the transmission model
 
+    //Flapback gain, deg of disc tilt per unit advance ratio. The advancing blade lifts more
+    //than the retreating one, so the disc tilts as speed builds. The BET model derives this
+    //from blade dynamics; the simple model needs it as a gain.
+    //NOTE: longitudinal is NOT WIRED UP - see fn_simpleRotorMain. Lateral is active but its
+    //sign was never verified in the air. Both want a tuning session.
+    mainRtrFlapbackLon    = 0.0;     //deg per unit mu
+    mainRtrFlapbackLat    = 10.0;    //deg per unit mu
+
     //Tail rotor
     tailRtrPos[]          = {-0.87, -6.98, -0.075};  //m
     tailRtrDesignRpm      = 1403.0;
