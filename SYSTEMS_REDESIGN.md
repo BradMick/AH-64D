@@ -226,6 +226,42 @@ it is empty". One `BMKHS_Reservoir` kind covers both, which also means the
 hydraulic side inherits the fuel tanks' `variableName` and per-tank leak
 hitpoint for free.
 
+#### Unified leak mechanic
+
+Both already start leaking at **0.50 damage** - the same threshold, reached
+independently in `TANK_LEAK_START_DMG` and `SYS_HYD_RES_MIN_DMG`. Only the
+scaling above it differs, so unifying costs almost nothing.
+
+**Linear ramp**, the fuel model. Rate scales from zero at the threshold to the
+component's maximum at full damage:
+
+    frac = (damage - leakStartDmg) / (1 - leakStartDmg)
+    rate = leakMaxRate * frac
+
+A weeping reservoir weeps and a destroyed one dumps, with no step at a band
+boundary. The hydraulic side loses its three discrete bands
+(`SYS_HYD_RES_MIN/MOD/HVY_DMG`); nothing depends on the steps, and one
+threshold per reservoir replaces three.
+
+**Contents are a fraction 0-1, capacity lives on the component.** Core does all
+rate maths in one unit and each reservoir converts for display:
+
+```cpp
+class FwdTank : BMKHS_Reservoir {
+    variableName = "fwdTank";
+    capacity     = 473.1;        //kg
+    leakStartDmg = 0.50;
+    leakMaxRate  = 0.0000355;    //fraction per second
+};
+```
+
+    fuel tank      publishes frac * capacity  ->  bmkhs_fwdTankMass in kg
+    hydraulic res  publishes the fraction     ->  bmkhs_priHydLevel_pct
+
+So `fn_fuelLeak` and the leak half of `fn_hydraulicsPriReservoir` /
+`fn_hydraulicsUtilReservoir` collapse into one loop over every reservoir the
+aircraft declares, in any domain.
+
 Storage additionally discharges only while:
 
     no other source supplies its circuit
