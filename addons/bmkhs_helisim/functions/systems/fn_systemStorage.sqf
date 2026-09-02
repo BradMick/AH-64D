@@ -101,7 +101,9 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     //Never from the node it supplies, or it would top itself up forever.
     private _rechargedBy = _x get "rechargedBy";
     if (_settle && _rechargedBy != "" && _charge < 1.0) then {
-        if (([_heli, _rechargedBy] call bmkhs_fnc_systemCircuit) > 0) then {
+        //Needs its circuit properly up, not merely turning - a spooling APU is not yet
+        //driving the pumps that do the refilling.
+        if (([_heli, _rechargedBy] call bmkhs_fnc_systemCircuit) > (_x get "minRecharge")) then {
             private _rate = _x get "rechargeRate";
             if (_rate > 0) then { _charge = (_charge + (_rate * _deltaTime)) min 1.0 };
         };

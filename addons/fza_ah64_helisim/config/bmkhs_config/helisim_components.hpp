@@ -105,11 +105,12 @@
             //Off the accessory drive, not UTIL_HYD - a store recharging from the node it
             //feeds would top itself up forever.
             rechargedBy     = "ACCESSORY_DRIVE";
+            minRecharge     = 0.45;       //same drive the pumps need to make pressure
             gate            = "bmkhs_emerHydOn";
             startedBy       = "bmkhs_apuBtnOn";
             nominal         = 3000;       //psi at full charge
             startAbove      = 2600;       //psi needed to turn the APU over at all
-            startDischarge  = 0.35;       //fraction of charge one start costs
+            startDischarge  = 0.75;       //fraction of charge one start costs
             startRecharge   = 8;          //sec to refill, once the pumps are turning
             stopBelow       = 1650;       //psi, the floor it stops discharging at
             emerDischarge   = 90;         //sec of emergency pressure

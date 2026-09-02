@@ -76,6 +76,7 @@ private _producers = [];
 
 //Storage - accumulators, batteries, reservoirs. A producer holding a charge.
 //  rechargedBy     circuit that refills it
+//  minRecharge     value that circuit must reach before it does
 //  startedBy       gate of the thing it cranks
 //  startAbove      value needed for a start to happen at all
 //  startDischarge  fraction of charge one start costs
@@ -91,6 +92,7 @@ private _storage = [];
     private _role = _c get "damageRole";
 
     _c set ["rechargedBy", getText   (_x >> "rechargedBy")];
+    _c set ["minRecharge", getNumber (_x >> "minRecharge")];
     _c set ["stopBelow",   getNumber (_x >> "stopBelow")];
     _c set ["startedBy",   getText   (_x >> "startedBy")];
     _c set ["startAbove",  getNumber (_x >> "startAbove")];
