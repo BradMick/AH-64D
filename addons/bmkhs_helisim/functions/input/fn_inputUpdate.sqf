@@ -195,11 +195,14 @@ private _keyCollectiveDn = _heli getVariable "bmkhs_kbHeliCollectiveLowerOut";
 private _joyCollectiveUp = _heli getVariable "bmkhs_heliCollectiveRaiseOut";
 private _joyCollectiveDn = _heli getVariable "bmkhs_heliCollectiveLowerOut";
 
-if (_priHydPSI < (_heli getVariable "bmkhs_hydMinPsi") && _utilHydPSI < (_heli getVariable "bmkhs_hydMinPsi")) then {
+//What has supply is the aircraft's declaration to make, not this function's - it names
+//the circuits, Core answers. Both default true so an airframe declaring no hydraulics
+//flies rather than locking up.
+if !(_heli getVariable ["bmkhs_fltCtrlsSupplied", true]) then {
     _hydFailure = true;
 };
 
-if (_priHydPSI < (_heli getVariable "bmkhs_hydMinPsi") && _utilLevel_pct < (_heli getVariable "bmkhs_hydMinLevel")) then {
+if !(_heli getVariable ["bmkhs_tailRtrSupplied", true]) then {
     _tailRtrFixed = true;
 };
 

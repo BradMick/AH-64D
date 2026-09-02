@@ -91,6 +91,7 @@
         class UtilReservoir {
             damageRole      = "utilReservoir";
             variableName    = "utilLevel_pct";
+            output          = "UTIL_HYD_LEVEL";   //so a consumer can read what is left
             nominal         = 1.0;
             leakStartDmg    = 0.50;
             leakSeconds     = 120;
@@ -126,5 +127,12 @@
             variableName = "fltCtrlsSupplied";
             suppliedBy[] = {"PRI_HYD", "UTIL_HYD"};
             minValue     = 1260;          //psi
+        };
+        //The tail rotor needs primary pressure OR utility fluid - it is lost only when
+        //both are gone, so this one is an AND across two different units.
+        class TailRotor {
+            variableName = "tailRtrSupplied";
+            needsAll     = 0;             //either one keeps it
+            suppliedBy[] = {{"PRI_HYD", 1260}, {"UTIL_HYD_LEVEL", 0.1}};
         };
     };

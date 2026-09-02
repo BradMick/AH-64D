@@ -23,13 +23,20 @@ private _consumers = _heli getVariable ["bmkhs_sysConsumers", []];
 if (_consumers isEqualTo []) exitWith {};
 
 {
-    private _min = _x get "minValue";
+    //_comp, not _x: the inner forEach rebinds it to the circuit pair.
+    private _comp     = _x;
+    private _needsAll = _comp get "needsAll";
 
-    //Any one of them is enough.
-    private _supplied = false;
+    //Any one is enough, unless it needs all of them.
+    private _supplied = _needsAll;
     {
-        if (([_heli, _x] call bmkhs_fnc_systemCircuit) >= _min) exitWith { _supplied = true };
-    } forEach (_x get "suppliedBy");
+        private _up = ([_heli, _x select 0] call bmkhs_fnc_systemCircuit) >= (_x select 1);
+        if (_needsAll) then {
+            if (!_up) exitWith { _supplied = false };
+        } else {
+            if (_up) exitWith { _supplied = true };
+        };
+    } forEach (_comp get "circuits");
 
-    _heli setVariable [_x get "varName", _supplied];
+    _heli setVariable [_comp get "varName", _supplied];
 } forEach _consumers;

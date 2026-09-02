@@ -47,27 +47,27 @@ private _bladeRadius            = _heli getVariable "bmkhs_tailRtrBladeRadius";
 private _bladeChord             = _heli getVariable "bmkhs_tailRtrBladeChord";
 
 private _bladePitchInducedThrustTable = [
-    [-1.00,  4.0000]
-   ,[-0.90,  3.4102]
-   ,[-0.80,  2.8365]
-   ,[-0.70,  2.2817]
-   ,[-0.60,  1.7507]
-   ,[-0.50,  1.2517]
-   ,[-0.40,  0.8046]
-   ,[-0.30,  0.5420]
-   ,[-0.20,  0.3614]
-   ,[-0.10,  0.1807]
+    [-1.00,  2.0000]
+   ,[-0.90,  1.9600]
+   ,[-0.80,  1.8500]
+   ,[-0.70,  1.7000]
+   ,[-0.60,  1.5000]
+   ,[-0.50,  1.2500]
+   ,[-0.40,  0.9600]
+   ,[-0.30,  0.6800]
+   ,[-0.20,  0.4000]
+   ,[-0.10,  0.1700]
    ,[ 0.00,  0.0000]
-   ,[ 0.10, -0.2924]
-   ,[ 0.20, -0.5689]
-   ,[ 0.30, -0.8287]
-   ,[ 0.40, -1.0705]
-   ,[ 0.50, -1.2929]
-   ,[ 0.60, -1.4940]
-   ,[ 0.70, -1.6714]
-   ,[ 0.80, -1.8211]
-   ,[ 0.90, -1.9368]
-   ,[ 1.00, -2.0000]
+   ,[ 0.10, -0.1700]
+   ,[ 0.20, -0.3200]
+   ,[ 0.30, -0.4600]
+   ,[ 0.40, -0.5900]
+   ,[ 0.50, -0.7000]
+   ,[ 0.60, -0.7900]
+   ,[ 0.70, -0.8600]
+   ,[ 0.80, -0.9200]
+   ,[ 0.90, -0.9600]
+   ,[ 1.00, -1.0000]
   ];
 
 private _rtrThrustScalarTable =
@@ -162,9 +162,9 @@ if (_tailRtrDamage < 0.85 && _IGBDamage < SYS_IGB_DMG_THRESH && _TGBDamage < SYS
             //Tail rotor thrust
             _heli addForce [_heli vectorModelToWorld _thrustVector, _rtrPos];
             //Tail rotor torque
-            _moment set [1, (_moment select 1) * 0.5];
+            _moment set [1, 0];
             _heli addTorque (_heli vectorModelToWorld _moment);
-
+            systemChat format ["test v0.1"];
         } else {
             //Tail rotor thrust
             _heli addForce [_heli vectorModelToWorld _thrustVector, _heliCom];

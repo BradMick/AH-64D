@@ -120,18 +120,24 @@ private _storage = [];
     if ((_c get "output") != "") then { _circuits set [_c get "output", 0] };
 } forEach ("true" configClasses (_config >> "Storage"));
 
-//Consumers - suppliedBy is an OR, so naming two circuits survives losing one.
+//Consumers - suppliedBy is an OR by default, or an AND with needsAll. An entry is a
+//circuit name, or a name and its own threshold when one consumer spans different units.
 private _consumers = [];
 {
+    private _min = getNumber (_x >> "minValue");
     private _c = createHashMapFromArray [
         ["variableName", getText  (_x >> "variableName")],
-        ["suppliedBy",   getArray (_x >> "suppliedBy")],
-        ["minValue",     getNumber(_x >> "minValue")]
+        ["minValue",     _min],
+        ["needsAll",     getNumber (_x >> "needsAll") > 0]
     ];
+    //Normalise to [circuit, threshold] so the kind does not have to test the shape.
+    _c set ["circuits", (getArray (_x >> "suppliedBy")) apply {
+        if (_x isEqualType []) then {[_x select 0, _x select 1]} else {[_x, _min]}
+    }];
     _c set ["varName", format ["bmkhs_%1", _c get "variableName"]];
     _consumers pushBack _c;
 
-    { _circuits set [_x, 0] } forEach (_c get "suppliedBy");
+    { _circuits set [_x select 0, 0] } forEach (_c get "circuits");
 } forEach ("true" configClasses (_config >> "Consumers"));
 
 _heli setVariable ["bmkhs_sysProducers", _producers];
