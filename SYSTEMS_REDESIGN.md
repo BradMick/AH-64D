@@ -90,12 +90,13 @@ suffixed form directly:
 Converting to arrays touches those consumers; keeping suffixes means Core
 builds names with `format`, which works but keeps two conventions alive.
 
-That choice — and whether the electrical model should be a bus/source graph
-rather than a fixed battery + 2 gen + 2 rect — is the discussion to have.
+Both questions are now settled below: per-member state follows the fuel-tank
+pattern, and the electrical model becomes a bus/source graph rather than a
+fixed battery + 2 gen + 2 rect.
 
 ## Direction — entity/component, event-driven
 
-Agreed shape (to be finalised):
+Settled shape:
 
 **One class per system, extending a common base.** The base carries identity,
 the damage role and threshold, enabled/failed state, and the update function.
