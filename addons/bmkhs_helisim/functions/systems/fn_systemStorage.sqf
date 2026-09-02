@@ -57,6 +57,10 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
         _charge = (_charge - (_rate * _frac * _deltaTime)) max 0;
     };
 
+    //Below this it is spent - for a gas-charged store this is the precharge, which is
+    //not usable pressure.
+    private _spentFrac = if (_nominal > 0) then {(_x get "stopBelow") / _nominal} else {0};
+
     //Spent once when the start gate rises, not per frame - the thing being cranked only
     //comes up seconds later, so a continuous drain empties the store before it does.
     //StartOk latches whether there was enough, since the draw itself drops the store
@@ -69,8 +73,9 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
             if !(_heli getVariable [_latchVar, false]) then {
                 private _above = _x get "startAbove";
                 private _ok    = _nominal <= 0 || {_charge * _nominal >= _above};
-                if (_ok) then {
-                    _charge = (_charge - (_x get "startDischarge")) max 0;
+                //A start spends the usable charge, leaving the precharge behind.
+                if (_ok && _nominal > 0) then {
+                    _charge = _spentFrac;
                 };
                 _heli setVariable [_okVar,    _ok,  true];
                 _heli setVariable [_latchVar, true, true];
@@ -90,7 +95,6 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
                      else {_circuits getOrDefault [_circuit, 0]}
     };
 
-    private _spentFrac = if (_nominal > 0) then {(_x get "stopBelow") / _nominal} else {0};
     private _live      = !_damaged && _gateOn && _charge > _spentFrac;
 
     if (_settle && _live && _elseFeed <= 0) then {

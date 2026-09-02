@@ -571,7 +571,8 @@ if (_heli getVariable ["bmkhs_checkPendingAdvisory", false]) then {
 };
 //Shows while the accumulator is discharged - appears on an APU start as the store gives
 //up its fluid, and clears once the pumps have refilled it.
-if (_accHydPSI < SYS_MIN_ACC_PSI) then {
+//<= because a spent accumulator sits AT the precharge, which is not usable pressure.
+if (_accHydPSI <= SYS_MIN_ACC_PSI) then {
     _wcas pushBack [WCA_ADVISORY, "ACCUM OIL PRES LO", "ACCUM PSI"];
 };
 _wcas;

@@ -79,7 +79,6 @@ private _producers = [];
 //  minRecharge     value that circuit must reach before it does
 //  startedBy       gate of the thing it cranks
 //  startAbove      value needed for a start to happen at all
-//  startDischarge  fraction of charge one start costs
 //  startRecharge   sec to refill once its recharge circuit is turning
 //  stopBelow       value it stops discharging at
 //  emerDischarge   sec full to empty as an emergency source
@@ -96,7 +95,6 @@ private _storage = [];
     _c set ["stopBelow",   getNumber (_x >> "stopBelow")];
     _c set ["startedBy",   getText   (_x >> "startedBy")];
     _c set ["startAbove",  getNumber (_x >> "startAbove")];
-    _c set ["startDischarge", getNumber (_x >> "startDischarge")];
 
     //Charge is a fraction, so a full-to-empty time converts straight to a rate.
     private _drainSecs = getNumber (_x >> "emerDischarge");

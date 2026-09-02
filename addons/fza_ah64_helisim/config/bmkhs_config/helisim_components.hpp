@@ -109,12 +109,10 @@
             gate            = "bmkhs_emerHydOn";
             startedBy       = "bmkhs_apuBtnOn";
             nominal         = 3000;       //psi at full charge
-            //1650 is the nitrogen precharge, so only what sits above it is usable. A start
-            //spends that band, leaving the precharge behind.
             startAbove      = 2600;       //psi needed to turn the APU over at all
-            startDischarge  = 0.46;       //3000 -> just under the precharge
             startRecharge   = 8;          //sec to refill, once the pumps are turning
-            stopBelow       = 1650;       //psi, the floor it stops discharging at
+            stopBelow       = 1650;       //psi nitrogen precharge - only what is above it
+                                          //is usable, and a start spends that band
             emerDischarge   = 90;         //sec of emergency pressure
         };
     };
