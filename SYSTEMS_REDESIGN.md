@@ -1,4 +1,4 @@
-# Systems redesign — in progress
+# Systems redesign — converted
 
 **Part of the BMKHS refactor.** See `SFMPLUS_BOUNDARY_REPORT.md` for the wider
 plan. This document tracks the systems model itself moving from hardcoded
@@ -44,26 +44,35 @@ accessory section and supplies bleed air is one component with two outputs.
 | Circuit | `fn_systemCircuit` + `fn_systemCircuitState` | reading a node and reporting it are separate |
 | Consumer | `fn_systemConsumer` | |
 | Reservoir | folded into Storage | a reservoir is a store that leaks; agreed, not an accident |
+| — | `fn_systemTorque` | not in the original design: overtorque damage, which is a component property but not a supply one |
 
 ## Where it stands
 
 | domain | state |
 |---|---|
-| hydraulics | **converted and flown** - pumps, reservoirs, accumulator, accessory drive |
-| electrical | not started; the generator and rectifier declarations exist but the old functions still run |
-| drivetrain | not started |
+| hydraulics | **converted, flown** - pumps, reservoirs, accumulator, accessory drive |
+| electrical | **converted, flown** - battery, generators, rectifiers, buses |
+| APU | **converted, flown** - one component, driving accessories and bleed air |
+| drivetrain | **converted, not flown** - transmission, gearboxes, torque limits |
 | fuel | stays separate - it set the pattern the kinds follow |
+
+Nineteen hardcoded functions replaced by declarations, and four per-domain
+configs absorbed into `helisim_components.hpp`, which is now the single place an
+airframe says what it has.
 
 Core runs one function per KIND rather than per system, so a pump and a
 generator are the same code with different declarations:
 
 ```
-fn_systemProducer   damage, gate, drive and consumable -> a value on a circuit
-fn_systemStorage    a producer holding a charge, which drains and refills
-fn_systemConsumer   supplied if ANY of its circuits is up, or all with needsAll
-fn_systemCircuit    a named node; highest feeder wins
-fn_systemsSolve     storage, producers, storage settle, consumers
-fn_systemsComponents  config -> hashmaps, once, at init
+fn_systemProducer      damage, gate, drive and consumable -> a value on a circuit
+fn_systemConverter     takes from one circuit, feeds another; creates nothing
+fn_systemStorage       a producer holding a charge, which drains and refills
+fn_systemConsumer      supplied if ANY of its circuits is up, or all with needsAll
+fn_systemCircuit       a named node; highest feeder wins
+fn_systemCircuitState  publishes whether a node is up
+fn_systemTorque        damages anything run past its limits
+fn_systemsSolve        storage, producers+converters, storage settle, circuits, consumers
+fn_systemsComponents   config -> hashmaps, once, at init
 ```
 
 Member count comes from the damage role, and damage is read AT THE MEMBER'S
@@ -72,27 +81,26 @@ generators because one is destroyed. That was the bug that started this.
 
 ## What is left
 
-**Electrical.** The larger conversion: around 27 external readers of
-`acBusOn`, `dcBusOn`, `battBusOn`, `gen1On` and `rect1On` across ten addons.
-Every name survives through `variableName`, but that is the thing to verify
-rather than assume.
+**Flight test the drivetrain.** The only conversion never flown. Worth
+checking: two-engine flight accrues no gearbox damage, single-engine overtorque
+does on its timers, a destroyed gearbox overspeeds its engine, and losing a tail
+gearbox takes the tail rotor with it.
 
-- battery as storage, `rechargedBy[] = {"AC"}` - the charging bus is the
-  airframe's choice, DC on an aircraft wired that way
-- `stopBelow` expresses the existing 0.25 cutoff
-- `emerDischarge = 720`, from `elecBattTimerMin`
-- AC and DC buses become circuits, replacing both bus functions
-- `helisim_electrical.hpp` disappears, being one value
+**Multiplayer with a CPG.** Never exercised, in any domain. The gunner is a
+genuine remote reader of everything a crew station displays.
 
-**Drivetrain.** Nose gearboxes are the last duplicated pair. Note the
-transmission has no accessory LOAD - nothing subtracts torque for pumps or
-generators - and transmission damage does not affect its output.
+**`breaksOnFailure` has one user.** A nose gearbox overspeeding its engine is
+the only damage propagation declared, so the shape is unproven - worth a second
+case before trusting it.
 
-**Per-domain configs fold into `helisim_components.hpp` as each converts**, the
-way `helisim_hydraulics.hpp` already did. Hitpoints stay separate: `class
-HitPoints` has to live inside the vehicle class where Arma requires it, and
-`damageRole` is the join. That indirection earns its place - it is what lets
-member count come from hitpoint count.
+**The tail rotor needs two consumers**, because its failure modes do not
+combine: hydraulic authority is an either-or across two circuits, the drive is a
+chain that must be intact. One consumer cannot express both, so `fn_inputUpdate`
+reads both. It works, but it is the model bending rather than fitting.
+
+**Hitpoints stay separate.** `class HitPoints` has to live inside the vehicle
+class where Arma requires it, and `damageRole` is the join. That indirection
+earns its place - it is what lets member count come from hitpoint count.
 
 ## Things that caught us
 
@@ -129,15 +137,46 @@ accumulator startup loop. But charge can only MOVE once the rest has solved, so
 draining and refilling are a settle pass at the end. Getting that wrong left
 the accumulator reading zero forever.
 
-## Not yet flown
+**Chains run deeper than one hop.** Nr feeds the transmission feeds the
+accessory drive feeds the pumps; a generator feeds AC feeds a rectifier feeds
+DC. Producers and converters re-resolve `SYS_SOLVE_PASSES` times so a chain
+settles in one frame rather than lagging.
 
-- multiplayer with a CPG in the aircraft, which is the half never exercised
-- the `bmkhs_utilHydPsi` casing fix, which switched on gun and pylon servo
-  failure logic that had never run
+**A gate that reads a variable published later in the same solve is a frame
+stale**, and that can deadlock a start. Gates can name a circuit instead, which
+reads the live value.
 
-## Controls are components too — later, but plan for it
+**Change-detect needs a default the value can differ from.** Making a state
+notify fire only on a change broke it outright: the previous value defaulted to
+the current one, so the first comparison was always equal and the event never
+fired at all.
 
-Not for this phase, but the design has to leave room or it gets retrofitted.
+**A threshold the model passes through legitimately is not a failure.** The
+engine flips to ON at `engRunNG`, which is below the engine-out warning
+threshold, so every start tripped the warning on the way up. Wait for the
+condition to have been true once before believing it can be false.
+
+**Conditions dropped in conversion are invisible.** The nose gearbox torque
+check was wrapped in `isSingleEng`; losing that would have damaged gearboxes in
+normal two-engine flight. Read what the old function GUARDED, not only what it
+did.
+
+## useSystems = 0
+
+Nothing is simulated. The solve exits, so no hydraulics spool, no buses come
+up, no APU exists - the engines and transmission still run because they are the
+flight model, and everything else stays at its seeded value. There is no damage
+model either, since a system exists because hitpoints declare it.
+
+The aircraft spawns cold and dark and wakes on the player's first collective or
+throttle input, spooling over ten seconds. Torque limits still apply: they run
+outside the solve, and the ratings sit at the top level beside `useSystems` so
+an airframe that declares no components at all still respects them.
+
+## Controls are components too — the remaining piece
+
+Every other domain is converted, so this is what is left of the redesign. Not
+started, and the design has to leave room for it or it gets retrofitted.
 
 Every gate names a control: `bmkhs_emerHydOn`, `bmkhs_battSwitchOn`,
 `bmkhs_apuBtnOn`. A switch is a component with state, a hitpoint and a place in

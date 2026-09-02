@@ -38,10 +38,7 @@ Along system/component lines, `#include`d from `bmkhs_ah64_config.hpp`.
 | `helisim_airfoils.hpp` | `airfoilTable00-02` | config |
 | `helisim_mass.hpp` | Station arms, crew mass | **hardcoded SQF** |
 | `helisim_fuel.hpp` | Tank masses, capacities, thresholds, XFER rates | config + `fuelConstants.hpp` |
-| `helisim_apu.hpp` | APU start delay, fuel flow | **hardcoded** |
-| `helisim_electrical.hpp` | Battery/gen/rectifier counts, timers | **hardcoded** |
-| `helisim_hydraulics.hpp` | Pressures, reservoir tiers, timers | **hardcoded** |
-| `helisim_drivetrain.hpp` | Gearboxes, transmission | **hardcoded** |
+| `helisim_components.hpp` | APU, electrical, hydraulics and drivetrain, as declared components | done — see `SYSTEMS_REDESIGN.md` |
 | `helisim_damage.hpp` | Damage thresholds, `DMG_PER_SEC` | **hardcoded** |
 | `helisim_environment.hpp` | Atmosphere constants | **hardcoded SQF** |
 | `helisim_prestonAi.hpp` | Auto-pedal gains, deadbands | **hardcoded SQF** |
@@ -80,7 +77,9 @@ The PIDs and rotor constants are the highest-risk items — they are tuned value
 **1. Mechanical split first.** Move existing config into the new files unchanged. Zero risk, immediate readability gain, and it establishes the include structure.
 
 **2. Then externalise by subsystem, easiest first:**
-   - `damage`, `electrical`, `hydraulics`, `apu` — macro constants, no flight-model risk
+   - `damage` — macro constants, no flight-model risk. Electrical, hydraulics
+     and the APU went further than externalising and became declared
+     components; see `SYSTEMS_REDESIGN.md`
    - `environment`, `mass`, `fuel` — inline constants, low risk
    - `prestonAi`, `flightControls` PIDs — tuned values, verify handling
    - `rotor`, `simpleRotor` — highest risk, own test cycle
