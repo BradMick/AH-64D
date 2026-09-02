@@ -104,19 +104,11 @@
 //  stateAbove    output at or above which it counts as running
 //  torqueFrom    variable carrying the torque this component sees. Indexed per member
 //                where the source is, so engine 2's torque reaches gearbox 2
-//  tqLimits[]    what it is rated for, worst first: {torque, seconds} pairs saying how
-//                much it will take and for how long before that costs it. A zero duration
-//                damages immediately. The limits are the aircraft's, since a component is
-//                rated for what it is rated for; accruing the damage is Core's.
-//
-//                DRIVETRAIN RATINGS BELONG AT THE TOP LEVEL, beside useSystems, as
-//                xmsnTqLimits / xmsnTqLimitsSE / ngbTqLimits / ngbTqLimitsSE. Torque
-//                damage applies whether or not systems are modelled - an airframe does
-//                not get to ignore what its drivetrain is rated for by declining to
-//                simulate the rest - and declaring them there is what lets an aircraft
-//                with no components at all still respect them
-//  tqLimitsSE[]  the same, for when one engine is doing the work of two. Used in place of
-//                tqLimits while the aircraft is single-engine
+//  tqLimits[]    what it is rated for, worst first: {fraction of rated torque, seconds it
+//                will hold there}. 0 seconds damages immediately. Drivetrain ratings go at
+//                the TOP LEVEL instead - xmsnTqLimits, ngbTqLimits and their SE pairs -
+//                which is what makes them apply with useSystems off
+//  tqLimitsSE[]  the same set, used while single-engine
 //  breaksOnFailure  array variable set true at this member's index once the component is
 //                destroyed - a nose gearbox that has come apart overspeeds its engine
 //  networked     see above
