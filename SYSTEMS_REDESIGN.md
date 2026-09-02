@@ -259,7 +259,7 @@ utility circuit, and that is all they have in common:
 | kind | `BMKHS_Storage` | `BMKHS_Source` |
 | duration | **fixed charge, depletes while supplying** | indefinite |
 | ends when | spent below its floor | DC bus drops, or reservoir dry |
-| recovers | only by recharging | as soon as its inputs return |
+| recovers | **recharges from the utility circuit** | as soon as its inputs return |
 
 The accumulator is time-limited by nature - `bmkhs_accTimer` (1.5 min) already
 IS that duration, and "spent below `spentBelow`" is the floor. The pump has no
@@ -269,9 +269,10 @@ job, not a special case:
 
 ```cpp
 class Accumulator : BMKHS_Storage {
-    output     = "UTIL_HYD";
-    gate       = "bmkhs_emerHydOn";
-    spentBelow = 1650;                  //PSI - discharges until here, then done
+    output      = "UTIL_HYD";
+    rechargedBy = "UTIL_HYD";           //fills whenever utility pressure is up
+    gate        = "bmkhs_emerHydOn";
+    spentBelow  = 1650;                 //PSI - floor, NOT a terminal state
 };
 
 class BackupPump : BMKHS_Source {
@@ -285,6 +286,46 @@ class BackupPump : BMKHS_Source {
 Both feed UTIL_HYD, so neither needs its own circuit and the consumer set stays
 two entries long. This is also why storage had to be its own base kind rather
 than a flag on source - depletion is the whole difference.
+
+#### The accumulator's real job is starting the APU
+
+Emergency flight-control pressure is its SECONDARY role. In reality the
+accumulator discharges to start the APU, and is recharged from the utility
+reservoir afterwards. Two consequences, neither of them modelled today.
+
+**Storage recharges, so `spentBelow` is a floor and not a terminal state.** An
+earlier draft had it discharge until spent and stop there. It fills again
+whenever its input circuit is up, which makes it the same shape as the battery
+- drain while supplying, recharge from a live bus - and that symmetry was
+already noted here. What was missing is the recharge half:
+
+    storage drains   while gated on AND supplying
+    storage recharges while its `rechargedBy` circuit is supplied
+
+**The APU consumes from the accumulator to start.** That is a hydraulic
+component feeding an engine-domain startup, which is exactly the cross-domain
+coupling that forced one graph instead of three. Today `fn_apu` has no
+hydraulic dependency at all - it starts on `_apuBtnOn && _battBusOn &&
+_apuFuelAvail` - so the accumulator currently has no consumers AND no recharge.
+It is inert on both sides: it publishes onto no circuit, and nothing draws from
+it.
+
+Wired up, the startup sequence becomes one dependency chain:
+
+    utility pressure charges the accumulator
+      -> accumulator discharge starts the APU
+      -> APU drives the generator
+      -> generators bring up the AC bus
+      -> rectifiers bring up the DC bus
+
+which is the graph solving an ordering that is currently hand-written across
+`fn_apu`, `fn_electricalController` and `fn_systemsVariables`.
+
+**Open - cold and dark.** With everything shut down and the accumulator
+discharged, what charges it for the first APU start? The answer decides whether
+a fully drained accumulator is recoverable in flight or a dead-aircraft state.
+Not blocking the graph work: it is a parameter on the component, not a change
+of shape.
 
 That makes selective degradation fall out of the declarations instead of being
 an AH-64 special case. Things that die with the primary side specifically are
