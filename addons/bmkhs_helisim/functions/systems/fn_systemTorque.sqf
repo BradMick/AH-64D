@@ -28,6 +28,10 @@ Author:
 params ["_heli", "_deltaTime"];
 #include "\bmkhs_helisim\functions\systems\systems.hpp"
 
+//Damaged once, where the aircraft is local - this runs outside the solve, so it does not
+//inherit the solve's guard.
+if !(local _heli) exitWith {};
+
 private _torqued = _heli getVariable ["bmkhs_sysTorqued", []];
 if (_torqued isEqualTo []) exitWith {};
 

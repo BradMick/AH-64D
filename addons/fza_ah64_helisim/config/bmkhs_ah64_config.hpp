@@ -4,7 +4,7 @@
 class BMKHS_HeliSim {
     //Model the aircraft's systems (electrical, APU, hydraulics, drivetrain).
     //Off means vanilla behaviour and Core's optional-input defaults.
-    useSystems = 0;
+    useSystems = 1;
 
     #include "bmkhs_config\helisim_airfoils.hpp"
     #include "bmkhs_config\helisim_components.hpp"
