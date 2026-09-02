@@ -53,7 +53,7 @@ accessory section and supplies bleed air is one component with two outputs.
 | hydraulics | **converted, flown** - pumps, reservoirs, accumulator, accessory drive |
 | electrical | **converted, flown** - battery, generators, rectifiers, buses |
 | APU | **converted, flown** - one component, driving accessories and bleed air |
-| drivetrain | **converted, not flown** - transmission, gearboxes, torque limits |
+| drivetrain | **converted, flown** - transmission, gearboxes, torque limits |
 | fuel | stays separate - it set the pattern the kinds follow |
 
 Nineteen hardcoded functions replaced by declarations, and four per-domain
@@ -81,13 +81,10 @@ generators because one is destroyed. That was the bug that started this.
 
 ## What is left
 
-**Flight test the drivetrain.** The only conversion never flown. Worth
-checking: two-engine flight accrues no gearbox damage, single-engine overtorque
-does on its timers, a destroyed gearbox overspeeds its engine, and losing a tail
-gearbox takes the tail rotor with it.
-
-**Multiplayer with a CPG.** Never exercised, in any domain. The gunner is a
-genuine remote reader of everything a crew station displays.
+**Multiplayer with a CPG.** Never exercised, in any domain, and the only
+untested path left. The gunner is a genuine remote reader of everything a crew
+station displays, so anything missing `networked = 1` is frozen for them while
+singleplayer looks perfect.
 
 **`breaksOnFailure` has one user.** A nose gearbox overspeeding its engine is
 the only damage propagation declared, so the shape is unproven - worth a second
