@@ -53,7 +53,7 @@ if (!(_heli getVariable ["bmkhs_systemsInitialised", false]) && local _heli) the
     _heli setVariable ["bmkhs_accHydPsiCharge",     1.0, true];
 
     //With systems the pumps build pressure from zero, which is what the ramp is for.
-    //Without them there is nothing to build it, so it is simply there.
+    //Without them nothing simulates it, so it sits at its running value.
     private _hydPsi = [3000.0, 0.0] select _sys;
     _heli setVariable ["bmkhs_priHydPsi",  _hydPsi, true];
     _heli setVariable ["bmkhs_utilHydPsi", _hydPsi, true];

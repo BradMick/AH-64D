@@ -34,13 +34,10 @@ params ["_heli", "_deltaTime"];
 //which is what stops every client computing the same state and fighting over it.
 if !(local _heli) exitWith {};
 
-//An aircraft that does not model systems does not solve them. Nothing is published, so
-//every consumer falls back to its own default and the aircraft flies with full authority.
-//That is the same path a bare airframe takes by declaring no components at all - a
-//designer who only wants the flight model should not have to declare anything.
-//
-//Nothing is lost by not solving: a system exists because hitpoints declare it, so an
-//airframe with no systems has nothing that could fail in the first place.
+//Nothing is simulated without modelled systems - no hydraulics spooling, no buses coming
+//up, no APU. The engines and the transmission still run because they are the flight model,
+//and everything else stays at the static value it was seeded with. There is no damage
+//model either, so nothing can degrade it.
 if !(_heli getVariable ["bmkhs_useSystems", false]) exitWith {};
 
 //Rebuilt each pass - a node holds only what its feeders put there this frame.
