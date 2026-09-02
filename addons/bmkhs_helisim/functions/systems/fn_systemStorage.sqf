@@ -9,7 +9,7 @@ Description:
     That is what makes a cold aircraft startable: the accumulator is full at
     init, discharges to start the APU, and the APU turning the pumps is what
     refills it. The crew sees the low caution appear and then clear, which is
-    nothing more than charge against spentBelow.
+    nothing more than charge against stopBelow.
 
     Charge is state, not supply - which is why storage is evaluated FIRST, and
     why a start draw does not need anything else solved to be spent.
@@ -63,26 +63,30 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
         _charge = (_charge - (_rate * _frac * _deltaTime)) max 0;
     };
 
-    //Spent once on the gate rising, latched. StartOk latches whether there was enough:
-    //the draw itself drops the store below the start minimum, so checking pressure
-    //directly would cut the start it just paid for.
+    //Bleeds down while cranking. StartOk is latched on the gate rising rather than
+    //tested live, since the discharge itself drops the store below startAbove and would
+    //otherwise cut the start it is paying for.
     private _startedBy = _x get "startedBy";
+    private _starting  = false;
     if (_startedBy != "") then {
-        private _latchVar  = _varName + "Drawn";
-        private _okVar     = _varName + "StartOk";
+        private _latchVar = _varName + "Drawn";
+        private _okVar    = _varName + "StartOk";
         if (_heli getVariable [_startedBy, false]) then {
             if !(_heli getVariable [_latchVar, false]) then {
-                private _draw  = _x get "startDischarge";
                 private _above = _x get "startAbove";
-                private _ok    = _charge >= _draw && {_nominal <= 0 || _charge * _nominal >= _above};
-                if (_ok) then { _charge = _charge - _draw };
-                _heli setVariable [_okVar,    _ok, true];
+                _heli setVariable [_okVar, _nominal <= 0 || {_charge * _nominal >= _above}, true];
                 _heli setVariable [_latchVar, true];
             };
+            _starting = _heli getVariable [_okVar, true];
         } else {
             _heli setVariable [_latchVar, false];
             _heli setVariable [_okVar,    true, true];
         };
+    };
+    //Only while it is actually cranking - once its recharge circuit is turning, the thing
+    //it started is running and the store refills instead.
+    if (_starting && {([_heli, _x get "rechargedBy"] call bmkhs_fnc_systemCircuit) <= 0}) then {
+        _charge = (_charge - ((_x get "startRate") * _deltaTime)) max 0;
     };
 
     //Is anything else already holding this node up? If so the store is a reserve
@@ -90,7 +94,7 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     private _circuit  = _x get "output";
     private _elseFeed = if (_circuit == "") then {0} else {_circuits getOrDefault [_circuit, 0]};
 
-    private _spentFrac = if (_nominal > 0) then {(_x get "spentBelow") / _nominal} else {0};
+    private _spentFrac = if (_nominal > 0) then {(_x get "stopBelow") / _nominal} else {0};
     private _live      = !_damaged && _gateOn && _charge > _spentFrac;
 
     if (_live && _elseFeed <= 0) then {
@@ -103,7 +107,7 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     private _rechargedBy = _x get "rechargedBy";
     if (_rechargedBy != "" && _charge < 1.0) then {
         if (([_heli, _rechargedBy] call bmkhs_fnc_systemCircuit) > 0) then {
-            private _rate = _x get "rampRate";
+            private _rate = _x get "rechargeRate";
             if (_rate > 0) then { _charge = (_charge + (_rate * _deltaTime)) min 1.0 };
         };
     };

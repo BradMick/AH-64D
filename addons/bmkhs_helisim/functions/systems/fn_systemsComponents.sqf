@@ -29,6 +29,7 @@ Author:
     BradMick
 ---------------------------------------------------------------------------- */
 params ["_heli", "_config"];
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 
 //Every kind reads these; the ones that do not apply are simply absent.
 //  damageRole   which hitpoints are this component's members
@@ -92,12 +93,11 @@ private _producers = [];
 //Storage - accumulators, batteries. A producer that holds a charge, so it can
 //supply before anything upstream is solved, and refills once something upstream is.
 //  rechargedBy     circuit that refills it
-//  spentBelow      value it stops discharging at
 //  startedBy       what draws from it to start - names a COMPONENT, not a circuit
-//  startAbove      value it must be at or above for a start to happen at all
-//  startDischarge  fraction of charge one start costs, spent at once
-//  startRecharge   seconds to refill after a start, once its recharge circuit is up
-//  emerDischarge   seconds full to empty while supplying as an emergency source
+//  startAbove      value it must reach for a start to happen at all
+//  stopBelow       value it stops discharging at
+//  emerDischarge   seconds full to empty while supplying as an emergency source. Endurance
+//                  is a gameplay figure, so the airframe picks it
 //  leakStartDmg    damage at which it starts leaking, 0 for never
 //  leakSeconds     full to empty at FULL damage; the rate ramps from the threshold
 //  drainedBy[]     other damage roles that vent this store - a gun or pylons sharing a
@@ -108,18 +108,17 @@ private _storage = [];
     private _role = _c get "damageRole";
 
     _c set ["rechargedBy", getText   (_x >> "rechargedBy")];
-    _c set ["spentBelow",  getNumber (_x >> "spentBelow")];
+    _c set ["stopBelow",   getNumber (_x >> "stopBelow")];
     _c set ["startedBy",   getText   (_x >> "startedBy")];
-    _c set ["startAbove",     getNumber (_x >> "startAbove")];
-    _c set ["startDischarge", getNumber (_x >> "startDischarge")];
+    _c set ["startAbove",  getNumber (_x >> "startAbove")];
 
     //Charge is a fraction, so a full-to-empty time converts straight to a rate.
-    private _drainSecs    = getNumber (_x >> "emerDischarge");
-    private _rechargeSecs = getNumber (_x >> "startRecharge");
-    private _leakSecs     = getNumber (_x >> "leakSeconds");
-    _c set ["emerRate",   if (_drainSecs    > 0) then {1 / _drainSecs}    else {0}];
-    _c set ["rampRate",   if (_rechargeSecs > 0) then {1 / _rechargeSecs} else {0}];
-    _c set ["leakRate",   if (_leakSecs     > 0) then {1 / _leakSecs}     else {0}];
+    private _drainSecs = getNumber (_x >> "emerDischarge");
+    private _leakSecs  = getNumber (_x >> "leakSeconds");
+    _c set ["emerRate",  if (_drainSecs > 0) then {1 / _drainSecs} else {0}];
+    _c set ["leakRate",  if (_leakSecs  > 0) then {1 / _leakSecs}  else {0}];
+    _c set ["startRate",   1 / SYS_START_DISCHARGE_SEC];
+    _c set ["rechargeRate",1 / SYS_START_RECHARGE_SEC];
     _c set ["leakStartDmg", getNumber (_x >> "leakStartDmg")];
     _c set ["drainedBy",    getArray  (_x >> "drainedBy")];
 

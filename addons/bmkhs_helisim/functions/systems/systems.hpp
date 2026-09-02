@@ -29,8 +29,10 @@
 
 #define SYS_MIN_HYD_PSI   1260
 #define SYS_MIN_ACC_PSI   1650
-//Accumulator pressure needed to turn the APU over. Below this it will not start.
-#define SYS_MIN_APU_START_PSI 2600
+//How a store spends and refills itself on a start. Mechanism, not tuning - the aircraft
+//says what its pressures are, Core says how the fluid moves.
+#define SYS_START_DISCHARGE_SEC 1.0
+#define SYS_START_RECHARGE_SEC  1.0
 #define SYS_HYD_MIN_LVL   0.1
 
 #define SYS_BATT_TIMER    12.0  //min
