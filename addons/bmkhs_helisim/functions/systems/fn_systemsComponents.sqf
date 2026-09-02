@@ -43,6 +43,8 @@ params ["_heli", "_config"];
     ["passthrough",  getNumber (cfg >> "passthrough") > 0], \
     ["increment",    getNumber (cfg >> "increment")], \
     ["networked",    getNumber (cfg >> "networked") > 0], \
+    ["stateVar",     getText   (cfg >> "stateName")], \
+    ["stateAbove",   getNumber (cfg >> "stateAbove")], \
     ["needsSystems", getNumber (cfg >> "needsSystems") > 0] \
 ]
 

@@ -15,6 +15,8 @@
                             "bmkhs_accHydPsiStartOk"};
             nominal      = 1.0;
             rampSeconds  = 5;             //spool to operating RPM
+            stateName    = "apuOn";       //running once it is up to speed
+            stateAbove   = 0.85;
             needsSystems = 1;
             networked    = 1;             //the crew stations read APU RPM
         };
@@ -181,14 +183,6 @@
             variableName = "battBusOn";
             circuit      = "BATT";
             minValue     = 0.25;
-            needsSystems = 1;
-            networked    = 1;
-        };
-        //The APU is running once it is turning fast enough to be useful.
-        class ApuRunning {
-            variableName = "apuOn";
-            circuit      = "APU";
-            minValue     = 0.85;
             needsSystems = 1;
             networked    = 1;
         };

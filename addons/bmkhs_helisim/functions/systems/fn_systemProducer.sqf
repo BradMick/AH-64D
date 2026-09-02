@@ -100,6 +100,14 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
         _heli setVariable [_varName, _out];
     };
 
+    //Whether it is RUNNING, which is a property of the component rather than of any node -
+    //an APU is on once it is turning fast enough to be useful.
+    private _stateVar = _x get "stateVar";
+    if (_stateVar != "") then {
+        private _running = _out >= (_x get "stateAbove");
+        [_heli, format ["bmkhs_%1", _stateVar], _running] call bmkhs_fnc_utilUpdateNetworkGlobal;
+    };
+
     //Highest feeder wins the node. Recorded separately too, so a store can tell whether
     //anything OTHER than itself is supplying its output.
     private _circuit = _x get "output";

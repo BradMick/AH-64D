@@ -100,6 +100,10 @@
 //  nominal       what it produces at full output
 //  rampSeconds   zero to full; 0 is instant. A pump builds pressure, a contactor does not
 //  increment     round the published value to this step, as a real gauge reads
+//  stateName     publishes whether this component is RUNNING, which is a property of the
+//                component and not of any circuit - an APU is on above a threshold, the
+//                way an engine publishes its own state. Always networked
+//  stateAbove    output at or above which it counts as running
 //  networked     see above
 //  needsSystems  1 if this is only modelled when the aircraft sets useSystems. With
 //                systems off it is not simulated and its state stays as seeded, which is
