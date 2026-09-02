@@ -287,6 +287,30 @@ class BackupPump : BMKHS_Source {
 This is also why storage had to be its own base kind rather than a flag on
 source - depletion is the whole difference.
 
+#### Storage breaks cycles, which is why it is a root
+
+The startup path is a **loop**, not a chain: a store discharges to start a
+source, that source spins an accessory drive, the drive turns the pumps, the
+pumps pressurise the supply circuit, and the supply circuit recharges the
+store. It ends where it began.
+
+A topological walk cannot order a cycle. What cuts it is that **charge is
+state, not supply** - a store can produce before anything has been solved,
+because what it delivers was put there earlier. Every store starts charged and
+refills from its `rechargedBy` circuit; the battery and the accumulator are the
+same component in different units. So storage of any kind is a root, and the
+recharge edge is settled after the walk from the walk's own result.
+
+Start draw is a transient: the store is debited once when the source starts,
+not held down while it runs, so the recharge and the draw are both live at
+once.
+
+**A caution light is a read of the model, not separate authoring.** The state
+observable in the crewstation - a low-pressure caution that appears when the
+store discharges and clears once it has recharged - is exactly
+`charge < spentBelow` on the component. Get the model right and the indication
+comes and goes on its own; there is nothing to script.
+
 #### Supply and delivery are different nodes
 
 Those two `UTIL_HYD` references above are NOT the same circuit, and writing
@@ -350,6 +374,28 @@ drains on a dead bus, recharges from a live one. A hydraulic accumulator
 refilling from a pressurised circuit is the same component in different units,
 which is the whole premise of the shared base kinds.
 
+**1a. Pumps are driven by an accessory drive, not by the engines.** Worth
+stating because the obvious `drivenBy = "engines"` is wrong and breaks a real
+case. Hydraulic pumps hang off the transmission's accessory section, and
+EITHER the APU or the engines can turn it. Written as engine-driven, an APU
+with the engines shut down produces no hydraulic pressure - which would make
+APU-only ground operations impossible and, worse, break the startup loop below,
+since the APU spinning the pumps is what recharges the store that started it.
+
+The accessory drive is therefore a circuit like any other, with more than one
+source able to turn it:
+
+```cpp
+class AccessoryDrive : BMKHS_Circuit {};        //spun by whatever can spin it
+
+class Apu     : BMKHS_Source { output = "ACCESSORY_DRIVE"; ... };
+class Engine  : BMKHS_Source { output = "ACCESSORY_DRIVE"; ... };
+class PriPump : BMKHS_Source { drivenBy = "ACCESSORY_DRIVE"; output = "PRI_HYD_SUPPLY"; ... };
+```
+
+Mechanical drive being just another circuit is the drivetrain column of the
+domain table earning its place - shaft power is a supply like any other.
+
 **2. A source can be started by storage.** Some sources cannot self-start: they
 need a slug of stored energy to spin up, and only then do they produce. The
 generic form is a startup draw on the base:
@@ -371,31 +417,38 @@ This is also the cross-domain coupling that forced one graph rather than three
 - a store in one domain gating a source in another - so it belongs on the base
 kinds rather than in whichever domain happened to need it first.
 
-**On the AH-64 specifically** (an example, not the rule): the accumulator's
-primary job is starting the APU, with emergency flight-control pressure as its
-secondary role, and it recharges off the utility circuit. Neither half exists
-today - `fn_apu` starts on `_apuBtnOn && _battBusOn && _apuFuelAvail` with no
-hydraulic dependency, so the accumulator has no consumers and no recharge. It
-is inert on both sides.
+Declared rather than hardcoded, an aircraft's startup is then just what the
+graph walks - and note it is a LOOP that closes, not a chain that ends:
 
-Declared rather than hardcoded, an aircraft's startup ordering is then just
-what the graph walks:
+    charged storage discharges to start the source that names it
+      -> that source spins an accessory drive
+      -> the drive turns the pumps
+      -> the pumps pressurise the supply circuit
+      -> the supply circuit RECHARGES the storage it started from
 
-    a supplied circuit charges its storage
-      -> storage start-draw spins up the source that names it
-      -> that source drives the next one
-      -> ... until every circuit that can come up, has
+Solvable only because the store began with charge - see "storage breaks cycles"
+above. The recharge edge is settled after the walk, from the walk's own result.
 
-On the AH-64 that reads utility -> accumulator -> APU -> generators -> AC bus
--> rectifiers -> DC bus, an ordering currently hand-written across `fn_apu`,
-`fn_electricalController` and `fn_systemsVariables`. On an aircraft with no APU
-and a battery-cranked engine it reads differently, with no Core change.
+**On the AH-64 specifically** (an example, not the rule): press the APU button
+and the accumulator discharges its fluid to start the APU. As the APU comes up
+to speed it spins the transmission's accessory section, which turns the
+hydraulic pumps, which circulate fluid, which recharges the accumulator from
+the utility reservoir. The crew sees `ACCUM OIL PSI LOW` appear as it
+discharges and clear once it has recharged - the caution being nothing more
+than `charge < spentBelow` on the component.
 
-**Open - cold and dark.** With everything shut down and storage depleted, what
-charges it for the first start? Generic question: any aircraft whose sources
-are all storage-started can reach a state where nothing can start anything. The
-answer decides whether that is recoverable or a dead aircraft. Not blocking -
-it is a parameter on the component, not a change of shape.
+None of that exists today: `fn_apu` starts on `_apuBtnOn && _battBusOn &&
+_apuFuelAvail` with no hydraulic dependency, so the accumulator has no
+consumers and no recharge, and `fn_drivetrainTransmission` models torque damage
+with no accessory-drive concept at all. The accumulator is inert on both sides.
+
+An aircraft with no APU and a battery-cranked engine walks a different loop with
+no Core change.
+
+Stores start charged, so cold and dark is not a bootstrap problem - it is only
+reachable after a store has been drained or holed in flight, which is a real
+dead-aircraft state and the correct outcome rather than a case to design
+around.
 
 That makes selective degradation fall out of the declarations instead of being
 an AH-64 special case. Things that die with the primary side specifically are
@@ -538,8 +591,8 @@ Generalises to two component kinds, where direction is data:
 ```cpp
 class Generator1 : BMKHS_PowerSource {
     damageRole = "generators";
-    output     = "AC";        //"DC" on a DC-generator aircraft
-    drivenBy   = "engines";
+    output     = "AC";                  //"DC" on a DC-generator aircraft
+    drivenBy   = "ACCESSORY_DRIVE";     //whatever actually turns it - see 1a above
 };
 
 class Rtru1 : BMKHS_PowerConverter {
@@ -656,21 +709,20 @@ that is where the conversion belongs - doing it piecemeal here would churn ten
 external files twice. Engines keep their arrays until then; the standard is
 what NEW and CONVERTED systems follow.
 
-### Solver ordering — the battery is the root
+### Solver ordering — storage is the root
 
-Nothing starts without the battery: no bus can come up until it does, so it is
-evaluated first. That makes ordering a topological walk rather than a special
-case, because the battery is the only source needing nothing upstream - no
-shaft power, no other circuit. Everything else is downstream of something.
+**Every store is a root, not just the battery.** An earlier draft said the
+battery goes first because nothing is upstream of it - true of the battery,
+false as a rule, since an accumulator has the pumps upstream and is still a
+root. The reason is charge being state rather than supply, as above.
 
-    1. roots        storage and any source with no upstream circuit
+    1. roots        ALL storage, and sources with nothing upstream
     2. converters   in dependency order, as their input circuits come up
-    3. dependents   sources driven by a circuit (electric backup pump, generators)
+    3. dependents   sources driven by a circuit (pumps on an accessory drive, generators)
 
-The battery being a root also removes the apparent circularity. Whether it
-DRAINS depends on whether anything else supplies its bus - but that is a
-post-solve question about charge, not part of deciding whether it is a source.
-It always is, when gated on and above its spent threshold.
+Whether a store drains or refills is a post-solve question about charge, not
+part of deciding whether it is a source. It always is one, when gated on and
+above its spent threshold.
 
 So: solve supply first, then settle storage charge from the result.
 
