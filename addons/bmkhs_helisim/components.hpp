@@ -123,6 +123,20 @@
 //                  its other outputs are unaffected
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
+// CONVERTERS - a rectifier, an inverter, a gearbox: takes from one circuit, feeds another
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
+//A converter CREATES nothing - without its input it has nothing to pass on, which is the
+//whole difference between it and a producer. Direction is data, so swapping input and
+//output turns a rectifier into an inverter and a DC-generator aircraft needs no new code.
+//
+//Takes every producer field except drivenBy, plus:
+//
+//  input[]       circuit it consumes from, with its threshold
+//  ratio         what it multiplies its input by, for a converter that scales rather than
+//                converting to a level - a gearbox. Ignored when nominal is set
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
 // STORAGE - accumulators, batteries, reservoirs: a producer holding a charge
 /////////////////////////////////////////////////////////////////////////////////////////////
 //

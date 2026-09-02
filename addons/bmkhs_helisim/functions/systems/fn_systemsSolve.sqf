@@ -7,7 +7,8 @@ Description:
       1. storage    charge is state, so it supplies before anything is solved,
                     which cuts the accumulator -> APU -> pumps -> accumulator
                     startup loop
-      2. producers  resolve against circuits the stores have fed
+      2. producers  resolve against circuits the stores have fed, and converters
+                    move what they made onto other circuits
       3. storage    drains and refills from what actually solved
       4. circuits   publish the state of any node the aircraft named
       5. consumers  threshold what ended up on theirs
@@ -48,12 +49,14 @@ _heli setVariable ["bmkhs_sysCircuits", _circuits];
 
 [_heli, _deltaTime]        call bmkhs_fnc_systemStorage;
 [_heli, _deltaTime]        call bmkhs_fnc_systemProducer;
+[_heli, _deltaTime]        call bmkhs_fnc_systemConverter;
 //Re-resolved until the graph settles: a producer behind another producer's circuit reads
 //a stale value otherwise, and the chains run deeper than one hop - the transmission feeds
 //the accessory drive feeds the pumps, and a generator feeds AC feeds a rectifier feeds DC.
 //deltaTime 0 so re-resolving does not advance a ramp more than once in a frame.
 for "_i" from 1 to SYS_SOLVE_PASSES do {
     [_heli, 0] call bmkhs_fnc_systemProducer;
+    [_heli, 0] call bmkhs_fnc_systemConverter;
 };
 //Charge moves last, off the solved result - a store reading its recharge circuit any
 //earlier sees zero and never refills.

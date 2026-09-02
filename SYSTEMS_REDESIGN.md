@@ -6,7 +6,44 @@ AH-64 structure to declared components.
 
 **The field reference is `addons/bmkhs_helisim/components.hpp`**, not this
 document. That header is what a builder reads to declare an airframe; this one
-records what is converted, what is not, and what bit us on the way.
+holds the design the code answers to, what is converted, and what bit us.
+
+## The model — what the kinds ARE
+
+This is the agreed design, and it is the thing to check an implementation
+against. If the code and this section disagree, that is a bug in one of them
+and worth resolving explicitly rather than quietly following the code.
+
+    Source     produces onto a circuit, given whatever drives it
+    Converter  consumes from one circuit, produces onto another
+    Storage    a source that DEPLETES while supplying - the time-limited kind
+    Circuit    a named node carrying a VALUE; consumers threshold it themselves
+    Consumer   fed by a SET of circuits; supplied if ANY of them is up
+    Reservoir  a consumable that leaks when damaged and starves its consumers
+
+Domain-agnostic by design: `drivenBy` and `input` reference circuits in ANY
+domain, which is what makes an electrically-driven hydraulic pump or an
+engine-driven generator expressible without Core knowing either exists.
+
+`Consumer` is what makes redundancy declarative rather than hardcoded - flight
+controls on two circuits keep working when one dies, while SAS on one circuit
+does not. Without it, every "which failures survive which" rule goes back to
+being an if-chain naming this airframe's specific circuits.
+
+**A component is a physical thing** - the APU, a generator, a pump, the
+accumulator. What it PUTS OUT is not a component: an APU that drives the
+accessory section and supplies bleed air is one component with two outputs.
+
+**As built**, against the above:
+
+| design | built as | note |
+|---|---|---|
+| Source | `fn_systemProducer` | renamed; same job |
+| Converter | `fn_systemConverter` | |
+| Storage | `fn_systemStorage` | |
+| Circuit | `fn_systemCircuit` + `fn_systemCircuitState` | reading a node and reporting it are separate |
+| Consumer | `fn_systemConsumer` | |
+| Reservoir | folded into Storage | a reservoir is a store that leaks; agreed, not an accident |
 
 ## Where it stands
 

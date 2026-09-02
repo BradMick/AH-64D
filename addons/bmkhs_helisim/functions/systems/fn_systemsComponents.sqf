@@ -33,6 +33,9 @@ params ["_heli", "_config"];
     ["disengageOn",  (getArray (cfg >> "disengageAbove")) param [0, ""]], \
     ["disengageAt",  (getArray (cfg >> "disengageAbove")) param [1, 0]], \
     ["minDrive",     (getArray (cfg >> "drivenBy")) param [1, 0]], \
+    ["input",        (getArray (cfg >> "input")) param [0, ""]], \
+    ["minInput",     (getArray (cfg >> "input")) param [1, 0]], \
+    ["ratio",        [1, getNumber (cfg >> "ratio")] select (isNumber (cfg >> "ratio"))], \
     ["requires",     getText   (cfg >> "requires")], \
     ["requiresAbove",getNumber (cfg >> "requiresAbove")], \
     ["nominal",      getNumber (cfg >> "nominal")], \
@@ -102,6 +105,26 @@ private _producers = [];
 
     if ((_c get "output") != "") then { _circuits set [_c get "output", 0] };
 } forEach ("true" configClasses (_config >> "Producers"));
+
+//Converters - consume from one circuit and produce onto another. They create nothing.
+private _converters = [];
+{
+    private _c    = COMPONENT_FIELDS(_x);
+    private _role = _c get "damageRole";
+
+    private _count = if (_role == "") then {1} else {[_heli, _role] call bmkhs_fnc_damageCount};
+    for "_i" from 0 to (_count - 1) do {
+        private _m = +_c;
+        _m set ["index",   _i];
+        _m set ["varName", format ["bmkhs_%1%2", _c get "variableName",
+                                   [_i + 1, ""] select (_count <= 1)]];
+        _m set ["outputs", [_x] call _readOutputs];
+        _converters pushBack _m;
+    };
+
+    if ((_c get "input") != "") then { _circuits set [_c get "input", 0] };
+} forEach ("true" configClasses (_config >> "Converters"));
+_heli setVariable ["bmkhs_sysConverters", _converters];
 
 //Storage - a producer holding a charge.
 private _storage = [];

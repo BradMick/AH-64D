@@ -78,13 +78,17 @@
             rampSeconds  = 0;             //a contactor closes, it does not spool
             needsSystems = 1;
         };
+    };
+
+    //Converters take from one circuit and put onto another. Swap input and output and a
+    //rectifier is an inverter, so a DC-generator aircraft needs no new code.
+    class Converters {
         class Rectifier {
             damageRole   = "rectifiers";  //two hitpoints today -> rect1, rect2
             variableName = "rect";
+            input[]      = {"AC"};        //any AC at all
             output       = "DC";
-            drivenBy[]   = {"AC"};        //any AC at all
             nominal      = 1;
-            rampSeconds  = 0;
             needsSystems = 1;
         };
     };

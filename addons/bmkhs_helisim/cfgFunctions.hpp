@@ -229,6 +229,7 @@ class CfgFunctions
             class systemCircuit {R;};
             class systemCircuitState {R;};
             class systemConsumer {R;};
+            class systemConverter {R;};
             class systemProducer {R;};
             class systemStorage {R;};
             class systemsComponents {R;};
