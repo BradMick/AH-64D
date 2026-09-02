@@ -129,10 +129,14 @@
             rechargedBy  = "ACCESSORY_DRIVE";
             gate         = "bmkhs_emerHydOn";
             startedBy    = "bmkhs_apuBtnOn";
-            startDraw       = 0.35;       //fraction of full charge one APU start costs
+            //Starting the APU is a quick, one-off dump of fluid, and the pumps put it
+            //straight back once they are turning - both are over in about a second.
+            startDraw       = 0.35;       //fraction of charge one APU start costs, at once
+            rechargeSeconds = 1;          //empty to full, once the pumps are turning
+            //The slow rate is the OTHER job: holding the flight controls up as an
+            //emergency source, where it has to last long enough to be worth having.
+            drainSeconds    = 90;         //full to empty, supplying emergency pressure
             spentBelow      = 1650;       //psi, the floor it stops discharging at
-            drainSeconds    = 90;         //full to empty, discharging
-            rechargeSeconds = 20;         //empty to full, once the pumps are turning
             nominal         = 3000;
         };
     };
