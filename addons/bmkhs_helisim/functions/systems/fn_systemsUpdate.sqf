@@ -21,9 +21,11 @@ params ["_heli"];
 if (CBA_missionTime < 0.1) exitWith {};
 private _deltaTime = ["systems_deltaTime"] call BIS_fnc_deltaTime;
 
-//Hydraulics and the drivetrain are flight-model infrastructure - control
-//authority and torque limits - so they run regardless.
-[_heli, _deltaTime] call bmkhs_fnc_hydraulicsController;
+//The component graph - whatever this airframe declared. Hydraulics live here now,
+//as producers and storage rather than as functions Core wrote for them.
+[_heli, _deltaTime] call bmkhs_fnc_systemsSolve;
+
+//Drivetrain torque limits and damage timers are not part of the supply graph.
 [_heli, _deltaTime] call bmkhs_fnc_drivetrainController;
 
 //Electrical and APU are the startup systems. With useSystems off the aircraft

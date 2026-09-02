@@ -250,15 +250,6 @@ class CfgFunctions
             class electricalRectifier1 {R;};
             class electricalRectifier2 {R;};
         };
-        class systemsHydraulics {
-            file = "\bmkhs_helisim\functions\systems\hydraulics";
-            class hydraulicsAccumulator {R;};
-            class hydraulicsController {R;};
-            class hydraulicsPriPump {R;};
-            class hydraulicsPriReservoir {R;};
-            class hydraulicsUtilPump {R;};
-            class hydraulicsUtilReservoir {R;};
-        };
         class systemsDrivetrain {
             file = "\bmkhs_helisim\functions\systems\drivetrain";
             class drivetrainController {R;};

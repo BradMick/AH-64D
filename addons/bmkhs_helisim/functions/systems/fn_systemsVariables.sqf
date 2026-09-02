@@ -51,20 +51,17 @@ if (!(_heli getVariable ["bmkhs_systemsInitialised", false]) && local _heli) the
     _heli setVariable ["bmkhs_apuOn",             !_sys, true];
 
 
-    //Hydraulics
-    _heli setVariable ["bmkhs_priHydPSI_pct",     1.0, true];
-    _heli setVariable ["bmkhs_priLevel_pct",      1.0, true];
-    _heli setVariable ["bmkhs_utilHydPSI_pct",    1.0, true];
-    _heli setVariable ["bmkhs_utilLevel_pct",     1.0, true];
-    _heli setVariable ["bmkhs_accHydPSI_pct",     1.0, true];
+    //Hydraulics - reservoirs start full, and so does the accumulator, which is what
+    //makes a cold aircraft startable. Pressure is NOT seeded: the pumps build it from
+    //zero, which is both correct and what the ramp exists for.
+    _heli setVariable ["bmkhs_priLevel_pctCharge",  1.0, true];
+    _heli setVariable ["bmkhs_utilLevel_pctCharge", 1.0, true];
+    _heli setVariable ["bmkhs_accHydPsiCharge",     1.0, true];
 };
 
 _heli setVariable ["bmkhs_apuFF_kgs",         0.0];
-_heli setVariable ["bmkhs_priHydPsi",         1.0];
-_heli setVariable ["bmkhs_utilHydPsi",        1.0];
 _heli setVariable ["bmkhs_dmgTimerCont",      0.0];
 _heli setVariable ["bmkhs_dmgTimerTrans",     0.0];
-_heli setVariable ["bmkhs_accHydPsi",         0.0];
 
 _heli setVariable ["bmkhs_emerHydOn",         false, true];
 _heli setVariable ["bmkhs_engineOverspeed",   [false, false], true];
