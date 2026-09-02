@@ -108,6 +108,7 @@ private _priLevel_pct        = _heli getVariable "bmkhs_priLevel_pct";
 
 private _utilHydPumpDamage   = _heli getHitPointDamage "hit_hyd_utilPump";
 private _utilHydPSI          = _heli getVariable "bmkhs_utilHydPsi";
+private _accHydPSI           = _heli getVariable ["bmkhs_accHydPsi", SYS_MIN_ACC_PSI];
 private _utilLevel_pct       = _heli getVariable "bmkhs_utilLevel_pct";
 //ASE
 private _msnEquipState       = _heli getVariable "fza_ah64_ase_msnEquipPwr";
@@ -563,5 +564,10 @@ if (!("tsd" in _pltMpd || "tsd" in _cpgMpd) && _wptPassed) then {
 };
 if (_heli getVariable ["bmkhs_checkPendingAdvisory", false]) then {
     _wcas pushBack [WCA_ADVISORY, "FUEL CHECK", "FUEL CHECK"];
+};
+//Shows while the accumulator is discharged - appears on an APU start as the store gives
+//up its fluid, and clears once the pumps have refilled it.
+if (_accHydPSI < SYS_MIN_ACC_PSI) then {
+    _wcas pushBack [WCA_ADVISORY, "ACCUM OIL PRES LO", "ACCUM PSI"];
 };
 _wcas;
