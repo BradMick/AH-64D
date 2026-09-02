@@ -15,6 +15,8 @@
             //Turns the accessories as it spools, so the pumps come up with it rather than
             //snapping on once it is running.
             driveFrom    = "bmkhs_apuRPM_pct";
+            //Declutches once the rotor is driving the accessory section itself.
+            disengageAbove[] = {"Nr", 0.95};
             nominal      = 1.0;
             rampSeconds  = 0;
         };

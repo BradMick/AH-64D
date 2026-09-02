@@ -85,6 +85,11 @@
 //  drivenBy[]    circuit that must be turning or live, with its threshold
 //  driveFrom     variable its output follows 0..1, for something that spools rather than
 //                switching on - an APU drives its accessories as it comes up to speed
+//  disengageAbove circuit and threshold above which it stops producing, for a clutch.
+//                An APU declutches once the rotor is driving the accessories itself, so
+//                it keeps running while contributing nothing. Compared live, not latched,
+//                so it picks the load back up on the way down - an APU left running
+//                through an engine failure carries the accessories again as Nr decays
 //  passthrough   1 to pass its drive value along instead of nominal, for a shaft
 //  requires      level variable it draws from; SCALES output rather than gating it, so a
 //                leaking reservoir shows as falling pressure rather than a cliff

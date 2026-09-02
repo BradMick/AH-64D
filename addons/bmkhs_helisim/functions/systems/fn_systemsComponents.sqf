@@ -30,6 +30,8 @@ params ["_heli", "_config"];
     ["gate",         getText   (cfg >> "gate")], \
     ["output",       getText   (cfg >> "output")], \
     ["drivenBy",     (getArray (cfg >> "drivenBy")) param [0, ""]], \
+    ["disengageOn",  (getArray (cfg >> "disengageAbove")) param [0, ""]], \
+    ["disengageAt",  (getArray (cfg >> "disengageAbove")) param [1, 0]], \
     ["minDrive",     (getArray (cfg >> "drivenBy")) param [1, 0]], \
     ["driveFrom",    getText   (cfg >> "driveFrom")], \
     ["requires",     getText   (cfg >> "requires")], \

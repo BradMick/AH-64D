@@ -49,6 +49,13 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     private _driven   = _drivenBy == ""
                      || {([_heli, _drivenBy] call bmkhs_fnc_systemCircuit) > (_x get "minDrive")};
 
+    //A clutch drops out once something else is driving what it drives - an APU declutches
+    //as the rotor comes up to speed and stops contributing.
+    private _clutch = _x get "disengageOn";
+    if (_clutch != "" && {([_heli, _clutch] call bmkhs_fnc_systemCircuit) >= (_x get "disengageAt")}) then {
+        _driven = false;
+    };
+
     //Scales rather than gates, so a leak shows as falling pressure. Still closes the
     //chain: no fluid is no pressure.
     private _requires = _x get "requires";
