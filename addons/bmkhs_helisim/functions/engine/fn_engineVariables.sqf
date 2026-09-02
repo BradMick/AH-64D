@@ -21,14 +21,18 @@ params ["_heli", "_config"];
 if (!(_heli getVariable ["bmkhs_engineInitialised", false]) && local _heli) then {
     _heli setVariable ["bmkhs_engineInitialised", true, true];
 
-    //Without a modelled electrical system and APU there is no start procedure, so
-    //the aircraft comes up running the way vanilla Arma does.
-    private _running = !(_heli getVariable ["bmkhs_useSystems", false]);
-    private _lever   = ["OFF", "FLY"] select _running;
-    private _state   = ["OFF", "ON"]  select _running;
+    //Everything starts OFF, with or without modelled systems. Without them there is no
+    //start PROCEDURE - no battery, APU or generators to sequence - but Arma's own startup
+    //still runs, and driving it from OFF is what spins the rotor up over that window.
+    //The graph then follows: Nr turns the transmission, which drives the accessories,
+    //which build pressure. Seeding it already-running skipped all of that and left the
+    //values reading as failures until the model caught up.
+    //The power lever is a crew control, so with no systems modelled there is nothing to
+    //move it - it starts at FLY. With systems it starts OFF and the crew sets it.
+    private _lever = ["FLY", "OFF"] select (_heli getVariable ["bmkhs_useSystems", false]);
 
     _heli setVariable ["bmkhs_engPowerLeverState",    [_lever, _lever], true]; //OFF, IDLE, FLY
-    _heli setVariable ["bmkhs_engState",              [_state, _state], true]; //OFF, STARTING, ON
+    _heli setVariable ["bmkhs_engState",              ["OFF", "OFF"],   true]; //OFF, STARTING, ON
 };
 
 if(isMultiplayer) then {
