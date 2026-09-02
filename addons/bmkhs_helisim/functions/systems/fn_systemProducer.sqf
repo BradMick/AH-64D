@@ -22,12 +22,17 @@ Author:
 params ["_heli", "_deltaTime"];
 #include "\bmkhs_helisim\functions\systems\systems.hpp"
 
+private _useSystems = _heli getVariable ["bmkhs_useSystems", false];
 private _producers = _heli getVariable ["bmkhs_sysProducers", []];
 if (_producers isEqualTo []) exitWith {};
 
 private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
 
 {
+    //Not modelled with systems off - its state stays as seeded, which is the vanilla
+    //contract: powered up, running, no start procedure.
+    if ((_x get "needsSystems") && !_useSystems) then { continue };
+
     private _varName = _x get "varName";
     private _nominal = _x get "nominal";
 

@@ -28,7 +28,7 @@ if (([_heli, "engines", 1] call bmkhs_fnc_damageGet) == 0) then {
     [_heli, "engines", 0.000001, 1] call bmkhs_fnc_damageSet
 };
 if (([_heli, "batteries", 0] call bmkhs_fnc_damageGet) == 0) then {
-    _heli setVariable ["bmkhs_battPower_pct", 1.0, true];
+    _heli setVariable ["bmkhs_battPower_pctCharge", 1.0, true];
     [_heli, "batteries", 0.000001, 0] call bmkhs_fnc_damageSet
 };
 //A repair makes the aircraft serviceable, not running. Fluid and stored charge come

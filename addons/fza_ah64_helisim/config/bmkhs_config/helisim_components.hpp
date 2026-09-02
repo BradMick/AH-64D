@@ -64,6 +64,7 @@
             drivenBy[]   = {"ACCESSORY_DRIVE", 0.85};
             nominal      = 1;             //on/off, not volts
             rampSeconds  = 0;             //a contactor closes, it does not spool
+            needsSystems = 1;
         };
         class Rectifier {
             damageRole   = "rectifiers";  //two hitpoints today -> rect1, rect2
@@ -72,6 +73,7 @@
             drivenBy[]   = {"AC"};        //any AC at all
             nominal      = 1;
             rampSeconds  = 0;
+            needsSystems = 1;
         };
     };
 
@@ -99,6 +101,21 @@
             drainedBy[]     = {"gunTurret", "pylons"};
         };
 
+        //Feeds the battery route, and runs down whenever whatever charges it is dead.
+        //rechargedBy is the airframe's choice - DC on an aircraft wired that way.
+        class Battery {
+            damageRole      = "batteries";
+            variableName    = "battPower_pct";
+            output          = "BATT";
+            rechargedBy[]   = {"AC"};
+            gate            = "bmkhs_battSwitchOn";
+            nominal         = 1.0;        //published as a fraction
+            stopBelow       = 0.25;       //too flat to hold a bus up
+            startRecharge   = 60;         //sec off a live bus
+            emerDischarge   = 720;        //12 min on the battery alone
+            needsSystems    = 1;
+        };
+
         //Discharges to start the APU and is refilled by the pumps it just started. Doubles
         //as emergency flight-control pressure, gated on the crew button.
         class Accumulator {
@@ -123,6 +140,26 @@
     //Consumers here are read by the flight model on the pilot's machine only, so they stay
     //local. Anything a crew station draws sets networked.
     class Consumers {
+        //What the crew stations read. A route is up when something is feeding it, however
+        //that power got there.
+        class AcBus {
+            variableName = "acBusOn";
+            needsSystems = 1;
+            suppliedBy[] = {{"AC", 1}};
+            networked    = 1;
+        };
+        class DcBus {
+            variableName = "dcBusOn";
+            needsSystems = 1;
+            suppliedBy[] = {{"DC", 1}};
+            networked    = 1;
+        };
+        class BattBus {
+            variableName = "battBusOn";
+            needsSystems = 1;
+            suppliedBy[] = {{"BATT", 0.25}};
+            networked    = 1;
+        };
         //Either circuit alone keeps the controls moving, so losing one side is a
         //degradation rather than a loss of control.
         class FlightControls {

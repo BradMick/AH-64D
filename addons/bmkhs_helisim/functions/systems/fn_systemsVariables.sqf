@@ -31,19 +31,12 @@ if (!(_heli getVariable ["bmkhs_systemsInitialised", false]) && local _heli) the
     //Switch states
     _heli setVariable ["bmkhs_battSwitchOn",      !_sys, true];
 
-    //Electrical System
-    //--Battery
-    _heli setVariable ["bmkhs_battPower_pct",     1.0, true];
-    //--Buses
+    //Electrical - the buses are what everything outside Core reads, and with systems off
+    //nothing solves them, so they stay as seeded.
+    _heli setVariable ["bmkhs_battPower_pctCharge", 1.0, true];
     _heli setVariable ["bmkhs_battBusOn",         !_sys, true];
     _heli setVariable ["bmkhs_acBusOn",           !_sys, true];
     _heli setVariable ["bmkhs_dcBusOn",           !_sys, true];
-    //--Gen 1 and RTRU 1
-    _heli setVariable ["bmkhs_gen1On",            !_sys, true];
-    _heli setVariable ["bmkhs_rect1On",           !_sys, true];
-    //--Gen 2 and RTRU 2
-    _heli setVariable ["bmkhs_gen2On",            !_sys, true];
-    _heli setVariable ["bmkhs_rect2On",           !_sys, true];
 
     //APU - the engine controller shuts the engines down without it
     _heli setVariable ["bmkhs_apuBtnOn",          !_sys, true];
@@ -67,13 +60,7 @@ _heli setVariable ["bmkhs_emerHydOn",         false, true];
 _heli setVariable ["bmkhs_engineOverspeed",   [false, false], true];
 
 //Systems tuning - the aircraft supplies these, Core keeps damage thresholds fixed
-_heli setVariable ["bmkhs_elecBattTimerMin",getNumber (_config >> "elecBattTimerMin")];
 _heli setVariable ["bmkhs_apuStartDelay",   getNumber (_config >> "apuStartDelay")];
-
-//Countdown timers, seeded full. These are DERIVED from the config values above, so they
-//have to be set after them - reading them earlier returns nil and the multiply throws,
-//which aborts the rest of this function and leaves the aircraft uninitialised.
-_heli setVariable ["bmkhs_battTimer",    (_heli getVariable ["bmkhs_elecBattTimerMin", 0]) * 60];
 
 //Drivetrain torque limits and timers
 _heli setVariable ["bmkhs_ngbContTqLimit",    getNumber (_config >> "ngbContTqLimit")];

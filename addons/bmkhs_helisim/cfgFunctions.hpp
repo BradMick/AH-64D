@@ -239,17 +239,6 @@ class CfgFunctions
             file = "\bmkhs_helisim\functions\systems\apu";
             class apu {R;};
         };
-        class systemsElectrical {
-            file = "\bmkhs_helisim\functions\systems\electrical";
-            class electricalACBus {R;};
-            class electricalBattery {R;};
-            class electricalController {R;};
-            class electricalDCBus {R;};
-            class electricalGenerator1 {R;};
-            class electricalGenerator2 {R;};
-            class electricalRectifier1 {R;};
-            class electricalRectifier2 {R;};
-        };
         class systemsDrivetrain {
             file = "\bmkhs_helisim\functions\systems\drivetrain";
             class drivetrainController {R;};

@@ -10,7 +10,6 @@ class BMKHS_HeliSim {
     #include "bmkhs_config\helisim_apu.hpp"
     #include "bmkhs_config\helisim_components.hpp"
     #include "bmkhs_config\helisim_drivetrain.hpp"
-    #include "bmkhs_config\helisim_electrical.hpp"
     #include "bmkhs_config\helisim_engine.hpp"
     #include "bmkhs_config\helisim_flightControls.hpp"
     #include "bmkhs_config\helisim_fuel.hpp"

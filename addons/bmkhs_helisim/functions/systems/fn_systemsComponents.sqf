@@ -40,7 +40,8 @@ params ["_heli", "_config"];
                         else {0}], \
     ["passthrough",  getNumber (cfg >> "passthrough") > 0], \
     ["increment",    getNumber (cfg >> "increment")], \
-    ["networked",    getNumber (cfg >> "networked") > 0] \
+    ["networked",    getNumber (cfg >> "networked") > 0], \
+    ["needsSystems", getNumber (cfg >> "needsSystems") > 0] \
 ]
 
 private _circuits = createHashMap;
@@ -106,7 +107,8 @@ private _consumers = [];
     private _c = createHashMapFromArray [
         ["variableName", getText  (_x >> "variableName")],
         ["needsAll",     getNumber (_x >> "needsAll") > 0],
-        ["networked",    getNumber (_x >> "networked") > 0]
+        ["networked",    getNumber (_x >> "networked") > 0],
+        ["needsSystems", getNumber (_x >> "needsSystems") > 0]
     ];
     _c set ["circuits", (getArray (_x >> "suppliedBy")) apply {[_x select 0, _x param [1, 0]]}];
     _c set ["varName", format ["bmkhs_%1", _c get "variableName"]];

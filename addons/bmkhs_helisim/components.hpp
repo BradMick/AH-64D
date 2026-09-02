@@ -60,6 +60,10 @@
 //  rampSeconds   zero to full; 0 is instant. A pump builds pressure, a contactor does not
 //  increment     round the published value to this step, as a real gauge reads
 //  networked     see above
+//  needsSystems  1 if this is only modelled when the aircraft sets useSystems. With
+//                systems off it is not simulated and its state stays as seeded, which is
+//                the vanilla contract - powered up, running, no start procedure. Startup
+//                systems set this; flight-model infrastructure does not
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
 // STORAGE - accumulators, batteries, reservoirs: a producer holding a charge

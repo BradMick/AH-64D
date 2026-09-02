@@ -19,10 +19,13 @@ Author:
 ---------------------------------------------------------------------------- */
 params ["_heli"];
 
+private _useSystems = _heli getVariable ["bmkhs_useSystems", false];
 private _consumers = _heli getVariable ["bmkhs_sysConsumers", []];
 if (_consumers isEqualTo []) exitWith {};
 
 {
+    if ((_x get "needsSystems") && !_useSystems) then { continue };
+
     //_comp, not _x: the inner forEach rebinds it to the circuit pair.
     private _comp     = _x;
     private _needsAll = _comp get "needsAll";
