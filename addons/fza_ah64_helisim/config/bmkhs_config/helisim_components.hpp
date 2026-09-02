@@ -91,7 +91,10 @@
             variableName = "noseGearbox";
             input[]      = {"Nr"};
             torqueFrom   = "bmkhs_engPctTQ";  //per member, so engine 2 feeds gearbox 2
-            tqLimits[]   = {{1.25, 0}, {1.22, 6}, {1.10, 150}};
+            //Single-engine ratings: a nose gearbox only carries enough to hurt it when
+            //one engine is doing the work of two.
+            tqLimits[]      = {{1.25, 0}, {1.22, 6}, {1.10, 150}};
+            tqLimitsWhen    = "bmkhs_isSingleEng";
             breaksOnFailure = "bmkhs_engineOverspeed";
         };
         //The tail chain. Either gearbox failing takes the tail rotor with it, because

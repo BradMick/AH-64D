@@ -108,6 +108,9 @@
 //                much it will take and for how long before that costs it. A zero duration
 //                damages immediately. The limits are the aircraft's, since a component is
 //                rated for what it is rated for; accruing the damage is Core's
+//  tqLimitsWhen  variable that must be true for the limits to apply at all - nose gearbox
+//                ratings are single-engine, since it only carries enough to hurt it when
+//                one engine is doing the work of two
 //  breaksOnFailure  array variable set true at this member's index once the component is
 //                destroyed - a nose gearbox that has come apart overspeeds its engine
 //  networked     see above
