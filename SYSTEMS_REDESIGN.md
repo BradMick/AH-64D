@@ -287,45 +287,70 @@ Both feed UTIL_HYD, so neither needs its own circuit and the consumer set stays
 two entries long. This is also why storage had to be its own base kind rather
 than a flag on source - depletion is the whole difference.
 
-#### The accumulator's real job is starting the APU
+#### Storage recharges, and can be what starts a source
 
-Emergency flight-control pressure is its SECONDARY role. In reality the
-accumulator discharges to start the APU, and is recharged from the utility
-reservoir afterwards. Two consequences, neither of them modelled today.
+Two general rules. Both are missing today, and both were nearly written as
+hydraulics special cases because of the airframe that exposed them.
 
-**Storage recharges, so `spentBelow` is a floor and not a terminal state.** An
-earlier draft had it discharge until spent and stop there. It fills again
-whenever its input circuit is up, which makes it the same shape as the battery
-- drain while supplying, recharge from a live bus - and that symmetry was
-already noted here. What was missing is the recharge half:
+**1. Storage refills from a circuit; `spentBelow` is a floor, not a terminal
+state.** An earlier draft had storage discharge until spent and stop there.
+Storage fills again whenever its input circuit is supplied:
 
-    storage drains   while gated on AND supplying
+    storage drains    while gated on AND supplying
     storage recharges while its `rechargedBy` circuit is supplied
+    spentBelow        is the floor it stops discharging at, not the end of it
 
-**The APU consumes from the accumulator to start.** That is a hydraulic
-component feeding an engine-domain startup, which is exactly the cross-domain
-coupling that forced one graph instead of three. Today `fn_apu` has no
-hydraulic dependency at all - it starts on `_apuBtnOn && _battBusOn &&
-_apuFuelAvail` - so the accumulator currently has no consumers AND no recharge.
-It is inert on both sides: it publishes onto no circuit, and nothing draws from
-it.
+This is one rule across domains, and the battery already behaves this way -
+drains on a dead bus, recharges from a live one. A hydraulic accumulator
+refilling from a pressurised circuit is the same component in different units,
+which is the whole premise of the shared base kinds.
 
-Wired up, the startup sequence becomes one dependency chain:
+**2. A source can be started by storage.** Some sources cannot self-start: they
+need a slug of stored energy to spin up, and only then do they produce. The
+generic form is a startup draw on the base:
 
-    utility pressure charges the accumulator
-      -> accumulator discharge starts the APU
-      -> APU drives the generator
-      -> generators bring up the AC bus
-      -> rectifiers bring up the DC bus
+```cpp
+class Apu : BMKHS_Source {
+    startedBy = "HYD_ACC";     //storage it draws from to spin up
+    startDraw = 0.25;          //fraction of that store consumed per start
+};
+```
 
-which is the graph solving an ordering that is currently hand-written across
-`fn_apu`, `fn_electricalController` and `fn_systemsVariables`.
+with no domain implied. `startedBy` naming a hydraulic store gives an
+accumulator-started APU; naming an electrical one gives a battery-cranked
+engine, which is the identical mechanism and would otherwise have arrived later
+as a second special case. An aircraft whose sources all self-start declares
+nothing and the rule costs it nothing.
 
-**Open - cold and dark.** With everything shut down and the accumulator
-discharged, what charges it for the first APU start? The answer decides whether
-a fully drained accumulator is recoverable in flight or a dead-aircraft state.
-Not blocking the graph work: it is a parameter on the component, not a change
-of shape.
+This is also the cross-domain coupling that forced one graph rather than three
+- a store in one domain gating a source in another - so it belongs on the base
+kinds rather than in whichever domain happened to need it first.
+
+**On the AH-64 specifically** (an example, not the rule): the accumulator's
+primary job is starting the APU, with emergency flight-control pressure as its
+secondary role, and it recharges off the utility circuit. Neither half exists
+today - `fn_apu` starts on `_apuBtnOn && _battBusOn && _apuFuelAvail` with no
+hydraulic dependency, so the accumulator has no consumers and no recharge. It
+is inert on both sides.
+
+Declared rather than hardcoded, an aircraft's startup ordering is then just
+what the graph walks:
+
+    a supplied circuit charges its storage
+      -> storage start-draw spins up the source that names it
+      -> that source drives the next one
+      -> ... until every circuit that can come up, has
+
+On the AH-64 that reads utility -> accumulator -> APU -> generators -> AC bus
+-> rectifiers -> DC bus, an ordering currently hand-written across `fn_apu`,
+`fn_electricalController` and `fn_systemsVariables`. On an aircraft with no APU
+and a battery-cranked engine it reads differently, with no Core change.
+
+**Open - cold and dark.** With everything shut down and storage depleted, what
+charges it for the first start? Generic question: any aircraft whose sources
+are all storage-started can reach a state where nothing can start anything. The
+answer decides whether that is recoverable or a dead aircraft. Not blocking -
+it is a parameter on the component, not a change of shape.
 
 That makes selective degradation fall out of the declarations instead of being
 an AH-64 special case. Things that die with the primary side specifically are
