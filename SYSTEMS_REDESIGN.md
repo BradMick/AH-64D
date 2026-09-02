@@ -488,23 +488,38 @@ The kinds that need expressing:
 | multi-position | N discrete positions, stepped or selected directly |
 | guarded | needs the cover lifted first |
 
-`fn_interactPowerLever` is the case that shows the gap: a three-position
-selector (OFF / IDLE / FLY) written as an if-chain, once per engine. Declared
-instead:
+`fn_interactPowerLever` is the case that shows the gap: OFF / IDLE / FLY
+written as an if-chain, once per engine.
+
+**Power levers and throttles are not switches, and not each other.** Worth
+separating now so the control model does not collapse them:
+
+| | power lever | throttle |
+|---|---|---|
+| what | engine condition - fuel flow gate | continuous power modulation |
+| range | detented positions (OFF/IDLE/FLY) | smooth 0-1 |
+| use | set once per phase of flight | flown continuously |
+| example | AH-64, most turbines | piston twist-grip, turbine beep |
+
+An aircraft may have one, both or neither - the AH-64 has no throttle at all
+because the governor holds Nr. So a power lever is a **detented axis**: a
+continuous range whose marked positions are what the systems model reads, which
+means it wants an analog binding as well as step-to-next-detent keys. A
+throttle is a plain axis with no detents.
 
 ```cpp
 class PowerLever : BMKHS_Control {
-    variableName = "eng1PowerLever";
-    kind         = "multiPosition";
-    positions[]  = {"OFF", "IDLE", "FLY"};
+    variableName = "powerLever";
+    kind         = "detentedAxis";
+    detents[]    = {"OFF", "IDLE", "FLY"};   //positions the systems model reads
     default      = "OFF";
-    perMember    = "engines";      //one per engine, from the damage role
+    perMember    = "engines";                //one per engine, from the damage role
 };
 ```
 
-which publishes `bmkhs_eng1PowerLeverState`, generates step-up / step-down and
-direct-select keybinds, and gives the gate model a control to reference without
-Core knowing what a power lever is.
+publishing `bmkhs_eng1PowerLeverState` and generating both the analog bind and
+step-up / step-down keys, with the gate model referencing a control Core does
+not have to understand.
 
 The wrinkle to design around: **keybinds are config-time and static**, while
 component counts are aircraft-declared. An aircraft with three engines needs
