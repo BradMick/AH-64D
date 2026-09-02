@@ -915,6 +915,75 @@ three power-lever binds generated from `perMember`, so the macro has to expand
 over a count the aircraft chooses. That is the part most likely to catch us if
 the control model is bolted on afterwards rather than planned for now.
 
+## Decisions to make while writing it
+
+This is a BEHAVIOUR replica, not a hydraulics simulator. Abstractions and
+simplifications are the point: the model has to produce the right cockpit
+indications and the right failure consequences at 60 Hz, and no more. Most of
+what follows is "pick the simple option and move on" rather than open design.
+
+**Simplifications taken deliberately**, so they read as choices later rather
+than oversights:
+
+- **Highest source wins; capacity is not modelled.** Two generators and six are
+  identical, and a circuit cannot be over-drawn. Load-shedding is out of scope.
+- **`minDriveRPM` is a GATE, not a scale.** A pump above its threshold makes
+  full pressure. Sagging pressure with Nr buys nothing a threshold does not.
+- **Converters pass their input through, gated by their own damage and gate.**
+  Voltage conversion is not modelled; a rectifier answers "is DC up", not "at
+  what volts". A gearbox ratio matters to the drivetrain maths, not to the
+  supply question the solver answers.
+- **Storage passes through when charged.** A store sitting between supply and
+  delivery hands supply onward while it has charge, so pumps reach the flight
+  node in normal operation and the store only DISCHARGES when nothing upstream
+  supplies it. This is the rule that keeps the two-node split honest.
+
+**Things to settle in code, cheaply:**
+
+1. **Solve order.** Kind-by-kind ordering reads a stale value where one source
+   depends on another through a converter (the backup pump behind DC behind a
+   generator). A single ordered walk over all components, or two passes, fixes
+   it. Not worth a topological sort for a graph this size.
+2. **One frame of lag is acceptable, but pick it on purpose.** Reading
+   neighbours from last frame is fine at 60 Hz; the start chain is a few hops
+   and the APU spools over seconds. Just do not mix - either recompute the walk
+   each frame or propagate incrementally, not both.
+3. **Per-member instantiation.** A class with a plural `damageRole` becomes N
+   components, each reading damage AT ITS INDEX. Reading the role without an
+   index returns the WORST member, which would fail all three generators
+   because one is destroyed. Needs the index; the document currently implies
+   both this and one-class-per-member.
+4. **Undeclared circuits publish NOTHING.** Not zero. Today's permissive
+   behaviour comes from read-side defaults - `getVariable ["bmkhs_priHydPsi",
+   3000]` - which only fire when the variable is absent. Publishing 0 for an
+   aircraft with no hydraulics would read as failure and lock the controls,
+   which is the opposite of the intended rule.
+5. **`startDraw` needs a latch.** Debit once on the gate rising, not every
+   frame while starting, or the store empties in under a second.
+
+**One behaviour that does not fit the model and must not be lost.**
+`fn_inputUpdate` locks the tail rotor on a CONJUNCTION across two systems:
+
+```sqf
+if (_priHydPSI < hydMinPsi && _utilLevel_pct < hydMinLevel) then { _tailRtrFixed = true };
+```
+
+Primary PRESSURE and utility LEVEL together. A consumer OR-set cannot express
+it, so it either needs a consumer that can take an AND, or it gets carried as a
+one-off check. Converting without noticing silently deletes the failure.
+
+### Confirmed against the code
+
+- **`requires` vs `draws` is right.** `fn_fuelLeak` does damage drain only,
+  keyed on tank damage with the linear ramp described here, independent of
+  consumption in `fn_fuelDraw`. Note the leak formula here omits the `min 1`
+  clamp the code has, and `fn_hydraulicsUtilReservoir` adds pylon and gun
+  damage on top, so damage can exceed 1.0.
+- **A real seeding bug.** `fn_systemsVariables` seeds `bmkhs_priHydPsi` and
+  `bmkhs_utilHydPsi` to **1.0**, compared against `hydMinPsi` 1260. Any frame
+  before the pumps first run reads as hydraulic failure - harmless today only
+  because the pumps run in the same tick.
+
 ## Landmines found auditing the consumers
 
 Measured, not guessed - 36 read sites outside `functions/systems/` across 10
