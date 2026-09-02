@@ -76,6 +76,7 @@ private _producers = [];
 //  rechargedBy     circuit that refills it
 //  startedBy       gate of the thing it cranks
 //  startAbove      value needed for a start to happen at all
+//  startDischarge  fraction of charge one start costs
 //  stopBelow       value it stops discharging at
 //  emerDischarge   sec full to empty as an emergency source
 //  leakStartDmg    damage at which it starts leaking, 0 for never
@@ -90,14 +91,14 @@ private _storage = [];
     _c set ["stopBelow",   getNumber (_x >> "stopBelow")];
     _c set ["startedBy",   getText   (_x >> "startedBy")];
     _c set ["startAbove",  getNumber (_x >> "startAbove")];
+    _c set ["startDischarge", getNumber (_x >> "startDischarge")];
 
     //Charge is a fraction, so a full-to-empty time converts straight to a rate.
     private _drainSecs = getNumber (_x >> "emerDischarge");
     private _leakSecs  = getNumber (_x >> "leakSeconds");
     _c set ["emerRate",  if (_drainSecs > 0) then {1 / _drainSecs} else {0}];
     _c set ["leakRate",  if (_leakSecs  > 0) then {1 / _leakSecs}  else {0}];
-    _c set ["startRate",   1 / SYS_START_DISCHARGE_SEC];
-    _c set ["rechargeRate",1 / SYS_START_RECHARGE_SEC];
+    _c set ["rechargeRate", 1 / SYS_START_RECHARGE_SEC];
     _c set ["leakStartDmg", getNumber (_x >> "leakStartDmg")];
     _c set ["drainedBy",    getArray  (_x >> "drainedBy")];
 

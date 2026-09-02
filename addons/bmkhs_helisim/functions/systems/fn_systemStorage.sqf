@@ -57,32 +57,28 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
         _charge = (_charge - (_rate * _frac * _deltaTime)) max 0;
     };
 
-    //StartOk is latched on the gate rising, not tested live - the discharge drops the
-    //store below startAbove and would cut the start it is paying for.
+    //Spent once when the start gate rises, not per frame - the thing being cranked only
+    //comes up seconds later, so a continuous drain empties the store before it does.
+    //StartOk latches whether there was enough, since the draw itself drops the store
+    //below startAbove and would cut the start it is paying for.
     private _startedBy = _x get "startedBy";
-    private _starting  = false;
-    if (_startedBy != "" && !_settle) then {
+    if (_settle && _startedBy != "") then {
         private _latchVar = _varName + "Drawn";
         private _okVar    = _varName + "StartOk";
         if (_heli getVariable [_startedBy, false]) then {
             if !(_heli getVariable [_latchVar, false]) then {
                 private _above = _x get "startAbove";
-                _heli setVariable [_okVar, _nominal <= 0 || {_charge * _nominal >= _above}, true];
-                _heli setVariable [_latchVar, true];
+                private _ok    = _nominal <= 0 || {_charge * _nominal >= _above};
+                if (_ok) then {
+                    _charge = (_charge - (_x get "startDischarge")) max 0;
+                };
+                _heli setVariable [_okVar,    _ok,  true];
+                _heli setVariable [_latchVar, true, true];
             };
-            _starting = _heli getVariable [_okVar, true];
         } else {
-            _heli setVariable [_latchVar, false];
-            _heli setVariable [_okVar,    true, true];
+            _heli setVariable [_latchVar, false, true];
+            _heli setVariable [_okVar,    true,  true];
         };
-        _heli setVariable [_varName + "Cranking", _starting];
-    };
-    if (_settle && _startedBy != "") then {
-        _starting = _heli getVariable [_varName + "Cranking", false];
-    };
-    //Only while cranking; once its recharge circuit turns, the thing it started is up.
-    if (_settle && _starting && {([_heli, _x get "rechargedBy"] call bmkhs_fnc_systemCircuit) <= 0}) then {
-        _charge = (_charge - ((_x get "startRate") * _deltaTime)) max 0;
     };
 
     //Anything else holding this node up makes the store a reserve, not a supply. On the

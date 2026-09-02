@@ -29,9 +29,7 @@
 
 #define SYS_MIN_HYD_PSI   1260
 #define SYS_MIN_ACC_PSI   1650
-//How a store spends and refills itself on a start. Mechanism, not tuning - the aircraft
-//says what its pressures are, Core says how the fluid moves.
-#define SYS_START_DISCHARGE_SEC 1.0
+//How quickly a store refills once whatever it started is turning.
 #define SYS_START_RECHARGE_SEC  1.0
 #define SYS_HYD_MIN_LVL   0.1
 
