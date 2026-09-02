@@ -203,9 +203,9 @@ So a source produces only while ALL of:
     AND driving circuit supplied (or nothing drives it)
     AND consumable above empty (or it consumes nothing)
 
-The accumulator behaviour is the model working as intended and worth keeping
-explicit: it discharges until spent, and then there is no hydraulic pressure
-and no flight controls. A reservoir running dry should do exactly the same.
+The accumulator discharges until spent, and a reservoir running dry does the
+same. What that costs depends on what else is still supplying - see the
+redundancy rule below.
 
 **This closes the leak chain.** A reservoir is a consumable that can be damaged,
 so the full sequence is one dependency chain with no special cases:
@@ -215,12 +215,95 @@ so the full sequence is one dependency chain with no special cases:
       -> level reaches empty
       -> pump has no `consumes` left, produces nothing
       -> circuit unsupplied
-      -> no control authority
+      -> that consumer loses supply IF nothing else feeds it
 
 Today only the first two links exist. `fn_hydraulicsPriReservoir` already
 models the leak properly - three severity bands driving a drain rate - and
 computes `level < hydMinLevel`, but does nothing with it except a
 `//CALL WCA here` comment. The reservoir empties and the pump never notices.
+
+#### A consumer is fed by a SET of circuits, not one
+
+An earlier draft of this document ended that chain with "no control authority",
+which is wrong, and the shipped code already knows better. Flight controls are
+fed by primary AND utility hydraulics, and **either one alone keeps them
+moving**. Losing the primary side is a degradation, not a loss of control.
+
+`fn_inputUpdate` already encodes exactly this, hardcoded:
+
+```sqf
+//_hydFailure only when BOTH are below minimum
+if (_priHydPSI < hydMinPsi && _utilHydPSI < hydMinPsi) then { _hydFailure = true };
+if (!_hydFailure || _emerHydOn) then { ...controls respond... };
+```
+
+So supply is an OR over a set, with a third gated source already in the
+picture. Generalised, a consumer declares the circuits that can feed it:
+
+```cpp
+class FlightControls : BMKHS_Consumer {
+    suppliedBy[] = {"PRI_HYD", "UTIL_HYD"};   //any one is enough
+};
+```
+
+Two circuits, and a third path onto UTIL_HYD from the emergency sources - both
+**gated behind a pilot action** rather than coming up on their own, which is
+what keeps them a last resort instead of silent extra pumps.
+
+**Time-limited and not are different kinds, and the split is already in the
+base kinds above.** These two are both crew-armed emergency supply onto the
+utility circuit, and that is all they have in common:
+
+| | accumulator | electric backup pump |
+|---|---|---|
+| kind | `BMKHS_Storage` | `BMKHS_Source` |
+| duration | **fixed charge, depletes while supplying** | indefinite |
+| ends when | spent below its floor | DC bus drops, or reservoir dry |
+| recovers | only by recharging | as soon as its inputs return |
+
+The accumulator is time-limited by nature - `bmkhs_accTimer` (1.5 min) already
+IS that duration, and "spent below `spentBelow`" is the floor. The pump has no
+timer at all; it runs as long as something drives it and there is fluid to
+move. So the pump's limits are `drivenBy` and `consumes` doing their ordinary
+job, not a special case:
+
+```cpp
+class Accumulator : BMKHS_Storage {
+    output     = "UTIL_HYD";
+    gate       = "bmkhs_emerHydOn";
+    spentBelow = 1650;                  //PSI - discharges until here, then done
+};
+
+class BackupPump : BMKHS_Source {
+    output     = "UTIL_HYD";
+    drivenBy   = "DC";                  //dies with the bus, not with a clock
+    consumes   = "utilReservoir";
+    gate       = "bmkhs_backupPumpOn";
+};
+```
+
+Both feed UTIL_HYD, so neither needs its own circuit and the consumer set stays
+two entries long. This is also why storage had to be its own base kind rather
+than a flag on source - depletion is the whole difference.
+
+That makes selective degradation fall out of the declarations instead of being
+an AH-64 special case. Things that die with the primary side specifically are
+their own consumers naming only that circuit:
+
+```cpp
+class Sas  : BMKHS_Consumer { suppliedBy[] = {"PRI_HYD"}; };
+class Bucs : BMKHS_Consumer { suppliedBy[] = {"PRI_HYD"}; };
+```
+
+Lose primary: SAS and BUCS go, the controls keep moving on utility. No code
+anywhere names PRI_HYD to make that happen.
+
+**The accumulator works through the utility side**, not the primary - two class
+sketches below said `output = "PRI_HYD"` and are wrong. Note also that today's
+`fn_hydraulicsAccumulator` publishes onto no circuit at all: it holds its own
+PSI, discharges only when BOTH circuits are already below minimum, and nothing
+downstream reads it as a supply. It is inert as a source, and becoming a real
+gated source on UTIL_HYD is part of this conversion.
 
 **A reservoir is a reservoir, whatever it holds.** Fuel tanks and hydraulic
 reservoirs are the same component running two implementations today:
@@ -282,7 +365,7 @@ Storage additionally discharges only while:
 ```cpp
 class Accumulator : BMKHS_Storage {
     damageRole = "accumulator";
-    output     = "PRI_HYD";
+    output     = "UTIL_HYD";            //the accumulator works the utility side
     gate       = "bmkhs_emerHydOn";     //"" = always armed
     spentBelow = 1650;                  //PSI
 };
@@ -311,8 +394,15 @@ So the base kinds are domain-agnostic:
 
   BMKHS_Source     produces onto a circuit, given whatever drives it
   BMKHS_Converter  consumes from one circuit, produces onto another
-  BMKHS_Storage    a source that depletes while nothing else supplies it
+  BMKHS_Storage    a source that DEPLETES while supplying - the time-limited kind
   BMKHS_Circuit    a named node; the solver answers "is it supplied"
+  BMKHS_Consumer   fed by a SET of circuits; supplied if ANY of them is up
+  BMKHS_Reservoir  a consumable that leaks when damaged and starves its consumers
+
+`BMKHS_Consumer` is what makes redundancy declarative rather than hardcoded -
+flight controls on two circuits keep working when one dies, while SAS on one
+circuit does not. Without it, every "which failures survive which" rule goes
+back to being an if-chain that names the AH-64's specific circuits.
 
 `drivenBy` and `input` reference circuits in ANY domain, which is what makes
 the electric backup pump and the engine-driven generator expressible without
