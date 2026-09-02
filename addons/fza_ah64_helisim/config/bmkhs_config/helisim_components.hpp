@@ -25,8 +25,7 @@
             damageRole   = "transmission";
             variableName = "xmsnDrive";
             output       = "ACCESSORY_DRIVE";
-            drivenBy     = "ROTOR";
-            minDrive     = 0;             //any rotation at all; the pumps set their own floor
+            drivenBy[]   = {"Nr"};        //any rotation; the pumps set their own floor
             passthrough  = 1;             //accessories turn at Nr, whatever Nr happens to be
             rampSeconds  = 0;
         };
@@ -36,8 +35,7 @@
             damageRole   = "priPump";
             variableName = "priHydPsi";
             output       = "PRI_HYD";
-            drivenBy     = "ACCESSORY_DRIVE";
-            minDrive     = 0.45;         //Nr fraction - below this the pump loses drive
+            drivenBy[]   = {"ACCESSORY_DRIVE", 0.45};   //below this it loses drive
             requires     = "bmkhs_priLevel_pct";
             requiresAbove = 0.1;          //fraction - below this it loses prime
             nominal      = 3000;         //psi
@@ -48,8 +46,7 @@
             damageRole   = "utilPump";
             variableName = "utilHydPsi";
             output       = "UTIL_HYD";
-            drivenBy     = "ACCESSORY_DRIVE";
-            minDrive     = 0.45;
+            drivenBy[]   = {"ACCESSORY_DRIVE", 0.45};
             requires     = "bmkhs_utilLevel_pct";
             requiresAbove = 0.1;
             nominal      = 3000;
@@ -63,8 +60,7 @@
             damageRole   = "generators";  //two hitpoints today -> gen1, gen2
             variableName = "gen";
             output       = "AC";
-            drivenBy     = "ACCESSORY_DRIVE";
-            minDrive     = 0.85;
+            drivenBy[]   = {"ACCESSORY_DRIVE", 0.85};
             nominal      = 1;             //on/off, not volts
             rampSeconds  = 0;             //a contactor closes, it does not spool
         };
@@ -72,8 +68,7 @@
             damageRole   = "rectifiers";  //two hitpoints today -> rect1, rect2
             variableName = "rect";
             output       = "DC";
-            drivenBy     = "AC";
-            minDrive     = 0;             //any AC at all
+            drivenBy[]   = {"AC"};        //any AC at all
             nominal      = 1;
             rampSeconds  = 0;
         };
@@ -109,8 +104,7 @@
             output          = "UTIL_HYD";
             //Off the accessory drive, not UTIL_HYD - a store recharging from the node it
             //feeds would top itself up forever.
-            rechargedBy     = "ACCESSORY_DRIVE";
-            minRecharge     = 0.45;       //same drive the pumps need to make pressure
+            rechargedBy[]   = {"ACCESSORY_DRIVE", 0.45};  //same drive the pumps need
             gate            = "bmkhs_emerHydOn";
             startedBy       = "bmkhs_apuBtnOn";
             nominal         = 3000;       //psi at full charge
@@ -127,8 +121,7 @@
         //degradation rather than a loss of control.
         class FlightControls {
             variableName = "fltCtrlsSupplied";
-            suppliedBy[] = {"PRI_HYD", "UTIL_HYD"};
-            minValue     = 1260;          //psi
+            suppliedBy[] = {{"PRI_HYD", 1260}, {"UTIL_HYD", 1260}};   //psi
         };
         //The tail rotor needs primary pressure OR utility fluid - it is lost only when
         //both are gone, so this one is an AND across two different units.

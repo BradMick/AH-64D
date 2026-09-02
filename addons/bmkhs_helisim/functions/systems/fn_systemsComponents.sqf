@@ -28,9 +28,9 @@ params ["_heli", "_config"];
 //  variableName what it publishes as, per member, Core owning the bmkhs_ prefix
 //  gate         crew switch that must be on, "" for always armed
 //  output       circuit it pushes onto
-//  drivenBy     circuit that must be live for it to work, "" for none
+//  drivenBy     circuit that must be live for it to work, with its threshold:
+//               {"Nr", 0.45} or {"AC"} where any value at all will do
 //  driveFrom    variable its output follows, 0..1, for something that spools
-//  minDrive     value that circuit must reach
 //  requires     level variable it draws from, "" for none. Scales output, not gates it
 //  requiresAbove  level below which it has nothing to move and makes nothing
 //  nominal      what it produces at full output
@@ -42,9 +42,9 @@ params ["_heli", "_config"];
     ["variableName", getText   (cfg >> "variableName")], \
     ["gate",         getText   (cfg >> "gate")], \
     ["output",       getText   (cfg >> "output")], \
-    ["drivenBy",     getText   (cfg >> "drivenBy")], \
+    ["drivenBy",     (getArray (cfg >> "drivenBy")) param [0, ""]], \
+    ["minDrive",     (getArray (cfg >> "drivenBy")) param [1, 0]], \
     ["driveFrom",    getText   (cfg >> "driveFrom")], \
-    ["minDrive",     getNumber (cfg >> "minDrive")], \
     ["requires",     getText   (cfg >> "requires")], \
     ["requiresAbove",getNumber (cfg >> "requiresAbove")], \
     ["nominal",      getNumber (cfg >> "nominal")], \
@@ -79,8 +79,7 @@ private _producers = [];
 } forEach ("true" configClasses (_config >> "Producers"));
 
 //Storage - accumulators, batteries, reservoirs. A producer holding a charge.
-//  rechargedBy     circuit that refills it
-//  minRecharge     value that circuit must reach before it does
+//  rechargedBy     circuit that refills it, with its threshold: {"AC"}, {"Nr", 0.45}
 //  startedBy       gate of the thing it cranks
 //  startAbove      value needed for a start to happen at all
 //  startRecharge   sec to refill once its recharge circuit is turning
@@ -94,8 +93,8 @@ private _storage = [];
     private _c    = COMPONENT_FIELDS(_x);
     private _role = _c get "damageRole";
 
-    _c set ["rechargedBy", getText   (_x >> "rechargedBy")];
-    _c set ["minRecharge", getNumber (_x >> "minRecharge")];
+    _c set ["rechargedBy", (getArray (_x >> "rechargedBy")) param [0, ""]];
+    _c set ["minRecharge", (getArray (_x >> "rechargedBy")) param [1, 0]];
     _c set ["stopBelow",   getNumber (_x >> "stopBelow")];
     _c set ["startedBy",   getText   (_x >> "startedBy")];
     _c set ["startAbove",  getNumber (_x >> "startAbove")];
@@ -126,16 +125,11 @@ private _storage = [];
 //circuit name, or a name and its own threshold when one consumer spans different units.
 private _consumers = [];
 {
-    private _min = getNumber (_x >> "minValue");
     private _c = createHashMapFromArray [
         ["variableName", getText  (_x >> "variableName")],
-        ["minValue",     _min],
         ["needsAll",     getNumber (_x >> "needsAll") > 0]
     ];
-    //Normalise to [circuit, threshold] so the kind does not have to test the shape.
-    _c set ["circuits", (getArray (_x >> "suppliedBy")) apply {
-        if (_x isEqualType []) then {[_x select 0, _x select 1]} else {[_x, _min]}
-    }];
+    _c set ["circuits", (getArray (_x >> "suppliedBy")) apply {[_x select 0, _x param [1, 0]]}];
     _c set ["varName", format ["bmkhs_%1", _c get "variableName"]];
     _consumers pushBack _c;
 

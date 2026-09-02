@@ -33,7 +33,7 @@ private _circuits = createHashMap;
 
 //Nr comes from the flight model, not a component, so it is seeded before anything reads
 //it. The accessory drive and everything mechanical hangs off it.
-_circuits set ["ROTOR", [_heli] call bmkhs_fnc_stateRtrRPM];
+_circuits set ["Nr", [_heli] call bmkhs_fnc_stateRtrRPM];
 
 _heli setVariable ["bmkhs_sysCircuits", _circuits];
 
