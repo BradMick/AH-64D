@@ -162,8 +162,8 @@ storage discharges when nothing else supplies.
 | domain | source | circuit | converter | storage |
 |---|---|---|---|---|
 | electrical | generator, APU gen | AC / DC bus | rectifier, inverter | battery |
-| hydraulic | engine-driven pump | PRI / UTIL circuit | electric backup pump | accumulator |
-| drivetrain | engine | shaft / gearbox | gearbox (ratio) | rotor inertia |
+| hydraulic | accessory-driven pump | PRI / UTIL circuit | electric backup pump | accumulator |
+| drivetrain | engine, APU, rotor | shaft / accessory drive | gearbox (ratio) | rotor inertia |
 
 The accumulator confirms it — `fn_hydraulicsAccumulator` is the battery with
 different units: discharge only while no other source supplies the circuit,
@@ -375,27 +375,54 @@ drains on a dead bus, recharges from a live one. A hydraulic accumulator
 refilling from a pressurised circuit is the same component in different units,
 which is the whole premise of the shared base kinds.
 
-**1a. Pumps are driven by an accessory drive, not by the engines.** Worth
-stating because the obvious `drivenBy = "engines"` is wrong and breaks a real
-case. Hydraulic pumps hang off the transmission's accessory section, and
-EITHER the APU or the engines can turn it. Written as engine-driven, an APU
-with the engines shut down produces no hydraulic pressure - which would make
-APU-only ground operations impossible and, worse, break the startup loop below,
-since the APU spinning the pumps is what recharges the store that started it.
+**1a. Pumps are driven by the accessory section, not by the engines.** The
+obvious `drivenBy = "engines"` is wrong and breaks real cases. Accessories hang
+off the accessory section, which two different things can turn: the APU
+directly, or the transmission it is attached to - and the transmission is
+itself turned by the engines or, in autorotation, by the rotor.
 
-The accessory drive is therefore a circuit like any other, with more than one
-source able to turn it:
+    APU     -> accessory section          start and ground ops
+    engines -> transmission -> accessory  normal flight
+    ROTOR   -> transmission -> accessory  autorotation
+
+The APU drives the accessory section, NOT the transmission, which is why APU
+ground ops give hydraulics and generators without turning the rotor.
 
 ```cpp
-class AccessoryDrive : BMKHS_Circuit {};        //spun by whatever can spin it
+class AccessoryDrive : BMKHS_Circuit {};   //fed by the APU or by the xmsn
 
-class Apu     : BMKHS_Source { output = "ACCESSORY_DRIVE"; ... };
-class Engine  : BMKHS_Source { output = "ACCESSORY_DRIVE"; ... };
-class PriPump : BMKHS_Source { drivenBy = "ACCESSORY_DRIVE"; output = "PRI_HYD_SUPPLY"; ... };
+class Apu  : BMKHS_Source { output = "ACCESSORY_DRIVE"; };
+class Xmsn : BMKHS_Source { drivenBy = "ROTOR"; output = "ACCESSORY_DRIVE"; };
+
+class PriPump   : BMKHS_Source { drivenBy = "ACCESSORY_DRIVE"; output = "PRI_HYD_SUPPLY"; };
+class Generator : BMKHS_Source { drivenBy = "ACCESSORY_DRIVE"; output = "AC"; };
 ```
 
-Mechanical drive being just another circuit is the drivetrain column of the
-domain table earning its place - shaft power is a supply like any other.
+**Autorotation is why this matters and why the extra link is not pedantry.**
+With the engines gone the rotor still turns the transmission, so the accessory
+section keeps spinning and the aircraft keeps hydraulic pressure. Modelled as
+"APU or engines", an autorotation would cut hydraulics and stiffen the controls
+at precisely the moment the pilot needs them - a catastrophic failure produced
+entirely by getting the drive path wrong.
+
+It also makes the drivetrain a genuine SUPPLY PATH rather than only torque
+limits and damage, which is the drivetrain column of the domain table earning
+its place. Rotor inertia as "storage" in that table stops being an analogy: it
+is the mechanism that keeps accessories alive when power is lost.
+
+**Supply is gated on RPM, and the thresholds differ per consumer.** An
+accessory drive turning too slowly supplies nothing, and different accessories
+need different speeds - which the current code half-knows:
+
+- `fn_electricalGenerator1/2` already gate on `_apuOn || _rtrRPM > SYS_MIN_RPM`
+  (0.85), so generators are ALREADY rotor-driven rather than engine-driven
+- `SYS_HYD_MIN_RTR_RPM` (0.45) is **defined in `systems.hpp` and never used** -
+  the autorotation hydraulics threshold, declared and then forgotten
+- the hydraulic pumps check no RPM at all, and produce 3000 PSI regardless
+
+Those two thresholds being different is the real behaviour: in an autorotation
+Nr sits between them, so the generators drop out and the hydraulics stay up.
+That falls out of per-component `minDriveRPM` rather than any special case.
 
 **2. A source can be started by storage.** Some sources cannot self-start: they
 need a slug of stored energy to spin up, and only then do they produce. The
@@ -432,11 +459,12 @@ above. The recharge edge is settled after the walk, from the walk's own result.
 
 **On the AH-64 specifically** (an example, not the rule): press the APU button
 and the accumulator discharges its fluid to start the APU. As the APU comes up
-to speed it spins the transmission's accessory section, which turns the
-hydraulic pumps, which circulate fluid, which recharges the accumulator from
-the utility reservoir. The crew sees `ACCUM OIL PSI LOW` appear as it
-discharges and clear once it has recharged - the caution being nothing more
-than `charge < spentBelow` on the component.
+to speed it drives the accessory section - not the transmission, so the rotor
+stays still - and the accessory section turns the hydraulic pumps, which
+circulate fluid, which recharges the accumulator from the utility reservoir.
+The crew sees `ACCUM OIL PSI LOW` appear as it discharges and clear once it has
+recharged - the caution being nothing more than `charge < spentBelow` on the
+component.
 
 None of that exists today: `fn_apu` starts on `_apuBtnOn && _battBusOn &&
 _apuFuelAvail` with no hydraulic dependency, so the accumulator has no
