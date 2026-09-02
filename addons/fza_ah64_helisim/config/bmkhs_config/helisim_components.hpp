@@ -1,9 +1,8 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Components ///////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
-//What this airframe has and what it is wired to. Member count comes from damageRole, so a
-//third generator hitpoint gives a third generator with no change here. Circuit names are
-//ours to choose; Core matches them as strings.
+//What this airframe has and what it is wired to. Field reference, the networking rules
+//and what Core does with any of it: bmkhs_helisim/components.hpp
 
     class Producers {
         //The accessory section, and the two things that turn it - highest wins. The APU

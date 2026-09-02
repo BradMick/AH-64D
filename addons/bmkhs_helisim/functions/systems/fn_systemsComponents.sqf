@@ -23,22 +23,7 @@ Author:
 params ["_heli", "_config"];
 #include "\bmkhs_helisim\functions\systems\systems.hpp"
 
-//Every kind reads these; the ones that do not apply are simply absent.
-//  damageRole   which hitpoints are this component's members
-//  variableName what it publishes as, per member, Core owning the bmkhs_ prefix
-//  gate         crew switch that must be on, "" for always armed
-//  output       circuit it pushes onto
-//  drivenBy     circuit that must be live for it to work, with its threshold:
-//               {"Nr", 0.45} or {"AC"} where any value at all will do
-//  driveFrom    variable its output follows, 0..1, for something that spools
-//  requires     level variable it draws from, "" for none. Scales output, not gates it
-//  requiresAbove  level below which it has nothing to move and makes nothing
-//  nominal      what it produces at full output
-//  rampSeconds  zero to full, 0 = instant
-//  increment    round the published value to this step, 0 for none
-//  networked    1 if other machines read this state - a bus a remote cockpit draws from,
-//               not a pressure the local flight model consumes
-//  passthrough  1 to output whatever drives it instead of nominal
+//Field reference and the networking rules: \bmkhs_helisim\components.hpp
 #define COMPONENT_FIELDS(cfg) createHashMapFromArray [ \
     ["damageRole",   getText   (cfg >> "damageRole")], \
     ["variableName", getText   (cfg >> "variableName")], \
@@ -81,16 +66,7 @@ private _producers = [];
     if ((_c get "output") != "") then { _circuits set [_c get "output", 0] };
 } forEach ("true" configClasses (_config >> "Producers"));
 
-//Storage - accumulators, batteries, reservoirs. A producer holding a charge.
-//  rechargedBy     circuit that refills it, with its threshold: {"AC"}, {"Nr", 0.45}
-//  startedBy       gate of the thing it cranks
-//  startAbove      value needed for a start to happen at all
-//  startRecharge   sec to refill once its recharge circuit is turning
-//  stopBelow       value it stops discharging at
-//  emerDischarge   sec full to empty as an emergency source
-//  leakStartDmg    damage at which it starts leaking, 0 for never
-//  leakSeconds     full to empty at FULL damage, ramping from the threshold
-//  drainedBy[]     other damage roles that vent this store
+//Storage - a producer holding a charge.
 private _storage = [];
 {
     private _c    = COMPONENT_FIELDS(_x);
@@ -124,8 +100,7 @@ private _storage = [];
     if ((_c get "output") != "") then { _circuits set [_c get "output", 0] };
 } forEach ("true" configClasses (_config >> "Storage"));
 
-//Consumers - suppliedBy is an OR by default, or an AND with needsAll. An entry is a
-//circuit name, or a name and its own threshold when one consumer spans different units.
+//Consumers - suppliedBy is an OR by default, or an AND with needsAll.
 private _consumers = [];
 {
     private _c = createHashMapFromArray [
