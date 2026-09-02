@@ -39,7 +39,7 @@ private _engSimTime         = getNumber (_sfmPlusConfig >> "engSimTime");
 //With no start procedure the whole spool is the startup, so it runs longer - the rotor
 //comes up over that window rather than snapping to speed.
 if !(_heli getVariable ["bmkhs_useSystems", false]) then {
-    _engSimTime = _engSimTime * 3.0;
+    _engSimTime = _engSimTime * 1.5;
 };
 
 //Torque - TQ
