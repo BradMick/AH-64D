@@ -102,22 +102,27 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
 
     private _live      = !_damaged && _gateOn && _charge > _spentFrac;
 
-    if (_settle && _live && _elseFeed <= 0) then {
+    //Drains while nothing is covering for it. That is its charging source where it has
+    //one - a battery runs down whenever the bus that charges it is dead - and otherwise
+    //whatever else feeds its output.
+    private _rechargedBy = _x get "rechargedBy";
+    private _covered     = if (_rechargedBy != "") then {
+        ([_heli, _rechargedBy] call bmkhs_fnc_systemCircuit) > (_x get "minRecharge")
+    } else {
+        _elseFeed > 0
+    };
+
+    if (_settle && _live && !_covered) then {
         private _drain = _x get "emerRate";
         if (_drain > 0) then { _charge = (_charge - (_drain * _deltaTime)) max 0 };
     };
 
-    //Never from the node it supplies, or it would top itself up forever.
-    private _rechargedBy = _x get "rechargedBy";
-    if (_settle && _rechargedBy != "" && _charge < 1.0) then {
-        //Needs its circuit properly up, not merely turning - a spooling APU is not yet
-        //driving the pumps that do the refilling.
-        if (([_heli, _rechargedBy] call bmkhs_fnc_systemCircuit) > (_x get "minRecharge")) then {
-            //Over the usable band rather than the whole range, so the configured time is
-            //what it actually takes - a store only ever refills from its floor.
-            private _rate = (_x get "rechargeRate") * (1 - _spentFrac);
-            if (_rate > 0) then { _charge = (_charge + (_rate * _deltaTime)) min 1.0 };
-        };
+    //Refills whenever something is covering for it, and never from the node it supplies.
+    if (_settle && _covered && _rechargedBy != "" && _charge < 1.0) then {
+        //Over the usable band rather than the whole range, so the configured time is what
+        //it actually takes - a store only ever refills from its floor.
+        private _rate = (_x get "rechargeRate") * (1 - _spentFrac);
+        if (_rate > 0) then { _charge = (_charge + (_rate * _deltaTime)) min 1.0 };
     };
 
     _heli setVariable [_varName + "Charge", _charge];
