@@ -2,20 +2,11 @@
 Function: bmkhs_fnc_systemStorage
 
 Description:
-    Runs every store the aircraft declares - accumulators, batteries. A store
-    is a producer that holds a charge, so it can supply before anything
-    upstream has been solved, and refills once something upstream is.
+    Runs every store the aircraft declares - accumulators, batteries.
 
-    That is what makes a cold aircraft startable: the accumulator is full at
-    init, discharges to start the APU, and the APU turning the pumps is what
-    refills it. The crew sees the low caution appear and then clear, which is
-    nothing more than charge against stopBelow.
-
-    Charge is state, not supply - which is why storage is evaluated FIRST, and
-    why a start draw does not need anything else solved to be spent.
-
-    A store DISCHARGES only while nothing else is supplying its output, so a
-    healthy circuit leaves the reserve alone.
+    Charge is state rather than supply, so storage is solved FIRST and can
+    supply before anything upstream has been. It discharges only while nothing
+    else feeds its output, and refills from its recharge circuit.
 
 Parameters:
     _heli      - The helicopter [Object]
@@ -41,9 +32,8 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     private _charge  = _heli getVariable [_varName + "Charge", 1.0];
 
     private _damage  = [_heli, _x get "damageRole", _x get "index"] call bmkhs_fnc_damageGet;
-    //Anything else that drains this store - a gun or pylons venting a shared reservoir -
-    //adds to its damage rather than being a second mechanism. _comp, not _x: the inner
-    //forEach rebinds _x to the role name.
+    //Anything else that vents this store adds to its damage. _comp because the inner
+    //forEach rebinds _x.
     private _comp = _x;
     {
         _damage = _damage + ([_heli, _x] call bmkhs_fnc_damageGet);
@@ -53,9 +43,8 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     private _gate   = _x get "gate";
     private _gateOn = _gate == "" || {_heli getVariable [_gate, false]};
 
-    //A damaged store LEAKS, whatever it holds. Separate from discharging: a holed
-    //reservoir empties whether or not anything is drawing from it, and the rate ramps
-    //from the onset threshold to full damage rather than stepping through bands.
+    //Leaking is separate from discharging - a holed store empties with nothing drawing
+    //from it. Rate ramps from the onset threshold to full damage.
     private _leakStart = _x get "leakStartDmg";
     if (_leakStart > 0 && _damage > _leakStart) then {
         private _frac = ((_damage - _leakStart) / (1 - _leakStart)) min 1;
@@ -63,9 +52,8 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
         _charge = (_charge - (_rate * _frac * _deltaTime)) max 0;
     };
 
-    //Bleeds down while cranking. StartOk is latched on the gate rising rather than
-    //tested live, since the discharge itself drops the store below startAbove and would
-    //otherwise cut the start it is paying for.
+    //StartOk is latched on the gate rising, not tested live - the discharge drops the
+    //store below startAbove and would cut the start it is paying for.
     private _startedBy = _x get "startedBy";
     private _starting  = false;
     if (_startedBy != "") then {
@@ -83,14 +71,12 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
             _heli setVariable [_okVar,    true, true];
         };
     };
-    //Only while it is actually cranking - once its recharge circuit is turning, the thing
-    //it started is running and the store refills instead.
+    //Only while cranking; once its recharge circuit turns, the thing it started is up.
     if (_starting && {([_heli, _x get "rechargedBy"] call bmkhs_fnc_systemCircuit) <= 0}) then {
         _charge = (_charge - ((_x get "startRate") * _deltaTime)) max 0;
     };
 
-    //Is anything else already holding this node up? If so the store is a reserve
-    //sitting in hand, not a supply.
+    //Anything else holding this node up makes the store a reserve, not a supply.
     private _circuit  = _x get "output";
     private _elseFeed = if (_circuit == "") then {0} else {_circuits getOrDefault [_circuit, 0]};
 
@@ -102,8 +88,7 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
         if (_drain > 0) then { _charge = (_charge - (_drain * _deltaTime)) max 0 };
     };
 
-    //Refill from whatever feeds it, which is never the node it supplies - a store
-    //recharging from its own output would top itself up forever.
+    //Never from the node it supplies, or it would top itself up forever.
     private _rechargedBy = _x get "rechargedBy";
     if (_rechargedBy != "" && _charge < 1.0) then {
         if (([_heli, _rechargedBy] call bmkhs_fnc_systemCircuit) > 0) then {
@@ -115,7 +100,7 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     _heli setVariable [_varName + "Charge", _charge];
     _heli setVariable [_varName, _charge * _nominal];
 
-    //Only contributes to the node while it is actually the one supplying it.
+    //Only feeds the node while it is the one supplying it.
     if (_circuit != "" && _live && _elseFeed <= 0) then {
         _circuits set [_circuit, _elseFeed max (_charge * _nominal)];
     };

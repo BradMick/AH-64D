@@ -2,24 +2,12 @@
 Function: bmkhs_fnc_systemProducer
 
 Description:
-    Runs every producer the aircraft declares - pumps, generators, the APU -
-    whatever domain they belong to. A producer puts a value onto a circuit
-    while all of:
+    Runs every producer the aircraft declares - pumps, generators, the APU.
+    A producer feeds its circuit while undamaged, gated on, and driven fast
+    enough, scaled by whatever it draws from, ramping toward its target.
 
-        its own damage is below threshold
-        AND its gate is open, or it has no gate
-        AND whatever drives it is turning fast enough, or nothing drives it
-
-    scaled by whatever it draws from, so a pump losing fluid makes falling
-    pressure rather than full pressure until it abruptly makes none.
-
-    Output RAMPS toward its target rather than snapping. A pump that starts
-    turning builds pressure from where it is; one that stops bleeds down. The
-    ramp is what makes a start look like a start.
-
-    Damage is read AT THE MEMBER'S INDEX. Reading the role without one returns
-    the worst of all members, which would take every generator offline because
-    one of them is destroyed.
+    Damage is read AT THE MEMBER'S INDEX - the role alone returns the worst
+    member, which would fail every generator because one is destroyed.
 
 Parameters:
     _heli      - The helicopter [Object]
@@ -46,24 +34,18 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     private _damaged = ([_heli, _x get "damageRole", _x get "index"] call bmkhs_fnc_damageGet)
                             > SYS_COMP_DMG_THRESH;
 
-    //No gate declared means always armed. A gated component that is switched off is
-    //not failed - it just contributes nothing.
+    //No gate means always armed. A gated component switched off is not failed.
     private _gate    = _x get "gate";
     private _gateOn  = _gate == "" || {_heli getVariable [_gate, false]};
 
-    //Whatever drives it has to be turning fast enough. An autorotating rotor drives
-    //the hydraulics at 0.45 but not the generators at 0.85, which is why the
-    //threshold belongs to the component rather than to the circuit.
+    //Per-component threshold: an autorotating rotor drives hydraulics at 0.45 but not
+    //generators at 0.85.
     private _drivenBy = _x get "drivenBy";
     private _driven   = _drivenBy == ""
                      || {([_heli, _drivenBy] call bmkhs_fnc_systemCircuit) > (_x get "minDrive")};
 
-    //What it draws from SCALES what it makes, rather than gating it. A pump losing fluid
-    //makes falling pressure, so the gauge trends down as the reservoir empties and the
-    //crew can see a leak developing instead of being told about it only once it fails.
-    //Not strictly how a pump behaves, but it is the readable version.
-    //
-    //Scaling subsumes the gate: no fluid is no pressure, so the leak chain still closes.
+    //Scales rather than gates, so a leak shows as falling pressure. Still closes the
+    //chain: no fluid is no pressure.
     private _requires = _x get "requires";
     private _supply   = if (_requires == "") then {1} else {
         //Full output down to the level where it loses prime, zero below that.
@@ -72,8 +54,7 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
         (linearConversion [_min, 1, _level, 0, 1, true])
     };
 
-    //A shaft passes its speed along rather than producing a fixed value - the accessory
-    //drive turns at whatever is turning it, and the pumps threshold that themselves.
+    //A shaft passes its drive speed along instead of a fixed value.
     private _out_val = if (_x get "passthrough") then {[_heli, _drivenBy] call bmkhs_fnc_systemCircuit} else {_nominal};
 
     private _target  = ([0, _out_val] select (!_damaged && _gateOn && _driven)) * _supply;

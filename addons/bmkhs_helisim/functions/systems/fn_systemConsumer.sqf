@@ -2,18 +2,11 @@
 Function: bmkhs_fnc_systemConsumer
 
 Description:
-    Answers, for everything that needs supply, whether it has any.
+    Answers whether each consumer has supply. suppliedBy is an OR, so a
+    consumer naming two circuits survives losing one and a consumer naming one
+    dies with it - selective failure without Core knowing the plumbing.
 
-    suppliedBy is an OR over circuits: flight controls fed by primary AND
-    utility keep working on either one alone, so losing one side is a
-    degradation rather than a loss of control. Something that names a single
-    circuit dies with that circuit - which is how selective failure falls out
-    of the declarations instead of an if-chain naming this airframe's plumbing.
-
-    Core publishes whether each consumer is supplied. What that MEANS is the
-    aircraft's business: Core says the primary circuit is at 0 PSI, the
-    aircraft decides whether that is worth a caution and whether it is
-    expected on the ground.
+    Core publishes the state; what it MEANS is the aircraft's business.
 
 Parameters:
     _heli - The helicopter [Object]

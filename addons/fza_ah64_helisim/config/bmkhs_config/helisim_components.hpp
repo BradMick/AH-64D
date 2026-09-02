@@ -109,8 +109,7 @@
             nominal         = 3000;       //psi at full charge
             startAbove      = 2600;       //psi needed to turn the APU over at all
             stopBelow       = 1650;       //psi, the floor it stops discharging at
-            emerDischarge   = 90;         //sec of emergency pressure; 30 in reality, but
-                                          //this is a gameplay figure to taste
+            emerDischarge   = 90;         //sec of emergency pressure
         };
     };
 

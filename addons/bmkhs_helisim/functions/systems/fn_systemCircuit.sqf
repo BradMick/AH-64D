@@ -2,14 +2,9 @@
 Function: bmkhs_fnc_systemCircuit
 
 Description:
-    What value a circuit is carrying, in whatever unit its domain uses - PSI,
-    volts, RPM as a fraction. A circuit is a named node; it has no behaviour of
-    its own beyond holding what its feeders put there.
-
-    Several feeders on one node take the HIGHEST value rather than summing.
-    Two pumps on one circuit give 3000 PSI, not 6000, and a failed one is
-    simply outvoted by a healthy one. Capacity and load are deliberately not
-    modelled - this is a behaviour replica, not a plant simulator.
+    What a circuit is carrying, in whatever unit its domain uses - PSI, volts,
+    Nr as a fraction. Highest feeder wins rather than summing, so two pumps
+    give 3000 psi and not 6000. Capacity and load are not modelled.
 
 Parameters:
     _heli    - The helicopter [Object]

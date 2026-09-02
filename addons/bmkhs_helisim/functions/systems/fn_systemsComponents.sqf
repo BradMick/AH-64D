@@ -2,21 +2,13 @@
 Function: bmkhs_fnc_systemsComponents
 
 Description:
-    Reads the aircraft's declared system components out of config, once, and
-    publishes them as hashmaps for the per-frame kinds to walk.
+    Reads the aircraft's declared components out of config once and publishes
+    them for the per-frame kinds to walk.
 
-    The AIRCRAFT declares what it has; Core declares nothing. A component names
-    the damage role it answers to, and the hitpoints claiming that role ARE its
-    members - so declaring a third generator hitpoint gives a third generator
-    with no change here. A component whose role nothing claims produces no
-    members at all, which is how "this airframe does not model that system"
-    is expressed.
-
-    Hashmaps, not positional arrays, for the same reason the fuel tanks use
-    them: adding a field cannot silently shift what every reader sees.
-
-    Circuits are collected from what components reference rather than being
-    declared separately - a node exists because something feeds or reads it.
+    The AIRCRAFT declares what it has; Core declares nothing. Member count
+    comes from the damage role, so a role nothing claims means the airframe
+    does not have that component. Circuits are collected from what components
+    reference - a node exists because something feeds or reads it.
 
 Parameters:
     _heli   - The helicopter [Object]
@@ -36,16 +28,12 @@ params ["_heli", "_config"];
 //  variableName what it publishes as, per member, Core owning the bmkhs_ prefix
 //  gate         crew switch that must be on, "" for always armed
 //  output       circuit it pushes onto
-//  drivenBy     circuit that has to be turning/live for it to work, "" for none
-//  minDrive     value that circuit must reach - an autorotating rotor drives
-//               hydraulics at 0.45 but not generators at 0.85
-//  requires     level variable it draws from, "" for none. SCALES output rather than
-//               gating it, so a leaking reservoir shows as falling pressure
+//  drivenBy     circuit that must be live for it to work, "" for none
+//  minDrive     value that circuit must reach
+//  requires     level variable it draws from, "" for none. Scales output, not gates it
 //  nominal      what it produces at full output
-//  rampSeconds  how long zero to full takes, 0 = instant. Times, not rates - "one second
-//               to full pressure" is something a person can reason about
-//  passthrough  1 to output whatever drives it instead of nominal - a shaft passes its
-//               speed along, so the accessory drive turns at whatever is turning it
+//  rampSeconds  zero to full, 0 = instant
+//  passthrough  1 to output whatever drives it instead of nominal
 #define COMPONENT_FIELDS(cfg) createHashMapFromArray [ \
     ["damageRole",   getText   (cfg >> "damageRole")], \
     ["variableName", getText   (cfg >> "variableName")], \
@@ -70,19 +58,13 @@ private _producers = [];
     private _c    = COMPONENT_FIELDS(_x);
     private _role = _c get "damageRole";
 
-    //Member count comes from the damage role: the hitpoints claiming it ARE the members,
-    //so a role nothing claims means this airframe does not have the component at all.
-    //
-    //Declaring NO role is different - it means the component exists but is not separately
-    //damageable, like an accumulator with no selection of its own in the p3d. One member,
-    //and bmkhs_fnc_damageGet returns 0 for the empty role, so it simply never fails.
+    //No role is not the same as a role nothing claims: it means present but not
+    //separately damageable, so one member that never fails.
     private _count = if (_role == "") then {1} else {[_heli, _role] call bmkhs_fnc_damageCount};
     for "_i" from 0 to (_count - 1) do {
         private _m = +_c;
         _m set ["index",   _i];
-        //Numbered only when there IS more than one - two generators publish gen1On and
-        //gen2On, a single pump publishes priHydPsi rather than priHydPsi1, which is how
-        //the cockpit already reads them.
+        //Numbered only when there is more than one: gen1On and gen2On, but priHydPsi.
         _m set ["varName", format ["bmkhs_%1%2", _c get "variableName", [_i + 1, ""] select (_count <= 1)]];
         _producers pushBack _m;
     };
@@ -90,18 +72,15 @@ private _producers = [];
     if ((_c get "output") != "") then { _circuits set [_c get "output", 0] };
 } forEach ("true" configClasses (_config >> "Producers"));
 
-//Storage - accumulators, batteries. A producer that holds a charge, so it can
-//supply before anything upstream is solved, and refills once something upstream is.
+//Storage - accumulators, batteries, reservoirs. A producer holding a charge.
 //  rechargedBy     circuit that refills it
-//  startedBy       what draws from it to start - names a COMPONENT, not a circuit
-//  startAbove      value it must reach for a start to happen at all
+//  startedBy       gate of the thing it cranks
+//  startAbove      value needed for a start to happen at all
 //  stopBelow       value it stops discharging at
-//  emerDischarge   seconds full to empty while supplying as an emergency source. Endurance
-//                  is a gameplay figure, so the airframe picks it
+//  emerDischarge   sec full to empty as an emergency source
 //  leakStartDmg    damage at which it starts leaking, 0 for never
-//  leakSeconds     full to empty at FULL damage; the rate ramps from the threshold
-//  drainedBy[]     other damage roles that vent this store - a gun or pylons sharing a
-//                  reservoir add to its damage rather than being a second mechanism
+//  leakSeconds     full to empty at FULL damage, ramping from the threshold
+//  drainedBy[]     other damage roles that vent this store
 private _storage = [];
 {
     private _c    = COMPONENT_FIELDS(_x);
@@ -134,8 +113,7 @@ private _storage = [];
     if ((_c get "output") != "") then { _circuits set [_c get "output", 0] };
 } forEach ("true" configClasses (_config >> "Storage"));
 
-//Consumers - things that need supply to work. suppliedBy is an OR: flight controls
-//fed by primary AND utility keep working on either one alone.
+//Consumers - suppliedBy is an OR, so naming two circuits survives losing one.
 private _consumers = [];
 {
     private _c = createHashMapFromArray [
@@ -154,7 +132,6 @@ _heli setVariable ["bmkhs_sysStorage",   _storage];
 _heli setVariable ["bmkhs_sysConsumers", _consumers];
 _heli setVariable ["bmkhs_sysCircuits",  _circuits];
 
-//An aircraft that declares no components is not an aircraft with failed systems -
-//there is nothing to simulate. Consumers fall back to their own defaults, which is
-//what keeps a no-hydraulics airframe flying rather than locking its controls.
+//No components means nothing to simulate, not failed systems - consumers fall back to
+//their own defaults so the airframe still flies.
 _heli setVariable ["bmkhs_sysModelled", (count _producers) + (count _storage) > 0];
