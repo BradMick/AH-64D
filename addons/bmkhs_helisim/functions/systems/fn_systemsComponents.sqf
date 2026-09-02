@@ -38,7 +38,8 @@ params ["_heli", "_config"];
 //  drivenBy     circuit that has to be turning/live for it to work, "" for none
 //  minDrive     value that circuit must reach - an autorotating rotor drives
 //               hydraulics at 0.45 but not generators at 0.85
-//  requires     store that must have contents left, "" for none
+//  requires     level variable it draws from, "" for none. SCALES output rather than
+//               gating it, so a leaking reservoir shows as falling pressure
 //  nominal      what it produces at full output
 //  rampSeconds  how long zero to full takes, 0 = instant. Times, not rates - "one second
 //               to full pressure" is something a person can reason about

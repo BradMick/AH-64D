@@ -9,7 +9,9 @@ Description:
         its own damage is below threshold
         AND its gate is open, or it has no gate
         AND whatever drives it is turning fast enough, or nothing drives it
-        AND what it draws from has contents left, or it draws from nothing
+
+    scaled by whatever it draws from, so a pump losing fluid makes falling
+    pressure rather than full pressure until it abruptly makes none.
 
     Output RAMPS toward its target rather than snapping. A pump that starts
     turning builds pressure from where it is; one that stops bleeds down. The
@@ -56,17 +58,25 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     private _driven   = _drivenBy == ""
                      || {([_heli, _drivenBy] call bmkhs_fnc_systemCircuit) > (_x get "minDrive")};
 
-    //A pump with a holed reservoir makes nothing, however healthy the pump is and
-    //whatever is turning it. This is the link that closes the leak chain.
+    //What it draws from SCALES what it makes, rather than gating it. A pump losing fluid
+    //makes falling pressure, so the gauge trends down as the reservoir empties and the
+    //crew can see a leak developing instead of being told about it only once it fails.
+    //Not strictly how a pump behaves, but it is the readable version.
+    //
+    //Scaling subsumes the gate: no fluid is no pressure, so the leak chain still closes.
     private _requires = _x get "requires";
-    private _supplied = _requires == ""
-                     || {(_heli getVariable [_requires, 1]) > (_heli getVariable ["bmkhs_hydMinLevel", 0.1])};
+    private _supply   = if (_requires == "") then {1} else {
+        //Full output down to the level where it loses prime, zero below that.
+        private _level = _heli getVariable [_requires, 1];
+        private _min   = _heli getVariable ["bmkhs_hydMinLevel", 0.1];
+        (linearConversion [_min, 1, _level, 0, 1, true])
+    };
 
     //A shaft passes its speed along rather than producing a fixed value - the accessory
     //drive turns at whatever is turning it, and the pumps threshold that themselves.
     private _out_val = if (_x get "passthrough") then {[_heli, _drivenBy] call bmkhs_fnc_systemCircuit} else {_nominal};
 
-    private _target  = [0, _out_val] select (!_damaged && _gateOn && _driven && _supplied);
+    private _target  = ([0, _out_val] select (!_damaged && _gateOn && _driven)) * _supply;
     private _current = _heli getVariable [_varName, 0];
 
     //rampRate 0 means instant - a generator contactor closes, it does not spool.
