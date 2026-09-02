@@ -21,10 +21,10 @@ params ["_heli", "_deltaTime"];
 
 private _utilReservoirDamage = [_heli, "utilReservoir"] call bmkhs_fnc_damageGet;
 private _utilHydLevel_pct    = _heli getVariable "bmkhs_utilLevel_pct";
-private _curLeakTimer       = 0.0;
-private _pylonLeak        = 0.0;
-private _leakTimer          = _heli getVariable "bmkhs_hydLeakTimer";
-private _gunDamage          = [_heli, "gunTurret"] call bmkhs_fnc_damageGet;
+private _curLeakTimer        = 0.0;
+private _pylonLeak           = 0.0;
+private _leakTimer           = _heli getVariable "bmkhs_hydLeakTimer";
+private _gunDamage           = [_heli, "gunTurret"] call bmkhs_fnc_damageGet;
 
 //Pylon damage - however many the aircraft declares, or none at all.
 private _numPylons = [_heli, "pylons"] call bmkhs_fnc_damageCount;
