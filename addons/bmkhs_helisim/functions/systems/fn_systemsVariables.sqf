@@ -31,26 +31,33 @@ if (!(_heli getVariable ["bmkhs_systemsInitialised", false]) && local _heli) the
     //Switch states
     _heli setVariable ["bmkhs_battSwitchOn",      !_sys, true];
 
-    //Electrical - the buses are what everything outside Core reads, and with systems off
-    //nothing solves them, so they stay as seeded.
+    //Electrical - with systems off nothing solves these, so they stay as seeded: the
+    //aircraft is simply powered, with no buses to bring up.
     _heli setVariable ["bmkhs_battPower_pctCharge", 1.0, true];
     _heli setVariable ["bmkhs_battBusOn",         !_sys, true];
     _heli setVariable ["bmkhs_acBusOn",           !_sys, true];
     _heli setVariable ["bmkhs_dcBusOn",           !_sys, true];
 
-    //APU - with systems off it reads as already running, and the graph does not touch it
-    _heli setVariable ["bmkhs_apuBtnOn",          !_sys, true];
-    _heli setVariable ["bmkhs_apuRPM_pct",        [1.0, 0.0] select _sys, true];
-    _heli setVariable ["bmkhs_apuOn",             !_sys, true];
+    //APU - an aircraft with no systems has no APU to be on, so it reads OFF. Anything
+    //that needed it, like an engine start, is not gated on it either.
+    _heli setVariable ["bmkhs_apuBtnOn",          false, true];
+    _heli setVariable ["bmkhs_apuRPM_pct",        0.0,   true];
+    _heli setVariable ["bmkhs_apuOn",             false, true];
+    //Bleed air defaults available without systems, so nothing that needs it is blocked.
     _heli setVariable ["bmkhs_pneuAvail",         !_sys, true];
 
 
-    //Hydraulics - reservoirs start full, and so does the accumulator, which is what
-    //makes a cold aircraft startable. Pressure is NOT seeded: the pumps build it from
-    //zero, which is both correct and what the ramp exists for.
+    //Hydraulics - reservoirs and the accumulator start full.
     _heli setVariable ["bmkhs_priLevel_pctCharge",  1.0, true];
     _heli setVariable ["bmkhs_utilLevel_pctCharge", 1.0, true];
     _heli setVariable ["bmkhs_accHydPsiCharge",     1.0, true];
+
+    //With systems the pumps build pressure from zero, which is what the ramp is for.
+    //Without them there is nothing to build it, so it is simply there.
+    private _hydPsi = [3000.0, 0.0] select _sys;
+    _heli setVariable ["bmkhs_priHydPsi",  _hydPsi, true];
+    _heli setVariable ["bmkhs_utilHydPsi", _hydPsi, true];
+    _heli setVariable ["bmkhs_accHydPsi",  3000.0,  true];
 };
 
 _heli setVariable ["bmkhs_apuFF_kgs",         0.0];

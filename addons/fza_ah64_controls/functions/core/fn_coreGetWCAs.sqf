@@ -136,8 +136,14 @@ if (_heli getVariable "fza_ah64_apu_fire") then {
     [_activeWarn, "APU FIRE"] call fza_wca_fnc_wcaDelWarning;
 };
 
+//An engine that has not been commanded to run is not an engine that has failed - on an
+//aircraft with no start procedure the lever sits at FLY from spawn, so the state is what
+//says whether it should be turning.
+private _eng1Cmd = _eng1State != "OFF";
+private _eng2Cmd = _eng2State != "OFF";
+
 //--Engine 1 Out
-if (_eng1Ng < 0.63 && _eng1PwrLvrState == "FLY") then {
+if (_eng1Cmd && _eng1Ng < 0.63 && _eng1PwrLvrState == "FLY") then {
     ([_heli, _activeWarn, "ENGINE 1 OUT", "ENG1 OUT", ENG_OUT_PRIORITY, "fza_ah64_engine_1_out", 3] call fza_wca_fnc_wcaAddWarning)
         params ["_wcaAddWarning"];
 
@@ -164,7 +170,7 @@ if (_eng1Np >= 1.15) then {
     [_activeWarn, "ENG1 OVSP"] call fza_wca_fnc_wcaDelWarning;
 };
 //--Engine 2 Out
-if (_eng2Ng < 0.63 && _eng2PwrLvrState == "FLY") then {
+if (_eng2Cmd && _eng2Ng < 0.63 && _eng2PwrLvrState == "FLY") then {
     ([_heli, _activeWarn, "ENGINE 2 OUT", "ENG2 OUT", ENG_OUT_PRIORITY, "fza_ah64_engine_2_out", 3] call fza_wca_fnc_wcaAddWarning)
         params ["_wcaAddWarning"];
 

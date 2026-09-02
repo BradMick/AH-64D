@@ -47,6 +47,7 @@ private _eng1FuelAvail = _heli getVariable ["bmkhs_eng1FuelAvail", true];
 private _eng2FuelAvail = _heli getVariable ["bmkhs_eng2FuelAvail", true];
 
 private _shiftLocked = _heli getVariable "bmkhs_shiftLocked";
+private _useSystems  = _heli getVariable ["bmkhs_useSystems", false];
 private _isSingleEng     = _heli getVariable "bmkhs_isSingleEng";
 //private _isAutorotating  = _heli getVariable "bmkhs_isAutorotating";
 
@@ -75,22 +76,41 @@ if (local _heli) then {
         [_heli, "mainRotor", 0.9] call bmkhs_fnc_damageSet;
     };
     */
-    if (([_heli, "mainRotor"] call bmkhs_fnc_damageGet) > 0.9) then {
-        _heli engineOn false;
-    } else {
-        if (_eng1State != "OFF" || _eng2State != "OFF" || _rtrRPM >= 0.5) then {
-            _heli engineOn true;
-        } else {
+    if (_useSystems) then {
+        //With a start procedure, the engine runs when the procedure says so. Holding the
+        //rotor off until then is what stops the player spinning it up with the throttle.
+        if (([_heli, "mainRotor"] call bmkhs_fnc_damageGet) > 0.9) then {
             _heli engineOn false;
+        } else {
+            if (_eng1State != "OFF" || _eng2State != "OFF" || _rtrRPM >= 0.5) then {
+                _heli engineOn true;
+            } else {
+                _heli engineOn false;
+            };
         };
-    };
-    if (_eng1State == "OFF" && _eng2State == "OFF" && _rtrRPM < 0.1) then { //prevents player holding shift causing Rotor spinning
-        _heli engineOn false;
-        [_heli, "mainRotor", 0.9] call bmkhs_fnc_damageSet;
-        if (!_shiftLocked) then {
-            _heli setVariable ["bmkhs_shiftLocked", true];
+        if (_eng1State == "OFF" && _eng2State == "OFF" && _rtrRPM < 0.1) then { //prevents player holding shift causing Rotor spinning
+            _heli engineOn false;
+            [_heli, "mainRotor", 0.9] call bmkhs_fnc_damageSet;
+            if (!_shiftLocked) then {
+                _heli setVariable ["bmkhs_shiftLocked", true];
+            };
+        } else {
+            if (_shiftLocked) then {
+                _heli setVariable ["bmkhs_shiftLocked", false];
+                [_heli, "mainRotor", 0] call bmkhs_fnc_damageSet;
+            };
         };
     } else {
+        //No start procedure to wait for, so Arma's own start is the signal - the player
+        //moves the throttle, the aircraft wakes up, and the engine state follows rather
+        //than holding it off forever.
+        private _wanted = ["OFF", "ON"] select (isEngineOn _heli);
+        if (_eng1State != _wanted) then {
+            [_heli, "bmkhs_engState", 0, _wanted, true] call bmkhs_fnc_utilSetArrayVariable;
+        };
+        if (_eng2State != _wanted) then {
+            [_heli, "bmkhs_engState", 1, _wanted, true] call bmkhs_fnc_utilSetArrayVariable;
+        };
         if (_shiftLocked) then {
             _heli setVariable ["bmkhs_shiftLocked", false];
             [_heli, "mainRotor", 0] call bmkhs_fnc_damageSet;
