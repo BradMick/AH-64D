@@ -107,7 +107,18 @@ if (local _heli) then {
         //STARTING, not ON - the engine model spools Ng from there and flips itself to ON
         //at running speed. Setting ON directly skips the spool, which surges the rotor and
         //trips the engine-out warning against an Ng still climbing from zero.
-        if (isEngineOn _heli) then {
+        //Everything wakes together: buses, pressure and the engines. Nothing is simulated
+        //without systems, so these are set once here rather than solved.
+        private _awake = isEngineOn _heli;
+        if ((_heli getVariable ["bmkhs_acBusOn", false]) isNotEqualTo _awake) then {
+            [_heli, "bmkhs_acBusOn",    _awake] call bmkhs_fnc_utilUpdateNetworkGlobal;
+            [_heli, "bmkhs_dcBusOn",    _awake] call bmkhs_fnc_utilUpdateNetworkGlobal;
+            [_heli, "bmkhs_battBusOn",  _awake] call bmkhs_fnc_utilUpdateNetworkGlobal;
+            [_heli, "bmkhs_priHydPsi",  [0.0, 3000.0] select _awake] call bmkhs_fnc_utilUpdateNetworkGlobal;
+            [_heli, "bmkhs_utilHydPsi", [0.0, 3000.0] select _awake] call bmkhs_fnc_utilUpdateNetworkGlobal;
+        };
+
+        if (_awake) then {
             //Through interactPowerLever so the lever animates over its normal travel -
             //setting the state directly snaps it, and the rotor surges with it.
             if (_eng1State == "OFF") then {

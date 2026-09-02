@@ -136,11 +136,20 @@ if (_heli getVariable "fza_ah64_apu_fire") then {
     [_activeWarn, "APU FIRE"] call fza_wca_fnc_wcaDelWarning;
 };
 
-//An engine that is off or still spooling has not failed - it is not running yet. On an
-//aircraft with no start procedure the lever sits at FLY from spawn, so the state is what
-//says whether it should be turning.
-private _eng1Cmd = _eng1State == "ON";
-private _eng2Cmd = _eng2State == "ON";
+//An engine that is off or still spooling has not failed - it is not running yet. The
+//engine flips to ON at engRunNG, which is BELOW this warning threshold, so a starting
+//engine passes through the window legitimately; requiring it to have reached running
+//speed first is what stops the momentary annunciation on every start.
+//Latched, so an engine that HAS reached running speed still warns when it falls back
+//below - the point is to skip the window on the way up, not to suppress a real failure.
+private _eng1Cmd = _heli getVariable ["bmkhs_eng1Ran", false];
+private _eng2Cmd = _heli getVariable ["bmkhs_eng2Ran", false];
+if (_eng1State == "OFF") then { _eng1Cmd = false };
+if (_eng2State == "OFF") then { _eng2Cmd = false };
+if (_eng1State == "ON" && {_eng1Ng >= 0.63}) then { _eng1Cmd = true };
+if (_eng2State == "ON" && {_eng2Ng >= 0.63}) then { _eng2Cmd = true };
+_heli setVariable ["bmkhs_eng1Ran", _eng1Cmd];
+_heli setVariable ["bmkhs_eng2Ran", _eng2Cmd];
 
 //--Engine 1 Out
 if (_eng1Cmd && _eng1Ng < 0.63 && _eng1PwrLvrState == "FLY") then {

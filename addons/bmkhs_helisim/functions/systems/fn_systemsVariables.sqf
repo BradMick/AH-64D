@@ -31,12 +31,12 @@ if (!(_heli getVariable ["bmkhs_systemsInitialised", false]) && local _heli) the
     //Switch states - cold and dark either way, the crew turns it on.
     _heli setVariable ["bmkhs_battSwitchOn",      false, true];
 
-    //Electrical - with systems off nothing solves these, so they stay as seeded: the
-    //aircraft is simply powered, with no buses to bring up.
+    //Electrical - cold and dark. With systems the crew brings the buses up; without them
+    //they come on with everything else when the aircraft wakes.
     _heli setVariable ["bmkhs_battPower_pctCharge", 1.0, true];
-    _heli setVariable ["bmkhs_battBusOn",         !_sys, true];
-    _heli setVariable ["bmkhs_acBusOn",           !_sys, true];
-    _heli setVariable ["bmkhs_dcBusOn",           !_sys, true];
+    _heli setVariable ["bmkhs_battBusOn",         false, true];
+    _heli setVariable ["bmkhs_acBusOn",           false, true];
+    _heli setVariable ["bmkhs_dcBusOn",           false, true];
 
     //APU - an aircraft with no systems has no APU to be on, so it reads OFF. Anything
     //that needed it, like an engine start, is not gated on it either.
@@ -52,12 +52,10 @@ if (!(_heli getVariable ["bmkhs_systemsInitialised", false]) && local _heli) the
     _heli setVariable ["bmkhs_utilLevel_pctCharge", 1.0, true];
     _heli setVariable ["bmkhs_accHydPsiCharge",     1.0, true];
 
-    //With systems the pumps build pressure from zero, which is what the ramp is for.
-    //Without them nothing simulates it, so it sits at its running value.
-    private _hydPsi = [3000.0, 0.0] select _sys;
-    _heli setVariable ["bmkhs_priHydPsi",  _hydPsi, true];
-    _heli setVariable ["bmkhs_utilHydPsi", _hydPsi, true];
-    _heli setVariable ["bmkhs_accHydPsi",  3000.0,  true];
+    //Pressure comes up with the aircraft too, so it reads zero until then.
+    _heli setVariable ["bmkhs_priHydPsi",  0.0,    true];
+    _heli setVariable ["bmkhs_utilHydPsi", 0.0,    true];
+    _heli setVariable ["bmkhs_accHydPsi",  3000.0, true];
 };
 
 _heli setVariable ["bmkhs_apuFF_kgs",         0.0];
