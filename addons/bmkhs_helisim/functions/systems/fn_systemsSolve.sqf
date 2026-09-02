@@ -8,10 +8,12 @@ Description:
                     which cuts the accumulator -> APU -> pumps -> accumulator
                     startup loop
       2. producers  resolve against circuits the stores have fed
-      3. consumers  threshold what ended up on theirs
+      3. storage    drains and refills from what actually solved
+      4. consumers  threshold what ended up on theirs
 
-    Producers run twice so one driven by another circuit does not read a stale
-    value. Cheaper than sorting a graph this small.
+    Storage runs twice: once to put its charge onto circuits, once at the end to
+    move that charge from the solved result. Producers run twice so one driven
+    by another circuit does not read a stale value.
 
 Parameters:
     _heli      - The helicopter [Object]
@@ -35,8 +37,14 @@ _circuits set ["ROTOR", [_heli] call bmkhs_fnc_stateRtrRPM];
 
 _heli setVariable ["bmkhs_sysCircuits", _circuits];
 
-[_heli, _deltaTime] call bmkhs_fnc_systemStorage;
-[_heli, _deltaTime] call bmkhs_fnc_systemProducer;
+//Producer contributions are tracked per node so storage can tell its own supply apart.
+{ _heli setVariable ["bmkhs_sysProducerFeed_" + _x, 0] } forEach (keys _circuits);
+
+[_heli, _deltaTime]        call bmkhs_fnc_systemStorage;
+[_heli, _deltaTime]        call bmkhs_fnc_systemProducer;
 //deltaTime 0: re-resolves dependencies without advancing a ramp twice in one frame.
-[_heli, 0]         call bmkhs_fnc_systemProducer;
-[_heli]            call bmkhs_fnc_systemConsumer;
+[_heli, 0]                 call bmkhs_fnc_systemProducer;
+//Charge moves last, off the solved result - a store reading its recharge circuit any
+//earlier sees zero and never refills.
+[_heli, _deltaTime, true]  call bmkhs_fnc_systemStorage;
+[_heli]                    call bmkhs_fnc_systemConsumer;

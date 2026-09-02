@@ -4,13 +4,18 @@ Function: bmkhs_fnc_systemStorage
 Description:
     Runs every store the aircraft declares - accumulators, batteries.
 
-    Charge is state rather than supply, so storage is solved FIRST and can
-    supply before anything upstream has been. It discharges only while nothing
-    else feeds its output, and refills from its recharge circuit.
+    Runs TWICE per solve. Charge is state rather than supply, so the first
+    pass puts it onto circuits before anything upstream is solved, which is
+    what cuts the startup loop. Charge itself can only move once the rest has
+    solved, so draining and refilling happen on the settle pass - a store
+    reading its own recharge circuit before the producers have run sees zero
+    and never refills.
 
 Parameters:
     _heli      - The helicopter [Object]
     _deltaTime - Frame time [Number]
+    _settle    - false to put charge onto circuits, true to move charge from the
+                 solved result [Bool]
 
 Returns:
     Nothing - circuit values are accumulated into bmkhs_sysCircuits
@@ -18,7 +23,7 @@ Returns:
 Author:
     BradMick
 ---------------------------------------------------------------------------- */
-params ["_heli", "_deltaTime"];
+params ["_heli", "_deltaTime", ["_settle", false]];
 #include "\bmkhs_helisim\functions\systems\systems.hpp"
 
 private _storage = _heli getVariable ["bmkhs_sysStorage", []];
@@ -46,7 +51,7 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     //Leaking is separate from discharging - a holed store empties with nothing drawing
     //from it. Rate ramps from the onset threshold to full damage.
     private _leakStart = _x get "leakStartDmg";
-    if (_leakStart > 0 && _damage > _leakStart) then {
+    if (_settle && _leakStart > 0 && _damage > _leakStart) then {
         private _frac = ((_damage - _leakStart) / (1 - _leakStart)) min 1;
         private _rate = _x get "leakRate";
         _charge = (_charge - (_rate * _frac * _deltaTime)) max 0;
@@ -56,7 +61,7 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     //store below startAbove and would cut the start it is paying for.
     private _startedBy = _x get "startedBy";
     private _starting  = false;
-    if (_startedBy != "") then {
+    if (_startedBy != "" && !_settle) then {
         private _latchVar = _varName + "Drawn";
         private _okVar    = _varName + "StartOk";
         if (_heli getVariable [_startedBy, false]) then {
@@ -70,27 +75,36 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
             _heli setVariable [_latchVar, false];
             _heli setVariable [_okVar,    true, true];
         };
+        _heli setVariable [_varName + "Cranking", _starting];
+    };
+    if (_settle && _startedBy != "") then {
+        _starting = _heli getVariable [_varName + "Cranking", false];
     };
     //Only while cranking; once its recharge circuit turns, the thing it started is up.
-    if (_starting && {([_heli, _x get "rechargedBy"] call bmkhs_fnc_systemCircuit) <= 0}) then {
+    if (_settle && _starting && {([_heli, _x get "rechargedBy"] call bmkhs_fnc_systemCircuit) <= 0}) then {
         _charge = (_charge - ((_x get "startRate") * _deltaTime)) max 0;
     };
 
-    //Anything else holding this node up makes the store a reserve, not a supply.
+    //Anything else holding this node up makes the store a reserve, not a supply. On the
+    //settle pass the node already carries this store own supply, so compare against what
+    //the producers put there rather than the total.
     private _circuit  = _x get "output";
-    private _elseFeed = if (_circuit == "") then {0} else {_circuits getOrDefault [_circuit, 0]};
+    private _elseFeed = if (_circuit == "") then {0} else {
+        if (_settle) then {_heli getVariable ["bmkhs_sysProducerFeed_" + _circuit, 0]}
+                     else {_circuits getOrDefault [_circuit, 0]}
+    };
 
     private _spentFrac = if (_nominal > 0) then {(_x get "stopBelow") / _nominal} else {0};
     private _live      = !_damaged && _gateOn && _charge > _spentFrac;
 
-    if (_live && _elseFeed <= 0) then {
+    if (_settle && _live && _elseFeed <= 0) then {
         private _drain = _x get "emerRate";
         if (_drain > 0) then { _charge = (_charge - (_drain * _deltaTime)) max 0 };
     };
 
     //Never from the node it supplies, or it would top itself up forever.
     private _rechargedBy = _x get "rechargedBy";
-    if (_rechargedBy != "" && _charge < 1.0) then {
+    if (_settle && _rechargedBy != "" && _charge < 1.0) then {
         if (([_heli, _rechargedBy] call bmkhs_fnc_systemCircuit) > 0) then {
             private _rate = _x get "rechargeRate";
             if (_rate > 0) then { _charge = (_charge + (_rate * _deltaTime)) min 1.0 };

@@ -71,10 +71,13 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
 
     _heli setVariable [_varName, _out];
 
-    //Highest feeder wins the node.
+    //Highest feeder wins the node. Recorded separately too, so a store can tell whether
+    //anything OTHER than itself is supplying its output.
     private _circuit = _x get "output";
     if (_circuit != "") then {
         _circuits set [_circuit, (_circuits getOrDefault [_circuit, 0]) max _out];
+        private _feedVar = "bmkhs_sysProducerFeed_" + _circuit;
+        _heli setVariable [_feedVar, (_heli getVariable [_feedVar, 0]) max _out];
     };
 } forEach _producers;
 
