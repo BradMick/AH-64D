@@ -21,6 +21,27 @@ The PIDs are the clearest case: one set of gains cannot serve a 9000 kg AH-64 an
 
 ---
 
+## Where it stands
+
+Most of this is done. The flight control PIDs, mass, engine, fuel, fuselage,
+wings, airfoils and the simple rotor all read from config today, and the
+systems half went further than externalising - electrical, hydraulics, the APU
+and the drivetrain became declared components, recorded in
+`SYSTEMS_REDESIGN.md`.
+
+What is still hardcoded in Core:
+
+| subsystem | what is left |
+|---|---|
+| BET rotor | blade geometry and tuning, in `fn_rotorVariables` |
+| Preston AI | auto-pedal gains and deadbands, no config reads at all |
+| environment | atmosphere constants; no variables function exists |
+
+Until those move, a second airframe can be declared but not flown differently -
+its rotor is the AH-64's.
+
+---
+
 ## Config file split
 
 Along system/component lines, `#include`d from `bmkhs_ah64_config.hpp`.
@@ -29,19 +50,19 @@ Along system/component lines, `#include`d from `bmkhs_ah64_config.hpp`.
 |---|---|---|
 | `bmkhs_ah64_config.hpp` | Identity, empty mass/CG, subsystem gates; includes the rest | config |
 | `helisim_flightControls.hpp` | Authority, blade pitch ranges, **13 flight PIDs** | config + `fn_coreConfig` |
-| `helisim_rotor.hpp` | BET rotor geometry and tuning | **hardcoded SQF** |
-| `helisim_simpleRotor.hpp` | Simple rotor tables and scalars | **hardcoded SQF** |
-| `helisim_engine.hpp` | Engine constants, `engPerfTable0-4[]`, governor PID | config + SQF |
+| `helisim_rotor.hpp` | BET rotor geometry and tuning | **still hardcoded SQF** |
+| `helisim_simpleRotor.hpp` | Simple rotor tables and scalars | done |
+| `helisim_engine.hpp` | Engine constants, `engPerfTable0-4[]`, governor PID | done |
 | `helisim_fuselage.hpp` | Top/Side/Front panels, drag tables | config |
 | `helisim_wings.hpp` | Wing geometry, control surfaces | config |
-| `helisim_stabilator.hpp` | Stabilator geometry + schedule table | config |
+| `helisim_stabilator.hpp` | Stabilator geometry + schedule table | folded into `helisim_flightControls.hpp` |
 | `helisim_airfoils.hpp` | `airfoilTable00-02` | config |
-| `helisim_mass.hpp` | Station arms, crew mass | **hardcoded SQF** |
+| `helisim_mass.hpp` | Station arms, crew mass | done |
 | `helisim_fuel.hpp` | Tank masses, capacities, thresholds, XFER rates | config + `fuelConstants.hpp` |
 | `helisim_components.hpp` | APU, electrical, hydraulics and drivetrain, as declared components | done — see `SYSTEMS_REDESIGN.md` |
-| `helisim_damage.hpp` | Damage thresholds, `DMG_PER_SEC` | **hardcoded** |
-| `helisim_environment.hpp` | Atmosphere constants | **hardcoded SQF** |
-| `helisim_prestonAi.hpp` | Auto-pedal gains, deadbands | **hardcoded SQF** |
+| `helisim_damage.hpp` | Damage thresholds, `DMG_PER_SEC` | stays in Core - thresholds are the model, not the airframe |
+| `helisim_environment.hpp` | Atmosphere constants | **still hardcoded SQF** |
+| `helisim_prestonAi.hpp` | Auto-pedal gains, deadbands | **still hardcoded SQF** |
 | `helisim_misc.hpp` | PERF page: `perfTable`, `hoverTable`, `cruiseTable` | config |
 | `hitPointValues.hpp` | Already split | done |
 
