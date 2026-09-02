@@ -32,4 +32,4 @@ private _deltaTime = ["systems_deltaTime"] call BIS_fnc_deltaTime;
 //already running, buses powered, no start procedure.
 if !(_heli getVariable ["bmkhs_useSystems", false]) exitWith {};
 
-[_heli, _deltaTime] call bmkhs_fnc_apu;
+[_heli] call bmkhs_fnc_apu;

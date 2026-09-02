@@ -27,7 +27,7 @@ params ["_heli", "_config"];
 #define COMPONENT_FIELDS(cfg) createHashMapFromArray [ \
     ["damageRole",   getText   (cfg >> "damageRole")], \
     ["variableName", getText   (cfg >> "variableName")], \
-    ["gate",         getText   (cfg >> "gate")], \
+    ["gates",        (getArray (cfg >> "gate")) apply {_x}], \
     ["output",       getText   (cfg >> "output")], \
     ["drivenBy",     (getArray (cfg >> "drivenBy")) param [0, ""]], \
     ["disengageOn",  (getArray (cfg >> "disengageAbove")) param [0, ""]], \

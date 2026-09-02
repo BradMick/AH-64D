@@ -39,9 +39,12 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     private _damaged = ([_heli, _x get "damageRole", _x get "index"] call bmkhs_fnc_damageGet)
                             > SYS_COMP_DMG_THRESH;
 
-    //No gate means always armed. A gated component switched off is not failed.
-    private _gate    = _x get "gate";
-    private _gateOn  = _gate == "" || {_heli getVariable [_gate, false]};
+    //No gate means always armed, and every gate declared has to be on. A gated component
+    //that is off is not failed - it just contributes nothing.
+    private _gateOn = true;
+    {
+        if !(_heli getVariable [_x, false]) exitWith { _gateOn = false };
+    } forEach (_x get "gates");
 
     //Per-component threshold: an autorotating rotor drives hydraulics at 0.45 but not
     //generators at 0.85.

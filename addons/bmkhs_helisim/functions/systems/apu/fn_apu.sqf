@@ -1,59 +1,30 @@
 /* ----------------------------------------------------------------------------
-Function: bmkhs_fnc_systemsAPU
+Function: bmkhs_fnc_apu
 
 Description:
-    Defines key values for the simulation.
+    What the APU does BESIDES supplying power. Whether it is running, and how
+    fast it is turning, is the component graph's answer - this burns the fuel
+    that costs and tells the aircraft when the state changed.
 
 Parameters:
-    _heli - The helicopter to get information from [Unit].
+    _heli - The helicopter [Object]
 
 Returns:
-    ...
-
-Examples:
-    ...
+    Nothing
 
 Author:
     BradMick
 ---------------------------------------------------------------------------- */
-params ["_heli", "_deltaTime"];
-#include "\bmkhs_helisim\functions\systems\systems.hpp"
+params ["_heli"];
 
-private _apuBtnOn      = _heli getVariable "bmkhs_apuBtnOn";
-private _battBusOn     = _heli getVariable "bmkhs_battBusOn";
-private _apuOn         = _heli getVariable "bmkhs_apuOn";
-private _apuDamage     = [_heli, "apu"] call bmkhs_fnc_damageGet;
-private _apuStartDelay = _heli getVariable "bmkhs_apuStartDelay";
-private _apuRPM_pct    = _heli getVariable "bmkhs_apuRPM_pct";
-private _apuFF_kgs     = 0.0;
-private _apuFuelAvail  = _heli getVariable ["bmkhs_apuFuelAvail", true];
+private _apuOn = _heli getVariable ["bmkhs_apuOn", false];
 
-//The accumulator turns it over, so it needs the pressure. True when nothing declares one.
-private _accStartOk = _heli getVariable ["bmkhs_accHydPsiStartOk", true];
+//175 pph while it runs.
+_heli setVariable ["bmkhs_apuFF_kgs", [0.0, 0.0220] select _apuOn];
 
-if (_apuBtnOn && _battBusOn && _apuFuelAvail && _accStartOk) then {
-    _apuRPM_pct = [_apuRPM_pct, 1.0, (1.0 / _apuStartDelay) * _deltaTime] call BIS_fnc_lerp;
-} else {
-    _apuRPM_pct = [_apuRPM_pct, 0.0, _deltaTime] call BIS_fnc_lerp;
+//Cockpit indication is the aircraft's business - Core only reports the state, and only
+//when it actually changes.
+if (_apuOn isNotEqualTo (_heli getVariable ["bmkhs_apuOnLast", _apuOn])) then {
+    _heli setVariable ["bmkhs_apuOnLast", _apuOn];
+    [_heli, "apuStateChanged"] call bmkhs_fnc_utilNotify;
 };
-_heli setVariable ["bmkhs_apuRPM_pct", _apuRPM_pct];
-
-//Set the APU state
-if (_apuRPM_pct <= SYS_MIN_RPM) then {
-    _apuOn = false;
-};
-if (_apuRPM_pct > SYS_MIN_RPM) then {
-    if (_apuDamage <= SYS_APU_DMG_THRESH) then {
-        _apuOn = true;
-    } else {
-        _apuOn = false;
-    };
-};
-_heli setVariable ["bmkhs_apuOn", _apuOn];
-//Cockpit indication is the aircraft's business - Core only reports the state
-[_heli, "apuStateChanged"] call bmkhs_fnc_utilNotify;
-
-if (_apuOn) then {
-    _apuFF_kgs = 0.0220;//175pph
-};
-_heli setVariable ["bmkhs_apuFF_kgs", _apuFF_kgs];

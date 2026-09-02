@@ -23,7 +23,9 @@ params ["_heli"];
 private _config         = configOf _heli >> "BMKHS_HeliSim";
 private _configVehicles = configOf _heli;
 
-private _apuOn     = _heli getVariable ["bmkhs_apuOn", true];
+//Starts run off bleed air, whatever is supplying it. True by default so an airframe that
+//models no pneumatics starts as before.
+private _pneuAvail = _heli getVariable ["bmkhs_pneuAvail", true];
 private _onGnd     = [_heli] call bmkhs_fnc_stateOnGround;
 
 private _engState  = _heli getVariable "bmkhs_engState";
@@ -97,7 +99,7 @@ if (local _heli) then {
 };
 
 
-if !_apuOn then {
+if !_pneuAvail then {
     if (_eng1State == "STARTING") then {
 		[_heli, "bmkhs_engState", 0, "OFF", true] call bmkhs_fnc_utilSetArrayVariable;
     };

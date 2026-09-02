@@ -51,7 +51,7 @@ private _maxB     = _fuelMax  param [_idxB, 0];
 private _engState = _heli getVariable "bmkhs_engState";
 private _eng1On   = (_engState select 0) == "ON";
 private _eng2On   = (_engState select 1) == "ON";
-private _airAvail = (_heli getVariable ["bmkhs_apuOn", false]) || _eng1On || _eng2On;
+private _airAvail = (_heli getVariable ["bmkhs_pneuAvail", false]) || _eng1On || _eng2On;
 
 //The aircraft's XFER selection maps to the DESTINATION main. Anything that is not a
 //destination or AUTO leaves the pump off.

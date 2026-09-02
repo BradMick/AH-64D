@@ -38,10 +38,11 @@ if (!(_heli getVariable ["bmkhs_systemsInitialised", false]) && local _heli) the
     _heli setVariable ["bmkhs_acBusOn",           !_sys, true];
     _heli setVariable ["bmkhs_dcBusOn",           !_sys, true];
 
-    //APU - the engine controller shuts the engines down without it
+    //APU - with systems off it reads as already running, and the graph does not touch it
     _heli setVariable ["bmkhs_apuBtnOn",          !_sys, true];
     _heli setVariable ["bmkhs_apuRPM_pct",        [1.0, 0.0] select _sys, true];
     _heli setVariable ["bmkhs_apuOn",             !_sys, true];
+    _heli setVariable ["bmkhs_pneuAvail",         !_sys, true];
 
 
     //Hydraulics - reservoirs start full, and so does the accumulator, which is what
@@ -60,7 +61,6 @@ _heli setVariable ["bmkhs_emerHydOn",         false, true];
 _heli setVariable ["bmkhs_engineOverspeed",   [false, false], true];
 
 //Systems tuning - the aircraft supplies these, Core keeps damage thresholds fixed
-_heli setVariable ["bmkhs_apuStartDelay",   getNumber (_config >> "apuStartDelay")];
 
 //Drivetrain torque limits and timers
 _heli setVariable ["bmkhs_ngbContTqLimit",    getNumber (_config >> "ngbContTqLimit")];

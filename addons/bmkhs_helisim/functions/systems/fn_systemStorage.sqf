@@ -48,8 +48,11 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     } forEach (_comp get "drainedBy");
     private _damaged = _damage > SYS_COMP_DMG_THRESH;
 
-    private _gate   = _x get "gate";
-    private _gateOn = _gate == "" || {_heli getVariable [_gate, false]};
+    private _comp2  = _x;
+    private _gateOn = true;
+    {
+        if !(_heli getVariable [_x, false]) exitWith { _gateOn = false };
+    } forEach (_comp2 get "gates");
 
     //Leaking is separate from discharging - a holed store empties with nothing drawing
     //from it. Rate ramps from the onset threshold to full damage.

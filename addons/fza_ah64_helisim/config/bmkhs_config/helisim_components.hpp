@@ -5,20 +5,41 @@
 //and what Core does with any of it: bmkhs_helisim/components.hpp
 
     class Producers {
-        //The accessory section, and the two things that turn it - highest wins. The APU
-        //drives it directly and NOT the transmission, hence APU ground ops with the rotor
-        //stopped.
+        //The APU. Needs its button, the battery bus, fuel and accumulator pressure - all
+        //four, so losing any one shuts it down. Its RPM is what it puts on its circuit.
+        class Apu {
+            damageRole   = "apu";
+            variableName = "apuRPM_pct";
+            output       = "APU";
+            gate[]       = {"bmkhs_apuBtnOn", "bmkhs_battBusOn", "bmkhs_apuFuelAvail",
+                            "bmkhs_accHydPsiStartOk"};
+            nominal      = 1.0;
+            rampSeconds  = 5;             //spool to operating RPM
+            needsSystems = 1;
+            networked    = 1;             //the crew stations read APU RPM
+        };
+        //Bleed air, which is what starts the engines. Needs the APU actually up to speed
+        //rather than merely turning.
+        class ApuBleedAir {
+            damageRole   = "apu";
+            variableName = "pneuPress";
+            output       = "PNEU";
+            drivenBy[]   = {"APU", 0.85};
+            nominal      = 1.0;
+            rampSeconds  = 0;
+            needsSystems = 1;
+        };
+        //Drives the accessory section as it spools, so the pumps come up with it rather
+        //than snapping on. Declutches once the rotor is driving the accessories itself.
         class ApuDrive {
             damageRole   = "apu";
             variableName = "apuDrive";
             output       = "ACCESSORY_DRIVE";
-            //Turns the accessories as it spools, so the pumps come up with it rather than
-            //snapping on once it is running.
-            driveFrom    = "bmkhs_apuRPM_pct";
-            //Declutches once the rotor is driving the accessory section itself.
+            drivenBy[]   = {"APU"};
+            passthrough  = 1;             //turns them at whatever the APU is doing
             disengageAbove[] = {"Nr", 0.95};
-            nominal      = 1.0;
             rampSeconds  = 0;
+            needsSystems = 1;
         };
         //Turned by the engines, or by the rotor in an autorotation - same shaft either way,
         //so accessories keep turning with the engines dead.
@@ -110,7 +131,7 @@
             variableName    = "battPower_pct";
             output          = "BATT";
             rechargedBy[]   = {"AC"};
-            gate            = "bmkhs_battSwitchOn";
+            gate[]          = {"bmkhs_battSwitchOn"};
             nominal         = 1.0;        //published as a fraction
             stopBelow       = 0.25;       //too flat to hold a bus up
             startRecharge   = 60;         //sec off a live bus
@@ -128,7 +149,7 @@
             //Off the accessory drive, not UTIL_HYD - a store recharging from the node it
             //feeds would top itself up forever.
             rechargedBy[]   = {"ACCESSORY_DRIVE", 0.45};  //same drive the pumps need
-            gate            = "bmkhs_emerHydOn";
+            gate[]          = {"bmkhs_emerHydOn"};
             startedBy       = "bmkhs_apuBtnOn";
             nominal         = 3000;       //psi at full charge
             startAbove      = 2600;       //psi needed to turn the APU over at all
@@ -154,6 +175,21 @@
             variableName = "dcBusOn";
             needsSystems = 1;
             suppliedBy[] = {{"DC", 1}};
+            networked    = 1;
+        };
+        //Nine files read this. The APU is "on" once it is turning fast enough to be useful.
+        class ApuRunning {
+            variableName = "apuOn";
+            needsSystems = 1;
+            suppliedBy[] = {{"APU", 0.85}};
+            networked    = 1;
+        };
+        //Engine starts run off bleed air. Whatever supplies PNEU is the aircraft's
+        //business - an APU here, a ground cart or a running engine elsewhere.
+        class Pneumatics {
+            variableName = "pneuAvail";
+            needsSystems = 1;
+            suppliedBy[] = {{"PNEU", 1}};
             networked    = 1;
         };
         class BattBus {

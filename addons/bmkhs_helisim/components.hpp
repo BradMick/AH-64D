@@ -94,8 +94,9 @@
 //  requires      level variable it draws from; SCALES output rather than gating it, so a
 //                leaking reservoir shows as falling pressure rather than a cliff
 //  requiresAbove level below which it has nothing left to move and produces nothing
-//  gate          crew switch that must be on; "" is always armed. A gated component that
-//                is off is not failed - it just contributes nothing
+//  gate[]        switches that must ALL be on; omit for always armed. A gated component
+//                that is off is not failed - it just contributes nothing. An APU needs
+//                its button, the battery bus, fuel and accumulator pressure together
 //  nominal       what it produces at full output
 //  rampSeconds   zero to full; 0 is instant. A pump builds pressure, a contactor does not
 //  increment     round the published value to this step, as a real gauge reads
