@@ -189,7 +189,7 @@ rule rather than a hydraulics special case:
 
 ```cpp
 class BackupPump : BMKHS_Source {
-    output      = "UTIL_HYD";
+    output      = "UTIL_HYD_FLIGHT";
     drivenBy    = "DC";                 //electrically driven
     consumes    = "utilReservoir";      //no fluid, no pressure
     gate        = "bmkhs_backupPumpOn";
@@ -242,11 +242,12 @@ picture. Generalised, a consumer declares the circuits that can feed it:
 
 ```cpp
 class FlightControls : BMKHS_Consumer {
-    suppliedBy[] = {"PRI_HYD", "UTIL_HYD"};   //any one is enough
+    suppliedBy[] = {"PRI_HYD_FLIGHT", "UTIL_HYD_FLIGHT"};   //any one is enough
 };
 ```
 
-Two circuits, and a third path onto UTIL_HYD from the emergency sources - both
+Two circuits, and a third path onto the utility side from the emergency
+sources - both
 **gated behind a pilot action** rather than coming up on their own, which is
 what keeps them a last resort instead of silent extra pumps.
 
@@ -269,23 +270,67 @@ job, not a special case:
 
 ```cpp
 class Accumulator : BMKHS_Storage {
-    output      = "UTIL_HYD";
-    rechargedBy = "UTIL_HYD";           //fills whenever utility pressure is up
+    output      = "UTIL_HYD_FLIGHT";    //delivers here
+    rechargedBy = "UTIL_HYD_SUPPLY";    //fills from here - NOT the same node
     gate        = "bmkhs_emerHydOn";
     spentBelow  = 1650;                 //PSI - floor, NOT a terminal state
 };
 
 class BackupPump : BMKHS_Source {
-    output     = "UTIL_HYD";
+    output     = "UTIL_HYD_FLIGHT";
     drivenBy   = "DC";                  //dies with the bus, not with a clock
     consumes   = "utilReservoir";
     gate       = "bmkhs_backupPumpOn";
 };
 ```
 
-Both feed UTIL_HYD, so neither needs its own circuit and the consumer set stays
-two entries long. This is also why storage had to be its own base kind rather
-than a flag on source - depletion is the whole difference.
+This is also why storage had to be its own base kind rather than a flag on
+source - depletion is the whole difference.
+
+#### Supply and delivery are different nodes
+
+Those two `UTIL_HYD` references above are NOT the same circuit, and writing
+"both feed UTIL_HYD, so neither needs its own" was wrong. A store that outputs
+onto the same node it recharges from is **supplying itself**: the solver sees a
+node held up by a source that draws from that node, so it never depletes and
+the emergency reserve is infinite.
+
+The two nodes are on opposite sides of the store:
+
+    UTIL_HYD_SUPPLY    pumps produce here; storage recharges FROM here
+    UTIL_HYD_FLIGHT    storage outputs here; flight controls consume here
+
+Upstream is pressurised fluid from the pumps. Downstream is pressure delivered
+to the actuators. The store bridges them, which is the only reason it can be
+empty while the pumps are healthy, or full while they are dead.
+
+**Direction is fixed relative to the component, not the reader.** It is
+tempting to describe `output` as "the input the consumer wants", because from
+the consumer's side that is exactly what it is. But the fields have to mean one
+thing or the edges point both ways and the graph cannot be walked:
+
+    output       the circuit this component PUSHES onto
+    input        the circuit a converter PULLS from
+    drivenBy     the circuit that powers this component
+    rechargedBy  the circuit storage refills FROM
+    suppliedBy[] the circuits a consumer accepts, any one of them
+
+Every one of those is written from the COMPONENT's point of view. A consumer's
+`suppliedBy` and a source's `output` naming the same circuit is the edge
+joining them - one pushes, one pulls, same node.
+
+**The current code has this collapsed too**, so it is not only a documentation
+fix: `bmkhs_utilHydPsi` is written by the utility pump and read directly by
+`fn_inputUpdate` and `fn_coreGetWCAs` as delivered pressure. Supply and
+delivery are one variable. That is harmless today only because the accumulator
+publishes onto nothing - it becomes the self-recharge bug the moment storage is
+wired as a real source.
+
+Generic rule, no domain implied: **any circuit with storage bridging it splits
+into a supply node and a delivery node.** The electrical side has the same
+shape waiting - a battery charged from a bus while also feeding equipment on
+it - so getting this wrong in hydraulics would have been repeated in
+electrical.
 
 #### Storage recharges, and can be what starts a source
 
@@ -357,19 +402,19 @@ an AH-64 special case. Things that die with the primary side specifically are
 their own consumers naming only that circuit:
 
 ```cpp
-class Sas  : BMKHS_Consumer { suppliedBy[] = {"PRI_HYD"}; };
-class Bucs : BMKHS_Consumer { suppliedBy[] = {"PRI_HYD"}; };
+class Sas  : BMKHS_Consumer { suppliedBy[] = {"PRI_HYD_FLIGHT"}; };
+class Bucs : BMKHS_Consumer { suppliedBy[] = {"PRI_HYD_FLIGHT"}; };
 ```
 
 Lose primary: SAS and BUCS go, the controls keep moving on utility. No code
-anywhere names PRI_HYD to make that happen.
+anywhere names that circuit to make it happen.
 
 **The accumulator works through the utility side**, not the primary - two class
 sketches below said `output = "PRI_HYD"` and are wrong. Note also that today's
 `fn_hydraulicsAccumulator` publishes onto no circuit at all: it holds its own
 PSI, discharges only when BOTH circuits are already below minimum, and nothing
 downstream reads it as a supply. It is inert as a source, and becoming a real
-gated source on UTIL_HYD is part of this conversion.
+gated source on the utility delivery node is part of this conversion.
 
 **A reservoir is a reservoir, whatever it holds.** Fuel tanks and hydraulic
 reservoirs are the same component running two implementations today:
@@ -424,21 +469,25 @@ aircraft declares, in any domain.
 
 Storage additionally discharges only while:
 
-    no other source supplies its circuit
+    no other source supplies its OUTPUT circuit
     AND its gate is open
     AND it is above its spent threshold
 
+and it recharges while its `rechargedBy` circuit is supplied - the node
+upstream of it, never the one it feeds.
+
 ```cpp
 class Accumulator : BMKHS_Storage {
-    damageRole = "accumulator";
-    output     = "UTIL_HYD";            //the accumulator works the utility side
-    gate       = "bmkhs_emerHydOn";     //"" = always armed
-    spentBelow = 1650;                  //PSI
+    damageRole  = "accumulator";
+    output      = "UTIL_HYD_FLIGHT";    //delivers to the utility side
+    rechargedBy = "UTIL_HYD_SUPPLY";    //refills from the pumps - a DIFFERENT node
+    gate        = "bmkhs_emerHydOn";    //"" = always armed
+    spentBelow  = 1650;                 //PSI
 };
 
 class BackupPump : BMKHS_Source {       //a SOURCE, and still gated
     damageRole = "backupPump";
-    output     = "UTIL_HYD";
+    output     = "UTIL_HYD_FLIGHT";
     drivenBy   = "DC";                  //electrically driven, hence the domain crossing
     gate       = "bmkhs_backupPumpOn";
 };
