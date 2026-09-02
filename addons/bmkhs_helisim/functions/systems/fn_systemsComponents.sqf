@@ -49,7 +49,7 @@ params ["_heli", "_config"];
     ["torqueFrom",   getText   (cfg >> "torqueFrom")], \
     ["tqLimits",     getArray  (cfg >> "tqLimits")], \
     ["breaksVar",    getText   (cfg >> "breaksOnFailure")], \
-    ["tqWhen",       getText   (cfg >> "tqLimitsWhen")] \
+    ["tqLimitsSE",   getArray  (cfg >> "tqLimitsSE")] \
 ]
 
 private _circuits = createHashMap;
@@ -197,6 +197,33 @@ private _consumers = [];
 //Anything with torque limits, gathered from every kind - a gearbox is a converter and
 //the transmission is a producer, but both are rated for a torque.
 private _torqued = (_producers + _converters + _storage) select {(count (_x get "tqLimits")) > 0};
+
+//An airframe that models no systems still has a drivetrain, and it does not get to ignore
+//what that is rated for. The limits sit at the top level for exactly that case, so Core
+//builds the drive components from them when nothing else declared any.
+if (_torqued isEqualTo []) then {
+    {
+        _x params ["_role", "_torqueVar", "_limits", "_limitsSE", "_breaks"];
+        private _count = [_heli, _role] call bmkhs_fnc_damageCount;
+        for "_i" from 0 to ((_count max 1) - 1) do {
+            _torqued pushBack (createHashMapFromArray [
+                ["damageRole", _role],
+                ["index",      _i],
+                ["torqueFrom", _torqueVar],
+                ["tqLimits",   _limits],
+                ["tqLimitsSE", _limitsSE],
+                ["breaksVar",  _breaks]
+            ]);
+        };
+    } forEach [
+        ["transmission",  "bmkhs_engPctTQ", getArray (_config >> "xmsnTqLimits"),
+                          getArray (_config >> "xmsnTqLimitsSE"), ""],
+        ["noseGearboxes", "bmkhs_engPctTQ", getArray (_config >> "ngbTqLimits"),
+                          getArray (_config >> "ngbTqLimitsSE"), "bmkhs_engineOverspeed"]
+    ];
+    //Only the ones the aircraft actually gave limits for.
+    _torqued = _torqued select {(count (_x get "tqLimits")) > 0 || {(count (_x get "tqLimitsSE")) > 0}};
+};
 _heli setVariable ["bmkhs_sysTorqued", _torqued];
 
 _heli setVariable ["bmkhs_sysProducers", _producers];

@@ -39,7 +39,13 @@ if (_torqued isEqualTo []) exitWith {};
     private _comp    = _x;
     private _role    = _x get "damageRole";
     private _index   = _x get "index";
+    //Single-engine ratings where the aircraft declares them, since one engine doing the
+    //work of two is a different case from both sharing it.
     private _limits  = _x get "tqLimits";
+    private _seLimits = _x get "tqLimitsSE";
+    if ((count _seLimits) > 0 && {_heli getVariable ["bmkhs_isSingleEng", false]}) then {
+        _limits = _seLimits;
+    };
 
     //What this component is carrying. Per-member where the source is per-member, so
     //engine 2's torque is what nose gearbox 2 sees.
@@ -53,28 +59,22 @@ if (_torqued isEqualTo []) exitWith {};
     private _damage = [_heli, _role, _index] call bmkhs_fnc_damageGet;
     private _accrue = 0;
 
-    //Some limits only apply in a particular condition - a nose gearbox is carrying its
-    //engine's share, so it is only at risk when one engine is doing the work of two.
-    private _when = _x get "tqWhen";
-    private _rated = _when == "" || {_heli getVariable [_when, false]};
 
     //Worst limit first, so the harshest one that applies is the one that counts.
-    if (_rated) then {
-        {
-            _x params ["_limit", "_seconds"];
-            if (_tq > _limit) exitWith {
-                if (_seconds <= 0) then {
-                    //No grace at all above this.
-                    _accrue = DMG_PER_SEC;
-                } else {
-                    private _timerVar = format ["bmkhs_tqTimer_%1%2_%3", _role, _index, _forEachIndex];
-                    private _held = (_heli getVariable [_timerVar, 0]) + _deltaTime;
-                    _heli setVariable [_timerVar, _held];
-                    if (_held >= _seconds) then { _accrue = DMG_PER_SEC };
-                };
+    {
+        _x params ["_limit", "_seconds"];
+        if (_tq > _limit) exitWith {
+            if (_seconds <= 0) then {
+                //No grace at all above this.
+                _accrue = DMG_PER_SEC;
+            } else {
+                private _timerVar = format ["bmkhs_tqTimer_%1%2_%3", _role, _index, _forEachIndex];
+                private _held = (_heli getVariable [_timerVar, 0]) + _deltaTime;
+                _heli setVariable [_timerVar, _held];
+                if (_held >= _seconds) then { _accrue = DMG_PER_SEC };
             };
-        } forEach _limits;
-    };
+        };
+    } forEach _limits;
 
     //Below every limit, the clocks reset - a brief overtorque is not cumulative.
     if (_accrue <= 0) then {
