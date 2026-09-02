@@ -50,8 +50,7 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     private _supply   = if (_requires == "") then {1} else {
         //Full output down to the level where it loses prime, zero below that.
         private _level = _heli getVariable [_requires, 1];
-        private _min   = _heli getVariable ["bmkhs_hydMinLevel", 0.1];
-        (linearConversion [_min, 1, _level, 0, 1, true])
+        (linearConversion [_x get "requiresAbove", 1, _level, 0, 1, true])
     };
 
     //A shaft passes its drive speed along instead of a fixed value.

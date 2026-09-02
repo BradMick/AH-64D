@@ -67,11 +67,6 @@ _heli setVariable ["bmkhs_emerHydOn",         false, true];
 _heli setVariable ["bmkhs_engineOverspeed",   [false, false], true];
 
 //Systems tuning - the aircraft supplies these, Core keeps damage thresholds fixed
-_heli setVariable ["bmkhs_hydMinPsi",       getNumber (_config >> "hydMinPsi")];
-_heli setVariable ["bmkhs_hydMinAccPsi",    getNumber (_config >> "hydMinAccPsi")];
-_heli setVariable ["bmkhs_hydMinLevel",     getNumber (_config >> "hydMinLevel")];
-_heli setVariable ["bmkhs_hydAccTimerMin",  getNumber (_config >> "hydAccTimerMin")];
-_heli setVariable ["bmkhs_hydLeakTimerMin", getNumber (_config >> "hydLeakTimerMin")];
 _heli setVariable ["bmkhs_elecBattTimerMin",getNumber (_config >> "elecBattTimerMin")];
 _heli setVariable ["bmkhs_apuStartDelay",   getNumber (_config >> "apuStartDelay")];
 
@@ -79,8 +74,6 @@ _heli setVariable ["bmkhs_apuStartDelay",   getNumber (_config >> "apuStartDelay
 //have to be set after them - reading them earlier returns nil and the multiply throws,
 //which aborts the rest of this function and leaves the aircraft uninitialised.
 _heli setVariable ["bmkhs_battTimer",    (_heli getVariable ["bmkhs_elecBattTimerMin", 0]) * 60];
-_heli setVariable ["bmkhs_hydLeakTimer", (_heli getVariable ["bmkhs_hydLeakTimerMin", 0]) * 60];
-_heli setVariable ["bmkhs_accTimer",     (_heli getVariable ["bmkhs_hydAccTimerMin",  0]) * 60];
 
 //Drivetrain torque limits and timers
 _heli setVariable ["bmkhs_ngbContTqLimit",    getNumber (_config >> "ngbContTqLimit")];

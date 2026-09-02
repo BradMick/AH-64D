@@ -32,6 +32,7 @@ params ["_heli", "_config"];
 //  driveFrom    variable its output follows, 0..1, for something that spools
 //  minDrive     value that circuit must reach
 //  requires     level variable it draws from, "" for none. Scales output, not gates it
+//  requiresAbove  level below which it has nothing to move and makes nothing
 //  nominal      what it produces at full output
 //  rampSeconds  zero to full, 0 = instant
 //  increment    round the published value to this step, 0 for none
@@ -45,6 +46,7 @@ params ["_heli", "_config"];
     ["driveFrom",    getText   (cfg >> "driveFrom")], \
     ["minDrive",     getNumber (cfg >> "minDrive")], \
     ["requires",     getText   (cfg >> "requires")], \
+    ["requiresAbove",getNumber (cfg >> "requiresAbove")], \
     ["nominal",      getNumber (cfg >> "nominal")], \
     ["rampRate",     if ((getNumber (cfg >> "rampSeconds")) > 0) \
                         then {(getNumber (cfg >> "nominal")) / (getNumber (cfg >> "rampSeconds"))} \

@@ -15,7 +15,6 @@ class BMKHS_HeliSim {
     #include "bmkhs_config\helisim_flightControls.hpp"
     #include "bmkhs_config\helisim_fuel.hpp"
     #include "bmkhs_config\helisim_fuselage.hpp"
-    #include "bmkhs_config\helisim_hydraulics.hpp"
     #include "bmkhs_config\helisim_mass.hpp"
     #include "bmkhs_config\helisim_misc.hpp"
     #include "bmkhs_config\helisim_rotor.hpp"

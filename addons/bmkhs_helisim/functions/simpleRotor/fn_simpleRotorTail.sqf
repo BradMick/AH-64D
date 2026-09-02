@@ -146,6 +146,7 @@ private _totThrust       = _rtrThrust * _tailAuthority;
 
 private _thrustVector  = _axisX vectorMultiply (_totThrust * _deltaTime);
 private _moment        = _thrustVector vectorCrossProduct _deltaPos;
+_moment set [1, 0];
 
 private _tailRtrDamage = [_heli, "tailRotor"] call bmkhs_fnc_damageGet;
 private _IGBDamage     = [_heli, "intermediateGearbox"] call bmkhs_fnc_damageGet;
@@ -162,14 +163,11 @@ if (_tailRtrDamage < 0.85 && _IGBDamage < SYS_IGB_DMG_THRESH && _TGBDamage < SYS
             //Tail rotor thrust
             _heli addForce [_heli vectorModelToWorld _thrustVector, _rtrPos];
             //Tail rotor torque
-            _moment set [1, 0];
             _heli addTorque (_heli vectorModelToWorld _moment);
-            systemChat format ["test v0.1"];
         } else {
             //Tail rotor thrust
             _heli addForce [_heli vectorModelToWorld _thrustVector, _heliCom];
             //Tail rotor torque
-            _moment set [1, 0];
             _heli addTorque (_heli vectorModelToWorld _moment);
         };
     };

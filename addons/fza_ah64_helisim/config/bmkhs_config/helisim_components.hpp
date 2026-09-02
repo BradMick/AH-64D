@@ -39,6 +39,7 @@
             drivenBy     = "ACCESSORY_DRIVE";
             minDrive     = 0.45;         //Nr fraction - below this the pump loses drive
             requires     = "bmkhs_priLevel_pct";
+            requiresAbove = 0.1;          //fraction - below this it loses prime
             nominal      = 3000;         //psi
             increment    = 10;            //gauges move in tens
             rampSeconds  = 0.5;           //zero to full pressure - builds, does not snap
@@ -50,6 +51,7 @@
             drivenBy     = "ACCESSORY_DRIVE";
             minDrive     = 0.45;
             requires     = "bmkhs_utilLevel_pct";
+            requiresAbove = 0.1;
             nominal      = 3000;
             increment    = 10;
             rampSeconds  = 0.5;
