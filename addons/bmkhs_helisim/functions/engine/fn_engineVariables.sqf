@@ -27,9 +27,10 @@ if (!(_heli getVariable ["bmkhs_engineInitialised", false]) && local _heli) then
     //The graph then follows: Nr turns the transmission, which drives the accessories,
     //which build pressure. Seeding it already-running skipped all of that and left the
     //values reading as failures until the model caught up.
-    //The power lever is a crew control, so with no systems modelled there is nothing to
-    //move it - it starts at FLY. With systems it starts OFF and the crew sets it.
-    private _lever = ["FLY", "OFF"] select (_heli getVariable ["bmkhs_useSystems", false]);
+    //Cold and dark either way: the levers start OFF. With no systems the controller moves
+    //them to FLY when the player wakes the aircraft, through the same path a click takes
+    //so the animation travels rather than snapping.
+    private _lever = "OFF";
 
     _heli setVariable ["bmkhs_engPowerLeverState",    [_lever, _lever], true]; //OFF, IDLE, FLY
     _heli setVariable ["bmkhs_engState",              ["OFF", "OFF"],   true]; //OFF, STARTING, ON

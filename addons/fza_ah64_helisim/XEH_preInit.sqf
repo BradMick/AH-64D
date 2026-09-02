@@ -15,7 +15,8 @@ bmkhs_notifyHandler = {
             _data params ["_engNum", "_value"];
             private _anim = format ["fza_ah64_powerLever%1", _engNum + 1];
             if (_value == 1.0) then {
-                [_heli, _anim, 1, 0.25] call fza_fnc_animSetValue;
+                //Slow enough that the rotor follows the lever rather than surging with it.
+                [_heli, _anim, 1, 0.125] call fza_fnc_animSetValue;
             } else {
                 [_heli, _anim, _value] call fza_fnc_animSetValue;
             };

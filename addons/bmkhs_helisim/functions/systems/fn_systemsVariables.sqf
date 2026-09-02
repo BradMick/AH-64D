@@ -28,8 +28,8 @@ if (!(_heli getVariable ["bmkhs_systemsInitialised", false]) && local _heli) the
     //start procedure - so everything downstream reads as already on.
     private _sys = _heli getVariable ["bmkhs_useSystems", false];
 
-    //Switch states
-    _heli setVariable ["bmkhs_battSwitchOn",      !_sys, true];
+    //Switch states - cold and dark either way, the crew turns it on.
+    _heli setVariable ["bmkhs_battSwitchOn",      false, true];
 
     //Electrical - with systems off nothing solves these, so they stay as seeded: the
     //aircraft is simply powered, with no buses to bring up.

@@ -136,11 +136,11 @@ if (_heli getVariable "fza_ah64_apu_fire") then {
     [_activeWarn, "APU FIRE"] call fza_wca_fnc_wcaDelWarning;
 };
 
-//An engine that has not been commanded to run is not an engine that has failed - on an
+//An engine that is off or still spooling has not failed - it is not running yet. On an
 //aircraft with no start procedure the lever sits at FLY from spawn, so the state is what
 //says whether it should be turning.
-private _eng1Cmd = _eng1State != "OFF";
-private _eng2Cmd = _eng2State != "OFF";
+private _eng1Cmd = _eng1State == "ON";
+private _eng2Cmd = _eng2State == "ON";
 
 //--Engine 1 Out
 if (_eng1Cmd && _eng1Ng < 0.63 && _eng1PwrLvrState == "FLY") then {

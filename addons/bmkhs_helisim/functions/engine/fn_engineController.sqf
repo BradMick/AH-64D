@@ -104,12 +104,27 @@ if (local _heli) then {
         //No start procedure to wait for, so Arma's own start is the signal - the player
         //moves the throttle, the aircraft wakes up, and the engine state follows rather
         //than holding it off forever.
-        private _wanted = ["OFF", "ON"] select (isEngineOn _heli);
-        if (_eng1State != _wanted) then {
-            [_heli, "bmkhs_engState", 0, _wanted, true] call bmkhs_fnc_utilSetArrayVariable;
-        };
-        if (_eng2State != _wanted) then {
-            [_heli, "bmkhs_engState", 1, _wanted, true] call bmkhs_fnc_utilSetArrayVariable;
+        //STARTING, not ON - the engine model spools Ng from there and flips itself to ON
+        //at running speed. Setting ON directly skips the spool, which surges the rotor and
+        //trips the engine-out warning against an Ng still climbing from zero.
+        if (isEngineOn _heli) then {
+            //Through interactPowerLever so the lever animates over its normal travel -
+            //setting the state directly snaps it, and the rotor surges with it.
+            if (_eng1State == "OFF") then {
+                [_heli, "bmkhs_engState", 0, "STARTING", true] call bmkhs_fnc_utilSetArrayVariable;
+                [_heli, 0, "FLY"] call bmkhs_fnc_interactPowerLever;
+            };
+            if (_eng2State == "OFF") then {
+                [_heli, "bmkhs_engState", 1, "STARTING", true] call bmkhs_fnc_utilSetArrayVariable;
+                [_heli, 1, "FLY"] call bmkhs_fnc_interactPowerLever;
+            };
+        } else {
+            if (_eng1State != "OFF") then {
+                [_heli, "bmkhs_engState", 0, "OFF", true] call bmkhs_fnc_utilSetArrayVariable;
+            };
+            if (_eng2State != "OFF") then {
+                [_heli, "bmkhs_engState", 1, "OFF", true] call bmkhs_fnc_utilSetArrayVariable;
+            };
         };
         if (_shiftLocked) then {
             _heli setVariable ["bmkhs_shiftLocked", false];
