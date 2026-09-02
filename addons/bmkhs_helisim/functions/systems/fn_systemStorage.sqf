@@ -28,6 +28,7 @@ Author:
     BradMick
 ---------------------------------------------------------------------------- */
 params ["_heli", "_deltaTime"];
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 
 private _storage = _heli getVariable ["bmkhs_sysStorage", []];
 if (_storage isEqualTo []) exitWith {};
@@ -40,7 +41,7 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     private _charge  = _heli getVariable [_varName + "Charge", 1.0];
 
     private _damaged = ([_heli, _x get "damageRole", _x get "index"] call bmkhs_fnc_damageGet)
-                            > (_x get "dmgThreshold");
+                            > SYS_COMP_DMG_THRESH;
 
     private _gate   = _x get "gate";
     private _gateOn = _gate == "" || {_heli getVariable [_gate, false]};

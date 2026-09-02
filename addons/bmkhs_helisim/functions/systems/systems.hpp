@@ -1,6 +1,9 @@
 #ifndef BMKHS_HELISIM_SYSTEMS_HPP
 #define BMKHS_HELISIM_SYSTEMS_HPP
 
+//Damage threshold for any declared component, whatever kind or domain.
+#define SYS_COMP_DMG_THRESH  0.85
+
 #define SYS_APU_DMG_THRESH   0.85
 #define SYS_BATT_DMG_THRESH  0.85
 #define SYS_GEN_DMG_THRESH   0.85

@@ -43,7 +43,6 @@ params ["_heli", "_config"];
 //  rampRate     units per second toward its target, 0 = instant
 #define COMPONENT_FIELDS(cfg) createHashMapFromArray [ \
     ["damageRole",   getText   (cfg >> "damageRole")], \
-    ["dmgThreshold", if (isNumber (cfg >> "dmgThreshold")) then {getNumber (cfg >> "dmgThreshold")} else {0.85}], \
     ["variableName", getText   (cfg >> "variableName")], \
     ["gate",         getText   (cfg >> "gate")], \
     ["output",       getText   (cfg >> "output")], \
