@@ -63,21 +63,25 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
         _charge = (_charge - (_rate * _frac * _deltaTime)) max 0;
     };
 
-    //Start draw - a source that cannot spin itself up takes a slug of stored energy
-    //to get going. Debited ONCE on the gate rising, latched, or it would empty the
-    //store in under a second. The latch clears when the gate drops, so a shutdown
-    //re-arms the next start.
+    //Spent once on the gate rising, latched. StartOk latches whether there was enough:
+    //the draw itself drops the store below the start minimum, so checking pressure
+    //directly would cut the start it just paid for.
     private _startedBy = _x get "startedBy";
     if (_startedBy != "") then {
         private _latchVar  = _varName + "Drawn";
-        private _startGate = _heli getVariable [_startedBy, false];
-        if (_startGate) then {
+        private _okVar     = _varName + "StartOk";
+        if (_heli getVariable [_startedBy, false]) then {
             if !(_heli getVariable [_latchVar, false]) then {
-                _charge = (_charge - (_x get "startDischarge")) max 0;
+                private _draw  = _x get "startDischarge";
+                private _above = _x get "startAbove";
+                private _ok    = _charge >= _draw && {_nominal <= 0 || _charge * _nominal >= _above};
+                if (_ok) then { _charge = _charge - _draw };
+                _heli setVariable [_okVar,    _ok, true];
                 _heli setVariable [_latchVar, true];
             };
         } else {
             _heli setVariable [_latchVar, false];
+            _heli setVariable [_okVar,    true, true];
         };
     };
 

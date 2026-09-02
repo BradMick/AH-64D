@@ -99,14 +99,15 @@
         //as emergency flight-control pressure, gated on the crew button.
         class Accumulator {
             //No damageRole - no selection in the p3d, so it cannot be shot out.
-            variableName = "accHydPsi";
-            output       = "UTIL_HYD";
+            variableName    = "accHydPsi";
+            output          = "UTIL_HYD";
             //Off the accessory drive, not UTIL_HYD - a store recharging from the node it
             //feeds would top itself up forever.
-            rechargedBy  = "ACCESSORY_DRIVE";
-            gate         = "bmkhs_emerHydOn";
-            startedBy    = "bmkhs_apuBtnOn";
-            startDischarge  = 0.35;       //fraction of charge an APU start costs, at once
+            rechargedBy     = "ACCESSORY_DRIVE";
+            gate            = "bmkhs_emerHydOn";
+            startedBy       = "bmkhs_apuBtnOn";
+            startAbove      = 2600;       //psi needed to turn the APU over at all
+            startDischarge  = 0.35;       //fraction of charge the start then costs
             startRecharge   = 1;          //sec, refilled by the pumps it just started
             emerDischarge   = 90;         //sec, full to empty supplying emergency pressure
             spentBelow      = 1650;       //psi, the floor it stops discharging at

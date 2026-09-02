@@ -28,7 +28,10 @@ private _apuRPM_pct    = _heli getVariable "bmkhs_apuRPM_pct";
 private _apuFF_kgs     = 0.0;
 private _apuFuelAvail  = _heli getVariable ["bmkhs_apuFuelAvail", true];
 
-if (_apuBtnOn && _battBusOn && _apuFuelAvail) then {
+//The accumulator turns it over, so it needs the pressure. True when nothing declares one.
+private _accStartOk = _heli getVariable ["bmkhs_accHydPsiStartOk", true];
+
+if (_apuBtnOn && _battBusOn && _apuFuelAvail && _accStartOk) then {
     _apuRPM_pct = [_apuRPM_pct, 1.0, (1.0 / _apuStartDelay) * _deltaTime] call BIS_fnc_lerp;
 } else {
     _apuRPM_pct = [_apuRPM_pct, 0.0, _deltaTime] call BIS_fnc_lerp;

@@ -94,6 +94,7 @@ private _producers = [];
 //  rechargedBy     circuit that refills it
 //  spentBelow      value it stops discharging at
 //  startedBy       what draws from it to start - names a COMPONENT, not a circuit
+//  startAbove      value it must be at or above for a start to happen at all
 //  startDischarge  fraction of charge one start costs, spent at once
 //  startRecharge   seconds to refill after a start, once its recharge circuit is up
 //  emerDischarge   seconds full to empty while supplying as an emergency source
@@ -109,6 +110,7 @@ private _storage = [];
     _c set ["rechargedBy", getText   (_x >> "rechargedBy")];
     _c set ["spentBelow",  getNumber (_x >> "spentBelow")];
     _c set ["startedBy",   getText   (_x >> "startedBy")];
+    _c set ["startAbove",     getNumber (_x >> "startAbove")];
     _c set ["startDischarge", getNumber (_x >> "startDischarge")];
 
     //Charge is a fraction, so a full-to-empty time converts straight to a rate.
