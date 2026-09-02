@@ -458,6 +458,60 @@ It always is, when gated on and above its spent threshold.
 
 So: solve supply first, then settle storage charge from the result.
 
+## Controls are components too — later, but plan for it
+
+Not for the first pass, but the design has to leave room for it or it will have
+to be retrofitted.
+
+Every gate in this document names a control: `bmkhs_emerHydOn`,
+`bmkhs_battSwitchOn`, `bmkhs_backupPumpOn`. Those are switches, and a switch is
+a component with state, a hitpoint and a place in the graph - the same shape as
+everything else here. It should be declared once and produce three things:
+
+    the variable a gate reads
+    the keybind
+    the cockpit interaction
+
+**The macro pattern already exists.** `CfgUserActions.hpp` has
+`BMKHS_ANALOG` / `BMKHS_NONANALOG` / `BMKHS_ACTION`, each generating the
+keybind and its handler dispatch together. What is missing is switch
+BEHAVIOUR - everything is momentary (`onActivate` / `onDeactivate`), so
+anything else is hand-written SQF.
+
+The kinds that need expressing:
+
+| kind | behaviour |
+|---|---|
+| momentary | on while held, off on release - what exists today |
+| latching | press toggles, stays where it is put |
+| momentary-one-way | springs back from one position only (start switch) |
+| multi-position | N discrete positions, stepped or selected directly |
+| guarded | needs the cover lifted first |
+
+`fn_interactPowerLever` is the case that shows the gap: a three-position
+selector (OFF / IDLE / FLY) written as an if-chain, once per engine. Declared
+instead:
+
+```cpp
+class PowerLever : BMKHS_Control {
+    variableName = "eng1PowerLever";
+    kind         = "multiPosition";
+    positions[]  = {"OFF", "IDLE", "FLY"};
+    default      = "OFF";
+    perMember    = "engines";      //one per engine, from the damage role
+};
+```
+
+which publishes `bmkhs_eng1PowerLeverState`, generates step-up / step-down and
+direct-select keybinds, and gives the gate model a control to reference without
+Core knowing what a power lever is.
+
+The wrinkle to design around: **keybinds are config-time and static**, while
+component counts are aircraft-declared. An aircraft with three engines needs
+three power-lever binds generated from `perMember`, so the macro has to expand
+over a count the aircraft chooses. That is the part most likely to catch us if
+the control model is bolted on afterwards rather than planned for now.
+
 ## Not yet flown
 
 `abe604035` touched 22 Core files and every damage check in the model. Worth
