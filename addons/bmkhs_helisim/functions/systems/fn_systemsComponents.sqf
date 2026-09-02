@@ -103,6 +103,22 @@ private _storage = [];
     if ((_c get "output") != "") then { _circuits set [_c get "output", 0] };
 } forEach ("true" configClasses (_config >> "Storage"));
 
+//Circuits that publish their own state - a bus being up is a fact about the node, not
+//something drawing from it.
+private _named = [];
+{
+    private _c = createHashMapFromArray [
+        ["circuit",      getText   (_x >> "circuit")],
+        ["minValue",     getNumber (_x >> "minValue")],
+        ["networked",    getNumber (_x >> "networked") > 0],
+        ["needsSystems", getNumber (_x >> "needsSystems") > 0]
+    ];
+    _c set ["varName", format ["bmkhs_%1", getText (_x >> "variableName")]];
+    _named pushBack _c;
+    _circuits set [_c get "circuit", 0];
+} forEach ("true" configClasses (_config >> "Circuits"));
+_heli setVariable ["bmkhs_sysNamed", _named];
+
 //Consumers - suppliedBy is an OR by default, or an AND with needsAll.
 private _consumers = [];
 {

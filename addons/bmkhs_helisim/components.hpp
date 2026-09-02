@@ -134,8 +134,25 @@
 //                 reservoir add to its damage rather than being a second mechanism
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
+// CIRCUITS - state Core publishes about a node
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
+//A bus being up is a fact about the circuit, not something drawing from it, so it is
+//declared here rather than as a consumer. This is how acBusOn, apuOn and the rest reach
+//everything outside Core.
+//
+//  variableName  what it publishes as
+//  circuit       the node it reports on
+//  minValue      value at or above which it reads as up
+//  networked     see above
+//  needsSystems  see above
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
 // CONSUMERS - anything that needs supply to work
 /////////////////////////////////////////////////////////////////////////////////////////////
+//
+//Not for reporting a circuit - use a Circuit for that. A consumer is a thing that stops
+//working without supply: flight controls, a tail rotor.
 //
 //  variableName  what it publishes as
 //  suppliedBy[]  circuits that can feed it, each with its threshold

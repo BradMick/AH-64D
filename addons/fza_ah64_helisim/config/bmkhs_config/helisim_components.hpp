@@ -160,46 +160,53 @@
         };
     };
 
-    //Consumers here are read by the flight model on the pilot's machine only, so they stay
-    //local. Anything a crew station draws sets networked.
-    class Consumers {
-        //What the crew stations read. A route is up when something is feeding it, however
-        //that power got there.
+    //Circuit states Core publishes. A bus being up is a fact about the node, not something
+    //drawing from it - these are what the crew stations and the rest of Core read.
+    class Circuits {
         class AcBus {
             variableName = "acBusOn";
+            circuit      = "AC";
+            minValue     = 1;
             needsSystems = 1;
-            suppliedBy[] = {{"AC", 1}};
             networked    = 1;
         };
         class DcBus {
             variableName = "dcBusOn";
+            circuit      = "DC";
+            minValue     = 1;
             needsSystems = 1;
-            suppliedBy[] = {{"DC", 1}};
-            networked    = 1;
-        };
-        //Nine files read this. The APU is "on" once it is turning fast enough to be useful.
-        class ApuRunning {
-            variableName = "apuOn";
-            needsSystems = 1;
-            suppliedBy[] = {{"APU", 0.85}};
-            networked    = 1;
-        };
-        //Engine starts run off bleed air. Whatever supplies PNEU is the aircraft's
-        //business - an APU here, a ground cart or a running engine elsewhere.
-        class Pneumatics {
-            variableName = "pneuAvail";
-            needsSystems = 1;
-            suppliedBy[] = {{"PNEU", 1}};
             networked    = 1;
         };
         class BattBus {
             variableName = "battBusOn";
+            circuit      = "BATT";
+            minValue     = 0.25;
             needsSystems = 1;
-            suppliedBy[] = {{"BATT", 0.25}};
             networked    = 1;
         };
-        //Either circuit alone keeps the controls moving, so losing one side is a
-        //degradation rather than a loss of control.
+        //The APU is running once it is turning fast enough to be useful.
+        class ApuRunning {
+            variableName = "apuOn";
+            circuit      = "APU";
+            minValue     = 0.85;
+            needsSystems = 1;
+            networked    = 1;
+        };
+        //Engine starts run off bleed air. Whatever supplies it is the aircraft's business -
+        //an APU here, a ground cart or a running engine elsewhere.
+        class Pneumatics {
+            variableName = "pneuAvail";
+            circuit      = "PNEU";
+            minValue     = 1;
+            needsSystems = 1;
+            networked    = 1;
+        };
+    };
+
+    //Consumers - things that need supply to WORK, as opposed to a circuit reporting
+    //itself. These two are read by the flight model on the pilot's machine, so they stay
+    //local.
+    class Consumers {
         class FlightControls {
             variableName = "fltCtrlsSupplied";
             suppliedBy[] = {{"PRI_HYD", 1260}, {"UTIL_HYD", 1260}};   //psi

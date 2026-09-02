@@ -9,7 +9,8 @@ Description:
                     startup loop
       2. producers  resolve against circuits the stores have fed
       3. storage    drains and refills from what actually solved
-      4. consumers  threshold what ended up on theirs
+      4. circuits   publish the state of any node the aircraft named
+      5. consumers  threshold what ended up on theirs
 
     Storage runs twice: once to put its charge onto circuits, once at the end to
     move that charge from the solved result. Producers run twice so one driven
@@ -51,4 +52,5 @@ _heli setVariable ["bmkhs_sysCircuits", _circuits];
 //Charge moves last, off the solved result - a store reading its recharge circuit any
 //earlier sees zero and never refills.
 [_heli, _deltaTime, true]  call bmkhs_fnc_systemStorage;
+[_heli]                    call bmkhs_fnc_systemCircuitState;
 [_heli]                    call bmkhs_fnc_systemConsumer;
