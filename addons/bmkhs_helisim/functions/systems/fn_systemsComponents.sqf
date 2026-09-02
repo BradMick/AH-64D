@@ -33,14 +33,12 @@ params ["_heli", "_config"];
     ["disengageOn",  (getArray (cfg >> "disengageAbove")) param [0, ""]], \
     ["disengageAt",  (getArray (cfg >> "disengageAbove")) param [1, 0]], \
     ["minDrive",     (getArray (cfg >> "drivenBy")) param [1, 0]], \
-    ["driveFrom",    getText   (cfg >> "driveFrom")], \
     ["requires",     getText   (cfg >> "requires")], \
     ["requiresAbove",getNumber (cfg >> "requiresAbove")], \
     ["nominal",      getNumber (cfg >> "nominal")], \
     ["rampRate",     if ((getNumber (cfg >> "rampSeconds")) > 0) \
                         then {(getNumber (cfg >> "nominal")) / (getNumber (cfg >> "rampSeconds"))} \
                         else {0}], \
-    ["passthrough",  getNumber (cfg >> "passthrough") > 0], \
     ["increment",    getNumber (cfg >> "increment")], \
     ["networked",    getNumber (cfg >> "networked") > 0], \
     ["stateVar",     getText   (cfg >> "stateName")], \
@@ -49,6 +47,39 @@ params ["_heli", "_config"];
 ]
 
 private _circuits = createHashMap;
+
+//What a component puts where. One entry per Outputs class, or the single output field
+//for something that only feeds one circuit.
+//  circuit         node it feeds
+//  ratio           of its own value; 1 passes it straight through, as a shaft does
+//  nominal         fixed value instead, for an output that does not scale with the source
+//  disengageAbove  circuit and threshold above which THIS output drops out, for a clutch
+private _readOutputs = {
+    params ["_cfg"];
+    private _outs = [];
+    {
+        _outs pushBack (createHashMapFromArray [
+            ["circuit",     getText   (_x >> "circuit")],
+            ["ratio",       [1, getNumber (_x >> "ratio")] select (isNumber (_x >> "ratio"))],
+            ["nominal",     getNumber (_x >> "nominal")],
+            ["disengageOn", (getArray (_x >> "disengageAbove")) param [0, ""]],
+            ["disengageAt", (getArray (_x >> "disengageAbove")) param [1, 0]]
+        ]);
+        _circuits set [getText (_x >> "circuit"), 0];
+    } forEach ("true" configClasses (_cfg >> "Outputs"));
+
+    if (_outs isEqualTo [] && {(getText (_cfg >> "output")) != ""}) then {
+        _outs pushBack (createHashMapFromArray [
+            ["circuit",     getText (_cfg >> "output")],
+            ["ratio",       1],
+            ["nominal",     getNumber (_cfg >> "nominal")],
+            ["disengageOn", ""],
+            ["disengageAt", 0]
+        ]);
+        _circuits set [getText (_cfg >> "output"), 0];
+    };
+    _outs
+};
 
 //Producers - pumps, generators, the APU. Anything that puts a value onto a circuit
 //given whatever drives it.
@@ -65,6 +96,7 @@ private _producers = [];
         _m set ["index",   _i];
         //Numbered only when there is more than one: gen1On and gen2On, but priHydPsi.
         _m set ["varName", format ["bmkhs_%1%2", _c get "variableName", [_i + 1, ""] select (_count <= 1)]];
+        _m set ["outputs", [_x] call _readOutputs];
         _producers pushBack _m;
     };
 

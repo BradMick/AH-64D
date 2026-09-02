@@ -52,13 +52,6 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     private _driven   = _drivenBy == ""
                      || {([_heli, _drivenBy] call bmkhs_fnc_systemCircuit) > (_x get "minDrive")};
 
-    //A clutch drops out once something else is driving what it drives - an APU declutches
-    //as the rotor comes up to speed and stops contributing.
-    private _clutch = _x get "disengageOn";
-    if (_clutch != "" && {([_heli, _clutch] call bmkhs_fnc_systemCircuit) >= (_x get "disengageAt")}) then {
-        _driven = false;
-    };
-
     //Scales rather than gates, so a leak shows as falling pressure. Still closes the
     //chain: no fluid is no pressure.
     private _requires = _x get "requires";
@@ -68,13 +61,10 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
         (linearConversion [_x get "requiresAbove", 1, _level, 0, 1, true])
     };
 
-    //A shaft passes its drive speed along instead of a fixed value.
-    private _out_val = if (_x get "passthrough") then {[_heli, _drivenBy] call bmkhs_fnc_systemCircuit} else {_nominal};
-
-    //Something that spools follows its own speed rather than switching on at the end.
-    private _driveFrom = _x get "driveFrom";
-    if (_driveFrom != "") then {
-        _out_val = _out_val * ((_heli getVariable [_driveFrom, 0]) max 0);
+    //No nominal means it carries whatever drives it - a shaft turns at the speed of the
+    //thing turning it rather than producing a level of its own.
+    private _out_val = if (_nominal > 0) then {_nominal} else {
+        [_heli, _drivenBy] call bmkhs_fnc_systemCircuit
     };
 
     private _target  = ([0, _out_val] select (!_damaged && _gateOn && _driven)) * _supply;
@@ -108,14 +98,29 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
         [_heli, format ["bmkhs_%1", _stateVar], _running] call bmkhs_fnc_utilUpdateNetworkGlobal;
     };
 
-    //Highest feeder wins the node. Recorded separately too, so a store can tell whether
-    //anything OTHER than itself is supplying its output.
-    private _circuit = _x get "output";
-    if (_circuit != "") then {
-        _circuits set [_circuit, (_circuits getOrDefault [_circuit, 0]) max _out];
+    //Everything it feeds. Highest feeder wins each node, and the contribution is recorded
+    //separately so a store can tell whether anything OTHER than itself is supplying it.
+    private _comp = _x;
+    {
+        private _circuit = _x get "circuit";
+        if (_circuit == "") then { continue };
+
+        //A clutch drops THIS output out - an APU declutches from the accessory section
+        //once the rotor is driving it, while its bleed air carries on.
+        private _clutch = _x get "disengageOn";
+        if (_clutch != "" && {([_heli, _clutch] call bmkhs_fnc_systemCircuit) >= (_x get "disengageAt")}) then {
+            continue;
+        };
+
+        private _fixed = _x get "nominal";
+        private _val   = if (_out <= 0) then {0} else {
+            if (_fixed > 0) then {_fixed} else {_out * (_x get "ratio")}
+        };
+
+        _circuits set [_circuit, (_circuits getOrDefault [_circuit, 0]) max _val];
         private _feedVar = "bmkhs_sysProducerFeed_" + _circuit;
-        _heli setVariable [_feedVar, (_heli getVariable [_feedVar, 0]) max _out];
-    };
+        _heli setVariable [_feedVar, (_heli getVariable [_feedVar, 0]) max _val];
+    } forEach (_comp get "outputs");
 } forEach _producers;
 
 _heli setVariable ["bmkhs_sysCircuits", _circuits];

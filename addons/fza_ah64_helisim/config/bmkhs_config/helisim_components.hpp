@@ -6,11 +6,11 @@
 
     class Producers {
         //The APU. Needs its button, the battery bus, fuel and accumulator pressure - all
-        //four, so losing any one shuts it down. Its RPM is what it puts on its circuit.
+        //four, so losing any one shuts it down. It drives the accessory section and puts
+        //out bleed air, and declutches from the drive once the rotor is turning it.
         class Apu {
             damageRole   = "apu";
             variableName = "apuRPM_pct";
-            output       = "APU";
             gate[]       = {"bmkhs_apuBtnOn", "bmkhs_battBusOn", "bmkhs_apuFuelAvail",
                             "bmkhs_accHydPsiStartOk"};
             nominal      = 1.0;
@@ -18,40 +18,27 @@
             stateName    = "apuOn";       //running once it is up to speed
             stateAbove   = 0.85;
             needsSystems = 1;
-            networked    = 1;             //the crew stations read APU RPM
+            networked    = 1;
+            class Outputs {
+                class Drive {
+                    circuit          = "ACCESSORY_DRIVE";
+                    disengageAbove[] = {"Nr", 0.95};
+                };
+                class BleedAir {
+                    circuit = "PNEU";
+                };
+            };
         };
-        //Bleed air, which is what starts the engines. Needs the APU actually up to speed
-        //rather than merely turning.
-        class ApuBleedAir {
-            damageRole   = "apu";
-            variableName = "pneuPress";
-            output       = "PNEU";
-            drivenBy[]   = {"APU", 0.85};
-            nominal      = 1.0;
-            rampSeconds  = 0;
-            needsSystems = 1;
-        };
-        //Drives the accessory section as it spools, so the pumps come up with it rather
-        //than snapping on. Declutches once the rotor is driving the accessories itself.
-        class ApuDrive {
-            damageRole   = "apu";
-            variableName = "apuDrive";
-            output       = "ACCESSORY_DRIVE";
-            drivenBy[]   = {"APU"};
-            passthrough  = 1;             //turns them at whatever the APU is doing
-            disengageAbove[] = {"Nr", 0.95};
-            rampSeconds  = 0;
-            needsSystems = 1;
-        };
-        //Turned by the engines, or by the rotor in an autorotation - same shaft either way,
-        //so accessories keep turning with the engines dead.
-        class XmsnDrive {
+        //The transmission, turned by the engines or by the rotor in an autorotation - same
+        //shaft either way, so the accessories keep turning with the engines dead.
+        class Transmission {
             damageRole   = "transmission";
             variableName = "xmsnDrive";
-            output       = "ACCESSORY_DRIVE";
             drivenBy[]   = {"Nr"};        //any rotation; the pumps set their own floor
-            passthrough  = 1;             //accessories turn at Nr, whatever Nr happens to be
-            rampSeconds  = 0;
+            rampSeconds  = 0;             //no nominal: it carries whatever Nr is doing
+            class Outputs {
+                class Accessories { circuit = "ACCESSORY_DRIVE"; };
+            };
         };
 
         //Pumps hang off the accessory section, not the engines, and need fluid to move.

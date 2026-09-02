@@ -81,23 +81,17 @@
 //  variableName  what it publishes as, per member. Core owns the bmkhs_ prefix, and
 //                numbers members only when there is more than one: gen1On, gen2On, but
 //                priHydPsi on its own
-//  output        circuit it feeds
+//  output        circuit it feeds, for something feeding only one. A component that feeds
+//                several declares a nested Outputs block instead
 //  drivenBy[]    circuit that must be turning or live, with its threshold
-//  driveFrom     variable its output follows 0..1, for something that spools rather than
-//                switching on - an APU drives its accessories as it comes up to speed
-//  disengageAbove circuit and threshold above which it stops producing, for a clutch.
-//                An APU declutches once the rotor is driving the accessories itself, so
-//                it keeps running while contributing nothing. Compared live, not latched,
-//                so it picks the load back up on the way down - an APU left running
-//                through an engine failure carries the accessories again as Nr decays
-//  passthrough   1 to pass its drive value along instead of nominal, for a shaft
+//  nominal       what it produces at full output. Omit it and the component carries
+//                whatever drives it instead, which is what a shaft does
 //  requires      level variable it draws from; SCALES output rather than gating it, so a
 //                leaking reservoir shows as falling pressure rather than a cliff
 //  requiresAbove level below which it has nothing left to move and produces nothing
 //  gate[]        switches that must ALL be on; omit for always armed. A gated component
 //                that is off is not failed - it just contributes nothing. An APU needs
 //                its button, the battery bus, fuel and accumulator pressure together
-//  nominal       what it produces at full output
 //  rampSeconds   zero to full; 0 is instant. A pump builds pressure, a contactor does not
 //  increment     round the published value to this step, as a real gauge reads
 //  stateName     publishes whether this component is RUNNING, which is a property of the
@@ -109,6 +103,24 @@
 //                systems off it is not simulated and its state stays as seeded, which is
 //                the vanilla contract - powered up, running, no start procedure. Startup
 //                systems set this; flight-model infrastructure does not
+//
+//A COMPONENT IS A PHYSICAL THING - the APU, a generator, a pump, the accumulator. What it
+//puts out is not a component: an APU that drives the accessory section AND supplies bleed
+//air is one component with two outputs, not two components.
+//
+//  class Outputs {
+//      class Drive    { circuit = "ACCESSORY_DRIVE"; disengageAbove[] = {"Nr", 0.95}; };
+//      class BleedAir { circuit = "PNEU"; };
+//  };
+//
+//  circuit         node this output feeds
+//  ratio           of the component value; 1 passes it straight through
+//  nominal         a fixed value instead, for an output that does not scale with the source
+//  disengageAbove  circuit and threshold above which THIS output drops out, for a clutch.
+//                  Compared live rather than latched, so it picks the load back up on the
+//                  way down - an APU left running through an engine failure drives the
+//                  accessories again as Nr decays. The APU keeps running either way, and
+//                  its other outputs are unaffected
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
 // STORAGE - accumulators, batteries, reservoirs: a producer holding a charge
