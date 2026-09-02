@@ -1,1040 +1,142 @@
-# Systems redesign — open
+# Systems redesign — in progress
 
-**Part of the BMKHS refactor.** See `SFMPLUS_BOUNDARY_REPORT.md` for the
-overall plan - one standalone Core PBO, aircraft shipping a companion pack.
-That report set the direction (config-gated subsystems inside a single folder)
-but predates the component model below, so where the two disagree this document
-is current.
+**Part of the BMKHS refactor.** See `SFMPLUS_BOUNDARY_REPORT.md` for the wider
+plan. This document tracks the systems model itself moving from hardcoded
+AH-64 structure to declared components.
 
-What this phase covers: the systems model itself - electrical, hydraulic,
-drivetrain, damage, and eventually controls - moving from hardcoded AH-64
-structure to declared components. It is the last large piece of Core that still
-assumes the airframe.
+**The field reference is `addons/bmkhs_helisim/components.hpp`**, not this
+document. That header is what a builder reads to declare an airframe; this one
+records what is converted, what is not, and what bit us on the way.
 
-The damage model went generic in `abe604035`: hitpoints declare their own role,
-Core asks by role, and any count is expressible in config. The **lookup** is
-generic. The **systems structure behind it is not**, and that gap is what needs
-designing.
+## Where it stands
 
-## What works now
-
-A designer declares whatever the airframe has:
-
-```cpp
-BMKHS_HITPOINT(hitengine1,  "hitengine1",  0.1206, 0.14, 0.05, 0.3, "engines", 0)
-BMKHS_HITPOINT(hit_elec_generator3, "...",  ...,                    "generators", 2)
-```
-
-and Core reads it back:
-
-```sqf
-[_heli, "generators"]     call bmkhs_fnc_damageGet    //worst of however many
-[_heli, "generators", 2]  call bmkhs_fnc_damageGet    //the third one
-[_heli, "generators"]     call bmkhs_fnc_damageCount  //how many exist
-```
-
-Roles nothing claims return 0 — undamaged — so no pylons, no APU or no FCR
-needs no special case.
-
-## What does not work
-
-Core simulates **exactly two** of each multi-member system, by name.
-
-| duplicated pair | differs by |
+| domain | state |
 |---|---|
-| `fn_drivetrainNoseGearbox1` / `2` | one index, plus whitespace |
-| `fn_electricalGenerator1` / `2` | one index, plus whitespace |
-| `fn_electricalRectifier1` / `2` | one index — otherwise byte-identical |
+| hydraulics | **converted and flown** - pumps, reservoirs, accumulator, accessory drive |
+| electrical | not started; the generator and rectifier declarations exist but the old functions still run |
+| drivetrain | not started |
+| fuel | stays separate - it set the pattern the kinds follow |
 
-Both controllers dispatch by name:
-
-```sqf
-//fn_drivetrainController
-[_heli, _deltaTime] call bmkhs_fnc_drivetrainNoseGearbox1;
-[_heli, _deltaTime] call bmkhs_fnc_drivetrainNoseGearbox2;
-
-//fn_electricalController
-[_heli, _apuOn, _rtrRPM] call bmkhs_fnc_electricalGenerator1;
-[_heli]                  call bmkhs_fnc_electricalRectifier1;
-[_heli, _apuOn, _rtrRPM] call bmkhs_fnc_electricalGenerator2;
-[_heli]                  call bmkhs_fnc_electricalRectifier2;
-```
-
-Consequences for a designer:
-
-- **Three generators** — the third takes damage and is never simulated.
-- **One engine** — Core still runs nose gearbox 2, which reads
-  `bmkhs_engPctTQ select 1` on a one-element array.
-- **No pylons** — fine, that path is already count-driven.
-
-The config now *implies* any count is supported. Until the systems follow, that
-implication is wrong, which is worse than the old honest hardcoding.
-
-## Why it is a redesign, not a refactor
-
-Per-member state lives in **suffixed variables**, not arrays:
+Core runs one function per KIND rather than per system, so a pump and a
+generator are the same code with different declarations:
 
 ```
-bmkhs_gen1On    bmkhs_gen2On
-bmkhs_rect1On   bmkhs_rect2On
+fn_systemProducer   damage, gate, drive and consumable -> a value on a circuit
+fn_systemStorage    a producer holding a charge, which drains and refills
+fn_systemConsumer   supplied if ANY of its circuits is up, or all with needsAll
+fn_systemCircuit    a named node; highest feeder wins
+fn_systemsSolve     storage, producers, storage settle, consumers
+fn_systemsComponents  config -> hashmaps, once, at init
 ```
 
-Engines already went the other way — `bmkhs_engPctTQ`, `bmkhs_engState`,
-`bmkhs_engFF` are arrays indexed by engine. So the two halves of the systems
-model disagree about how to represent a member, and the cockpit reads the
-suffixed form directly:
-
-- `fza_ah64_controls/fn_coreGetWCAs.sqf`
-- `fza_ah64_mpd` electrical page
-
-Converting to arrays touches those consumers; keeping suffixes means Core
-builds names with `format`, which works but keeps two conventions alive.
-
-Both questions are now settled below: per-member state follows the fuel-tank
-pattern, and the electrical model becomes a bus/source graph rather than a
-fixed battery + 2 gen + 2 rect.
-
-## Direction — entity/component, event-driven
-
-Settled shape:
-
-**One class per system, extending a common base.** The base carries identity,
-the damage role and threshold, enabled/failed state, and the update function.
-The hitpoint role lives on the system, so what a thing IS and what damages it
-are declared in one place.
-
-```cpp
-class Generator : BMKHS_System {
-    damageRole   = "generators";   //resolves to however many hitpoints claim it
-    dmgThreshold = 0.85;
-    dependsOn[]  = {"engines", "apu"};
-    update       = "bmkhs_fnc_electricalGenerator";
-};
-```
-
-Member count comes from the damage role, so declaring a third generator
-hitpoint gives a third generator. No suffixed function per member.
-
-**Systems sleep until something changes.** Measured on the current code, five
-of nine systems are pure state functions recomputing an unchanged answer 60
-times a second:
-
-| pure state | integrates a timer |
-|---|---|
-| generators, rectifiers, AC bus, DC bus, hydraulic pumps | battery, APU, reservoir, accumulator, transmission |
-
-A rectifier is `generatorOn && damage <= threshold` — it can only change when
-one of those changes.
-
-**Continuous is a runtime answer, not a static property.** The timer-driven
-systems are not always integrating either:
-
-| system | integrates only while |
-|---|---|
-| battery | on battery bus AND AC bus down |
-| APU | spooling up or down, not at steady RPM |
-| reservoir | actually leaking |
-| accumulator | bleeding down |
-| transmission | over a torque limit |
-
-On a healthy running aircraft **none of these are integrating** — the battery
-recharge/drain branch needs `!_acBusOn`, which is false whenever a generator is
-online. So steady-state cost should approach zero, not four ticking systems.
-
-The scheduler that expresses this: an update returns whether it wants the next
-frame.
-
-```sqf
-//true = keep me scheduled, false = sleep until a dependency changes
-[_heli, _index, _deltaTime] call bmkhs_fnc_electricalBattery
-```
-
-Dirty-flag propagation wakes a sleeping system when a dependency changes; a
-system that is mid-transition keeps itself awake by returning true. Damage
-changes are just another dependency.
-
-### One graph, not three — electrical, hydraulic, drivetrain
-
-Electrical, hydraulics and the drivetrain are the same structure wearing
-different units: sources feed circuits, converters move capacity between them,
-storage discharges when nothing else supplies.
-
-| domain | source | circuit | converter | storage |
-|---|---|---|---|---|
-| electrical | generator, APU gen | AC / DC bus | rectifier, inverter | battery |
-| hydraulic | accessory-driven pump | PRI / UTIL circuit | electric backup pump | accumulator |
-| drivetrain | engine, APU, rotor | shaft / accessory drive | gearbox (ratio) | rotor inertia |
-
-The accumulator confirms it — `fn_hydraulicsAccumulator` is the battery with
-different units: discharge only while no other source supplies the circuit,
-plus a floor below which it is spent.
-
-**Gating is a base-class property, not a storage one.** The accumulator only
-releases pressure when the crew presses the emergency hydraulics button
-(`bmkhs_emerHydOn`), the battery has `bmkhs_battSwitchOn`, a generator has
-`bmkhs_gen1On`, and an electric backup pump has its own switch. Sources,
-converters and storage can all be crew-armed, so the gate sits on the base
-alongside identity and damage.
-
-A component with no gate declared is always armed. A gated one contributes
-nothing while its gate is shut - it is not failed, just off.
-
-**A source can also depend on a consumable.** A hydraulic pump only produces
-pressure while there is fluid in the reservoir to move - a pump with a holed
-reservoir makes nothing, however healthy the pump is and whatever is driving
-it. The current `fn_hydraulicsPriPump` misses this: it checks only its own
-damage and produces 3000 PSI regardless of reservoir level.
-
-That is the same shape as the accumulator running until exhausted, so it is one
-rule rather than a hydraulics special case:
-
-```cpp
-class BackupPump : BMKHS_Source {
-    output      = "UTIL_HYD_FLIGHT";
-    drivenBy    = "DC";                 //electrically driven
-    consumes    = "utilReservoir";      //no fluid, no pressure
-    gate        = "bmkhs_backupPumpOn";
-};
-```
-
-So a source produces only while ALL of:
-
-    damage < threshold
-    AND gate open (or no gate)
-    AND driving circuit supplied (or nothing drives it)
-    AND consumable above empty (or it consumes nothing)
-
-The accumulator discharges until spent, and a reservoir running dry does the
-same. What that costs depends on what else is still supplying - see the
-redundancy rule below.
-
-**This closes the leak chain.** A reservoir is a consumable that can be damaged,
-so the full sequence is one dependency chain with no special cases:
-
-    reservoir takes damage
-      -> leaks, level falls
-      -> level reaches empty
-      -> pump has no `consumes` left, produces nothing
-      -> circuit unsupplied
-      -> that consumer loses supply IF nothing else feeds it
-
-Today only the first two links exist. `fn_hydraulicsPriReservoir` already
-models the leak properly - three severity bands driving a drain rate - and
-computes `level < hydMinLevel`, but does nothing with it except a
-`//CALL WCA here` comment. The reservoir empties and the pump never notices.
-
-#### A consumer is fed by a SET of circuits, not one
-
-An earlier draft of this document ended that chain with "no control authority",
-which is wrong, and the shipped code already knows better. Flight controls are
-fed by primary AND utility hydraulics, and **either one alone keeps them
-moving**. Losing the primary side is a degradation, not a loss of control.
-
-`fn_inputUpdate` already encodes exactly this, hardcoded:
-
-```sqf
-//_hydFailure only when BOTH are below minimum
-if (_priHydPSI < hydMinPsi && _utilHydPSI < hydMinPsi) then { _hydFailure = true };
-if (!_hydFailure || _emerHydOn) then { ...controls respond... };
-```
-
-So supply is an OR over a set, with a third gated source already in the
-picture. Generalised, a consumer declares the circuits that can feed it:
-
-```cpp
-class FlightControls : BMKHS_Consumer {
-    suppliedBy[] = {"PRI_HYD_FLIGHT", "UTIL_HYD_FLIGHT"};   //any one is enough
-};
-```
-
-Two circuits, and a third path onto the utility side from the emergency
-sources - both
-**gated behind a pilot action** rather than coming up on their own, which is
-what keeps them a last resort instead of silent extra pumps.
-
-**Time-limited and not are different kinds, and the split is already in the
-base kinds above.** These two are both crew-armed emergency supply onto the
-utility circuit, and that is all they have in common:
-
-| | accumulator | electric backup pump |
-|---|---|---|
-| kind | `BMKHS_Storage` | `BMKHS_Source` |
-| duration | **fixed charge, depletes while supplying** | indefinite |
-| ends when | spent below its floor | DC bus drops, or reservoir dry |
-| recovers | **recharges from the utility circuit** | as soon as its inputs return |
-
-The accumulator is time-limited by nature - `bmkhs_accTimer` (1.5 min) already
-IS that duration, and "spent below `spentBelow`" is the floor. The pump has no
-timer at all; it runs as long as something drives it and there is fluid to
-move. So the pump's limits are `drivenBy` and `consumes` doing their ordinary
-job, not a special case:
-
-```cpp
-class Accumulator : BMKHS_Storage {
-    output      = "UTIL_HYD_FLIGHT";    //delivers here
-    rechargedBy = "UTIL_HYD_SUPPLY";    //fills from here - NOT the same node
-    gate        = "bmkhs_emerHydOn";
-    spentBelow  = 1650;                 //PSI - floor, NOT a terminal state
-};
-
-class BackupPump : BMKHS_Source {
-    output     = "UTIL_HYD_FLIGHT";
-    drivenBy   = "DC";                  //dies with the bus, not with a clock
-    consumes   = "utilReservoir";
-    gate       = "bmkhs_backupPumpOn";
-};
-```
-
-This is also why storage had to be its own base kind rather than a flag on
-source - depletion is the whole difference.
-
-#### Storage breaks cycles, which is why it is a root
-
-The startup path is a **loop**, not a chain: a store discharges to start a
-source, that source spins an accessory drive, the drive turns the pumps, the
-pumps pressurise the supply circuit, and the supply circuit recharges the
-store. It ends where it began.
-
-A topological walk cannot order a cycle. What cuts it is that **charge is
-state, not supply** - a store can produce before anything has been solved,
-because what it delivers was put there earlier. Every store starts charged and
-refills from its `rechargedBy` circuit; the battery and the accumulator are the
-same component in different units. So storage of any kind is a root, and the
-recharge edge is settled after the walk from the walk's own result.
-
-Start draw is a transient: the store is debited once when the source starts,
-not held down while it runs, so the recharge and the draw are both live at
-once.
-
-**A caution light is a read of the model, not separate authoring.** The state
-observable in the crewstation - a low-pressure caution that appears when the
-store discharges and clears once it has recharged - is exactly
-`charge < spentBelow` on the component. Get the model right and the indication
-comes and goes on its own; there is nothing to script.
-
-#### A circuit carries a VALUE, not a boolean
-
-"The solver answers whether a circuit is supplied" is not enough, and building
-on it would force a retro-fit almost immediately. `bmkhs_priHydPsi` is a number
-the crew reads: `fn_pageENGDraw` renders PRI, UTIL and ACC pressures as 4-digit
-PSI text, with the accumulator rounded to the nearest 10. A boolean cannot
-produce "2870".
-
-It is not only display. The value drives decisions at three different
-thresholds - `hydMinPsi` (1260) for control authority, `hydMinAccPsi` (1650)
-for the accumulator floor, `hydMinLevel` (0.1) for reservoir prime - and a
-store bleeding down produces a FALLING number, which is the whole visual of an
-accumulator discharging.
-
-So a circuit carries a magnitude, and "supplied" is a comparison against a
-threshold rather than a primitive:
-
-    circuit value    the magnitude on that node - PSI, volts, RPM, whatever the domain uses
-    supplied         value >= the consumer's minimum, per consumer
-
-Two consumers on one circuit can therefore disagree about whether it is up,
-which is not a wrinkle but the autorotation behaviour already established:
-generators need 0.85 Nr and hydraulics 0.45, both reading the same accessory
-drive. A single boolean per circuit cannot express that.
-
-**Nominal output belongs on the source**, since that is what sets the value:
-
-```cpp
-class PriPump : BMKHS_Source { output = "PRI_HYD_SUPPLY"; nominal = 3000; };
-```
-
-which replaces the `_priHydPSI_pct * 3000.0` hardcoded in `fn_hydraulicsPriPump`
-and `fn_hydraulicsUtilPump`. Multiple sources on one node take the HIGHEST
-value rather than summing - two pumps on one circuit give 3000 PSI, not 6000.
-
-Units are the aircraft's business. Core does arithmetic and comparison and
-never needs to know whether a number is PSI or volts.
-
-#### `consumes` - drawn down, or merely required?
-
-Unresolved, and it has to be settled before the first source is written because
-two opposite behaviours are hiding under one field name:
-
-| | fuel tank | hydraulic reservoir |
-|---|---|---|
-| engine/pump running | tank mass FALLS | level does NOT fall |
-| what the consumer does | burns it | circulates it |
-| empties because | consumption | damage only |
-
-A pump moves fluid without destroying it. An engine burns fuel and the tank
-goes down. Both would be written `consumes = "..."`, and picking either
-behaviour as the default silently breaks the other - either hydraulic
-reservoirs drain in normal flight, or fuel tanks never empty.
-
-They need to be different declarations. The likely shape is a required level
-(gating only) versus a draw rate (gating plus depletion):
-
-```cpp
-class PriPump : BMKHS_Source { requires = "priReservoir"; };              //needs fluid, does not spend it
-class Engine  : BMKHS_Source { draws = "fuelTanks"; drawRate = ...; };   //spends it
-```
-
-with the leak mechanic staying a property of the RESERVOIR, since damage drains
-a tank whether or not anything is drawing from it. To be confirmed against how
-`fn_fuelDraw` and `fn_fuelLeak` actually divide that work today.
-
-#### Supply and delivery are different nodes
-
-Those two `UTIL_HYD` references above are NOT the same circuit, and writing
-"both feed UTIL_HYD, so neither needs its own" was wrong. A store that outputs
-onto the same node it recharges from is **supplying itself**: the solver sees a
-node held up by a source that draws from that node, so it never depletes and
-the emergency reserve is infinite.
-
-The two nodes are on opposite sides of the store:
-
-    UTIL_HYD_SUPPLY    pumps produce here; storage recharges FROM here
-    UTIL_HYD_FLIGHT    storage outputs here; flight controls consume here
-
-Upstream is pressurised fluid from the pumps. Downstream is pressure delivered
-to the actuators. The store bridges them, which is the only reason it can be
-empty while the pumps are healthy, or full while they are dead.
-
-**Direction is fixed relative to the component, not the reader.** It is
-tempting to describe `output` as "the input the consumer wants", because from
-the consumer's side that is exactly what it is. But the fields have to mean one
-thing or the edges point both ways and the graph cannot be walked:
-
-    output       the circuit this component PUSHES onto
-    input        the circuit a converter PULLS from
-    drivenBy     the circuit that powers this component
-    rechargedBy  the circuit storage refills FROM
-    suppliedBy[] the circuits a consumer accepts, any one of them
-
-Every one of those is written from the COMPONENT's point of view. A consumer's
-`suppliedBy` and a source's `output` naming the same circuit is the edge
-joining them - one pushes, one pulls, same node.
-
-**The current code has this collapsed too**, so it is not only a documentation
-fix: `bmkhs_utilHydPsi` is written by the utility pump and read directly by
-`fn_inputUpdate` and `fn_coreGetWCAs` as delivered pressure. Supply and
-delivery are one variable. That is harmless today only because the accumulator
-publishes onto nothing - it becomes the self-recharge bug the moment storage is
-wired as a real source.
-
-Generic rule, no domain implied: **any circuit with storage bridging it splits
-into a supply node and a delivery node.** The electrical side has the same
-shape waiting - a battery charged from a bus while also feeding equipment on
-it - so getting this wrong in hydraulics would have been repeated in
-electrical.
-
-#### Storage recharges, and can be what starts a source
-
-Two general rules. Both are missing today, and both were nearly written as
-hydraulics special cases because of the airframe that exposed them.
-
-**1. Storage refills from a circuit; `spentBelow` is a floor, not a terminal
-state.** An earlier draft had storage discharge until spent and stop there.
-Storage fills again whenever its input circuit is supplied:
-
-    storage drains    while gated on AND supplying
-    storage recharges while its `rechargedBy` circuit is supplied
-    spentBelow        is the floor it stops discharging at, not the end of it
-
-This is one rule across domains, and the battery already behaves this way -
-drains on a dead bus, recharges from a live one. A hydraulic accumulator
-refilling from a pressurised circuit is the same component in different units,
-which is the whole premise of the shared base kinds.
-
-**1a. Pumps are driven by the accessory section, not by the engines.** The
-obvious `drivenBy = "engines"` is wrong and breaks real cases. Accessories hang
-off the accessory section, which two different things can turn: the APU
-directly, or the transmission it is attached to - and the transmission is
-itself turned by the engines or, in autorotation, by the rotor.
-
-    APU     -> accessory section          start and ground ops
-    engines -> transmission -> accessory  normal flight
-    ROTOR   -> transmission -> accessory  autorotation
-
-The APU drives the accessory section, NOT the transmission, which is why APU
-ground ops give hydraulics and generators without turning the rotor.
-
-```cpp
-class AccessoryDrive : BMKHS_Circuit {};   //fed by the APU or by the xmsn
-
-class Apu  : BMKHS_Source { output = "ACCESSORY_DRIVE"; };
-class Xmsn : BMKHS_Source { drivenBy = "ROTOR"; output = "ACCESSORY_DRIVE"; };
-
-class PriPump   : BMKHS_Source { drivenBy = "ACCESSORY_DRIVE"; output = "PRI_HYD_SUPPLY"; };
-class Generator : BMKHS_Source { drivenBy = "ACCESSORY_DRIVE"; output = "AC"; };
-```
-
-**Autorotation is why this matters and why the extra link is not pedantry.**
-With the engines gone the rotor still turns the transmission, so the accessory
-section keeps spinning and the aircraft keeps hydraulic pressure. Modelled as
-"APU or engines", an autorotation would cut hydraulics and stiffen the controls
-at precisely the moment the pilot needs them - a catastrophic failure produced
-entirely by getting the drive path wrong.
-
-It also makes the drivetrain a genuine SUPPLY PATH rather than only torque
-limits and damage, which is the drivetrain column of the domain table earning
-its place. Rotor inertia as "storage" in that table stops being an analogy: it
-is the mechanism that keeps accessories alive when power is lost.
-
-**Autorotation already works; the APU path is what is missing.**
-`fn_transmissionUpdate` integrates `(engineTorque - rotorTorque) / J` into one
-shaft speed, `bmkhs_xmsnOutputRpm`, and that handles autorotation correctly
-through the sign of the torque terms: with the engines off `engineTorque` is
-zero, and rotor torque goes NEGATIVE in an autorotative descent as the rotor
-takes energy from the upflow, so net torque is positive and Nr sustains. The
-simple model does this explicitly via an autorotation torque table
-(`fn_simpleRotorMain`), the BET through blade-element reaction torque. No
-freewheel is needed for it, because an off engine already contributes zero
-torque rather than dragging.
-
-So Nr is trustworthy in autorotation, and hydraulics gated on Nr behave
-correctly with no drivetrain work at all.
-
-What the single shaft speed DOES prevent is the **APU** case: accessory speed
-derived from `bmkhs_xmsnOutputRpm` cannot represent the APU spinning
-accessories while the rotor stands still. `ACCESSORY_DRIVE` therefore needs its
-own value rather than being a relabelled read of transmission RPM - roughly
-`max(apuDrive, xmsnDrive)`, where the xmsn contribution is exactly today's Nr.
-
-Also absent, and worth knowing before relying on it: no accessory LOAD exists -
-nothing subtracts torque for pumps or generators, so accessories are currently
-free. And transmission damage does not affect transmission output; a destroyed
-transmission still transmits full torque.
-
-**Supply is gated on RPM, and the thresholds differ per consumer.** An
-accessory drive turning too slowly supplies nothing, and different accessories
-need different speeds - which the current code half-knows:
-
-- `fn_electricalGenerator1/2` already gate on `_apuOn || _rtrRPM > SYS_MIN_RPM`
-  (0.85), so generators are ALREADY rotor-driven rather than engine-driven
-- `SYS_HYD_MIN_RTR_RPM` (0.45) is **defined in `systems.hpp` and never used** -
-  the autorotation hydraulics threshold, declared and then forgotten
-- the hydraulic pumps check no RPM at all, and produce 3000 PSI regardless
-
-Those two thresholds being different is the real behaviour: in an autorotation
-Nr sits between them, so the generators drop out and the hydraulics stay up.
-That falls out of per-component `minDriveRPM` rather than any special case.
-
-**2. A source can be started by storage.** Some sources cannot self-start: they
-need a slug of stored energy to spin up, and only then do they produce. The
-generic form is a startup draw on the base:
-
-```cpp
-class Apu : BMKHS_Source {
-    startedBy = "HYD_ACC";     //storage it draws from to spin up
-    startDraw = 0.25;          //fraction of that store consumed per start
-};
-```
-
-with no domain implied. `startedBy` naming a hydraulic store gives an
-accumulator-started APU; naming an electrical one gives a battery-cranked
-engine, which is the identical mechanism and would otherwise have arrived later
-as a second special case. An aircraft whose sources all self-start declares
-nothing and the rule costs it nothing.
-
-This is also the cross-domain coupling that forced one graph rather than three
-- a store in one domain gating a source in another - so it belongs on the base
-kinds rather than in whichever domain happened to need it first.
-
-Declared rather than hardcoded, an aircraft's startup is then just what the
-graph walks - and note it is a LOOP that closes, not a chain that ends:
-
-    charged storage discharges to start the source that names it
-      -> that source spins an accessory drive
-      -> the drive turns the pumps
-      -> the pumps pressurise the supply circuit
-      -> the supply circuit RECHARGES the storage it started from
-
-Solvable only because the store began with charge - see "storage breaks cycles"
-above. The recharge edge is settled after the walk, from the walk's own result.
-
-**On the AH-64 specifically** (an example, not the rule): press the APU button
-and the accumulator discharges its fluid to start the APU. As the APU comes up
-to speed it drives the accessory section - not the transmission, so the rotor
-stays still - and the accessory section turns the hydraulic pumps, which
-circulate fluid, which recharges the accumulator from the utility reservoir.
-The crew sees `ACCUM OIL PSI LOW` appear as it discharges and clear once it has
-recharged - the caution being nothing more than `charge < spentBelow` on the
-component.
-
-None of that exists today: `fn_apu` starts on `_apuBtnOn && _battBusOn &&
-_apuFuelAvail` with no hydraulic dependency, so the accumulator has no
-consumers and no recharge, and `fn_drivetrainTransmission` models torque damage
-with no accessory-drive concept at all. The accumulator is inert on both sides.
-
-An aircraft with no APU and a battery-cranked engine walks a different loop with
-no Core change.
-
-Stores start charged, so cold and dark is not a bootstrap problem - it is only
-reachable after a store has been drained or holed in flight, which is a real
-dead-aircraft state and the correct outcome rather than a case to design
-around.
-
-That makes selective degradation fall out of the declarations instead of being
-an AH-64 special case. Things that die with the primary side specifically are
-their own consumers naming only that circuit:
-
-```cpp
-class Sas  : BMKHS_Consumer { suppliedBy[] = {"PRI_HYD_FLIGHT"}; };
-class Bucs : BMKHS_Consumer { suppliedBy[] = {"PRI_HYD_FLIGHT"}; };
-```
-
-Lose primary: SAS and BUCS go, the controls keep moving on utility. No code
-anywhere names that circuit to make it happen.
-
-**The accumulator works through the utility side**, not the primary - two class
-sketches below said `output = "PRI_HYD"` and are wrong. Note also that today's
-`fn_hydraulicsAccumulator` publishes onto no circuit at all: it holds its own
-PSI, discharges only when BOTH circuits are already below minimum, and nothing
-downstream reads it as a supply. It is inert as a source, and becoming a real
-gated source on the utility delivery node is part of this conversion.
-
-**A reservoir is a reservoir, whatever it holds.** Fuel tanks and hydraulic
-reservoirs are the same component running two implementations today:
-
-| | fuel tank | hydraulic reservoir |
-|---|---|---|
-| leak trigger | damage > threshold | damage > threshold |
-| rate | linear ramp from threshold | three discrete severity bands |
-| contents | kg of fuel | fraction of capacity |
-| consumer | engines | pumps |
-
-Both are "damaged reservoir drains its contents, and its consumers starve when
-it is empty". One `BMKHS_Reservoir` kind covers both, which also means the
-hydraulic side inherits the fuel tanks' `variableName` and per-tank leak
-hitpoint for free.
-
-#### Unified leak mechanic
-
-Both already start leaking at **0.50 damage** - the same threshold, reached
-independently in `TANK_LEAK_START_DMG` and `SYS_HYD_RES_MIN_DMG`. Only the
-scaling above it differs, so unifying costs almost nothing.
-
-**Linear ramp**, the fuel model. Rate scales from zero at the threshold to the
-component's maximum at full damage:
-
-    frac = (damage - leakStartDmg) / (1 - leakStartDmg)
-    rate = leakMaxRate * frac
-
-A weeping reservoir weeps and a destroyed one dumps, with no step at a band
-boundary. The hydraulic side loses its three discrete bands
-(`SYS_HYD_RES_MIN/MOD/HVY_DMG`); nothing depends on the steps, and one
-threshold per reservoir replaces three.
-
-**Contents are a fraction 0-1, capacity lives on the component.** Core does all
-rate maths in one unit and each reservoir converts for display:
-
-```cpp
-class FwdTank : BMKHS_Reservoir {
-    variableName = "fwdTank";
-    capacity     = 473.1;        //kg
-    leakStartDmg = 0.50;
-    leakMaxRate  = 0.0000355;    //fraction per second
-};
-```
-
-    fuel tank      publishes frac * capacity  ->  bmkhs_fwdTankMass in kg
-    hydraulic res  publishes the fraction     ->  bmkhs_priHydLevel_pct
-
-So `fn_fuelLeak` and the leak half of `fn_hydraulicsPriReservoir` /
-`fn_hydraulicsUtilReservoir` collapse into one loop over every reservoir the
-aircraft declares, in any domain.
-
-Storage additionally discharges only while:
-
-    no other source supplies its OUTPUT circuit
-    AND its gate is open
-    AND it is above its spent threshold
-
-and it recharges while its `rechargedBy` circuit is supplied - the node
-upstream of it, never the one it feeds.
-
-```cpp
-class Accumulator : BMKHS_Storage {
-    damageRole  = "accumulator";
-    output      = "UTIL_HYD_FLIGHT";    //delivers to the utility side
-    rechargedBy = "UTIL_HYD_SUPPLY";    //refills from the pumps - a DIFFERENT node
-    gate        = "bmkhs_emerHydOn";    //"" = always armed
-    spentBelow  = 1650;                 //PSI
-};
-
-class BackupPump : BMKHS_Source {       //a SOURCE, and still gated
-    damageRole = "backupPump";
-    output     = "UTIL_HYD_FLIGHT";
-    drivenBy   = "DC";                  //electrically driven, hence the domain crossing
-    gate       = "bmkhs_backupPumpOn";
-};
-```
-
-**This has to be one graph, not three parallel ones**, because real components
-cross domains:
-
-- an **electric backup hydraulic pump** consumes from an electrical bus and
-  produces onto a hydraulic circuit
-- a **generator** consumes shaft power from the drivetrain and produces onto an
-  electrical bus
-- an **APU** is a source in all three at once
-
-Modelling them separately means those couplings become special cases again,
-which is the thing being removed.
-
-So the base kinds are domain-agnostic:
-
-  BMKHS_Source     produces onto a circuit, given whatever drives it
-  BMKHS_Converter  consumes from one circuit, produces onto another
-  BMKHS_Storage    a source that DEPLETES while supplying - the time-limited kind
-  BMKHS_Circuit    a named node carrying a VALUE; consumers threshold it themselves
-  BMKHS_Consumer   fed by a SET of circuits; supplied if ANY of them is up
-  BMKHS_Reservoir  a consumable that leaks when damaged and starves its consumers
-
-`BMKHS_Consumer` is what makes redundancy declarative rather than hardcoded -
-flight controls on two circuits keep working when one dies, while SAS on one
-circuit does not. Without it, every "which failures survive which" rule goes
-back to being an if-chain that names the AH-64's specific circuits.
-
-`drivenBy` and `input` reference circuits in ANY domain, which is what makes
-the electric backup pump and the engine-driven generator expressible without
-Core knowing either exists.
-
-### Electrical as a bus/source graph
-
-The current model hardcodes the AH-64's topology three ways: the AC bus is fed
-by generators by name, the DC bus by rectifiers by name, and the DIRECTION of
-conversion is assumed — generators are AC, converters go AC to DC.
-
-Not every airframe is wired that way. Some have DC generators and need
-inverters (DC to AC) rather than rectifiers (AC to DC). Same components, wired
-in reverse.
-
-Generalises to two component kinds, where direction is data:
-
-```cpp
-class Generator1 : BMKHS_PowerSource {
-    damageRole = "generators";
-    output     = "AC";                  //"DC" on a DC-generator aircraft
-    drivenBy   = "ACCESSORY_DRIVE";     //whatever actually turns it - see 1a above
-};
-
-class Rtru1 : BMKHS_PowerConverter {
-    damageRole = "rectifiers";
-    input      = "AC";
-    output     = "DC";        //swap the two and it is an inverter
-};
-
-class Battery1 : BMKHS_PowerSource {
-    damageRole = "batteries";
-    output     = "DC";
-    storage    = 1;           //drains when nothing else feeds its bus
-};
-```
-
-Core then has no ACBus/DCBus functions at all — one solver that walks sources
-and converters and answers, for any circuit, whether it is supplied. Circuit
-names become the aircraft's to choose, so a three-bus transport or a single-bus
-light helicopter needs no new code.
-
-Consumers ask the solver rather than reading a hardcoded flag: "have I got AC",
-"have I got DC", "have I got both", "is PRI hydraulic up". A component that
-needs AC does not care whether it came from an AC generator directly or from a
-DC generator through an inverter.
-
-This also removes a structural coupling: `fn_electricalBattery` reads
-`bmkhs_acBusOn` directly to choose drain vs recharge. In the general form that
-becomes "is any non-storage source feeding my bus", which holds however the
-aircraft is wired.
-
-### Hitpoints are part of the component, not a parallel list
-
-A component declares the damage role it answers to, and the hitpoints declaring
-that role ARE its members. There is no separate count and no second list to
-keep in step:
-
-```cpp
-class Generator : BMKHS_Source {
-    damageRole = "generators";   //however many hitpoints claim this role
-    output     = "AC";
-};
-```
-
-Declare a third generator hitpoint and there is a third generator. Declare none
-and there are no generators. The hitpoint set is the component inventory.
-
-Damage acts on the component uniformly, whatever kind it is:
-
-    damage >= dmgThreshold  ->  the component supplies nothing
-
-so a failed generator stops feeding its bus, a failed converter stops passing
-through, and a holed accumulator stops discharging - all one rule on the base,
-not a check written into each system.
-
-### No components means the system is not modelled
-
-If nothing declares a role, that system does not exist on this aircraft. It is
-NOT a failed system - there is simply nothing to simulate, and the solver has
-one less input.
-
-This is the same rule already established for damage: a role nothing claims
-returns 0, undamaged, because no hitpoint means nothing can break it.
-
-It also has to preserve the `useSystems = 0` contract. With systems off, or
-with no electrical and no hydraulic components declared, the aircraft behaves
-like vanilla Arma: powered up, running, no start procedure, full control
-authority. The flight model still needs the rotor turning and the controls
-moving, so:
-
-- **hydraulics and drivetrain always run** - they are flight-model
-  infrastructure, control authority and torque limits
-- **electrical and APU are the startup systems** and can be absent entirely
-
-An aircraft declaring no power sources gets full control authority rather than
-a dead cockpit, because "no hydraulic components" means "this airframe does not
-model hydraulic failure", not "the hydraulics have failed".
-
-### Per-member state — the fuel-tank pattern is the standard
-
-Settled. The fuel tanks got there first, so they set it: a component declares
-its own `variableName` and Core publishes one variable per property per member.
-
-```cpp
-class FuelTank01 { variableName = "fwdTank"; ... };
-    ->  bmkhs_fwdTankMass, bmkhs_fwdTankMax, bmkhs_fwdTankInstalled
-```
-
-Applied to the rest:
-
-```cpp
-class Generator1 : BMKHS_Source { variableName = "gen1"; ... };
-    ->  bmkhs_gen1On
-```
-
-Those are the names that already exist - the difference is that the AIRCRAFT
-declares them rather than Core hardcoding them. A third generator declares
-`variableName = "gen3"` and publishes `bmkhs_gen3On` with no Core change.
-
-This is also the output API. 27 files outside Core read bus and system state,
-and the fuel tanks already proved a self-naming component keeps those reads
-stable and discoverable from config.
-
-**Engines are the outlier, not the generators.** They use array-per-property -
-`bmkhs_engPctTQ` is `[0.9, 0.9]`, engine 2 is index 1 - and ten external files
-read them with `select 0` / `select 1`:
-
-    fza_ah64_controls, fza_ah64_fire, fza_ah64_ihadss, fza_ah64_mpd (4 pages)
-
-Converging on the standard means engines publish `bmkhs_eng1PctTQ` /
-`bmkhs_eng2PctTQ` and those ten files change with them.
-
-**Not part of this work.** The engine model needs a full rewrite of its own and
-that is where the conversion belongs - doing it piecemeal here would churn ten
-external files twice. Engines keep their arrays until then; the standard is
-what NEW and CONVERTED systems follow.
-
-### Solver ordering — storage is the root
-
-**Every store is a root, not just the battery.** An earlier draft said the
-battery goes first because nothing is upstream of it - true of the battery,
-false as a rule, since an accumulator has the pumps upstream and is still a
-root. The reason is charge being state rather than supply, as above.
-
-    1. roots        ALL storage, and sources with nothing upstream
-    2. converters   in dependency order, as their input circuits come up
-    3. dependents   sources driven by a circuit (pumps on an accessory drive, generators)
-
-Whether a store drains or refills is a post-solve question about charge, not
-part of deciding whether it is a source. It always is one, when gated on and
-above its spent threshold.
-
-So: solve supply first, then settle storage charge from the result.
-
-## Controls are components too — later, but plan for it
-
-Not for the first pass, but the design has to leave room for it or it will have
-to be retrofitted.
-
-Every gate in this document names a control: `bmkhs_emerHydOn`,
-`bmkhs_battSwitchOn`, `bmkhs_backupPumpOn`. Those are switches, and a switch is
-a component with state, a hitpoint and a place in the graph - the same shape as
-everything else here. It should be declared once and produce three things:
-
-    the variable a gate reads
-    the keybind
-    the cockpit interaction
-
-**The macro pattern already exists.** `CfgUserActions.hpp` has
-`BMKHS_ANALOG` / `BMKHS_NONANALOG` / `BMKHS_ACTION`, each generating the
-keybind and its handler dispatch together. What is missing is switch
-BEHAVIOUR - everything is momentary (`onActivate` / `onDeactivate`), so
-anything else is hand-written SQF.
-
-The kinds that need expressing:
-
-| kind | behaviour |
-|---|---|
-| momentary | on while held, off on release - what exists today |
-| latching | press toggles, stays where it is put |
-| momentary-one-way | springs back from one position only (start switch) |
-| multi-position | N discrete positions, stepped or selected directly |
-| guarded | needs the cover lifted first |
-
-`fn_interactPowerLever` is the case that shows the gap: OFF / IDLE / FLY
-written as an if-chain, once per engine.
-
-**Power levers and throttles are not switches, and not each other.** Worth
-separating now so the control model does not collapse them:
-
-| | power lever | throttle |
-|---|---|---|
-| what | engine condition - fuel flow gate | continuous power modulation |
-| range | detented positions (OFF/IDLE/FLY) | smooth 0-1 |
-| use | set once per phase of flight | flown continuously |
-| example | AH-64, most turbines | piston twist-grip, turbine beep |
-
-An aircraft may have one, both or neither - the AH-64 has no throttle at all
-because the governor holds Nr. So a power lever is a **detented axis**: a
-continuous range whose marked positions are what the systems model reads, which
-means it wants an analog binding as well as step-to-next-detent keys. A
-throttle is a plain axis with no detents.
-
-```cpp
-class PowerLever : BMKHS_Control {
-    variableName = "powerLever";
-    kind         = "detentedAxis";
-    detents[]    = {"OFF", "IDLE", "FLY"};   //positions the systems model reads
-    default      = "OFF";
-    perMember    = "engines";                //one per engine, from the damage role
-};
-```
-
-publishing `bmkhs_eng1PowerLeverState` and generating both the analog bind and
-step-up / step-down keys, with the gate model referencing a control Core does
-not have to understand.
-
-The wrinkle to design around: **keybinds are config-time and static**, while
-component counts are aircraft-declared. An aircraft with three engines needs
-three power-lever binds generated from `perMember`, so the macro has to expand
-over a count the aircraft chooses. That is the part most likely to catch us if
-the control model is bolted on afterwards rather than planned for now.
-
-## Decisions to make while writing it
-
-This is a BEHAVIOUR replica, not a hydraulics simulator. Abstractions and
-simplifications are the point: the model has to produce the right cockpit
-indications and the right failure consequences at 60 Hz, and no more. Most of
-what follows is "pick the simple option and move on" rather than open design.
-
-**Simplifications taken deliberately**, so they read as choices later rather
-than oversights:
-
-- **Highest source wins; capacity is not modelled.** Two generators and six are
-  identical, and a circuit cannot be over-drawn. Load-shedding is out of scope.
-- **`minDriveRPM` is a GATE, not a scale.** A pump above its threshold makes
-  full pressure. Sagging pressure with Nr buys nothing a threshold does not.
-- **Converters pass their input through, gated by their own damage and gate.**
-  Voltage conversion is not modelled; a rectifier answers "is DC up", not "at
-  what volts". A gearbox ratio matters to the drivetrain maths, not to the
-  supply question the solver answers.
-- **Storage passes through when charged.** A store sitting between supply and
-  delivery hands supply onward while it has charge, so pumps reach the flight
-  node in normal operation and the store only DISCHARGES when nothing upstream
-  supplies it. This is the rule that keeps the two-node split honest.
-
-**Things to settle in code, cheaply:**
-
-1. **Solve order.** Kind-by-kind ordering reads a stale value where one source
-   depends on another through a converter (the backup pump behind DC behind a
-   generator). A single ordered walk over all components, or two passes, fixes
-   it. Not worth a topological sort for a graph this size.
-2. **One frame of lag is acceptable, but pick it on purpose.** Reading
-   neighbours from last frame is fine at 60 Hz; the start chain is a few hops
-   and the APU spools over seconds. Just do not mix - either recompute the walk
-   each frame or propagate incrementally, not both.
-3. **Per-member instantiation.** A class with a plural `damageRole` becomes N
-   components, each reading damage AT ITS INDEX. Reading the role without an
-   index returns the WORST member, which would fail all three generators
-   because one is destroyed. Needs the index; the document currently implies
-   both this and one-class-per-member.
-4. **Undeclared circuits publish NOTHING.** Not zero. Today's permissive
-   behaviour comes from read-side defaults - `getVariable ["bmkhs_priHydPsi",
-   3000]` - which only fire when the variable is absent. Publishing 0 for an
-   aircraft with no hydraulics would read as failure and lock the controls,
-   which is the opposite of the intended rule.
-5. **`startDraw` needs a latch.** Debit once on the gate rising, not every
-   frame while starting, or the store empties in under a second.
-
-**One behaviour that does not fit the model and must not be lost.**
-`fn_inputUpdate` locks the tail rotor on a CONJUNCTION across two systems:
-
-```sqf
-if (_priHydPSI < hydMinPsi && _utilLevel_pct < hydMinLevel) then { _tailRtrFixed = true };
-```
-
-Primary PRESSURE and utility LEVEL together. A consumer OR-set cannot express
-it, so it either needs a consumer that can take an AND, or it gets carried as a
-one-off check. Converting without noticing silently deletes the failure.
-
-### Confirmed against the code
-
-- **`requires` vs `draws` is right.** `fn_fuelLeak` does damage drain only,
-  keyed on tank damage with the linear ramp described here, independent of
-  consumption in `fn_fuelDraw`. Note the leak formula here omits the `min 1`
-  clamp the code has, and `fn_hydraulicsUtilReservoir` adds pylon and gun
-  damage on top, so damage can exceed 1.0.
-- **A real seeding bug.** `fn_systemsVariables` seeds `bmkhs_priHydPsi` and
-  `bmkhs_utilHydPsi` to **1.0**, compared against `hydMinPsi` 1260. Any frame
-  before the pumps first run reads as hydraulic failure - harmless today only
-  because the pumps run in the same tick.
-
-## Landmines found auditing the consumers
-
-Measured, not guessed - 36 read sites outside `functions/systems/` across 10
-addons. Three things there will bite the conversion.
-
-**Only ONE file displays these as numbers.** `fn_pageENGDraw.sqf:82-91` renders
-`bmkhs_priHydPsi`, `bmkhs_utilHydPsi` and `bmkhs_accHydPsi` as 4-character
-padded PSI text, the accumulator quantised with `round(x/10)*10`. Both the pad
-width and the quantisation assume a magnitude in the thousands, so normalising
-those to 0..1 renders `0`/`1` in a 4-wide field. Everything else in the list is
-boolean or threshold logic, and the `_pct` variants are never displayed
-anywhere - they are pure internal state. `fn_inputUpdate.sqf:57,60` encodes the
-same assumption in its `3000` fallbacks.
-
-**A dormant bug that the refactor will wake up.** The model writes
-`bmkhs_utilHydPsi`; two files read `bmkhs_utilHydPSI`:
-
-    fza_ah64_controls/functions/weapon/fn_weaponTurretAim.sqf:66
-    fza_ah64_mpd/functions/page/fn_pageWPNDraw.sqf:51
-
-That variable is never written, so both comparisons run against nil and the
-utility-hydraulics half of gun failure and pylon servo failure **does nothing
-today**. The `bmkhs_utilLevel_pct` read on the line above each is correct,
-which is what hides it. Normalising the casing during the conversion switches
-that logic ON - a real behaviour change, and it belongs in its own commit with
-its own flight test rather than buried in the graph work.
-
-**Two sources of truth for the same thresholds.** External consumers compare
-against the compile-time macros `SYS_MIN_HYD_PSI` / `SYS_HYD_MIN_LVL` from
-`systems.hpp`, while the systems model and `fn_inputUpdate` compare against the
-config-driven `bmkhs_hydMinPsi` / `bmkhs_hydMinLevel`. An aircraft that sets
-different limits gets cautions that disagree with the actual failure logic.
-Since the whole point is per-aircraft declaration, the runtime values have to
-win and the macros become defaults.
-
-Two smaller ones: `XEH_preInit.sqf:10` uses `bmkhs_apuOn` as a `select` index,
-so it needs a strict boolean rather than a number; and
-`fn_engineController.sqf:120` names `bmkhs_apuRPM_pct` as a string literal,
-invisible to a symbol-based rename.
+Member count comes from the damage role, and damage is read AT THE MEMBER'S
+INDEX - the role alone returns the worst member, which would fail all three
+generators because one is destroyed. That was the bug that started this.
+
+## What is left
+
+**Electrical.** The larger conversion: around 27 external readers of
+`acBusOn`, `dcBusOn`, `battBusOn`, `gen1On` and `rect1On` across ten addons.
+Every name survives through `variableName`, but that is the thing to verify
+rather than assume.
+
+- battery as storage, `rechargedBy[] = {"AC"}` - the charging bus is the
+  airframe's choice, DC on an aircraft wired that way
+- `stopBelow` expresses the existing 0.25 cutoff
+- `emerDischarge = 720`, from `elecBattTimerMin`
+- AC and DC buses become circuits, replacing both bus functions
+- `helisim_electrical.hpp` disappears, being one value
+
+**Drivetrain.** Nose gearboxes are the last duplicated pair. Note the
+transmission has no accessory LOAD - nothing subtracts torque for pumps or
+generators - and transmission damage does not affect its output.
+
+**Per-domain configs fold into `helisim_components.hpp` as each converts**, the
+way `helisim_hydraulics.hpp` already did. Hitpoints stay separate: `class
+HitPoints` has to live inside the vehicle class where Arma requires it, and
+`damageRole` is the join. That indirection earns its place - it is what lets
+member count come from hitpoint count.
+
+## Things that caught us
+
+Worth knowing before converting another domain.
+
+**Damage by role returns the WORST member.** Reading it without an index fails
+every member because one is broken.
+
+**Absent is not failed.** A role nothing claims means the airframe does not
+have that component. Declaring NO role is different - present, but not
+separately damageable, like an accumulator with no p3d selection. Undeclared
+circuits must publish NOTHING rather than zero, so the read-side defaults that
+keep a no-hydraulics airframe flying still fire.
+
+**Multiplayer fails silently.** The solve runs where the aircraft is local;
+everything else reads published results. The per-frame scheduler runs for the
+pilot OR gunner of the aircraft they occupy, so a gunner is a genuine remote
+reader. Anything a crew station displays needs `networked = 1` or it is frozen
+for them - and singleplayer looks perfect either way.
+
+**Rates defined over the wrong range.** Twice: a start draw that left the store
+above its own advisory threshold, and a recharge that finished in half its
+configured time because the rate spanned 0..1 while the store only moves
+through the usable band above its floor. If a number does not produce the
+behaviour it names, check what range it is defined over.
+
+**`_x` shadowing.** An inner `forEach` rebinds `_x`, so a component read after
+one silently reads the wrong thing. Bit both storage and consumers; bind the
+component to `_comp` first.
+
+**Ordering within the solve.** Storage supplies before anything is solved,
+because charge is state - that is what cuts the accumulator -> APU -> pumps ->
+accumulator startup loop. But charge can only MOVE once the rest has solved, so
+draining and refilling are a settle pass at the end. Getting that wrong left
+the accumulator reading zero forever.
 
 ## Not yet flown
 
-`abe604035` touched 22 Core files and every damage check in the model. Worth
-confirming before building on it:
+- multiplayer with a CPG in the aircraft, which is the half never exercised
+- the `bmkhs_utilHydPsi` casing fix, which switched on gun and pylon servo
+  failure logic that had never run
 
-- engine damage still cuts engines
-- hydraulic failure still degrades flight controls
-- rotor damage thresholds still gate thrust
-- `fn_repair` still restores each component
+## Controls are components too — later, but plan for it
 
-Two bugs that pass surfaced and are fixed, but the class of error is worth
-watching for: Arma returns **-1**, not 0, for a hitpoint the vehicle lacks (the
-old pylon loop summed it into a leak total), and `call fn == 0` parses as
-`call (fn == 0)` in SQF.
+Not for this phase, but the design has to leave room or it gets retrofitted.
+
+Every gate names a control: `bmkhs_emerHydOn`, `bmkhs_battSwitchOn`,
+`bmkhs_apuBtnOn`. A switch is a component with state, a hitpoint and a place in
+the graph, and should be declared once to produce three things: the variable a
+gate reads, the keybind, and the cockpit interaction.
+
+`CfgUserActions.hpp` already has `BMKHS_ANALOG` / `BMKHS_NONANALOG` /
+`BMKHS_ACTION`, each generating a keybind and its dispatch together. What is
+missing is switch BEHAVIOUR - everything is momentary, so anything else is
+hand-written SQF.
+
+| kind | behaviour |
+|---|---|
+| momentary | on while held - what exists today |
+| latching | press toggles, stays where it is put |
+| momentary-one-way | springs back from one position (start switch) |
+| multi-position | N discrete positions, stepped or selected |
+| guarded | needs the cover lifted first |
+
+`fn_interactPowerLever` shows the gap: OFF / IDLE / FLY as an if-chain, once
+per engine.
+
+**Power levers and throttles are not switches, and not each other.**
+
+| | power lever | throttle |
+|---|---|---|
+| what | engine condition - a fuel gate | continuous power modulation |
+| range | detented positions | smooth 0-1 |
+| use | set once per phase of flight | flown continuously |
+
+An aircraft may have one, both or neither - the AH-64 has no throttle at all
+because the governor holds Nr. So a power lever is a detented axis: a
+continuous range whose marked positions are what the systems model reads,
+wanting an analog binding as well as step-to-detent keys.
+
+The wrinkle to design around: **keybinds are config-time and static** while
+component counts are aircraft-declared. Three engines needs three power-lever
+binds generated from a count the aircraft chooses, and that is the part most
+likely to catch us if controls are bolted on afterwards.
