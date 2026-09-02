@@ -36,6 +36,11 @@ private _engFF              = _heli getVariable "bmkhs_engFF" select _engNum;
 private _collectiveOutput   = _heli getVariable "bmkhs_collectiveOutput";
 private _engThrottle        = 0.0;
 private _engSimTime         = getNumber (_sfmPlusConfig >> "engSimTime");
+//With no start procedure the whole spool is the startup, so it runs longer - the rotor
+//comes up over that window rather than snapping to speed.
+if !(_heli getVariable ["bmkhs_useSystems", false]) then {
+    _engSimTime = _engSimTime * 3.0;
+};
 
 //Torque - TQ
 private _engIdleTQ  = getNumber (_sfmPlusConfig >> "engIdleTQ");
