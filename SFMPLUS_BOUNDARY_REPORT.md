@@ -101,6 +101,10 @@ The bad news is coverage is uneven, and the most important subsystem is the wors
 
 **The rotor — the single most defining component of a helicopter's handling — is entirely hardcoded.** From `fn_simpleRotorMain.sqf:54-63`: blade radius 7.315 m, chord 0.533 m, blade mass 72.108 kg, design RPM 289, gear ratio 72.291, hinge offset 0.038, 4 blades, rotor height AGL 3.606 m. Plus tuning scalars — `_pitchTorqueScalar`, `_rollTorqueScalar`, `_baseThrust`, `_inducedVelocityScalar`, `_vrsScalarExponent`, flapback gains `_kFlapLon`/`_kFlapLat`.
 
+> **Since resolved for the SIMPLE rotor.** Its geometry and scalars read from
+> `helisim_simpleRotor.hpp` now. The BET rotor still holds its geometry in SQF,
+> so the blocker stands for that path - see `HELISIM_CONFIG_PLAN.md`.
+
 A modder dropping SFM+ onto a UH-60 or Mi-8 today would get AH-64 rotor physics and no config path to change it. **This is the framework blocker.**
 
 ### Second gap: no config validation or defaults
@@ -621,6 +625,11 @@ Implement defaults for the 8 inputs in §3.3 plus `emerHydOn`/`engineOverspeed`,
 
 ### Phase 6 — Externalise the rotor and remaining hardcoded physics *(framework blocker)*
 Move the ~33 hardcoded rotor constants (`fn_simpleRotorMain.sqf:54-63` geometry + tuning scalars, `fn_simpleRotorTail.sqf`, BET, transmission) into the config class. Restructure to nested subclasses (§0.5). This is what makes SFM+ usable on a non-AH-64 airframe.
+
+> **Partly done.** The simple rotor, engine, mass, fuel, fuselage, wings and the
+> flight control PIDs all read from config. The BET rotor's geometry, Preston
+> AI's gains and the atmosphere constants are what remain; see
+> `HELISIM_CONFIG_PLAN.md` for the current state.
 
 ### Phase 7 — Config validation and defaults *(framework blocker)*
 Give every config read a documented default and add a startup validation pass reporting missing/invalid entries by name. Normalise the `fza_sfmplus` / `Fza_SfmPlus` casing. Without this, modder config errors surface as mysterious handling bugs.
