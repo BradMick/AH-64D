@@ -1,5 +1,16 @@
 # Systems redesign — open
 
+**Part of the BMKHS refactor.** See `SFMPLUS_BOUNDARY_REPORT.md` for the
+overall plan - one standalone Core PBO, aircraft shipping a companion pack.
+That report set the direction (config-gated subsystems inside a single folder)
+but predates the component model below, so where the two disagree this document
+is current.
+
+What this phase covers: the systems model itself - electrical, hydraulic,
+drivetrain, damage, and eventually controls - moving from hardcoded AH-64
+structure to declared components. It is the last large piece of Core that still
+assumes the airframe.
+
 The damage model went generic in `abe604035`: hitpoints declare their own role,
 Core asks by role, and any count is expressible in config. The **lookup** is
 generic. The **systems structure behind it is not**, and that gap is what needs

@@ -7,6 +7,14 @@
 
 **Rename is scoped to this module only.** `addons/fza_ah64_sfmplus` → `addons/bmkhs_helisim`, and its `fza_sfmplus_*` symbols → `bmkhs_*`. The rest of the repo keeps `fza_ah64_` — no build-system change (`.hemtt/project.toml` `prefix = "fza_ah64"` stays), no stringtable sweep, no renaming the other 16 addons.
 
+> **Status note.** The config migration described here is done. The systems
+> model - electrical, hydraulic, drivetrain, damage and controls - turned out to
+> need a redesign rather than a migration, because Core hardcoded the AH-64's
+> component counts. That work is specified in `SYSTEMS_REDESIGN.md`, which
+> supersedes the subsystem-gating detail in §0.6 and §3.3 below: gating survives
+> as a concept, but a subsystem is now absent because no component declares it,
+> not because a flag switched it off.
+
 **End state — two HeliSim modules in the mod:**
 
 | PBO | Role | Lifetime |
