@@ -66,14 +66,19 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     private _target  = ([0, _out_val] select (!_damaged && _gateOn && _driven)) * _supply;
     private _current = _heli getVariable [_varName, 0];
 
-    //rampRate 0 means instant - a generator contactor closes, it does not spool.
-    private _rate = _x get "rampRate";
+    //Nothing left to move means no pressure at once - a destroyed reservoir does not
+    //bleed its pump down gently.
+    private _rate = [_x get "rampRate", 0] select (_supply <= 0);
     private _out  = if (_rate <= 0) then {
         _target
     } else {
         private _step = _rate * _deltaTime;
         if (_current < _target) then {(_current + _step) min _target} else {(_current - _step) max _target};
     };
+
+    //Gauges read in steps, not single units.
+    private _step = _x get "increment";
+    if (_step > 0) then { _out = round (_out / _step) * _step };
 
     _heli setVariable [_varName, _out];
 

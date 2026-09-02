@@ -34,6 +34,7 @@ params ["_heli", "_config"];
 //  requires     level variable it draws from, "" for none. Scales output, not gates it
 //  nominal      what it produces at full output
 //  rampSeconds  zero to full, 0 = instant
+//  increment    round the published value to this step, 0 for none
 //  passthrough  1 to output whatever drives it instead of nominal
 #define COMPONENT_FIELDS(cfg) createHashMapFromArray [ \
     ["damageRole",   getText   (cfg >> "damageRole")], \
@@ -48,7 +49,8 @@ params ["_heli", "_config"];
     ["rampRate",     if ((getNumber (cfg >> "rampSeconds")) > 0) \
                         then {(getNumber (cfg >> "nominal")) / (getNumber (cfg >> "rampSeconds"))} \
                         else {0}], \
-    ["passthrough",  getNumber (cfg >> "passthrough") > 0] \
+    ["passthrough",  getNumber (cfg >> "passthrough") > 0], \
+    ["increment",    getNumber (cfg >> "increment")] \
 ]
 
 private _circuits = createHashMap;

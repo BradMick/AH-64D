@@ -52,9 +52,14 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     //from it. Rate ramps from the onset threshold to full damage.
     private _leakStart = _x get "leakStartDmg";
     if (_settle && _leakStart > 0 && _damage > _leakStart) then {
-        private _frac = ((_damage - _leakStart) / (1 - _leakStart)) min 1;
-        private _rate = _x get "leakRate";
-        _charge = (_charge - (_rate * _frac * _deltaTime)) max 0;
+        if (_damage >= 1) then {
+            //Destroyed holds nothing at all rather than draining out.
+            _charge = 0;
+        } else {
+            private _frac = ((_damage - _leakStart) / (1 - _leakStart)) min 1;
+            private _rate = _x get "leakRate";
+            _charge = (_charge - (_rate * _frac * _deltaTime)) max 0;
+        };
     };
 
     //Below this it is spent - for a gas-charged store this is the precharge, which is
@@ -108,7 +113,9 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
         //Needs its circuit properly up, not merely turning - a spooling APU is not yet
         //driving the pumps that do the refilling.
         if (([_heli, _rechargedBy] call bmkhs_fnc_systemCircuit) > (_x get "minRecharge")) then {
-            private _rate = _x get "rechargeRate";
+            //Over the usable band rather than the whole range, so the configured time is
+            //what it actually takes - a store only ever refills from its floor.
+            private _rate = (_x get "rechargeRate") * (1 - _spentFrac);
             if (_rate > 0) then { _charge = (_charge + (_rate * _deltaTime)) min 1.0 };
         };
     };
