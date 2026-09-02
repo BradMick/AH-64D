@@ -23,8 +23,9 @@ private _apuOn = _heli getVariable ["bmkhs_apuOn", false];
 _heli setVariable ["bmkhs_apuFF_kgs", [0.0, 0.0220] select _apuOn];
 
 //Cockpit indication is the aircraft's business - Core only reports the state, and only
-//when it actually changes.
-if (_apuOn isNotEqualTo (_heli getVariable ["bmkhs_apuOnLast", _apuOn])) then {
+//when it actually changes. The default here has to be something apuOn can DIFFER from, or
+//the first transition compares equal to itself and the notify never fires at all.
+if (_apuOn isNotEqualTo (_heli getVariable ["bmkhs_apuOnLast", !_apuOn])) then {
     _heli setVariable ["bmkhs_apuOnLast", _apuOn];
     [_heli, "apuStateChanged"] call bmkhs_fnc_utilNotify;
 };
