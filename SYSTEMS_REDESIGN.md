@@ -312,6 +312,72 @@ store discharges and clears once it has recharged - is exactly
 `charge < spentBelow` on the component. Get the model right and the indication
 comes and goes on its own; there is nothing to script.
 
+#### A circuit carries a VALUE, not a boolean
+
+"The solver answers whether a circuit is supplied" is not enough, and building
+on it would force a retro-fit almost immediately. `bmkhs_priHydPsi` is a number
+the crew reads: `fn_pageENGDraw` renders PRI, UTIL and ACC pressures as 4-digit
+PSI text, with the accumulator rounded to the nearest 10. A boolean cannot
+produce "2870".
+
+It is not only display. The value drives decisions at three different
+thresholds - `hydMinPsi` (1260) for control authority, `hydMinAccPsi` (1650)
+for the accumulator floor, `hydMinLevel` (0.1) for reservoir prime - and a
+store bleeding down produces a FALLING number, which is the whole visual of an
+accumulator discharging.
+
+So a circuit carries a magnitude, and "supplied" is a comparison against a
+threshold rather than a primitive:
+
+    circuit value    the magnitude on that node - PSI, volts, RPM, whatever the domain uses
+    supplied         value >= the consumer's minimum, per consumer
+
+Two consumers on one circuit can therefore disagree about whether it is up,
+which is not a wrinkle but the autorotation behaviour already established:
+generators need 0.85 Nr and hydraulics 0.45, both reading the same accessory
+drive. A single boolean per circuit cannot express that.
+
+**Nominal output belongs on the source**, since that is what sets the value:
+
+```cpp
+class PriPump : BMKHS_Source { output = "PRI_HYD_SUPPLY"; nominal = 3000; };
+```
+
+which replaces the `_priHydPSI_pct * 3000.0` hardcoded in `fn_hydraulicsPriPump`
+and `fn_hydraulicsUtilPump`. Multiple sources on one node take the HIGHEST
+value rather than summing - two pumps on one circuit give 3000 PSI, not 6000.
+
+Units are the aircraft's business. Core does arithmetic and comparison and
+never needs to know whether a number is PSI or volts.
+
+#### `consumes` - drawn down, or merely required?
+
+Unresolved, and it has to be settled before the first source is written because
+two opposite behaviours are hiding under one field name:
+
+| | fuel tank | hydraulic reservoir |
+|---|---|---|
+| engine/pump running | tank mass FALLS | level does NOT fall |
+| what the consumer does | burns it | circulates it |
+| empties because | consumption | damage only |
+
+A pump moves fluid without destroying it. An engine burns fuel and the tank
+goes down. Both would be written `consumes = "..."`, and picking either
+behaviour as the default silently breaks the other - either hydraulic
+reservoirs drain in normal flight, or fuel tanks never empty.
+
+They need to be different declarations. The likely shape is a required level
+(gating only) versus a draw rate (gating plus depletion):
+
+```cpp
+class PriPump : BMKHS_Source { requires = "priReservoir"; };              //needs fluid, does not spend it
+class Engine  : BMKHS_Source { draws = "fuelTanks"; drawRate = ...; };   //spends it
+```
+
+with the leak mechanic staying a property of the RESERVOIR, since damage drains
+a tank whether or not anything is drawing from it. To be confirmed against how
+`fn_fuelDraw` and `fn_fuelLeak` actually divide that work today.
+
 #### Supply and delivery are different nodes
 
 Those two `UTIL_HYD` references above are NOT the same circuit, and writing
@@ -592,7 +658,7 @@ So the base kinds are domain-agnostic:
   BMKHS_Source     produces onto a circuit, given whatever drives it
   BMKHS_Converter  consumes from one circuit, produces onto another
   BMKHS_Storage    a source that DEPLETES while supplying - the time-limited kind
-  BMKHS_Circuit    a named node; the solver answers "is it supplied"
+  BMKHS_Circuit    a named node carrying a VALUE; consumers threshold it themselves
   BMKHS_Consumer   fed by a SET of circuits; supplied if ANY of them is up
   BMKHS_Reservoir  a consumable that leaks when damaged and starves its consumers
 
