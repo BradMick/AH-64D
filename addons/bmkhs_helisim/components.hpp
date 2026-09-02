@@ -21,6 +21,41 @@
 //Durations are in seconds, never rates - Core converts once at init.
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
+// ONE CLASS, MANY MEMBERS - how count works
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
+//A class is a KIND of component, not one of them. How many exist comes from the hitpoints
+//claiming its damage role, so one declaration covers any count:
+//
+//    class Generator { damageRole = "generators"; variableName = "gen"; ... };
+//
+//    hit_elec_generator1  "generators" 0   ->  bmkhs_gen1
+//    hit_elec_generator2  "generators" 1   ->  bmkhs_gen2
+//    hit_elec_generator3  "generators" 2   ->  bmkhs_gen3
+//
+//Add the third hitpoint and there is a third generator - no config change here, no code
+//change in Core. Declare none and the component does not exist on this airframe.
+//
+//Each member is independent: its own damage, its own state, its own contribution to the
+//circuit. Two healthy generators and one destroyed still hold the bus up, because the
+//highest feeder wins the node.
+//
+//ONE CLASS PER JOB, NOT PER UNIT. Two generators are two of the same thing on the same
+//bus, so they are one class. The primary and utility pumps are different jobs feeding
+//different circuits, so they are two classes even though both are pumps. The test is
+//whether they share a damage role AND a circuit.
+//
+//Consumers are not per-member. acBusOn is one consumer of the AC circuit however many
+//generators feed it, which is why adding one needs no consumer change.
+//
+//NAMING TRAP: the member number only appears when there IS more than one, so a single
+//battery publishes bmkhs_battPower_pct and a second one would silently rename it to
+//bmkhs_battPower_pct1 - breaking every external reader. Choose variableName for the count
+//the role might reach, not the count it has today. "gen" is safe because it is already
+//written as one of several; "priHydPsi" is safe because an airframe has exactly one
+//primary pump by definition.
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
 // NETWORKING - read this before declaring anything a crew station displays
 /////////////////////////////////////////////////////////////////////////////////////////////
 //
