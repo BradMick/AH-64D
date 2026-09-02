@@ -1,25 +1,14 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Components ///////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
-//What this airframe actually has, and what it is wired to. Core reads these and runs one
-//kind per component - it has no idea what an AH-64 is.
-//
-//Member count comes from damageRole: the hitpoints claiming that role ARE the members, so
-//a third generator hitpoint gives a third generator with no change to Core or to this file
-//beyond the hitpoint itself. A role nothing claims means the component does not exist here.
-//
-//Circuits are just names. These are ours to choose; Core matches them as strings.
-//  ACCESSORY_DRIVE  turned by the APU, or by the transmission (engines, or the rotor in
-//                   an autorotation) - which is why hydraulics survive an engine failure
-//  PRI_HYD/UTIL_HYD the two flight-control hydraulic circuits
-//  AC/DC            the electrical buses
+//What this airframe has and what it is wired to. Member count comes from damageRole, so a
+//third generator hitpoint gives a third generator with no change here. Circuit names are
+//ours to choose; Core matches them as strings.
 
     class Producers {
-        //The accessory section, and the two things that can turn it. Highest feeder wins the
-        //node, so whichever is spinning faster is what drives the accessories.
-        //
-        //The APU drives the accessory section directly and NOT the transmission, which is why
-        //APU ground ops give hydraulics and generators with the rotor stopped.
+        //The accessory section, and the two things that turn it - highest wins. The APU
+        //drives it directly and NOT the transmission, hence APU ground ops with the rotor
+        //stopped.
         class ApuDrive {
             damageRole   = "apu";
             variableName = "apuDrive";
@@ -29,8 +18,8 @@
             nominal      = 1.0;           //spins accessories at full working speed
             rampSeconds  = 0;             //bmkhs_apuOn already follows the APU's own spool
         };
-        //The transmission, turned by the engines or - in an autorotation - by the rotor.
-        //Nr is the same shaft either way, so accessories keep turning with the engines dead.
+        //Turned by the engines, or by the rotor in an autorotation - same shaft either way,
+        //so accessories keep turning with the engines dead.
         class XmsnDrive {
             damageRole   = "transmission";
             variableName = "xmsnDrive";
@@ -41,9 +30,7 @@
             rampSeconds  = 0;
         };
 
-        //Hydraulic pumps hang off the accessory section, NOT the engines - an APU with the
-        //engines shut down still makes pressure, and so does an autorotating rotor. They
-        //need fluid to move, so a holed reservoir stops them however healthy they are.
+        //Pumps hang off the accessory section, not the engines, and need fluid to move.
         class PriPump {
             damageRole   = "priPump";
             variableName = "priHydPsi";
@@ -65,8 +52,8 @@
             rampSeconds  = 1;
         };
 
-        //Generators need considerably more shaft speed than the pumps do, which is what
-        //makes an autorotation cost you the electrics but not the flight controls.
+        //Generators need far more shaft speed than the pumps, so an autorotation costs the
+        //electrics but not the flight controls.
         class Generator {
             damageRole   = "generators";  //two hitpoints today -> gen1, gen2
             variableName = "gen";
@@ -88,13 +75,9 @@
     };
 
     class Storage {
-        //Reservoirs. Storage that holds fluid rather than pressure: no output circuit and
-        //no gate, because nothing draws pressure FROM them - the pumps scale their output
-        //by what is left, so a falling level shows on the gauge as falling pressure.
-        //
-        //They only ever lose contents by leaking, which is why they declare a leak and no
-        //drain. 120 seconds from a fully destroyed reservoir to empty, ramping down from
-        //the onset threshold, so a light hit weeps and a bad one dumps.
+        //Reservoirs hold fluid rather than pressure - no output and no gate, since nothing
+        //draws pressure from them. They only lose contents by leaking, ramping from the
+        //onset threshold so a light hit weeps and a bad one dumps.
         class PriReservoir {
             damageRole      = "priReservoir";
             variableName    = "priLevel_pct";
@@ -112,29 +95,19 @@
             drainedBy[]     = {"gunTurret", "pylons"};
         };
 
-        //The accumulator's primary job is starting the APU: it discharges to spin it up,
-        //and the APU driving the pumps is what refills it. That is the ACCUM caution
-        //appearing and then clearing on a normal start.
-        //
-        //Its secondary job is emergency flight-control pressure, gated on the crew pressing
-        //the button, which is why it feeds the utility circuit rather than sitting idle.
+        //Discharges to start the APU and is refilled by the pumps it just started. Doubles
+        //as emergency flight-control pressure, gated on the crew button.
         class Accumulator {
-            //No damageRole - the accumulator has no selection of its own in the p3d, so it
-            //is not separately damageable. It still exists; it just cannot be shot out.
+            //No damageRole - no selection in the p3d, so it cannot be shot out.
             variableName = "accHydPsi";
             output       = "UTIL_HYD";
-            //Refills off the accessory drive, not off UTIL_HYD - a store recharging from the
-            //node it feeds would top itself up forever. A turning accessory section means the
-            //pumps are circulating fluid, which is what actually recharges it.
+            //Off the accessory drive, not UTIL_HYD - a store recharging from the node it
+            //feeds would top itself up forever.
             rechargedBy  = "ACCESSORY_DRIVE";
             gate         = "bmkhs_emerHydOn";
             startedBy    = "bmkhs_apuBtnOn";
-            //Starting the APU is a quick, one-off dump of fluid, and the pumps put it
-            //straight back once they are turning - both are over in about a second.
-            startDraw       = 0.35;       //fraction of charge one APU start costs, at once
+            startDraw       = 0.35;       //fraction of charge an APU start costs, at once
             rechargeSeconds = 1;          //empty to full, once the pumps are turning
-            //The slow rate is the OTHER job: holding the flight controls up as an
-            //emergency source, where it has to last long enough to be worth having.
             drainSeconds    = 90;         //full to empty, supplying emergency pressure
             spentBelow      = 1650;       //psi, the floor it stops discharging at
             nominal         = 3000;
@@ -142,8 +115,8 @@
     };
 
     class Consumers {
-        //Fed by primary AND utility: either one alone keeps the controls moving, so losing
-        //the primary side is a degradation rather than a loss of control.
+        //Either circuit alone keeps the controls moving, so losing one side is a
+        //degradation rather than a loss of control.
         class FlightControls {
             variableName = "fltCtrlsSupplied";
             suppliedBy[] = {"PRI_HYD", "UTIL_HYD"};
