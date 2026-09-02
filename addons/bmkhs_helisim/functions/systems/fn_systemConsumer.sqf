@@ -38,5 +38,9 @@ if (_consumers isEqualTo []) exitWith {};
         };
     } forEach (_comp get "circuits");
 
-    _heli setVariable [_comp get "varName", _supplied];
+    if (_comp get "networked") then {
+        [_heli, _comp get "varName", _supplied] call bmkhs_fnc_utilUpdateNetworkGlobal;
+    } else {
+        _heli setVariable [_comp get "varName", _supplied];
+    };
 } forEach _consumers;

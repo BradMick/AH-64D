@@ -27,6 +27,10 @@ Author:
 ---------------------------------------------------------------------------- */
 params ["_heli", "_deltaTime"];
 
+//Solved once, where the aircraft is local. Everyone else reads the networked results,
+//which is what stops every client computing the same state and fighting over it.
+if !(local _heli) exitWith {};
+
 //Rebuilt each pass - a node holds only what its feeders put there this frame.
 private _circuits = createHashMap;
 { _circuits set [_x, 0] } forEach (keys (_heli getVariable ["bmkhs_sysCircuits", createHashMap]));

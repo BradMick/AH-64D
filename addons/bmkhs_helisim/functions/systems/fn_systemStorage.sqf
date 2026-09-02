@@ -126,7 +126,12 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     };
 
     _heli setVariable [_varName + "Charge", _charge];
-    _heli setVariable [_varName, _charge * _nominal];
+    private _published = _charge * _nominal;
+    if (_x get "networked") then {
+        [_heli, _varName, _published] call bmkhs_fnc_utilUpdateNetworkGlobal;
+    } else {
+        _heli setVariable [_varName, _published];
+    };
 
     //Only feeds the node while it is the one supplying it.
     if (_circuit != "" && _live && _elseFeed <= 0) then {

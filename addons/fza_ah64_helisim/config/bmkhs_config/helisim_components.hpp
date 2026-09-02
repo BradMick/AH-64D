@@ -40,6 +40,7 @@
             requiresAbove = 0.1;          //fraction - below this it loses prime
             nominal      = 3000;         //psi
             increment    = 10;            //gauges move in tens
+            networked    = 1;             //MPD and WCA read these in the crew station
             rampSeconds  = 0.5;           //zero to full pressure - builds, does not snap
         };
         class UtilPump {
@@ -51,6 +52,7 @@
             requiresAbove = 0.1;
             nominal      = 3000;
             increment    = 10;
+            networked    = 1;
             rampSeconds  = 0.5;
         };
 
@@ -82,6 +84,7 @@
             damageRole      = "priReservoir";
             variableName    = "priLevel_pct";
             nominal         = 1.0;         //published as a fraction, which is what reads it
+            networked       = 1;
             leakStartDmg    = 0.50;
             leakSeconds     = 120;
         };
@@ -90,6 +93,7 @@
             variableName    = "utilLevel_pct";
             output          = "UTIL_HYD_LEVEL";   //so a consumer can read what is left
             nominal         = 1.0;
+            networked       = 1;
             leakStartDmg    = 0.50;
             leakSeconds     = 120;
             //The gun and the pylons share the utility system, so hits on either vent it.
@@ -102,6 +106,7 @@
             //No damageRole - no selection in the p3d, so it cannot be shot out.
             variableName    = "accHydPsi";
             output          = "UTIL_HYD";
+            networked       = 1;
             //Off the accessory drive, not UTIL_HYD - a store recharging from the node it
             //feeds would top itself up forever.
             rechargedBy[]   = {"ACCESSORY_DRIVE", 0.45};  //same drive the pumps need
@@ -116,6 +121,8 @@
         };
     };
 
+    //Consumers here are read by the flight model on the pilot's machine only, so they stay
+    //local. Anything a crew station draws sets networked.
     class Consumers {
         //Either circuit alone keeps the controls moving, so losing one side is a
         //degradation rather than a loss of control.

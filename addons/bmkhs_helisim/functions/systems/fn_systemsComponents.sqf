@@ -36,6 +36,8 @@ params ["_heli", "_config"];
 //  nominal      what it produces at full output
 //  rampSeconds  zero to full, 0 = instant
 //  increment    round the published value to this step, 0 for none
+//  networked    1 if other machines read this state - a bus a remote cockpit draws from,
+//               not a pressure the local flight model consumes
 //  passthrough  1 to output whatever drives it instead of nominal
 #define COMPONENT_FIELDS(cfg) createHashMapFromArray [ \
     ["damageRole",   getText   (cfg >> "damageRole")], \
@@ -52,7 +54,8 @@ params ["_heli", "_config"];
                         then {(getNumber (cfg >> "nominal")) / (getNumber (cfg >> "rampSeconds"))} \
                         else {0}], \
     ["passthrough",  getNumber (cfg >> "passthrough") > 0], \
-    ["increment",    getNumber (cfg >> "increment")] \
+    ["increment",    getNumber (cfg >> "increment")], \
+    ["networked",    getNumber (cfg >> "networked") > 0] \
 ]
 
 private _circuits = createHashMap;
@@ -127,7 +130,8 @@ private _consumers = [];
 {
     private _c = createHashMapFromArray [
         ["variableName", getText  (_x >> "variableName")],
-        ["needsAll",     getNumber (_x >> "needsAll") > 0]
+        ["needsAll",     getNumber (_x >> "needsAll") > 0],
+        ["networked",    getNumber (_x >> "networked") > 0]
     ];
     _c set ["circuits", (getArray (_x >> "suppliedBy")) apply {[_x select 0, _x param [1, 0]]}];
     _c set ["varName", format ["bmkhs_%1", _c get "variableName"]];

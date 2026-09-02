@@ -79,7 +79,11 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     private _step = _x get "increment";
     if (_step > 0) then { _out = round (_out / _step) * _step };
 
-    _heli setVariable [_varName, _out];
+    if (_x get "networked") then {
+        [_heli, _varName, _out] call bmkhs_fnc_utilUpdateNetworkGlobal;
+    } else {
+        _heli setVariable [_varName, _out];
+    };
 
     //Highest feeder wins the node. Recorded separately too, so a store can tell whether
     //anything OTHER than itself is supplying its output.
