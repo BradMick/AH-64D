@@ -131,6 +131,7 @@ private _storage = [];
         private _m = +_c;
         _m set ["index",   _i];
         _m set ["varName", format ["bmkhs_%1%2", _c get "variableName", [_i + 1, ""] select (_count <= 1)]];
+        _m set ["outputs", [_x] call _readOutputs];
         _storage pushBack _m;
     };
 

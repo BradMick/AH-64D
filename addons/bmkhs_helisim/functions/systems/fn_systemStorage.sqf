@@ -97,14 +97,19 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
         };
     };
 
-    //Anything else holding this node up makes the store a reserve, not a supply. On the
-    //settle pass the node already carries this store own supply, so compare against what
+    //Anything else holding its nodes up makes the store a reserve, not a supply. On the
+    //settle pass a node already carries this store's own supply, so compare against what
     //the producers put there rather than the total.
-    private _circuit  = _x get "output";
-    private _elseFeed = if (_circuit == "") then {0} else {
-        if (_settle) then {_heli getVariable ["bmkhs_sysProducerFeed_" + _circuit, 0]}
-                     else {_circuits getOrDefault [_circuit, 0]}
-    };
+    private _outputs  = _x get "outputs";
+    private _elseFeed = 0;
+    {
+        private _c = _x get "circuit";
+        if (_c != "") then {
+            private _feed = if (_settle) then {_heli getVariable ["bmkhs_sysProducerFeed_" + _c, 0]}
+                                         else {_circuits getOrDefault [_c, 0]};
+            _elseFeed = _elseFeed max _feed;
+        };
+    } forEach _outputs;
 
     private _live      = !_damaged && _gateOn && _charge > _spentFrac;
 
@@ -131,6 +136,14 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
         if (_rate > 0) then { _charge = (_charge + (_rate * _deltaTime)) min 1.0 };
     };
 
+    //Whether it is up, as a property of the component rather than of any node - the same
+    //publish a producer does.
+    private _stateVar = _x get "stateVar";
+    if (_stateVar != "") then {
+        [_heli, format ["bmkhs_%1", _stateVar], (_charge * _nominal) >= (_x get "stateAbove")]
+            call bmkhs_fnc_utilUpdateNetworkGlobal;
+    };
+
     _heli setVariable [_varName + "Charge", _charge];
     private _published = _charge * _nominal;
     if (_x get "networked") then {
@@ -139,9 +152,16 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
         _heli setVariable [_varName, _published];
     };
 
-    //Only feeds the node while it is the one supplying it.
-    if (_circuit != "" && _live && _elseFeed <= 0) then {
-        _circuits set [_circuit, _elseFeed max (_charge * _nominal)];
+    //Only feeds while it is the one supplying.
+    if (_live && _elseFeed <= 0) then {
+        {
+            private _c = _x get "circuit";
+            if (_c != "") then {
+                private _fixed = _x get "nominal";
+                private _val   = if (_fixed > 0) then {_fixed} else {_charge * _nominal * (_x get "ratio")};
+                _circuits set [_c, (_circuits getOrDefault [_c, 0]) max _val];
+            };
+        } forEach _outputs;
     };
 } forEach _storage;
 

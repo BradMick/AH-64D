@@ -27,6 +27,7 @@ Author:
     BradMick
 ---------------------------------------------------------------------------- */
 params ["_heli", "_deltaTime"];
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 
 //Solved once, where the aircraft is local. Everyone else reads the networked results,
 //which is what stops every client computing the same state and fighting over it.
@@ -47,8 +48,13 @@ _heli setVariable ["bmkhs_sysCircuits", _circuits];
 
 [_heli, _deltaTime]        call bmkhs_fnc_systemStorage;
 [_heli, _deltaTime]        call bmkhs_fnc_systemProducer;
-//deltaTime 0: re-resolves dependencies without advancing a ramp twice in one frame.
-[_heli, 0]                 call bmkhs_fnc_systemProducer;
+//Re-resolved until the graph settles: a producer behind another producer's circuit reads
+//a stale value otherwise, and the chains run deeper than one hop - the transmission feeds
+//the accessory drive feeds the pumps, and a generator feeds AC feeds a rectifier feeds DC.
+//deltaTime 0 so re-resolving does not advance a ramp more than once in a frame.
+for "_i" from 1 to SYS_SOLVE_PASSES do {
+    [_heli, 0] call bmkhs_fnc_systemProducer;
+};
 //Charge moves last, off the solved result - a store reading its recharge circuit any
 //earlier sees zero and never refills.
 [_heli, _deltaTime, true]  call bmkhs_fnc_systemStorage;
