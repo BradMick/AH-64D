@@ -20,11 +20,8 @@ params ["_heli"];
 private _named = _heli getVariable ["bmkhs_sysNamed", []];
 if (_named isEqualTo []) exitWith {};
 
-private _useSystems = _heli getVariable ["bmkhs_useSystems", false];
 
 {
-    if ((_x get "needsSystems") && !_useSystems) then { continue };
-
     private _up = ([_heli, _x get "circuit"] call bmkhs_fnc_systemCircuit) >= (_x get "minValue");
     if (_x get "networked") then {
         [_heli, _x get "varName", _up] call bmkhs_fnc_utilUpdateNetworkGlobal;

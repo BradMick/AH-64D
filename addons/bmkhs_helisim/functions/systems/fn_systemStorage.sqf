@@ -26,15 +26,12 @@ Author:
 params ["_heli", "_deltaTime", ["_settle", false]];
 #include "\bmkhs_helisim\functions\systems\systems.hpp"
 
-private _useSystems = _heli getVariable ["bmkhs_useSystems", false];
 private _storage = _heli getVariable ["bmkhs_sysStorage", []];
 if (_storage isEqualTo []) exitWith {};
 
 private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
 
 {
-    if ((_x get "needsSystems") && !_useSystems) then { continue };
-
     private _varName = _x get "varName";
     private _nominal = _x get "nominal";
     private _charge  = _heli getVariable [_varName + "Charge", 1.0];

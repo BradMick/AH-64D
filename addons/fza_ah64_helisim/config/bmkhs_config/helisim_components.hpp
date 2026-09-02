@@ -17,7 +17,6 @@
             rampSeconds  = 5;             //spool to operating RPM
             stateName    = "apuOn";       //running once it is up to speed
             stateAbove   = 0.85;
-            needsSystems = 1;
             networked    = 1;
             class Outputs {
                 class Drive {
@@ -76,7 +75,6 @@
             drivenBy[]   = {"ACCESSORY_DRIVE", 0.85};
             nominal      = 1;             //on/off, not volts
             rampSeconds  = 0;             //a contactor closes, it does not spool
-            needsSystems = 1;
         };
     };
 
@@ -89,7 +87,6 @@
             input[]      = {"AC"};        //any AC at all
             output       = "DC";
             nominal      = 1;
-            needsSystems = 1;
         };
     };
 
@@ -129,7 +126,6 @@
             stopBelow       = 0.25;       //too flat to hold a bus up
             startRecharge   = 60;         //sec off a live bus
             emerDischarge   = 720;        //12 min on the battery alone
-            needsSystems    = 1;
         };
 
         //Discharges to start the APU and is refilled by the pumps it just started. Doubles
@@ -160,21 +156,18 @@
             variableName = "acBusOn";
             circuit      = "AC";
             minValue     = 1;
-            needsSystems = 1;
             networked    = 1;
         };
         class DcBus {
             variableName = "dcBusOn";
             circuit      = "DC";
             minValue     = 1;
-            needsSystems = 1;
             networked    = 1;
         };
         class BattBus {
             variableName = "battBusOn";
             circuit      = "BATT";
             minValue     = 0.25;
-            needsSystems = 1;
             networked    = 1;
         };
         //Engine starts run off bleed air. Whatever supplies it is the aircraft's business -
@@ -183,7 +176,6 @@
             variableName = "pneuAvail";
             circuit      = "PNEU";
             minValue     = 1;
-            needsSystems = 1;
             networked    = 1;
         };
     };

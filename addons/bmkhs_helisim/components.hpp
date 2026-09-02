@@ -69,6 +69,10 @@
 //    networked = 1;   an MPD page, a caution, a warning light, a weapon interlock
 //    (default)        flight-model state consumed on the machine that computes it
 //
+//An aircraft that sets useSystems = 0 solves NONE of this, and one that declares no
+//components has nothing to solve - both fly on the read-side defaults of whatever would
+//have consumed the state. A designer who only wants the flight model declares nothing.
+//
 //Networked state publishes through a change-gated helper, so it only sends when the value
 //actually differs. Pair it with `increment` on anything continuous - rounding pressure to
 //tens instead of single psi cuts traffic during a ramp by roughly a factor of ten.
@@ -99,10 +103,6 @@
 //                way an engine publishes its own state. Always networked
 //  stateAbove    output at or above which it counts as running
 //  networked     see above
-//  needsSystems  1 if this is only modelled when the aircraft sets useSystems. With
-//                systems off it is not simulated and its state stays as seeded, which is
-//                the vanilla contract - powered up, running, no start procedure. Startup
-//                systems set this; flight-model infrastructure does not
 //
 //A COMPONENT IS A PHYSICAL THING - the APU, a generator, a pump, the accumulator. What it
 //puts out is not a component: an APU that drives the accessory section AND supplies bleed
@@ -175,7 +175,6 @@
 //  circuit       the node it reports on
 //  minValue      value at or above which it reads as up
 //  networked     see above
-//  needsSystems  see above
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
 // CONSUMERS - anything that needs supply to work

@@ -28,8 +28,8 @@ private _deltaTime = ["systems_deltaTime"] call BIS_fnc_deltaTime;
 //Drivetrain torque limits and damage timers are not part of the supply graph.
 [_heli, _deltaTime] call bmkhs_fnc_drivetrainController;
 
-//The APU is a startup system. With useSystems off the aircraft behaves like vanilla:
-//already running, buses powered, no start procedure.
+//The APU's fuel burn and state notify, which are not supply. The solve above has already
+//exited if this aircraft models no systems.
 if !(_heli getVariable ["bmkhs_useSystems", false]) exitWith {};
 
 [_heli] call bmkhs_fnc_apu;

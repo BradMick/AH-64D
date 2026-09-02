@@ -45,8 +45,7 @@ params ["_heli", "_config"];
     ["increment",    getNumber (cfg >> "increment")], \
     ["networked",    getNumber (cfg >> "networked") > 0], \
     ["stateVar",     getText   (cfg >> "stateName")], \
-    ["stateAbove",   getNumber (cfg >> "stateAbove")], \
-    ["needsSystems", getNumber (cfg >> "needsSystems") > 0] \
+    ["stateAbove",   getNumber (cfg >> "stateAbove")] \
 ]
 
 private _circuits = createHashMap;
@@ -168,8 +167,7 @@ private _named = [];
     private _c = createHashMapFromArray [
         ["circuit",      getText   (_x >> "circuit")],
         ["minValue",     getNumber (_x >> "minValue")],
-        ["networked",    getNumber (_x >> "networked") > 0],
-        ["needsSystems", getNumber (_x >> "needsSystems") > 0]
+        ["networked",    getNumber (_x >> "networked") > 0]
     ];
     _c set ["varName", format ["bmkhs_%1", getText (_x >> "variableName")]];
     _named pushBack _c;
@@ -183,8 +181,7 @@ private _consumers = [];
     private _c = createHashMapFromArray [
         ["variableName", getText  (_x >> "variableName")],
         ["needsAll",     getNumber (_x >> "needsAll") > 0],
-        ["networked",    getNumber (_x >> "networked") > 0],
-        ["needsSystems", getNumber (_x >> "needsSystems") > 0]
+        ["networked",    getNumber (_x >> "networked") > 0]
     ];
     _c set ["circuits", (getArray (_x >> "suppliedBy")) apply {[_x select 0, _x param [1, 0]]}];
     _c set ["varName", format ["bmkhs_%1", _c get "variableName"]];
@@ -197,7 +194,3 @@ _heli setVariable ["bmkhs_sysProducers", _producers];
 _heli setVariable ["bmkhs_sysStorage",   _storage];
 _heli setVariable ["bmkhs_sysConsumers", _consumers];
 _heli setVariable ["bmkhs_sysCircuits",  _circuits];
-
-//No components means nothing to simulate, not failed systems - consumers fall back to
-//their own defaults so the airframe still flies.
-_heli setVariable ["bmkhs_sysModelled", (count _producers) + (count _storage) > 0];

@@ -29,12 +29,9 @@ params ["_heli", "_deltaTime"];
 private _converters = _heli getVariable ["bmkhs_sysConverters", []];
 if (_converters isEqualTo []) exitWith {};
 
-private _useSystems = _heli getVariable ["bmkhs_useSystems", false];
 private _circuits   = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
 
 {
-    if ((_x get "needsSystems") && !_useSystems) then { continue };
-
     private _comp    = _x;
     private _varName = _x get "varName";
 
