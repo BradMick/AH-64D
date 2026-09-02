@@ -35,8 +35,11 @@
             variableName = "xmsnDrive";
             drivenBy[]   = {"Nr"};        //any rotation; the pumps set their own floor
             rampSeconds  = 0;             //no nominal: it carries whatever Nr is doing
+            torqueFrom   = "bmkhs_engPctTQ";
+            tqLimits[]   = {{2.30, 6}, {2.00, 150}};   //transient, continuous
             class Outputs {
                 class Accessories { circuit = "ACCESSORY_DRIVE"; };
+                class TailDrive   { circuit = "TAIL_DRIVE"; };
             };
         };
 
@@ -81,6 +84,30 @@
     //Converters take from one circuit and put onto another. Swap input and output and a
     //rectifier is an inverter, so a DC-generator aircraft needs no new code.
     class Converters {
+        //Nose gearboxes take engine torque into the transmission. Rated for less than the
+        //transmission is, so they are what an overtorque costs first.
+        class NoseGearbox {
+            damageRole   = "noseGearboxes";   //two hitpoints -> noseGearbox1, 2
+            variableName = "noseGearbox";
+            input[]      = {"Nr"};
+            torqueFrom   = "bmkhs_engPctTQ";  //per member, so engine 2 feeds gearbox 2
+            tqLimits[]   = {{1.25, 0}, {1.22, 6}, {1.10, 150}};
+            breaksOnFailure = "bmkhs_engineOverspeed";
+        };
+        //The tail chain. Either gearbox failing takes the tail rotor with it, because
+        //nothing downstream of it turns.
+        class IntermediateGearbox {
+            damageRole   = "intermediateGearbox";
+            variableName = "igb";
+            input[]      = {"TAIL_DRIVE"};
+            output       = "TAIL_DRIVE_IGB";
+        };
+        class TailRotorGearbox {
+            damageRole   = "tailRotorGearbox";
+            variableName = "tgb";
+            input[]      = {"TAIL_DRIVE_IGB"};
+            output       = "TAIL_ROTOR_DRIVE";
+        };
         class Rectifier {
             damageRole   = "rectifiers";  //two hitpoints today -> rect1, rect2
             variableName = "rect";
@@ -190,9 +217,15 @@
         };
         //The tail rotor needs primary pressure OR utility fluid - it is lost only when
         //both are gone, so this one is an AND across two different units.
+        //Hydraulic authority to move it - either circuit will do.
         class TailRotor {
             variableName = "tailRtrSupplied";
-            needsAll     = 0;             //either one keeps it
             suppliedBy[] = {{"PRI_HYD", 1260}, {"UTIL_HYD_LEVEL", 0.1}};
+        };
+        //Drive turning it, which is the other way to lose it. Separate because one is an
+        //either-or and the other is a chain that must be intact.
+        class TailRotorDrive {
+            variableName = "tailRtrDriven";
+            suppliedBy[] = {{"TAIL_ROTOR_DRIVE", 0.01}};
         };
     };

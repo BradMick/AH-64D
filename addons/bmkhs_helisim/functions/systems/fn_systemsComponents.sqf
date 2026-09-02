@@ -45,7 +45,10 @@ params ["_heli", "_config"];
     ["increment",    getNumber (cfg >> "increment")], \
     ["networked",    getNumber (cfg >> "networked") > 0], \
     ["stateVar",     getText   (cfg >> "stateName")], \
-    ["stateAbove",   getNumber (cfg >> "stateAbove")] \
+    ["stateAbove",   getNumber (cfg >> "stateAbove")], \
+    ["torqueFrom",   getText   (cfg >> "torqueFrom")], \
+    ["tqLimits",     getArray  (cfg >> "tqLimits")], \
+    ["breaksVar",    getText   (cfg >> "breaksOnFailure")] \
 ]
 
 private _circuits = createHashMap;
@@ -189,6 +192,11 @@ private _consumers = [];
 
     { _circuits set [_x select 0, 0] } forEach (_c get "circuits");
 } forEach ("true" configClasses (_config >> "Consumers"));
+
+//Anything with torque limits, gathered from every kind - a gearbox is a converter and
+//the transmission is a producer, but both are rated for a torque.
+private _torqued = (_producers + _converters + _storage) select {(count (_x get "tqLimits")) > 0};
+_heli setVariable ["bmkhs_sysTorqued", _torqued];
 
 _heli setVariable ["bmkhs_sysProducers", _producers];
 _heli setVariable ["bmkhs_sysStorage",   _storage];

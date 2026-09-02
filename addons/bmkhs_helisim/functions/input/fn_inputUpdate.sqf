@@ -202,7 +202,10 @@ if !(_heli getVariable ["bmkhs_fltCtrlsSupplied", true]) then {
     _hydFailure = true;
 };
 
-if !(_heli getVariable ["bmkhs_tailRtrSupplied", true]) then {
+//Lost either by having no hydraulic authority to move it or no drive turning it.
+private _tailHyd    = _heli getVariable ["bmkhs_tailRtrSupplied", true];
+private _tailDriven = _heli getVariable ["bmkhs_tailRtrDriven",   true];
+if (!_tailHyd || !_tailDriven) then {
     _tailRtrFixed = true;
 };
 

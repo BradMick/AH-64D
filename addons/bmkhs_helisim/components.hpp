@@ -102,6 +102,14 @@
 //                component and not of any circuit - an APU is on above a threshold, the
 //                way an engine publishes its own state. Always networked
 //  stateAbove    output at or above which it counts as running
+//  torqueFrom    variable carrying the torque this component sees. Indexed per member
+//                where the source is, so engine 2's torque reaches gearbox 2
+//  tqLimits[]    what it is rated for, worst first: {torque, seconds} pairs saying how
+//                much it will take and for how long before that costs it. A zero duration
+//                damages immediately. The limits are the aircraft's, since a component is
+//                rated for what it is rated for; accruing the damage is Core's
+//  breaksOnFailure  array variable set true at this member's index once the component is
+//                destroyed - a nose gearbox that has come apart overspeeds its engine
 //  networked     see above
 //
 //A COMPONENT IS A PHYSICAL THING - the APU, a generator, a pump, the accumulator. What it

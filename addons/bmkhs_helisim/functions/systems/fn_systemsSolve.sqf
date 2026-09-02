@@ -10,8 +10,9 @@ Description:
       2. producers  resolve against circuits the stores have fed, and converters
                     move what they made onto other circuits
       3. storage    drains and refills from what actually solved
-      4. circuits   publish the state of any node the aircraft named
-      5. consumers  threshold what ended up on theirs
+      4. torque     damage anything run past its limits
+      5. circuits   publish the state of any node the aircraft named
+      6. consumers  threshold what ended up on theirs
 
     Storage runs twice: once to put its charge onto circuits, once at the end to
     move that charge from the solved result. Producers run twice so one driven
@@ -67,5 +68,7 @@ for "_i" from 1 to SYS_SOLVE_PASSES do {
 //Charge moves last, off the solved result - a store reading its recharge circuit any
 //earlier sees zero and never refills.
 [_heli, _deltaTime, true]  call bmkhs_fnc_systemStorage;
+//Overtorque damage, off the settled result.
+[_heli, _deltaTime]        call bmkhs_fnc_systemTorque;
 [_heli]                    call bmkhs_fnc_systemCircuitState;
 [_heli]                    call bmkhs_fnc_systemConsumer;

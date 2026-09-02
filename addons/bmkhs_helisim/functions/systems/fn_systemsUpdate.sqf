@@ -25,9 +25,6 @@ private _deltaTime = ["systems_deltaTime"] call BIS_fnc_deltaTime;
 //as producers and storage rather than as functions Core wrote for them.
 [_heli, _deltaTime] call bmkhs_fnc_systemsSolve;
 
-//Drivetrain torque limits and damage timers are not part of the supply graph.
-[_heli, _deltaTime] call bmkhs_fnc_drivetrainController;
-
 //The APU's fuel burn and state notify, which are not supply. The solve above has already
 //exited if this aircraft models no systems.
 if !(_heli getVariable ["bmkhs_useSystems", false]) exitWith {};

@@ -232,6 +232,7 @@ class CfgFunctions
             class systemConverter {R;};
             class systemProducer {R;};
             class systemStorage {R;};
+            class systemTorque {R;};
             class systemsComponents {R;};
             class systemsSolve {R;};
             class systemsUpdate {R;};
@@ -240,14 +241,6 @@ class CfgFunctions
         class systemsApu {
             file = "\bmkhs_helisim\functions\systems\apu";
             class apu {R;};
-        };
-        class systemsDrivetrain {
-            file = "\bmkhs_helisim\functions\systems\drivetrain";
-            class drivetrainController {R;};
-            class drivetrainNoseGearbox1 {R;};
-            class drivetrainNoseGearbox2 {R;};
-            class drivetrainTailRotorGearboxes {R;};
-            class drivetrainTransmission {R;};
         };
         class systemsRepair {
             file = "\bmkhs_helisim\functions\systems\repair";
