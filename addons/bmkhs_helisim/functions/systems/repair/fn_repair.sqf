@@ -17,6 +17,7 @@ Author:
     BradMick
 ---------------------------------------------------------------------------- */
 params ["_heli"];
+#include "\bmkhs_helisim\functions\systems\systems.hpp"
 
 if (([_heli, "engines", 0] call bmkhs_fnc_damageGet) == 0) then {
     [_heli, "bmkhs_engineOverspeed", 0.0, false, true] call bmkhs_fnc_utilSetArrayVariable;
@@ -30,23 +31,31 @@ if (([_heli, "batteries", 0] call bmkhs_fnc_damageGet) == 0) then {
     _heli setVariable ["bmkhs_battPower_pct", 1.0, true];
     [_heli, "batteries", 0.000001, 0] call bmkhs_fnc_damageSet
 };
-//A repaired aircraft is a serviceable one: levels full, stores charged and pressure up,
-//rather than one that has to spool its pumps before the crew can fly it.
+//A repair makes the aircraft serviceable, not running. Fluid and stored charge come
+//back to full because those are quantities a repair replaces - but PRESSURE depends on
+//whether anything is turning the pumps, so it is set to match the state the aircraft is
+//actually in. Repair a running aircraft and it has pressure; repair a cold one and it
+//has none until something spins up, which is what the crew would see either way.
+private _pumpsTurning = ([_heli, "ACCESSORY_DRIVE"] call bmkhs_fnc_systemCircuit) > SYS_HYD_MIN_RTR_RPM;
+private _hydPsi       = [0.0, 3000.0] select _pumpsTurning;
+
 if (([_heli, "priReservoir"] call bmkhs_fnc_damageGet) == 0) then {
     _heli setVariable ["bmkhs_priLevel_pctCharge", 1.0, true];
     [_heli, "priReservoir", 0.000001] call bmkhs_fnc_damageSet
 };
 if (([_heli, "priPump"] call bmkhs_fnc_damageGet) == 0) then {
-    _heli setVariable ["bmkhs_priHydPsi", 3000.0, true];
+    _heli setVariable ["bmkhs_priHydPsi", _hydPsi, true];
     [_heli, "priPump", 0.000001] call bmkhs_fnc_damageSet
 };
 if (([_heli, "utilReservoir"] call bmkhs_fnc_damageGet) == 0) then {
     _heli setVariable ["bmkhs_utilLevel_pctCharge", 1.0, true];
+    //The accumulator is a store, so it comes back charged whether or not anything is
+    //running - that is what a serviced aircraft has waiting to start its APU.
     _heli setVariable ["bmkhs_accHydPsiCharge",     1.0, true];
     _heli setVariable ["bmkhs_accHydPsi",           3000.0, true];
     [_heli, "utilReservoir", 0.000001] call bmkhs_fnc_damageSet
 };
 if (([_heli, "utilPump"] call bmkhs_fnc_damageGet) == 0) then {
-    _heli setVariable ["bmkhs_utilHydPsi", 3000.0, true];
+    _heli setVariable ["bmkhs_utilHydPsi", _hydPsi, true];
     [_heli, "utilPump", 0.000001] call bmkhs_fnc_damageSet
 };
