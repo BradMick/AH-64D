@@ -57,6 +57,12 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     //A shaft passes its drive speed along instead of a fixed value.
     private _out_val = if (_x get "passthrough") then {[_heli, _drivenBy] call bmkhs_fnc_systemCircuit} else {_nominal};
 
+    //Something that spools follows its own speed rather than switching on at the end.
+    private _driveFrom = _x get "driveFrom";
+    if (_driveFrom != "") then {
+        _out_val = _out_val * ((_heli getVariable [_driveFrom, 0]) max 0);
+    };
+
     private _target  = ([0, _out_val] select (!_damaged && _gateOn && _driven)) * _supply;
     private _current = _heli getVariable [_varName, 0];
 

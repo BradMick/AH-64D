@@ -13,10 +13,11 @@
             damageRole   = "apu";
             variableName = "apuDrive";
             output       = "ACCESSORY_DRIVE";
-            drivenBy     = "";            //self-driven once running
-            gate         = "bmkhs_apuOn";
-            nominal      = 1.0;           //spins accessories at full working speed
-            rampSeconds  = 0;             //bmkhs_apuOn already follows the APU's own spool
+            //Turns the accessories as it spools, so the pumps come up with it rather than
+            //snapping on once it is running.
+            driveFrom    = "bmkhs_apuRPM_pct";
+            nominal      = 1.0;
+            rampSeconds  = 0;
         };
         //Turned by the engines, or by the rotor in an autorotation - same shaft either way,
         //so accessories keep turning with the engines dead.
@@ -39,7 +40,7 @@
             minDrive     = 0.45;         //Nr fraction - below this the pump loses drive
             requires     = "bmkhs_priLevel_pct";
             nominal      = 3000;         //psi
-            rampSeconds  = 1;             //zero to full pressure - builds, does not snap
+            rampSeconds  = 0.5;           //zero to full pressure - builds, does not snap
         };
         class UtilPump {
             damageRole   = "utilPump";
@@ -49,7 +50,7 @@
             minDrive     = 0.45;
             requires     = "bmkhs_utilLevel_pct";
             nominal      = 3000;
-            rampSeconds  = 1;
+            rampSeconds  = 0.5;
         };
 
         //Generators need far more shaft speed than the pumps, so an autorotation costs the
@@ -109,6 +110,7 @@
             nominal         = 3000;       //psi at full charge
             startAbove      = 2600;       //psi needed to turn the APU over at all
             startDischarge  = 0.35;       //fraction of charge one start costs
+            startRecharge   = 8;          //sec to refill, once the pumps are turning
             stopBelow       = 1650;       //psi, the floor it stops discharging at
             emerDischarge   = 90;         //sec of emergency pressure
         };

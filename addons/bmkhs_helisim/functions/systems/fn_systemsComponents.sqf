@@ -29,6 +29,7 @@ params ["_heli", "_config"];
 //  gate         crew switch that must be on, "" for always armed
 //  output       circuit it pushes onto
 //  drivenBy     circuit that must be live for it to work, "" for none
+//  driveFrom    variable its output follows, 0..1, for something that spools
 //  minDrive     value that circuit must reach
 //  requires     level variable it draws from, "" for none. Scales output, not gates it
 //  nominal      what it produces at full output
@@ -40,6 +41,7 @@ params ["_heli", "_config"];
     ["gate",         getText   (cfg >> "gate")], \
     ["output",       getText   (cfg >> "output")], \
     ["drivenBy",     getText   (cfg >> "drivenBy")], \
+    ["driveFrom",    getText   (cfg >> "driveFrom")], \
     ["minDrive",     getNumber (cfg >> "minDrive")], \
     ["requires",     getText   (cfg >> "requires")], \
     ["nominal",      getNumber (cfg >> "nominal")], \
@@ -77,6 +79,7 @@ private _producers = [];
 //  startedBy       gate of the thing it cranks
 //  startAbove      value needed for a start to happen at all
 //  startDischarge  fraction of charge one start costs
+//  startRecharge   sec to refill once its recharge circuit is turning
 //  stopBelow       value it stops discharging at
 //  emerDischarge   sec full to empty as an emergency source
 //  leakStartDmg    damage at which it starts leaking, 0 for never
@@ -98,7 +101,8 @@ private _storage = [];
     private _leakSecs  = getNumber (_x >> "leakSeconds");
     _c set ["emerRate",  if (_drainSecs > 0) then {1 / _drainSecs} else {0}];
     _c set ["leakRate",  if (_leakSecs  > 0) then {1 / _leakSecs}  else {0}];
-    _c set ["rechargeRate", 1 / SYS_START_RECHARGE_SEC];
+    private _rechargeSecs = getNumber (_x >> "startRecharge");
+    _c set ["rechargeRate", if (_rechargeSecs > 0) then {1 / _rechargeSecs} else {1 / SYS_START_RECHARGE_SEC}];
     _c set ["leakStartDmg", getNumber (_x >> "leakStartDmg")];
     _c set ["drainedBy",    getArray  (_x >> "drainedBy")];
 

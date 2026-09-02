@@ -395,9 +395,10 @@ if (_stabDamage >= SYS_STAB_DMG_THRESH) then {
     [_activeCaut, "STAB FAIL"] call fza_wca_fnc_wcaDelCaution;
 };
 //--Hydraulics
-//On the ground with nothing turning the pumps there is no pressure to have, so the
-//cautions are expected rather than useful. A running aircraft still warns.
-private _hydExpected = !(_onGnd && !_apuOn && _rtrRPM < SYS_HYD_MIN_RTR_RPM);
+//On the ground, no pressure is expected until whatever turns the pumps is up to speed -
+//that covers both a cold aircraft and one still spooling. Airborne they always apply.
+private _accyDrive   = [_heli, "ACCESSORY_DRIVE"] call bmkhs_fnc_systemCircuit;
+private _hydExpected = !_onGnd || _accyDrive >= SYS_MIN_RPM;
 if (_hydExpected && _priHydPSI < SYS_MIN_HYD_PSI) then {
     ([_heli, _activeCaut, "PRI HYD PSI LOW", "PRI HYD PSI", _playCautAudio] call fza_wca_fnc_wcaAddCaution)
         params ["_wcaAddCaution", "_playAudio"];
