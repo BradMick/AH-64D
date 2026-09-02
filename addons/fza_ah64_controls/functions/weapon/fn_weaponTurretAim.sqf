@@ -63,7 +63,7 @@ private _worldTargetpos  = [0, 0, 0];
 private _gunDamage     = (_heli getHitPointDamage "hit_msnEquip_gun_turret" > SYS_WPN_DMG_THRESH);
 private _magDamage     = (_heli getHitPointDamage "hit_msnEquip_magAndRobbie" > SYS_WPN_DMG_THRESH && _heli animationPhase "magazine_set_1200" == 1);
 private _utilLevelMin  = (_heli getVariable "bmkhs_utilLevel_pct" < SYS_HYD_MIN_LVL);
-private _utilHydFailed = (_heli getVariable "bmkhs_utilHydPSI" < SYS_MIN_HYD_PSI);
+private _utilHydFailed = (_heli getVariable "bmkhs_utilHydPsi" < SYS_MIN_HYD_PSI);
 private _acBusOn       = _heli getVariable "bmkhs_acBusOn";
 private _dcBusOn       = _heli getVariable "bmkhs_dcBusOn";
 private _gunFailed = (_utilHydFailed || _utilLevelMin || _gunDamage || !_acBusOn || !_dcBusOn || _magDamage);
