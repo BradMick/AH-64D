@@ -79,8 +79,10 @@ private _producers = [];
     for "_i" from 0 to (_count - 1) do {
         private _m = +_c;
         _m set ["index",   _i];
-        //One variable per member, named by the aircraft: gen1On, gen2On, gen3On.
-        _m set ["varName", format ["bmkhs_%1%2", _c get "variableName", _i + 1]];
+        //Numbered only when there IS more than one - two generators publish gen1On and
+        //gen2On, a single pump publishes priHydPsi rather than priHydPsi1, which is how
+        //the cockpit already reads them.
+        _m set ["varName", format ["bmkhs_%1%2", _c get "variableName", [_i + 1, ""] select (_count <= 1)]];
         _producers pushBack _m;
     };
 
@@ -95,6 +97,10 @@ private _producers = [];
 //  startDraw       fraction of full charge one start costs
 //  drainSeconds    full to empty while discharging
 //  rechargeSeconds empty to full once its recharge circuit is up
+//  leakStartDmg    damage at which it starts leaking, 0 for never
+//  leakSeconds     full to empty at FULL damage; the rate ramps from the threshold
+//  drainedBy[]     other damage roles that vent this store - a gun or pylons sharing a
+//                  reservoir add to its damage rather than being a second mechanism
 private _storage = [];
 {
     private _c    = COMPONENT_FIELDS(_x);
@@ -108,14 +114,19 @@ private _storage = [];
     //Charge is a fraction, so a full-to-empty time converts straight to a rate.
     private _drainSecs    = getNumber (_x >> "drainSeconds");
     private _rechargeSecs = getNumber (_x >> "rechargeSeconds");
+    private _leakSecs     = getNumber (_x >> "leakSeconds");
     _c set ["drainRate",  if (_drainSecs    > 0) then {1 / _drainSecs}    else {0}];
     _c set ["rampRate",   if (_rechargeSecs > 0) then {1 / _rechargeSecs} else {0}];
+    _c set ["leakRate",   if (_leakSecs     > 0) then {1 / _leakSecs}     else {0}];
+    _c set ["leakStartDmg", getNumber (_x >> "leakStartDmg")];
+    _c set ["drainedBy",    getArray  (_x >> "drainedBy")];
 
-    private _count = if (_role == "") then {0} else {[_heli, _role] call bmkhs_fnc_damageCount};
+    //As above: no role means present but not separately damageable, not absent.
+    private _count = if (_role == "") then {1} else {[_heli, _role] call bmkhs_fnc_damageCount};
     for "_i" from 0 to (_count - 1) do {
         private _m = +_c;
         _m set ["index",   _i];
-        _m set ["varName", format ["bmkhs_%1%2", _c get "variableName", _i + 1]];
+        _m set ["varName", format ["bmkhs_%1%2", _c get "variableName", [_i + 1, ""] select (_count <= 1)]];
         _storage pushBack _m;
     };
 

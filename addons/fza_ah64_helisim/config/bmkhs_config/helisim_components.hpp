@@ -88,6 +88,30 @@
     };
 
     class Storage {
+        //Reservoirs. Storage that holds fluid rather than pressure: no output circuit and
+        //no gate, because nothing draws pressure FROM them - the pumps scale their output
+        //by what is left, so a falling level shows on the gauge as falling pressure.
+        //
+        //They only ever lose contents by leaking, which is why they declare a leak and no
+        //drain. 120 seconds from a fully destroyed reservoir to empty, ramping down from
+        //the onset threshold, so a light hit weeps and a bad one dumps.
+        class PriReservoir {
+            damageRole      = "priReservoir";
+            variableName    = "priLevel_pct";
+            nominal         = 1.0;         //published as a fraction, which is what reads it
+            leakStartDmg    = 0.50;
+            leakSeconds     = 120;
+        };
+        class UtilReservoir {
+            damageRole      = "utilReservoir";
+            variableName    = "utilLevel_pct";
+            nominal         = 1.0;
+            leakStartDmg    = 0.50;
+            leakSeconds     = 120;
+            //The gun and the pylons share the utility system, so hits on either vent it.
+            drainedBy[]     = {"gunTurret", "pylons"};
+        };
+
         //The accumulator's primary job is starting the APU: it discharges to spin it up,
         //and the APU driving the pumps is what refills it. That is the ACCUM caution
         //appearing and then clearing on a normal start.

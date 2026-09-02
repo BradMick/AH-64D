@@ -40,11 +40,28 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     private _nominal = _x get "nominal";
     private _charge  = _heli getVariable [_varName + "Charge", 1.0];
 
-    private _damaged = ([_heli, _x get "damageRole", _x get "index"] call bmkhs_fnc_damageGet)
-                            > SYS_COMP_DMG_THRESH;
+    private _damage  = [_heli, _x get "damageRole", _x get "index"] call bmkhs_fnc_damageGet;
+    //Anything else that drains this store - a gun or pylons venting a shared reservoir -
+    //adds to its damage rather than being a second mechanism. _comp, not _x: the inner
+    //forEach rebinds _x to the role name.
+    private _comp = _x;
+    {
+        _damage = _damage + ([_heli, _x] call bmkhs_fnc_damageGet);
+    } forEach (_comp get "drainedBy");
+    private _damaged = _damage > SYS_COMP_DMG_THRESH;
 
     private _gate   = _x get "gate";
     private _gateOn = _gate == "" || {_heli getVariable [_gate, false]};
+
+    //A damaged store LEAKS, whatever it holds. Separate from discharging: a holed
+    //reservoir empties whether or not anything is drawing from it, and the rate ramps
+    //from the onset threshold to full damage rather than stepping through bands.
+    private _leakStart = _x get "leakStartDmg";
+    if (_leakStart > 0 && _damage > _leakStart) then {
+        private _frac = ((_damage - _leakStart) / (1 - _leakStart)) min 1;
+        private _rate = _x get "leakRate";
+        _charge = (_charge - (_rate * _frac * _deltaTime)) max 0;
+    };
 
     //Start draw - a source that cannot spin itself up takes a slug of stored energy
     //to get going. Debited ONCE on the gate rising, latched, or it would empty the
