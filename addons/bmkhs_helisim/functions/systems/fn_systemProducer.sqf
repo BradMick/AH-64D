@@ -62,7 +62,11 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     private _supplied = _requires == ""
                      || {(_heli getVariable [_requires, 1]) > (_heli getVariable ["bmkhs_hydMinLevel", 0.1])};
 
-    private _target  = [0, _nominal] select (!_damaged && _gateOn && _driven && _supplied);
+    //A shaft passes its speed along rather than producing a fixed value - the accessory
+    //drive turns at whatever is turning it, and the pumps threshold that themselves.
+    private _out_val = if (_x get "passthrough") then {[_heli, _drivenBy] call bmkhs_fnc_systemCircuit} else {_nominal};
+
+    private _target  = [0, _out_val] select (!_damaged && _gateOn && _driven && _supplied);
     private _current = _heli getVariable [_varName, 0];
 
     //rampRate 0 means instant - a generator contactor closes, it does not spool.

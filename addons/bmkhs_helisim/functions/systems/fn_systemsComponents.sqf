@@ -40,7 +40,10 @@ params ["_heli", "_config"];
 //               hydraulics at 0.45 but not generators at 0.85
 //  requires     store that must have contents left, "" for none
 //  nominal      what it produces at full output
-//  rampRate     units per second toward its target, 0 = instant
+//  rampSeconds  how long zero to full takes, 0 = instant. Times, not rates - "one second
+//               to full pressure" is something a person can reason about
+//  passthrough  1 to output whatever drives it instead of nominal - a shaft passes its
+//               speed along, so the accessory drive turns at whatever is turning it
 #define COMPONENT_FIELDS(cfg) createHashMapFromArray [ \
     ["damageRole",   getText   (cfg >> "damageRole")], \
     ["variableName", getText   (cfg >> "variableName")], \
@@ -50,7 +53,10 @@ params ["_heli", "_config"];
     ["minDrive",     getNumber (cfg >> "minDrive")], \
     ["requires",     getText   (cfg >> "requires")], \
     ["nominal",      getNumber (cfg >> "nominal")], \
-    ["rampRate",     getNumber (cfg >> "rampRate")] \
+    ["rampRate",     if ((getNumber (cfg >> "rampSeconds")) > 0) \
+                        then {(getNumber (cfg >> "nominal")) / (getNumber (cfg >> "rampSeconds"))} \
+                        else {0}], \
+    ["passthrough",  getNumber (cfg >> "passthrough") > 0] \
 ]
 
 private _circuits = createHashMap;
@@ -62,9 +68,13 @@ private _producers = [];
     private _c    = COMPONENT_FIELDS(_x);
     private _role = _c get "damageRole";
 
-    //Member count comes from the damage role. No role, or a role nothing claims,
-    //means this aircraft does not have this component - not that it is broken.
-    private _count = if (_role == "") then {0} else {[_heli, _role] call bmkhs_fnc_damageCount};
+    //Member count comes from the damage role: the hitpoints claiming it ARE the members,
+    //so a role nothing claims means this airframe does not have the component at all.
+    //
+    //Declaring NO role is different - it means the component exists but is not separately
+    //damageable, like an accumulator with no selection of its own in the p3d. One member,
+    //and bmkhs_fnc_damageGet returns 0 for the empty role, so it simply never fails.
+    private _count = if (_role == "") then {1} else {[_heli, _role] call bmkhs_fnc_damageCount};
     for "_i" from 0 to (_count - 1) do {
         private _m = +_c;
         _m set ["index",   _i];
@@ -78,11 +88,12 @@ private _producers = [];
 
 //Storage - accumulators, batteries. A producer that holds a charge, so it can
 //supply before anything upstream is solved, and refills once something upstream is.
-//  rechargedBy circuit that refills it
-//  spentBelow  value it stops discharging at
-//  startedBy   what draws from it to start - names a COMPONENT, not a circuit
-//  startDraw   fraction of full charge one start costs
-//  drainRate   fraction per second while discharging
+//  rechargedBy     circuit that refills it
+//  spentBelow      value it stops discharging at
+//  startedBy       what draws from it to start - names a COMPONENT, not a circuit
+//  startDraw       fraction of full charge one start costs
+//  drainSeconds    full to empty while discharging
+//  rechargeSeconds empty to full once its recharge circuit is up
 private _storage = [];
 {
     private _c    = COMPONENT_FIELDS(_x);
@@ -92,7 +103,12 @@ private _storage = [];
     _c set ["spentBelow",  getNumber (_x >> "spentBelow")];
     _c set ["startedBy",   getText   (_x >> "startedBy")];
     _c set ["startDraw",   getNumber (_x >> "startDraw")];
-    _c set ["drainRate",   getNumber (_x >> "drainRate")];
+
+    //Charge is a fraction, so a full-to-empty time converts straight to a rate.
+    private _drainSecs    = getNumber (_x >> "drainSeconds");
+    private _rechargeSecs = getNumber (_x >> "rechargeSeconds");
+    _c set ["drainRate",  if (_drainSecs    > 0) then {1 / _drainSecs}    else {0}];
+    _c set ["rampRate",   if (_rechargeSecs > 0) then {1 / _rechargeSecs} else {0}];
 
     private _count = if (_role == "") then {0} else {[_heli, _role] call bmkhs_fnc_damageCount};
     for "_i" from 0 to (_count - 1) do {

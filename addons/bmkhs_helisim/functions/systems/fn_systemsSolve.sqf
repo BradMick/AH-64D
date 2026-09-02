@@ -37,6 +37,12 @@ params ["_heli", "_deltaTime"];
 //there this frame, never what they put there last frame.
 private _circuits = createHashMap;
 { _circuits set [_x, 0] } forEach (keys (_heli getVariable ["bmkhs_sysCircuits", createHashMap]));
+
+//Rotor speed comes from the flight model rather than from a component, so it is seeded
+//onto its circuit before anything reads it. Everything mechanical hangs off this: the
+//accessory drive, and through it the pumps and generators.
+_circuits set ["ROTOR", [_heli] call bmkhs_fnc_stateRtrRPM];
+
 _heli setVariable ["bmkhs_sysCircuits", _circuits];
 
 [_heli, _deltaTime] call bmkhs_fnc_systemStorage;
