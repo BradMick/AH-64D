@@ -106,9 +106,9 @@
             rechargedBy  = "ACCESSORY_DRIVE";
             gate         = "bmkhs_emerHydOn";
             startedBy    = "bmkhs_apuBtnOn";
-            startDraw       = 0.35;       //fraction of charge an APU start costs, at once
-            rechargeSeconds = 1;          //empty to full, once the pumps are turning
-            drainSeconds    = 90;         //full to empty, supplying emergency pressure
+            startDischarge  = 0.35;       //fraction of charge an APU start costs, at once
+            startRecharge   = 1;          //sec, refilled by the pumps it just started
+            emerDischarge   = 90;         //sec, full to empty supplying emergency pressure
             spentBelow      = 1650;       //psi, the floor it stops discharging at
             nominal         = 3000;
         };

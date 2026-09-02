@@ -94,9 +94,9 @@ private _producers = [];
 //  rechargedBy     circuit that refills it
 //  spentBelow      value it stops discharging at
 //  startedBy       what draws from it to start - names a COMPONENT, not a circuit
-//  startDraw       fraction of full charge one start costs
-//  drainSeconds    full to empty while discharging
-//  rechargeSeconds empty to full once its recharge circuit is up
+//  startDischarge  fraction of charge one start costs, spent at once
+//  startRecharge   seconds to refill after a start, once its recharge circuit is up
+//  emerDischarge   seconds full to empty while supplying as an emergency source
 //  leakStartDmg    damage at which it starts leaking, 0 for never
 //  leakSeconds     full to empty at FULL damage; the rate ramps from the threshold
 //  drainedBy[]     other damage roles that vent this store - a gun or pylons sharing a
@@ -109,13 +109,13 @@ private _storage = [];
     _c set ["rechargedBy", getText   (_x >> "rechargedBy")];
     _c set ["spentBelow",  getNumber (_x >> "spentBelow")];
     _c set ["startedBy",   getText   (_x >> "startedBy")];
-    _c set ["startDraw",   getNumber (_x >> "startDraw")];
+    _c set ["startDischarge", getNumber (_x >> "startDischarge")];
 
     //Charge is a fraction, so a full-to-empty time converts straight to a rate.
-    private _drainSecs    = getNumber (_x >> "drainSeconds");
-    private _rechargeSecs = getNumber (_x >> "rechargeSeconds");
+    private _drainSecs    = getNumber (_x >> "emerDischarge");
+    private _rechargeSecs = getNumber (_x >> "startRecharge");
     private _leakSecs     = getNumber (_x >> "leakSeconds");
-    _c set ["drainRate",  if (_drainSecs    > 0) then {1 / _drainSecs}    else {0}];
+    _c set ["emerRate",   if (_drainSecs    > 0) then {1 / _drainSecs}    else {0}];
     _c set ["rampRate",   if (_rechargeSecs > 0) then {1 / _rechargeSecs} else {0}];
     _c set ["leakRate",   if (_leakSecs     > 0) then {1 / _leakSecs}     else {0}];
     _c set ["leakStartDmg", getNumber (_x >> "leakStartDmg")];

@@ -73,7 +73,7 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
         private _startGate = _heli getVariable [_startedBy, false];
         if (_startGate) then {
             if !(_heli getVariable [_latchVar, false]) then {
-                _charge = (_charge - (_x get "startDraw")) max 0;
+                _charge = (_charge - (_x get "startDischarge")) max 0;
                 _heli setVariable [_latchVar, true];
             };
         } else {
@@ -90,7 +90,7 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     private _live      = !_damaged && _gateOn && _charge > _spentFrac;
 
     if (_live && _elseFeed <= 0) then {
-        private _drain = _x get "drainRate";
+        private _drain = _x get "emerRate";
         if (_drain > 0) then { _charge = (_charge - (_drain * _deltaTime)) max 0 };
     };
 
