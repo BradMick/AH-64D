@@ -476,6 +476,31 @@ limits and damage, which is the drivetrain column of the domain table earning
 its place. Rotor inertia as "storage" in that table stops being an analogy: it
 is the mechanism that keeps accessories alive when power is lost.
 
+**Autorotation already works; the APU path is what is missing.**
+`fn_transmissionUpdate` integrates `(engineTorque - rotorTorque) / J` into one
+shaft speed, `bmkhs_xmsnOutputRpm`, and that handles autorotation correctly
+through the sign of the torque terms: with the engines off `engineTorque` is
+zero, and rotor torque goes NEGATIVE in an autorotative descent as the rotor
+takes energy from the upflow, so net torque is positive and Nr sustains. The
+simple model does this explicitly via an autorotation torque table
+(`fn_simpleRotorMain`), the BET through blade-element reaction torque. No
+freewheel is needed for it, because an off engine already contributes zero
+torque rather than dragging.
+
+So Nr is trustworthy in autorotation, and hydraulics gated on Nr behave
+correctly with no drivetrain work at all.
+
+What the single shaft speed DOES prevent is the **APU** case: accessory speed
+derived from `bmkhs_xmsnOutputRpm` cannot represent the APU spinning
+accessories while the rotor stands still. `ACCESSORY_DRIVE` therefore needs its
+own value rather than being a relabelled read of transmission RPM - roughly
+`max(apuDrive, xmsnDrive)`, where the xmsn contribution is exactly today's Nr.
+
+Also absent, and worth knowing before relying on it: no accessory LOAD exists -
+nothing subtracts torque for pumps or generators, so accessories are currently
+free. And transmission damage does not affect transmission output; a destroyed
+transmission still transmits full torque.
+
 **Supply is gated on RPM, and the thresholds differ per consumer.** An
 accessory drive turning too slowly supplies nothing, and different accessories
 need different speeds - which the current code half-knows:
@@ -889,6 +914,46 @@ component counts are aircraft-declared. An aircraft with three engines needs
 three power-lever binds generated from `perMember`, so the macro has to expand
 over a count the aircraft chooses. That is the part most likely to catch us if
 the control model is bolted on afterwards rather than planned for now.
+
+## Landmines found auditing the consumers
+
+Measured, not guessed - 36 read sites outside `functions/systems/` across 10
+addons. Three things there will bite the conversion.
+
+**Only ONE file displays these as numbers.** `fn_pageENGDraw.sqf:82-91` renders
+`bmkhs_priHydPsi`, `bmkhs_utilHydPsi` and `bmkhs_accHydPsi` as 4-character
+padded PSI text, the accumulator quantised with `round(x/10)*10`. Both the pad
+width and the quantisation assume a magnitude in the thousands, so normalising
+those to 0..1 renders `0`/`1` in a 4-wide field. Everything else in the list is
+boolean or threshold logic, and the `_pct` variants are never displayed
+anywhere - they are pure internal state. `fn_inputUpdate.sqf:57,60` encodes the
+same assumption in its `3000` fallbacks.
+
+**A dormant bug that the refactor will wake up.** The model writes
+`bmkhs_utilHydPsi`; two files read `bmkhs_utilHydPSI`:
+
+    fza_ah64_controls/functions/weapon/fn_weaponTurretAim.sqf:66
+    fza_ah64_mpd/functions/page/fn_pageWPNDraw.sqf:51
+
+That variable is never written, so both comparisons run against nil and the
+utility-hydraulics half of gun failure and pylon servo failure **does nothing
+today**. The `bmkhs_utilLevel_pct` read on the line above each is correct,
+which is what hides it. Normalising the casing during the conversion switches
+that logic ON - a real behaviour change, and it belongs in its own commit with
+its own flight test rather than buried in the graph work.
+
+**Two sources of truth for the same thresholds.** External consumers compare
+against the compile-time macros `SYS_MIN_HYD_PSI` / `SYS_HYD_MIN_LVL` from
+`systems.hpp`, while the systems model and `fn_inputUpdate` compare against the
+config-driven `bmkhs_hydMinPsi` / `bmkhs_hydMinLevel`. An aircraft that sets
+different limits gets cautions that disagree with the actual failure logic.
+Since the whole point is per-aircraft declaration, the runtime values have to
+win and the macros become defaults.
+
+Two smaller ones: `XEH_preInit.sqf:10` uses `bmkhs_apuOn` as a `select` index,
+so it needs a strict boolean rather than a number; and
+`fn_engineController.sqf:120` names `bmkhs_apuRPM_pct` as a string literal,
+invisible to a symbol-based rename.
 
 ## Not yet flown
 
