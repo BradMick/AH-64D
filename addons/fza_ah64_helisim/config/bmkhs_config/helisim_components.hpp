@@ -35,10 +35,10 @@
             variableName = "xmsnDrive";
             drivenBy[]   = {"Nr"};        //any rotation; the pumps set their own floor
             rampSeconds  = 0;             //no nominal: it carries whatever Nr is doing
-            //Ratings come from xmsnTqLimits at the top level, so they apply with or
-            //without modelled systems. Summed, since it carries both engines.
+            //Summed, since it carries both engines.
             torqueFrom   = "bmkhs_engPctTQ";
             torqueSum    = 1;
+            tqLimits[]   = {{2.30, 6}, {2.00, 150}};   //transient, continuous
             class Outputs {
                 class Accessories { circuit = "ACCESSORY_DRIVE"; };
                 class TailDrive   { circuit = "TAIL_DRIVE"; };
@@ -92,8 +92,10 @@
             damageRole   = "noseGearboxes";   //two hitpoints -> noseGearbox1, 2
             variableName = "noseGearbox";
             input[]      = {"Nr"};
-            //Ratings come from ngbTqLimits at the top level.
             torqueFrom      = "bmkhs_engPctTQ";  //per member, so engine 2 feeds gearbox 2
+            //Single-engine ratings: a nose gearbox only carries enough to hurt it when
+            //one engine is doing the work of two.
+            tqLimitsSE[]    = {{1.25, 0}, {1.22, 6}, {1.10, 150}};
             breaksOnFailure = "bmkhs_engineOverspeed";
         };
         //The tail chain. Either gearbox failing takes the tail rotor with it, because

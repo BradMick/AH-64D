@@ -6,8 +6,9 @@ class BMKHS_HeliSim {
     //Off means vanilla behaviour and Core's optional-input defaults.
     useSystems = 1;
 
-    //Drivetrain ratings, worst first: {fraction of rated torque, seconds it will hold
-    //there}. 0 seconds damages immediately. SE sets are used single-engine.
+    //Drivetrain ratings for useSystems = 0 ONLY - with systems on, the components carry
+    //their own. Worst first: {fraction of rated torque, seconds it will hold there}.
+    //0 seconds damages immediately. SE sets are used single-engine.
     //Transmission sees BOTH engines combined, so 2.30 is the pair at full output and it
     //has no single-engine case - one engine can never overtorque it.
     xmsnTqLimits[]   = {{2.30, 0}, {2.00, 6}};

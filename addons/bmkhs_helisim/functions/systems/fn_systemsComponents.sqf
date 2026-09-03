@@ -198,12 +198,17 @@ private _consumers = [];
 
 //Anything with torque limits, gathered from every kind - a gearbox is a converter and
 //the transmission is a producer, but both are rated for a torque.
-private _torqued = (_producers + _converters + _storage) select {(count (_x get "tqLimits")) > 0};
+//Either set counts - a component rated only for the single-engine case declares just
+//tqLimitsSE, which is a nose gearbox: it carries enough to hurt it only when one engine
+//is doing the work of two.
+private _torqued = (_producers + _converters + _storage)
+                        select {(count (_x get "tqLimits")) > 0 || {(count (_x get "tqLimitsSE")) > 0}};
 
 //An airframe that models no systems still has a drivetrain, and it does not get to ignore
-//what that is rated for. The limits sit at the top level for exactly that case, so Core
-//builds the drive components from them when nothing else declared any.
-if (_torqued isEqualTo []) then {
+//what that is rated for. The top-level limits are for THAT CASE ONLY - with systems on, a
+//component carries its own ratings and these are not read at all.
+if !(_heli getVariable ["bmkhs_useSystems", false]) then {
+    _torqued = [];
     {
         _x params ["_role", "_torqueVar", "_sums", "_limits", "_limitsSE", "_breaks"];
         private _count = [_heli, _role] call bmkhs_fnc_damageCount;
