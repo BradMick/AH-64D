@@ -19,7 +19,10 @@ Author:
 params ["_heli"];
 
 if (CBA_missionTime < 0.1) exitWith {};
-private _deltaTime = ["systems_deltaTime"] call BIS_fnc_deltaTime;
+//Per aircraft. BIS_fnc_deltaTime keys on a STRING, so a shared key gives the first
+//aircraft the whole frame and every other one nearly zero - with more than one Apache
+//in the mission, nothing after the first would integrate at all.
+private _deltaTime = _heli getVariable ["bmkhs_deltaTime", 0];
 
 //The component graph - whatever this airframe declared. Hydraulics live here now,
 //as producers and storage rather than as functions Core wrote for them.

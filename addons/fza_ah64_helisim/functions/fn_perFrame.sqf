@@ -12,9 +12,10 @@ Returns:
 ---------------------------------------------------------------------------- */
 params ["_heli"];
 
-//Systems first - the flight model reads the hydraulic pressure the solve produces.
-[_heli] call bmkhs_fnc_systemsUpdate;
+//coreUpdate computes this frame's delta, so it goes first - the systems solve integrates
+//against the same per-aircraft value rather than a shared one.
 [_heli] call bmkhs_fnc_coreUpdate;
+[_heli] call bmkhs_fnc_systemsUpdate;
 [_heli] call bmkhs_fnc_coreUpdateFlightModel;
 
 //Cockpit control visualisation, which reads what the above just published.
