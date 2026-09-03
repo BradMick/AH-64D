@@ -72,10 +72,12 @@ private _dirtyCircuit = {
 };
 
 {
-    private _now = _heli getVariable [_x, false];
-    if !(_now isEqualTo (_watched getOrDefault [_x, "unset"])) then {
-        _watched set [_x, _now];
-        { [_x] call _wake } forEach (_watchers get _x);
+    //_v, not _x: the inner forEach rebinds it.
+    private _v    = _x;
+    private _now  = _heli getVariable [_v, false];
+    if !(_now isEqualTo (_watched getOrDefault [_v, "unset"])) then {
+        _watched set [_v, _now];
+        { [_x] call _wake } forEach (_watchers getOrDefault [_v, []]);
     };
 } forEach (keys _watchers);
 _heli setVariable ["bmkhs_sysWatchedLast", _watched];
@@ -109,8 +111,10 @@ if (([_heli, "Nr", "rotor", _nr, true] call bmkhs_fnc_systemCircuitFeed)) then {
 //Storage is a root: what it delivers was put there earlier, so it supplies before
 //anything has been solved. That is what breaks the start cycle.
 {
-    if (([_heli, _forEachIndex, _deltaTime, false] call bmkhs_fnc_systemStorage)) then {
-        { [_x] call _dirtyCircuit } forEach (_feedsOf getOrDefault ["storage" + str _forEachIndex, []]);
+    //Taken before the inner forEach rebinds _forEachIndex.
+    private _i = _forEachIndex;
+    if (([_heli, _i, _deltaTime, false] call bmkhs_fnc_systemStorage)) then {
+        { [_x] call _dirtyCircuit } forEach (_feedsOf getOrDefault ["storage" + str _i, []]);
     };
 } forEach _storage;
 

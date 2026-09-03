@@ -257,9 +257,12 @@ _heli setVariable ["bmkhs_sysCircuits",  _circuits];
 private _readers  = createHashMap;
 private _watchers = createHashMap;
 
+//A field a kind does not have reads back nil, not "" - storage has no input, a producer
+//has no rechargedBy - so anything that is not a real name is dropped here rather than
+//becoming a nil key the walk would choke on.
 private _addEdge = {
     params ["_map", "_key", "_ref"];
-    if (_key == "") exitWith {};
+    if (isNil "_key" || {!(_key isEqualType "")} || {_key == ""}) exitWith {};
     private _list = _map getOrDefault [_key, []];
     if !(_ref in _list) then {
         _list pushBack _ref;
@@ -282,16 +285,18 @@ private _addGates = {
 {
     _x params ["_list", "_kind"];
     {
+        //_c, not _x: the outputs forEach below rebinds it.
+        private _c   = _x;
         private _ref = [_kind, _forEachIndex];
-        [_x, _ref] call _addGates;
+        [_c, _ref] call _addGates;
         //What turns it, what it draws from, and the consumable it needs.
-        [_readers,  _x get "drivenBy",    _ref] call _addEdge;
-        [_readers,  _x get "input",       _ref] call _addEdge;
-        [_watchers, _x get "requires",    _ref] call _addEdge;
-        [_readers,  _x get "rechargedBy", _ref] call _addEdge;
-        [_watchers, _x get "startedBy",   _ref] call _addEdge;
+        [_readers,  _c get "drivenBy",    _ref] call _addEdge;
+        [_readers,  _c get "input",       _ref] call _addEdge;
+        [_watchers, _c get "requires",    _ref] call _addEdge;
+        [_readers,  _c get "rechargedBy", _ref] call _addEdge;
+        [_watchers, _c get "startedBy",   _ref] call _addEdge;
         //A clutch drops an output out, so the circuit it watches wakes the component.
-        { [_readers, _x get "disengageOn", _ref] call _addEdge } forEach (_x get "outputs");
+        { [_readers, _x get "disengageOn", _ref] call _addEdge } forEach (_c get "outputs");
     } forEach _list;
 } forEach [
     [_producers,  "producer"],
@@ -308,10 +313,13 @@ private _feedsOf = createHashMap;
 {
     _x params ["_list", "_kind"];
     {
+        //_c and _i taken before the inner forEach rebinds _x and _forEachIndex.
+        private _c    = _x;
+        private _i    = _forEachIndex;
         private _outs = [];
         { if ((_x get "circuit") != "") then { _outs pushBackUnique (_x get "circuit") } }
-            forEach (_x get "outputs");
-        _feedsOf set [_kind + str _forEachIndex, _outs];
+            forEach (_c get "outputs");
+        _feedsOf set [_kind + str _i, _outs];
     } forEach _list;
 } forEach [
     [_producers,  "producer"],
