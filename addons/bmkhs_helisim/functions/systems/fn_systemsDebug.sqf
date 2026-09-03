@@ -71,14 +71,19 @@ private _feeds = _heli getVariable ["bmkhs_sysFeeds", createHashMap];
             private _comp = _x;
             private _v    = _comp get "varName";
 
-            private _gOk = true;
+            private _gOk  = true;
+            private _shut = "";
             {
                 private _r = if (_x isEqualType []) then {
                     ([_heli, _x select 0] call bmkhs_fnc_systemCircuit) >= (_x select 1)
                 } else {
                     _heli getVariable [_x, false]
                 };
-                if (!_r) exitWith { _gOk = false };
+                if (!_r) then {
+                    _gOk = false;
+                    private _n = if (_x isEqualType []) then {_x select 0} else {_x select [6]};
+                    _shut = _shut + _n + " ";
+                };
             } forEach (_comp get "gates");
 
             private _drv = _comp get "drivenBy";
@@ -100,6 +105,10 @@ private _feeds = _heli getVariable ["bmkhs_sysFeeds", createHashMap];
                 [_fOk, "F", "f"] call _flag,
                 [_hOk, "H", "h"] call _flag,
                 ["", " *"] select (parseNumber (_heli getVariable [_v + "Awake", true]))];
+            //Name the gates that are shut, so the blocker is on screen.
+            if (_shut != "") then {
+                _txt = _txt + format ["   <t color='#ff7070'>shut: %1</t><br/>", _shut];
+            };
         } forEach _list;
     };
 } forEach [
