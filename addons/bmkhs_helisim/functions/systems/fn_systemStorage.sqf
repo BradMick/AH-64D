@@ -104,11 +104,11 @@ private _charge  = _heli getVariable [_varName + "Charge", 1.0];
     {
         private _c = _x get "circuit";
         if (_c != "") then {
-            //Read live - contributions update as components run, so a captured copy of
-            //the node map goes stale within the pass.
-            private _feed = if (_settle) then {_heli getVariable ["bmkhs_sysProducerFeed_" + _c, 0]}
-                                         else {[_heli, _c] call bmkhs_fnc_systemCircuit};
-            _elseFeed = _elseFeed max _feed;
+            //The PRODUCER-only total, never the node total. Contributions persist between
+            //frames now, so a store reading the whole node reads its own supply back as
+            //somebody else's and shuts itself off - which is a store that can never be the
+            //thing holding a circuit up.
+            _elseFeed = _elseFeed max (_heli getVariable ["bmkhs_sysProducerFeed_" + _c, 0]);
         };
     } forEach _outputs;
 
