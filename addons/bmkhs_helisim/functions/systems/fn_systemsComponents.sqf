@@ -49,7 +49,8 @@ params ["_heli", "_config"];
     ["torqueFrom",   getText   (cfg >> "torqueFrom")], \
     ["tqLimits",     getArray  (cfg >> "tqLimits")], \
     ["breaksVar",    getText   (cfg >> "breaksOnFailure")], \
-    ["tqLimitsSE",   getArray  (cfg >> "tqLimitsSE")] \
+    ["tqLimitsSE",   getArray  (cfg >> "tqLimitsSE")], \
+    ["torqueSum",    getNumber (cfg >> "torqueSum") > 0] \
 ]
 
 private _circuits = createHashMap;

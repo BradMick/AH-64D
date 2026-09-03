@@ -53,7 +53,18 @@ if (_torqued isEqualTo []) exitWith {};
     private _tq    = 0;
     if (_tqVar != "") then {
         private _val = _heli getVariable [_tqVar, 0];
-        _tq = if (_val isEqualType []) then {_val param [_index, 0]} else {_val};
+        //Summed where the component carries the lot - a transmission takes both engines'
+        //output, while a nose gearbox takes only its own engine's.
+        private _sums = _comp get "torqueSum";
+        _tq = if !(_val isEqualType []) then {_val} else {
+            if (_sums) then {
+                private _total = 0;
+                { _total = _total + _x } forEach _val;
+                _total
+            } else {
+                _val param [_index, 0]
+            };
+        };
     };
 
     private _damage = [_heli, _role, _index] call bmkhs_fnc_damageGet;

@@ -36,8 +36,9 @@
             drivenBy[]   = {"Nr"};        //any rotation; the pumps set their own floor
             rampSeconds  = 0;             //no nominal: it carries whatever Nr is doing
             //Ratings come from xmsnTqLimits at the top level, so they apply with or
-            //without modelled systems.
+            //without modelled systems. Summed, since it carries both engines.
             torqueFrom   = "bmkhs_engPctTQ";
+            torqueSum    = 1;
             class Outputs {
                 class Accessories { circuit = "ACCESSORY_DRIVE"; };
                 class TailDrive   { circuit = "TAIL_DRIVE"; };
