@@ -491,6 +491,13 @@ if ((!_dcBusOn || _heli getHitPointDamage "hit_msnEquip_irJam" >= SYS_ASE_DMG_TH
 // ADVISORIES       /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 
+//First in the stack: on an APU start this is what the crew is waiting on, so it should not
+//be below the door and waypoint advisories. <= because a spent accumulator sits AT the
+//precharge, which is not usable pressure.
+if (_accHydPSI <= SYS_MIN_ACC_PSI) then {
+    _wcas pushBack [WCA_ADVISORY, "ACCUM OIL PRES LO", "ACCUM PSI"];
+};
+
 if  (_heli getVariable "fza_mpd_verMisMatch") then {
     _wcas pushBack [WCA_ADVISORY, "VERSION MISMATCH", "VERS MISM"];
 };
@@ -583,11 +590,5 @@ if (!("tsd" in _pltMpd || "tsd" in _cpgMpd) && _wptPassed) then {
 };
 if (_heli getVariable ["bmkhs_checkPendingAdvisory", false]) then {
     _wcas pushBack [WCA_ADVISORY, "FUEL CHECK", "FUEL CHECK"];
-};
-//Shows while the accumulator is discharged - appears on an APU start as the store gives
-//up its fluid, and clears once the pumps have refilled it.
-//<= because a spent accumulator sits AT the precharge, which is not usable pressure.
-if (_accHydPSI <= SYS_MIN_ACC_PSI) then {
-    _wcas pushBack [WCA_ADVISORY, "ACCUM OIL PRES LO", "ACCUM PSI"];
 };
 _wcas;
