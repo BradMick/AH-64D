@@ -29,6 +29,17 @@ bmkhs_notifyHandler = {
     };
 };
 
+//Every airframe any installed pack drives. A pack declares bmkhsBaseClass in its own
+//CfgPatches entry and touches no SQF - and two packs both get scheduled, rather than
+//whichever loaded first winning.
+bmkhs_packBaseClasses = [];
+{
+    private _cls = getText (_x >> "bmkhsBaseClass");
+    if (_cls != "" && {!(_cls in bmkhs_packBaseClasses)}) then {
+        bmkhs_packBaseClasses pushBack _cls;
+    };
+} forEach ("isClass _x" configClasses (configFile >> "CfgPatches"));
+
 //The pack drives Core. Nothing else calls into HeliSim, so a second airframe ships its
 //own copy of this and needs no cockpit addon to schedule anything for it.
 //
@@ -37,8 +48,12 @@ bmkhs_notifyHandler = {
 //guards on locality itself so multiplayer stays correct.
 fza_ah64_helisim_frameHandler = addMissionEventHandler ["EachFrame", {
     {
-        if (alive _x && {_x getVariable ["fza_ah64_aircraftInitialised", false]}) then {
+        //Core's own init flag, not a cockpit addon's - the pack should not need one.
+        if (alive _x && {_x getVariable ["bmkhs_initialised", false]}) then {
             [_x] call fza_ah64_helisim_fnc_perFrame;
         };
-    } forEach (vehicles select {local _x && {_x isKindOf "fza_ah64base"}});
+    } forEach (vehicles select {
+        private _veh = _x;
+        local _veh && {bmkhs_packBaseClasses findIf {_veh isKindOf _x} > -1}
+    });
 }];
