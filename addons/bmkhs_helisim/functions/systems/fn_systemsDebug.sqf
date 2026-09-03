@@ -109,6 +109,12 @@ private _feeds = _heli getVariable ["bmkhs_sysFeeds", createHashMap];
             if (_shut != "") then {
                 _txt = _txt + format ["   <t color='#ff7070'>shut: %1</t><br/>", _shut];
             };
+            //Target vs output, which is what the ramp and the awake flag work from.
+            if (_label == "PRODUCERS") then {
+                _txt = _txt + format ["   tgt %1  ramp %2<br/>",
+                    [_heli getVariable [_v + "Tgt", -1]] call _fmt,
+                    _comp get "rampRate"];
+            };
         } forEach _list;
     };
 } forEach [

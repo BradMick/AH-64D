@@ -126,6 +126,7 @@ if (_producers isEqualTo []) exitWith {};
 
     //Awake while still moving toward the target. Once it IS the target, nothing changes
     //again until an input does, and the signature above is what notices.
+    _heli setVariable [_varName + "Tgt", _target];
     _heli setVariable [_varName + "Awake", _out != _target];
 
     if (_x get "networked") then {
