@@ -2,16 +2,23 @@
 Function: bmkhs_fnc_systemsDebug
 
 Description:
-    Shows what the component graph is doing - every circuit's value, every
-    component's output, and whether it is awake or asleep.
+    Shows what the component graph is doing - circuits, components, and why a
+    component is or is not producing.
 
     Turn it on in CBA settings - Addon Options, "Enable Systems Debugging",
     beside the FM one. It takes over the hint while up, so the flight model's
     panel is suppressed rather than the two overwriting each other.
 
-    A component reading SLEEP is not being solved, because nothing it depends
-    on changed. If something is stuck, look there first: asleep when it should
-    be running means its input signature is missing whatever actually changed.
+    Reading it: a component shows its output, then a flag per condition.
+    Lowercase and red means that condition is what is holding it shut.
+
+        G/g  gates    every crew switch and gated circuit
+        D/d  drive    whatever turns it, above its own threshold
+        F/f  fluid    what it draws from, above empty
+        H/h  health   below its damage threshold
+        *    awake    still moving toward its target
+
+    So "GDFH *" is running and settling, and "GdFH" has lost its drive.
 
 Parameters:
     _heli - The helicopter [Object]
@@ -26,47 +33,73 @@ params ["_heli"];
 
 if !(bmkhs_sysDebug) exitWith {};
 
-private _txt = "== CIRCUITS ==<br/>";
+//Values read better rounded - 7.4257e-07 is noise, not information.
+private _fmt = {
+    params ["_n"];
+    if (!(_n isEqualType 0)) exitWith {str _n};
+    if (abs _n < 0.001) exitWith {"0"};
+    if (abs _n >= 100)  exitWith {str round _n};
+    _n toFixed 2
+};
+private _flag = {
+    params ["_ok", "_yes", "_no"];
+    if (_ok) then {_yes} else {format ["<t color='#ff7070'>%1</t>", _no]}
+};
+
+private _txt = "<t size='0.75'><t color='#88ccff'>CIRCUITS</t><br/>";
 
 private _feeds = _heli getVariable ["bmkhs_sysFeeds", createHashMap];
 {
-    private _node    = _feeds getOrDefault [_x, createHashMap];
-    private _circuit = _x;
-    private _sources = "";
+    private _c    = _x;
+    private _node = _feeds getOrDefault [_c, createHashMap];
+    private _from = "";
     {
-        private _v = _node get _x;
-        if (_v > 0) then { _sources = _sources + format ["%1 ", _x] };
+        if ((_node get _x) > 0.001) then { _from = _from + (_x select [6]) + " " };
     } forEach (keys _node);
-    _txt = _txt + format ["%1 = %2  [%3]<br/>",
-        _circuit,
-        ([_heli, _circuit] call bmkhs_fnc_systemCircuit) toFixed 2,
-        _sources];
+
+    _txt = _txt + format ["%1 = %2   %3<br/>",
+        _c,
+        [[_heli, _c] call bmkhs_fnc_systemCircuit] call _fmt,
+        _from];
 } forEach (keys (_heli getVariable ["bmkhs_sysCircuits", createHashMap]));
 
-//Components. Awake or asleep is the thing to look at when something is stuck.
 {
     _x params ["_list", "_label"];
     if !(_list isEqualTo []) then {
-        _txt = _txt + format ["<br/>== %1 ==<br/>", _label];
+        _txt = _txt + format ["<br/><t color='#88ccff'>%1</t><br/>", _label];
         {
-            private _v = _x get "varName";
-            _txt = _txt + format ["%1 = %2  %3<br/>",
-                _v,
-                _heli getVariable [_v, 0],
-                ["SLEEP", "awake"] select (parseNumber (_heli getVariable [_v + "Awake", true]))];
-            //Which gate is holding it shut, if any.
             private _comp = _x;
-            private _gs = "";
+            private _v    = _comp get "varName";
+
+            private _gOk = true;
             {
-                private _n = if (_x isEqualType []) then {_x select 0} else {_x};
                 private _r = if (_x isEqualType []) then {
                     ([_heli, _x select 0] call bmkhs_fnc_systemCircuit) >= (_x select 1)
                 } else {
                     _heli getVariable [_x, false]
                 };
-                _gs = _gs + format ["%1=%2 ", _n, _r];
+                if (!_r) exitWith { _gOk = false };
             } forEach (_comp get "gates");
-            if (_gs != "") then { _txt = _txt + format ["   gates: %1<br/>", _gs] };
+
+            private _drv = _comp get "drivenBy";
+            private _dOk = _drv == ""
+                        || {([_heli, _drv] call bmkhs_fnc_systemCircuit) > (_comp get "minDrive")};
+
+            private _req = _comp get "requires";
+            private _fOk = _req == ""
+                        || {(_heli getVariable [_req, 1]) > (_comp get "requiresAbove")};
+
+            private _hOk = ([_heli, _comp get "damageRole", _comp get "index"]
+                                call bmkhs_fnc_damageGet) <= 0.85;
+
+            _txt = _txt + format ["%1 = %2   %3%4%5%6%7<br/>",
+                _v select [6],
+                [_heli getVariable [_v, 0]] call _fmt,
+                [_gOk, "G", "g"] call _flag,
+                [_dOk, "D", "d"] call _flag,
+                [_fOk, "F", "f"] call _flag,
+                [_hOk, "H", "h"] call _flag,
+                ["", " *"] select (parseNumber (_heli getVariable [_v + "Awake", true]))];
         } forEach _list;
     };
 } forEach [
@@ -75,12 +108,16 @@ private _feeds = _heli getVariable ["bmkhs_sysFeeds", createHashMap];
     [_heli getVariable ["bmkhs_sysStorage",    []], "STORAGE"]
 ];
 
-//What the aircraft reads back out.
-_txt = _txt + "<br/>== PUBLISHED ==<br/>";
+_txt = _txt + "<br/><t color='#88ccff'>PUBLISHED</t><br/>";
 {
-    _txt = _txt + format ["%1 = %2<br/>", _x, _heli getVariable [_x, "nil"]];
-} forEach ["bmkhs_apuBtnOn", "bmkhs_apuOn", "bmkhs_apuRPM_pct", "bmkhs_accHydPsiStartOk",
-           "bmkhs_battSwitchOn", "bmkhs_battBusOn", "bmkhs_acBusOn", "bmkhs_dcBusOn",
-           "bmkhs_pneuAvail", "bmkhs_accHydPsi", "bmkhs_priHydPsi", "bmkhs_utilHydPsi"];
+    {
+        _txt = _txt + format ["%1 %2   ", _x select [6], _heli getVariable [_x, "nil"]];
+    } forEach _x;
+    _txt = _txt + "<br/>";
+} forEach [
+    ["bmkhs_apuBtnOn", "bmkhs_apuOn", "bmkhs_pneuAvail"],
+    ["bmkhs_battSwitchOn", "bmkhs_battBusOn", "bmkhs_acBusOn", "bmkhs_dcBusOn"],
+    ["bmkhs_accHydPsiStartOk"]
+];
 
-hintSilent parseText _txt;
+hintSilent parseText (_txt + "</t>");
