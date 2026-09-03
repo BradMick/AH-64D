@@ -38,10 +38,7 @@ private _circuits   = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     private _damaged = ([_heli, _x get "damageRole", _x get "index"] call bmkhs_fnc_damageGet)
                             > SYS_COMP_DMG_THRESH;
 
-    //A gate is a switch variable, or a {circuit, threshold} pair read live. The variable
-    //form is a frame stale for anything the solve itself publishes, which deadlocks a
-    //start: the APU gates on the battery bus, and that is published after producers run.
-    //_comp, not _x - the inner forEach rebinds it.
+    //A variable name, or {circuit, threshold} read live.
     private _gateOn = true;
     {
         private _ok = if (_x isEqualType []) then {
