@@ -109,11 +109,18 @@ private _feeds = _heli getVariable ["bmkhs_sysFeeds", createHashMap];
             if (_shut != "") then {
                 _txt = _txt + format ["   <t color='#ff7070'>shut: %1</t><br/>", _shut];
             };
-            //Target vs output, which is what the ramp and the awake flag work from.
+            //What the component itself computed last time it ran, rather than this
+            //function re-deriving the same terms and disagreeing with it.
             if (_label == "PRODUCERS") then {
-                _txt = _txt + format ["   tgt %1  ramp %2<br/>",
+                (_heli getVariable [_v + "Why", [0,0,0,0,0,0]])
+                    params ["_wDmg", "_wGate", "_wDrv", "_wSup", "_wVal", "_wDt"];
+                _txt = _txt + format ["   tgt %1 ramp %2 %3<br/>",
                     [_heli getVariable [_v + "Tgt", -1]] call _fmt,
-                    _comp get "rampRate"];
+                    _comp get "rampRate",
+                    ["", "SLEPT"] select (parseNumber (_heli getVariable [_v + "Slept", false]))];
+                _txt = _txt + format ["   dmg %1 gate %2 drv %3 sup %4 val %5 dt %6<br/>",
+                    _wDmg, _wGate, _wDrv,
+                    [_wSup] call _fmt, [_wVal] call _fmt, _wDt toFixed 4];
             };
         } forEach _list;
     };

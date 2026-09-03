@@ -56,8 +56,10 @@ if (_producers isEqualTo []) exitWith {};
         _sig pushBack ([_heli, _drvC] call bmkhs_fnc_systemCircuit);
     };
 
-    if (!(_heli getVariable [_varName + "Awake", true])
-        && {_sig isEqualTo (_heli getVariable [_varName + "Sig", []])}) then {
+    private _slept = !(_heli getVariable [_varName + "Awake", true])
+                  && {_sig isEqualTo (_heli getVariable [_varName + "Sig", []])};
+    _heli setVariable [_varName + "Slept", _slept];
+    if (_slept) then {
         {
             if ((_x get "circuit") != "") then {
                 [_heli, _x get "circuit", _varName,
@@ -109,6 +111,9 @@ if (_producers isEqualTo []) exitWith {};
 
     private _target  = ([0, _out_val] select (!_damaged && _gateOn && _driven)) * _supply;
     private _current = _heli getVariable [_varName, 0];
+
+    //What the producer itself saw, rather than the debug re-deriving it separately.
+    _heli setVariable [_varName + "Why", [_damaged, _gateOn, _driven, _supply, _out_val, _deltaTime]];
 
     //Nothing left to move means no pressure at once - a destroyed reservoir does not
     //bleed its pump down gently.
