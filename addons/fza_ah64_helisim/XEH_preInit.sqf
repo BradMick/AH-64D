@@ -28,3 +28,17 @@ bmkhs_notifyHandler = {
         };
     };
 };
+
+//The pack drives Core. Nothing else calls into HeliSim, so a second airframe ships its
+//own copy of this and needs no cockpit addon to schedule anything for it.
+//
+//Every LOCAL aircraft of this type, not just the one the player is sitting in - an AI
+//Apache burns fuel and overtorques its gearboxes the same as a crewed one, and the solve
+//guards on locality itself so multiplayer stays correct.
+fza_ah64_helisim_frameHandler = addMissionEventHandler ["EachFrame", {
+    {
+        if (alive _x && {_x getVariable ["fza_ah64_aircraftInitialised", false]}) then {
+            [_x] call fza_ah64_helisim_fnc_perFrame;
+        };
+    } forEach (vehicles select {local _x && {_x isKindOf "fza_ah64base"}});
+}];
