@@ -81,10 +81,27 @@ generators because one is destroyed. That was the bug that started this.
 
 ## What is left
 
-**Multiplayer with a CPG.** Never exercised, in any domain, and the only
-untested path left. The gunner is a genuine remote reader of everything a crew
-station displays, so anything missing `networked = 1` is frozen for them while
-singleplayer looks perfect.
+**Multiplayer with a CPG.** Never exercised, in any domain. The gunner is a
+genuine remote reader of everything a crew station displays, so anything missing
+`networked = 1` is frozen for them while singleplayer looks perfect.
+
+**Repair, now event-driven.** A `HandleDamage` handler in `fn_coreInit` flags a
+repair when a hitpoint goes down, and `fn_repair` exits unless it sees that flag.
+Worth confirming a repaired component gets its state back, and that ordinary
+damage still applies - the handler sits in the damage path for everything.
+
+**Overtorque with no drivetrain declared.** The top-level ratings damage
+`hithrotor` and `hitvrotor` directly, since no role claims them. Never flown.
+
+**Everything now runs from the pack.** `fn_perFrame` calls systemsUpdate,
+coreUpdate, coreUpdateFlightModel, ctrlVisUpdate and repair. Four of those moved
+out of `fza_ah64_controls`, and `ctrlVisUpdate` moved from a Draw3D context to
+per-frame.
+
+**What still is not standalone:** the scheduler that calls `fn_perFrame` lives in
+`fza_ah64_controls` and is gated on `vehicle player` and
+`isKindOf "fza_ah64base"`. So a second airframe needs its own, and AI or
+unoccupied aircraft run no systems at all.
 
 **`breaksOnFailure` has one user.** A nose gearbox overspeeding its engine is
 the only damage propagation declared, so the shape is unproven - worth a second
