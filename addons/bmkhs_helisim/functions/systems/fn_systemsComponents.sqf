@@ -48,7 +48,9 @@ params ["_heli", "_config"];
     ["stateAbove",   getNumber (cfg >> "stateAbove")], \
     ["torqueFrom",   getText   (cfg >> "torqueFrom")], \
     ["tqLimits",     getArray  (cfg >> "tqLimits")], \
-    ["breaksVar",    getText   (cfg >> "breaksOnFailure")], \
+    ["breaksVar",    if (isArray (cfg >> "breaksOnFailure")) \
+                        then {getArray (cfg >> "breaksOnFailure")} \
+                        else {[getText (cfg >> "breaksOnFailure")] select {_x != ""}}], \
     ["tqLimitsSE",   getArray  (cfg >> "tqLimitsSE")], \
     ["torqueSum",    getNumber (cfg >> "torqueSum") > 0], \
     ["damages",      getArray  (cfg >> "damagesHitpoints")] \
@@ -234,11 +236,11 @@ if !(_heli getVariable ["bmkhs_useSystems", false]) then {
         //The transmission carries both engines summed, and has no single-engine case -
         //one engine can never overtorque what is rated for two.
         ["transmission",  "bmkhs_engPctTQ", true,  getArray (_config >> "xmsnTqLimits"),
-                          [], ""],
+                          [], []],
         //A nose gearbox carries its own engine, which makes it the limiting part when one
         //is doing the work of two.
         ["noseGearboxes", "bmkhs_engPctTQ", false, getArray (_config >> "ngbTqLimits"),
-                          getArray (_config >> "ngbTqLimitsSE"), "bmkhs_engineOverspeed"]
+                          getArray (_config >> "ngbTqLimitsSE"), ["bmkhs_engineOverspeed"]]
     ];
     //Only the ones the aircraft actually gave limits for.
     _torqued = _torqued select {(count (_x get "tqLimits")) > 0 || {(count (_x get "tqLimitsSE")) > 0}};

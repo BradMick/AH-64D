@@ -39,7 +39,13 @@
             torqueFrom   = "bmkhs_engPctTQ";
             torqueSum    = 1;
             //Over 230% (115 each engine) damages at once; 202 to 230 takes six seconds.
-            tqLimits[]   = {{2.30, 0}, {2.02, 6}};
+            //Combined, so 100% each engine is 2.00. Worst first: {torque, grace seconds,
+            //divisor}. Up to 200% is continuous, 200 to 230 gives six seconds, above 230
+            //damages at once. The divisor sets how fast, and the tiers stack.
+            tqLimits[]   = {{2.30, 0, 20}, {2.00, 6, 10}};
+            //What it takes with it: the transmission is what holds the rotors, the
+            //generators and the pumps up.
+            breaksOnFailure[] = {"mainRotor", "tailRotor", "generators", "priPump", "utilPump"};
             class Outputs {
                 class Accessories { circuit = "ACCESSORY_DRIVE"; };
                 class TailDrive   { circuit = "TAIL_DRIVE"; };
@@ -96,8 +102,9 @@
             torqueFrom      = "bmkhs_engPctTQ";  //per member, so engine 2 feeds gearbox 2
             //Single-engine ratings: a nose gearbox only carries enough to hurt it when
             //one engine is doing the work of two.
-            tqLimitsSE[]    = {{1.25, 0}, {1.22, 6}, {1.10, 150}};
-            breaksOnFailure = "bmkhs_engineOverspeed";
+            tqLimitsSE[]    = {{1.25, 0, 40}, {1.22, 6, 20}, {1.10, 150, 10}};
+            //A gearbox that has come apart overspeeds the engine driving it.
+            breaksOnFailure[] = {"bmkhs_engineOverspeed"};
         };
         //The tail chain. Either gearbox failing takes the tail rotor with it, because
         //nothing downstream of it turns.

@@ -79,39 +79,59 @@ if (_torqued isEqualTo []) exitWith {};
     };
     private _accrue = 0;
 
+    //Nothing accrues with the engines off - an unpowered drivetrain is not overtorqued.
+    private _running = isEngineOn _heli;
 
-    //Worst limit first, so the harshest one that applies is the one that counts.
+    //One clock per tier, running only while the torque is IN that tier and reset the moment
+    //it leaves. Time spent higher up does not count toward a lower tier's grace, and a
+    //brief excursion is not cumulative. Any tier whose clock has expired arms the damage.
+    private _armed = false;
     {
         _x params ["_limit", "_seconds"];
-        if (_tq > _limit) exitWith {
+        //Worst first, so a tier's ceiling is the limit above it; the top tier has none.
+        private _ceiling = if (_forEachIndex == 0) then {1e10}
+                                             else {(_limits select (_forEachIndex - 1)) select 0};
+        private _timerVar = format ["bmkhs_tqTimer_%1%2_%3", _role, _index, _forEachIndex];
+
+        if (_running && {_tq > _limit} && {_tq <= _ceiling}) then {
             if (_seconds <= 0) then {
-                //No grace at all above this.
-                _accrue = DMG_PER_SEC;
+                _armed = true;                     //no grace at all above this
             } else {
-                private _timerVar = format ["bmkhs_tqTimer_%1%2_%3", _role, _index, _forEachIndex];
                 private _held = (_heli getVariable [_timerVar, 0]) + _deltaTime;
+                if (_held >= _seconds) then {
+                    _held  = _seconds;
+                    _armed = true;
+                };
                 _heli setVariable [_timerVar, _held];
-                if (_held >= _seconds) then { _accrue = DMG_PER_SEC };
             };
+        } else {
+            _heli setVariable [_timerVar, 0];
         };
     } forEach _limits;
 
-    //Below every limit, the clocks reset - a brief overtorque is not cumulative.
-    if (_accrue <= 0) then {
+    //Rate scales with HOW FAR past each limit it is, and the tiers stack - pulled harder,
+    //it comes apart faster. Each tier declares its own divisor; the deeper ones bite less
+    //per unit because they are already being counted by the tiers beneath them.
+    if (_armed) then {
         {
-            _heli setVariable [format ["bmkhs_tqTimer_%1%2_%3", _role, _index, _forEachIndex], 0];
+            _x params ["_limit", "_seconds", ["_divisor", 0]];
+            if (_divisor > 0 && {_tq > _limit}) then {
+                _accrue = _accrue + ((_tq - _limit) / _divisor);
+            };
         } forEach _limits;
     };
 
-    //Damage feeds itself: the worse it is, the faster it worsens.
+    //Damage feeds itself: the worse it is, the faster it worsens. The bands REPLACE each
+    //other rather than stacking, so the rate is the one band it is in.
     if (_damage > 0.25) then {
-        _accrue = _accrue + (_damage / 600.0);
-        if (_damage > 0.50) then { _accrue = _accrue + (_damage / 500.0) };
-        if (_damage > 0.75) then { _accrue = _accrue + (_damage / 400.0) };
+        private _persistent = _damage / 600.0;
+        if (_damage > 0.50) then { _persistent = _damage / 500.0 };
+        if (_damage > 0.75) then { _persistent = _damage / 400.0 };
+        _accrue = _accrue + _persistent;
     };
 
     if (_accrue > 0) then {
-        _damage = _damage + (_accrue * _deltaTime);
+        _damage = (_damage + (_accrue * _deltaTime)) min 1.0;
         if (_direct isEqualTo []) then {
             [_heli, _role, _damage, _index] call bmkhs_fnc_damageSet;
         } else {
@@ -119,10 +139,21 @@ if (_torqued isEqualTo []) exitWith {};
         };
     };
 
-    //A destroyed component takes something else with it - a gearbox that has come apart
-    //overspeeds the engine driving it.
-    private _breaks = _comp get "breaksVar";
-    if (_breaks != "") then {
-        [_heli, _breaks, _index, _damage >= 1.0, false] call bmkhs_fnc_utilSetArrayVariable;
-    };
+    //What a destroyed component takes with it. An entry naming a damage role destroys that
+    //role outright - a transmission is what holds the rotors, the generators and the pumps
+    //up, so losing it loses all of them. An entry naming a variable sets it at this
+    //member's index instead, which is how a nose gearbox that has come apart overspeeds
+    //the engine driving it.
+    {
+        if ((_x select [0, 6]) == "bmkhs_") then {
+            [_heli, _x, _index, _damage >= 1.0, false] call bmkhs_fnc_utilSetArrayVariable;
+        } else {
+            if (_damage >= 1.0) then {
+                private _n = [_heli, _x] call bmkhs_fnc_damageCount;
+                for "_m" from 0 to ((_n max 1) - 1) do {
+                    [_heli, _x, 1.0, _m] call bmkhs_fnc_damageSet;
+                };
+            };
+        };
+    } forEach (_comp get "breaksVar");
 } forEach _torqued;

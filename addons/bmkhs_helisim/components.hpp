@@ -106,15 +106,23 @@
 //  torqueFrom    variable carrying the torque this component sees. Indexed per member
 //                where the source is, so engine 2's torque reaches gearbox 2
 //  tqLimits[]    what it is rated for, worst first: {fraction of rated torque, seconds it
-//                will hold there}. 0 seconds damages immediately
+//                will hold there, divisor}. 0 seconds damages immediately. A tier's clock
+//                runs only while the torque is in THAT tier and resets when it leaves, so
+//                a brief excursion is not cumulative. Once any tier's clock expires the
+//                damage rate is the sum over every exceeded tier of (torque - limit) /
+//                divisor - so the harder it is pulled the faster it comes apart. Nothing
+//                accrues with the engines off
 //  tqLimitsSE[]  the same set, used while single-engine. Declare ONLY this one for a
 //                component that can only be hurt with one engine doing the work of two -
 //                a nose gearbox - and it is unrated the rest of the time
 //  damagesHitpoints[]  hitpoints to damage directly, for a component whose damageRole
 //                nothing claims. Core uses this for the useSystems = 0 drivetrain, so an
 //                airframe declaring no drivetrain still has something to break
-//  breaksOnFailure  array variable set true at this member's index once the component is
-//                destroyed - a nose gearbox that has come apart overspeeds its engine
+//  breaksOnFailure[]  what a destroyed component takes with it. An entry naming a damage
+//                role destroys that role outright - a transmission is what holds the
+//                rotors, the generators and the pumps up. An entry naming a bmkhs_
+//                variable sets it true at this member's index instead, which is how a
+//                nose gearbox that has come apart overspeeds its engine
 //  networked     see above
 //
 //A COMPONENT IS A PHYSICAL THING - the APU, a generator, a pump, the accumulator. What it
