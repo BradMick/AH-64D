@@ -30,6 +30,7 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
 {
     //Not modelled with systems off - its state stays as seeded, which is the vanilla
     //contract: powered up, running, no start procedure.
+    private _comp    = _x;
     private _varName = _x get "varName";
     private _nominal = _x get "nominal";
 
@@ -38,10 +39,19 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
 
     //No gate means always armed, and every gate declared has to be on. A gated component
     //that is off is not failed - it just contributes nothing.
+    //A gate is a switch variable, or a {circuit, threshold} pair read live. The variable
+    //form is a frame stale for anything the solve itself publishes, which deadlocks a
+    //start: the APU gates on the battery bus, and that is published after producers run.
+    //_comp, not _x - the inner forEach rebinds it.
     private _gateOn = true;
     {
-        if !(_heli getVariable [_x, false]) exitWith { _gateOn = false };
-    } forEach (_x get "gates");
+        private _ok = if (_x isEqualType []) then {
+            ([_heli, _x select 0] call bmkhs_fnc_systemCircuit) >= (_x select 1)
+        } else {
+            _heli getVariable [_x, false]
+        };
+        if (!_ok) exitWith { _gateOn = false };
+    } forEach (_comp get "gates");
 
     //Per-component threshold: an autorotating rotor drives hydraulics at 0.45 but not
     //generators at 0.85.
@@ -97,7 +107,6 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
 
     //Everything it feeds. Highest feeder wins each node, and the contribution is recorded
     //separately so a store can tell whether anything OTHER than itself is supplying it.
-    private _comp = _x;
     {
         private _circuit = _x get "circuit";
         if (_circuit == "") then { continue };

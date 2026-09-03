@@ -46,9 +46,18 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     private _damaged = _damage > SYS_COMP_DMG_THRESH;
 
     private _comp2  = _x;
+    //A gate is a switch variable, or a {circuit, threshold} pair read live. The variable
+    //form is a frame stale for anything the solve itself publishes, which deadlocks a
+    //start: the APU gates on the battery bus, and that is published after producers run.
+    //_comp, not _x - the inner forEach rebinds it.
     private _gateOn = true;
     {
-        if !(_heli getVariable [_x, false]) exitWith { _gateOn = false };
+        private _ok = if (_x isEqualType []) then {
+            ([_heli, _x select 0] call bmkhs_fnc_systemCircuit) >= (_x select 1)
+        } else {
+            _heli getVariable [_x, false]
+        };
+        if (!_ok) exitWith { _gateOn = false };
     } forEach (_comp2 get "gates");
 
     //Leaking is separate from discharging - a holed store empties with nothing drawing

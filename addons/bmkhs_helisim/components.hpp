@@ -95,7 +95,10 @@
 //  requiresAbove level below which it has nothing left to move and produces nothing
 //  gate[]        switches that must ALL be on; omit for always armed. A gated component
 //                that is off is not failed - it just contributes nothing. An APU needs
-//                its button, the battery bus, fuel and accumulator pressure together
+//                its button, the battery bus, fuel and accumulator pressure together.
+//                An entry is a variable name, or {circuit, threshold} to read a node
+//                live - use that for anything the solve itself publishes, since a
+//                variable read here is a frame behind and can deadlock a start
 //  rampSeconds   zero to full; 0 is instant. A pump builds pressure, a contactor does not
 //  increment     round the published value to this step, as a real gauge reads
 //  stateName     publishes whether this component is RUNNING, which is a property of the

@@ -11,7 +11,9 @@
         class Apu {
             damageRole   = "apu";
             variableName = "apuRPM_pct";
-            gate[]       = {"bmkhs_apuBtnOn", "bmkhs_battBusOn", "bmkhs_apuFuelAvail",
+            //BATT as a circuit, not battBusOn - that variable is published after the
+            //producers run, so reading it here would always be a frame behind.
+            gate[]       = {"bmkhs_apuBtnOn", {"BATT", 0.25}, "bmkhs_apuFuelAvail",
                             "bmkhs_accHydPsiStartOk"};
             nominal      = 1.0;
             rampSeconds  = 5;             //spool to operating RPM
@@ -204,7 +206,10 @@
         class Pneumatics {
             variableName = "pneuAvail";
             circuit      = "PNEU";
-            minValue     = 1;
+            //The APU's bleed air carries its RPM, so this is the speed it makes usable
+            //air at - the same 0.85 that counts as running. Requiring a full 1.0 left a
+            //band where the APU was up and starts were still blocked.
+            minValue     = 0.85;
             networked    = 1;
         };
     };
