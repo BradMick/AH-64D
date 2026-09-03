@@ -57,7 +57,16 @@ if (_producers isEqualTo []) exitWith {};
     };
 
     if (!(_heli getVariable [_varName + "Awake", true])
-        && {_sig isEqualTo (_heli getVariable [_varName + "Sig", []])}) then { continue };
+        && {_sig isEqualTo (_heli getVariable [_varName + "Sig", []])}) then {
+        {
+            if ((_x get "circuit") != "") then {
+                [_heli, _x get "circuit", _varName,
+                 _heli getVariable [_varName + "Feed_" + (_x get "circuit"), 0], true]
+                    call bmkhs_fnc_systemCircuitFeed;
+            };
+        } forEach (_comp get "outputs");
+        continue;
+    };
     _heli setVariable [_varName + "Sig", _sig];
 
     private _damaged = ([_heli, _x get "damageRole", _x get "index"] call bmkhs_fnc_damageGet)
@@ -151,6 +160,7 @@ if (_producers isEqualTo []) exitWith {};
             if (_fixed > 0) then {_fixed} else {_out * (_x get "ratio")}
         };
 
+        _heli setVariable [_varName + "Feed_" + _circuit, _val];
         [_heli, _circuit, _varName, _val, true] call bmkhs_fnc_systemCircuitFeed;
     } forEach (_comp get "outputs");
 } forEach _producers;

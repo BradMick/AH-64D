@@ -54,7 +54,16 @@ if (_storage isEqualTo []) exitWith {};
     if (_sb != "") then { _sig pushBack (_heli getVariable [_sb, false]) };
     _sig pushBack ([_heli, _comp0 get "damageRole", _comp0 get "index"] call bmkhs_fnc_damageGet);
 
-    if (!_settle && {_sig isEqualTo (_heli getVariable [_varName + "Sig", []])}) then { continue };
+    if (!_settle && {_sig isEqualTo (_heli getVariable [_varName + "Sig", []])}) then {
+        {
+            if ((_x get "circuit") != "") then {
+                [_heli, _x get "circuit", _varName,
+                 _heli getVariable [_varName + "Feed_" + (_x get "circuit"), 0], false]
+                    call bmkhs_fnc_systemCircuitFeed;
+            };
+        } forEach (_comp0 get "outputs");
+        continue;
+    };
     if (!_settle) then { _heli setVariable [_varName + "Sig", _sig] };
 
     private _damage  = [_heli, _x get "damageRole", _x get "index"] call bmkhs_fnc_damageGet;
@@ -183,6 +192,7 @@ if (_storage isEqualTo []) exitWith {};
     if !(_live && _elseFeed <= 0) then {
         {
             if ((_x get "circuit") != "") then {
+                _heli setVariable [_varName + "Feed_" + (_x get "circuit"), 0];
                 [_heli, _x get "circuit", _varName, 0, false] call bmkhs_fnc_systemCircuitFeed;
             };
         } forEach _outputs;
@@ -193,6 +203,7 @@ if (_storage isEqualTo []) exitWith {};
             if (_c != "") then {
                 private _fixed = _x get "nominal";
                 private _val   = if (_fixed > 0) then {_fixed} else {_charge * _nominal * (_x get "ratio")};
+                _heli setVariable [_varName + "Feed_" + _c, _val];
                 [_heli, _c, _varName, _val, false] call bmkhs_fnc_systemCircuitFeed;
             };
         } forEach _outputs;
