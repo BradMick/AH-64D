@@ -83,5 +83,3 @@ _heli setVariable ["bmkhs_engTGT",                [0.0, 0.0]];
 _heli setVariable ["bmkhs_engOilPSI",             [0.0, 0.0]];
 
 _heli setVariable ["bmkhs_engOutputTq",           [0.0, 0.0]];
-
-_heli setVariable ["bmkhs_randomTq",              [0.0, 0.0, 0.0, 0.0]];

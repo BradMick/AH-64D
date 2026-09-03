@@ -22,7 +22,6 @@ private _engPid             = _heli getVariable "bmkhs_pid_engine" select _engNu
 //_engPid set ["kd", E_KD];
 private _rtrTqReq           = _heli getVariable "bmkhs_reqEngTorque" select 0;
 private _engOverspeed       = _heli getVariable "bmkhs_engineOverspeed" select _engNum;
-private _randomTq           = _heli getVariable "bmkhs_randomTq";
 private _onGnd              = [_heli] call bmkhs_fnc_stateOnGround;
 private _engPctNp           = _heli getVariable "bmkhs_engPctNP" select _engNum;
 
@@ -85,6 +84,6 @@ if (_engState in ["STARTING", "ON"]) then {
 
 [_heli, "bmkhs_engOutputTq", _engNum, _tqOutput, true] call bmkhs_fnc_utilSetArrayVariable;
 [_heli, "bmkhs_engPctNP",    _engNum, _engPctNp] call bmkhs_fnc_utilSetArrayVariable;
-[_heli, "bmkhs_engPctTQ", _engNum, _engPctTq + (_randomTq select _engNum) + (_randomTq select _engNum + 2)] call bmkhs_fnc_utilSetArrayVariable;
+[_heli, "bmkhs_engPctTQ", _engNum, _engPctTq + ([_heli, _engNum] call bmkhs_fnc_systemTorqueJitter)] call bmkhs_fnc_utilSetArrayVariable;
 //systemChat format ["_engRefTq = %1 -- _maxPowerInWatts = %2 -- _maxOutputTq = %3", _engRefTq, _maxPowerInWatts, _maxTorque];
 //systemChat format ["Engine %3 -- _trimTq = %1 -- _tqOutput = %2 -- _maxTorque = %4", _trimTq toFixed 2, _tqOutput toFixed 2, _engNum, _maxTorque];

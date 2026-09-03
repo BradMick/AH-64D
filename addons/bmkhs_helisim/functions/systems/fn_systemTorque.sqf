@@ -139,6 +139,14 @@ if (_torqued isEqualTo []) exitWith {};
         };
     };
 
+    //A damaged drive makes the torque needle wander, scaled by how bad it is. The
+    //component publishes its OWN, under its own variable, and whatever reads torque asks
+    //Core for the total - no shared array with a layout baked into it.
+    if (_comp get "jitters") then {
+        _heli setVariable [(_comp get "varName") + "TqJitter",
+            if (_damage > 0.25) then {_damage * (random [-0.10, 0, 0.10])} else {0}];
+    };
+
     //What a destroyed component takes with it. An entry naming a damage role destroys that
     //role outright - a transmission is what holds the rotors, the generators and the pumps
     //up, so losing it loses all of them. An entry naming a variable sets it at this

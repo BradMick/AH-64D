@@ -26,7 +26,6 @@ private _engPctNP           = _heli getVariable "bmkhs_engPctNP"          select
 private _engPctTQ           = _heli getVariable "bmkhs_engPctTQ"          select _engNum;
 private _engPid             = _heli getVariable "bmkhs_pid_engine"        select _engNum;
 private _engOverspeed       = _heli getVariable "bmkhs_engineOverspeed"      select _engNum;
-private _randomTq           = _heli getVariable "bmkhs_randomTq";
 private _isSingleEng        = _heli getVariable "bmkhs_isSingleEng";
 private _xmsnRpm            = _heli getVariable "bmkhs_xmsnOutputRpm";
 private _collectiveOutput   = _heli getVariable "bmkhs_collectiveOutput";
@@ -135,4 +134,4 @@ if (_engState in ["STARTING", "ON"]) then {
 [_heli, "bmkhs_engOutputTq", _engNum, _tqOutput,  true] call bmkhs_fnc_utilSetArrayVariable;
 [_heli, "bmkhs_engPctNP",    _engNum, _engPctNP       ] call bmkhs_fnc_utilSetArrayVariable;
 [_heli, "bmkhs_engFF",       _engNum, _engFF          ] call bmkhs_fnc_utilSetArrayVariable;
-[_heli, "bmkhs_engPctTQ",    _engNum, _engPctTQ + (_randomTq select _engNum) + (_randomTq select (_engNum + 2))] call bmkhs_fnc_utilSetArrayVariable;
+[_heli, "bmkhs_engPctTQ",    _engNum, _engPctTQ + ([_heli, _engNum] call bmkhs_fnc_systemTorqueJitter)] call bmkhs_fnc_utilSetArrayVariable;

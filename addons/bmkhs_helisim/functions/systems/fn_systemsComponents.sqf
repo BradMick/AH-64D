@@ -53,6 +53,7 @@ params ["_heli", "_config"];
                         else {[getText (cfg >> "breaksOnFailure")] select {_x != ""}}], \
     ["tqLimitsSE",   getArray  (cfg >> "tqLimitsSE")], \
     ["torqueSum",    getNumber (cfg >> "torqueSum") > 0], \
+    ["jitters",      getNumber (cfg >> "jittersTorque") > 0], \
     ["damages",      getArray  (cfg >> "damagesHitpoints")] \
 ]
 
@@ -218,6 +219,8 @@ if !(_heli getVariable ["bmkhs_useSystems", false]) then {
             _torqued pushBack (createHashMapFromArray [
                 ["damageRole", _role],
                 ["index",      _i],
+                ["varName",    format ["bmkhs_%1%2", _role, _i]],
+                ["jitters",    false],
                 ["torqueFrom", _torqueVar],
                 ["torqueSum",  _sums],
                 ["tqLimits",   _limits],

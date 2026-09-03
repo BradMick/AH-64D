@@ -118,6 +118,9 @@
 //  damagesHitpoints[]  hitpoints to damage directly, for a component whose damageRole
 //                nothing claims. Core uses this for the useSystems = 0 drivetrain, so an
 //                airframe declaring no drivetrain still has something to break
+//  jittersTorque  1 if damage to this component makes the torque needle wander. It
+//                publishes its own wander; anything reading torque asks Core for the
+//                total via systemTorqueJitter rather than knowing who contributes
 //  breaksOnFailure[]  what a destroyed component takes with it. An entry naming a damage
 //                role destroys that role outright - a transmission is what holds the
 //                rotors, the generators and the pumps up. An entry naming a bmkhs_

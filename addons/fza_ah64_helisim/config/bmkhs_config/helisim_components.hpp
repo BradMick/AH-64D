@@ -43,6 +43,7 @@
             //divisor}. Up to 200% is continuous, 200 to 230 gives six seconds, above 230
             //damages at once. The divisor sets how fast, and the tiers stack.
             tqLimits[]   = {{2.30, 0, 20}, {2.00, 6, 10}};
+            jittersTorque = 1;            //a damaged transmission wanders both needles
             //What it takes with it: the transmission is what holds the rotors, the
             //generators and the pumps up.
             breaksOnFailure[] = {"mainRotor", "tailRotor", "generators", "priPump", "utilPump"};
@@ -103,6 +104,7 @@
             //Single-engine ratings: a nose gearbox only carries enough to hurt it when
             //one engine is doing the work of two.
             tqLimitsSE[]    = {{1.25, 0, 40}, {1.22, 6, 20}, {1.10, 150, 10}};
+            jittersTorque   = 1;              //and a damaged gearbox wanders its own
             //A gearbox that has come apart overspeeds the engine driving it.
             breaksOnFailure[] = {"bmkhs_engineOverspeed"};
         };
