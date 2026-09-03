@@ -204,22 +204,27 @@ private _torqued = (_producers + _converters + _storage) select {(count (_x get 
 //builds the drive components from them when nothing else declared any.
 if (_torqued isEqualTo []) then {
     {
-        _x params ["_role", "_torqueVar", "_limits", "_limitsSE", "_breaks"];
+        _x params ["_role", "_torqueVar", "_sums", "_limits", "_limitsSE", "_breaks"];
         private _count = [_heli, _role] call bmkhs_fnc_damageCount;
         for "_i" from 0 to ((_count max 1) - 1) do {
             _torqued pushBack (createHashMapFromArray [
                 ["damageRole", _role],
                 ["index",      _i],
                 ["torqueFrom", _torqueVar],
+                ["torqueSum",  _sums],
                 ["tqLimits",   _limits],
                 ["tqLimitsSE", _limitsSE],
                 ["breaksVar",  _breaks]
             ]);
         };
     } forEach [
-        ["transmission",  "bmkhs_engPctTQ", getArray (_config >> "xmsnTqLimits"),
-                          getArray (_config >> "xmsnTqLimitsSE"), ""],
-        ["noseGearboxes", "bmkhs_engPctTQ", getArray (_config >> "ngbTqLimits"),
+        //The transmission carries both engines summed, and has no single-engine case -
+        //one engine can never overtorque what is rated for two.
+        ["transmission",  "bmkhs_engPctTQ", true,  getArray (_config >> "xmsnTqLimits"),
+                          [], ""],
+        //A nose gearbox carries its own engine, which makes it the limiting part when one
+        //is doing the work of two.
+        ["noseGearboxes", "bmkhs_engPctTQ", false, getArray (_config >> "ngbTqLimits"),
                           getArray (_config >> "ngbTqLimitsSE"), "bmkhs_engineOverspeed"]
     ];
     //Only the ones the aircraft actually gave limits for.
