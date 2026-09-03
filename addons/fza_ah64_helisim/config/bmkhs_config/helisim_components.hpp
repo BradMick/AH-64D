@@ -38,7 +38,8 @@
             //Summed, since it carries both engines.
             torqueFrom   = "bmkhs_engPctTQ";
             torqueSum    = 1;
-            tqLimits[]   = {{2.30, 6}, {2.00, 150}};   //transient, continuous
+            //Over 230% (115 each engine) damages at once; 202 to 230 takes six seconds.
+            tqLimits[]   = {{2.30, 0}, {2.02, 6}};
             class Outputs {
                 class Accessories { circuit = "ACCESSORY_DRIVE"; };
                 class TailDrive   { circuit = "TAIL_DRIVE"; };
