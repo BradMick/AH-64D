@@ -2,66 +2,63 @@
 Function: bmkhs_fnc_repair
 
 Description:
-    Updates all of the modules core functions.
+    Restores the state that goes with a repaired component.
+
+    Runs when a HandleDamage event saw a hitpoint go DOWN - a repair announces
+    itself, so there is nothing to poll for.
+
+    Walks the components the aircraft declared rather than naming any, so an
+    airframe with three generators or no accumulator gets what it actually has.
+    A repaired store comes back FULL, since charge is a quantity a repair
+    replaces; pressure is not restored, because that depends on something
+    turning the pumps and the solve will produce it on the next frame.
+
+    Each component is re-seeded to 0.000001 once handled, so it reads as
+    not-exactly-zero and does not trigger again.
 
 Parameters:
-    _heli - The helicopter to get information from [Unit].
+    _heli - The helicopter [Object]
 
 Returns:
-    ...
-
-Examples:
-    ...
+    Nothing
 
 Author:
     BradMick
 ---------------------------------------------------------------------------- */
 params ["_heli"];
-#include "\bmkhs_helisim\functions\systems\systems.hpp"
 
-//Runs when a HandleDamage event saw a hitpoint go DOWN - a repair announces itself, so
-//there is nothing to poll for. Each check below re-seeds to 0.000001 so a component that
-//has been restored reads as not-exactly-zero and does not trigger again.
 if !(_heli getVariable ["bmkhs_repairPending", false]) exitWith {};
 _heli setVariable ["bmkhs_repairPending", false];
 
-if (([_heli, "engines", 0] call bmkhs_fnc_damageGet) == 0) then {
-    [_heli, "bmkhs_engineOverspeed", 0.0, false, true] call bmkhs_fnc_utilSetArrayVariable;
-    [_heli, "engines", 0.000001, 0] call bmkhs_fnc_damageSet
-};
-if (([_heli, "engines", 1] call bmkhs_fnc_damageGet) == 0) then {
-    [_heli, "bmkhs_engineOverspeed", 1.0, false, true] call bmkhs_fnc_utilSetArrayVariable;
-    [_heli, "engines", 0.000001, 1] call bmkhs_fnc_damageSet
-};
-if (([_heli, "batteries", 0] call bmkhs_fnc_damageGet) == 0) then {
-    _heli setVariable ["bmkhs_battPower_pctCharge", 1.0, true];
-    [_heli, "batteries", 0.000001, 0] call bmkhs_fnc_damageSet
-};
-//A repair makes the aircraft serviceable, not running. Fluid and stored charge come
-//back to full because those are quantities a repair replaces - but PRESSURE depends on
-//whether anything is turning the pumps, so it is set to match the state the aircraft is
-//actually in. Repair a running aircraft and it has pressure; repair a cold one and it
-//has none until something spins up, which is what the crew would see either way.
-private _pumpsTurning = ([_heli, "ACCESSORY_DRIVE"] call bmkhs_fnc_systemCircuit) > SYS_HYD_MIN_RTR_RPM;
-private _hydPsi       = [0.0, 3000.0] select _pumpsTurning;
+//Stores come back full - fluid and charge are what a repair replaces. A store with no
+//damage role has no hitpoint to read, so it simply refills: it could not have been the
+//thing that broke, but a serviced aircraft has it full either way.
+{
+    private _role  = _x get "damageRole";
+    private _index = _x get "index";
+    private _fill  = _role == "" || {([_heli, _role, _index] call bmkhs_fnc_damageGet) == 0};
+    if (_fill) then {
+        _heli setVariable [(_x get "varName") + "Charge", 1.0, true];
+        if (_role != "") then {
+            [_heli, _role, 0.000001, _index] call bmkhs_fnc_damageSet;
+        };
+    };
+} forEach (_heli getVariable ["bmkhs_sysStorage", []]);
 
-if (([_heli, "priReservoir"] call bmkhs_fnc_damageGet) == 0) then {
-    _heli setVariable ["bmkhs_priLevel_pctCharge", 1.0, true];
-    [_heli, "priReservoir", 0.000001] call bmkhs_fnc_damageSet
-};
-if (([_heli, "priPump"] call bmkhs_fnc_damageGet) == 0) then {
-    _heli setVariable ["bmkhs_priHydPsi", _hydPsi, true];
-    [_heli, "priPump", 0.000001] call bmkhs_fnc_damageSet
-};
-if (([_heli, "utilReservoir"] call bmkhs_fnc_damageGet) == 0) then {
-    _heli setVariable ["bmkhs_utilLevel_pctCharge", 1.0, true];
-    //The accumulator is a store, so it comes back charged whether or not anything is
-    //running - that is what a serviced aircraft has waiting to start its APU.
-    _heli setVariable ["bmkhs_accHydPsiCharge",     1.0, true];
-    _heli setVariable ["bmkhs_accHydPsi",           3000.0, true];
-    [_heli, "utilReservoir", 0.000001] call bmkhs_fnc_damageSet
-};
-if (([_heli, "utilPump"] call bmkhs_fnc_damageGet) == 0) then {
-    _heli setVariable ["bmkhs_utilHydPsi", _hydPsi, true];
-    [_heli, "utilPump", 0.000001] call bmkhs_fnc_damageSet
+//Producers and converters hold no state of their own - the solve recomputes what they
+//make from their own damage, so they only need the marker.
+{
+    private _role = _x get "damageRole";
+    if (_role != "" && {([_heli, _role, _x get "index"] call bmkhs_fnc_damageGet) == 0}) then {
+        [_heli, _role, 0.000001, _x get "index"] call bmkhs_fnc_damageSet;
+    };
+} forEach ((_heli getVariable ["bmkhs_sysProducers", []]) + (_heli getVariable ["bmkhs_sysConverters", []]));
+
+//Engines are not components, and their overspeed latch is what a repair clears.
+private _engines = [_heli, "engines"] call bmkhs_fnc_damageCount;
+for "_i" from 0 to (_engines - 1) do {
+    if (([_heli, "engines", _i] call bmkhs_fnc_damageGet) == 0) then {
+        [_heli, "bmkhs_engineOverspeed", _i, false, true] call bmkhs_fnc_utilSetArrayVariable;
+        [_heli, "engines", 0.000001, _i] call bmkhs_fnc_damageSet;
+    };
 };
