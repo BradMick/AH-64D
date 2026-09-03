@@ -85,10 +85,16 @@ generators because one is destroyed. That was the bug that started this.
 genuine remote reader of everything a crew station displays, so anything missing
 `networked = 1` is frozen for them while singleplayer looks perfect.
 
-**Repair, now event-driven.** A `HandleDamage` handler in `fn_coreInit` flags a
-repair when a hitpoint goes down, and `fn_repair` exits unless it sees that flag.
-Worth confirming a repaired component gets its state back, and that ordinary
-damage still applies - the handler sits in the damage path for everything.
+**Repair, now event-driven and generic.** A `HandleDamage` handler in
+`fn_coreInit` flags a repair when a hitpoint goes down, and `fn_repair` exits
+unless it sees that flag. It walks the declared components rather than naming
+any, so it restores whatever the airframe has. Worth confirming a repaired
+component gets its state back, and that ordinary damage still applies - the
+handler sits in the damage path for everything.
+
+The accumulator refills on any repair, having no hitpoint of its own. That is
+correct while nothing else charges it: the recharge path off the accessory drive
+works, but a ground cart or hand pump is not implemented.
 
 **Overtorque with no drivetrain declared.** The top-level ratings damage
 `hithrotor` and `hitvrotor` directly, since no role claims them. Never flown.
