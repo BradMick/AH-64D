@@ -23,7 +23,7 @@ class RscTitles
     class controls
     {
         // ── Background ──────────────────────────────────────────────────────
-        class FZA_CtrlVis_BG : RscText
+        class BMKHS_CtrlVis_BG : RscText
         {
             idc = 5101;
             colorBackground[] = {0.0, 0.0, 0.0, 0.75};
@@ -38,7 +38,7 @@ class RscTitles
         };
 
         // ── Drag / title bar ────────────────────────────────────────────────
-        class FZA_CtrlVis_DragBar : RscText
+        class BMKHS_CtrlVis_DragBar : RscText
         {
             idc  = 5102;
             colorBackground[] = {0.05, 0.20, 0.05, 0.90};
@@ -52,7 +52,7 @@ class RscTitles
         };
 
         // ── Mode labels ─────────────────────────────────────────────────────
-        class FZA_CtrlVis_ModeALT : RscText
+        class BMKHS_CtrlVis_ModeALT : RscText
         {
             idc = 5110;
             colorBackground[] = {0, 0, 0, 0};
@@ -64,7 +64,7 @@ class RscTitles
             x = 0; y = 0; w = 0.001; h = 0.001;
         };
 
-        class FZA_CtrlVis_ModeATTPOS : RscText
+        class BMKHS_CtrlVis_ModeATTPOS : RscText
         {
             idc = 5111;
             colorBackground[] = {0, 0, 0, 0};
@@ -76,7 +76,7 @@ class RscTitles
             x = 0; y = 0; w = 0.001; h = 0.001;
         };
 
-        class FZA_CtrlVis_ModeVEL : RscText
+        class BMKHS_CtrlVis_ModeVEL : RscText
         {
             idc = 5112;
             colorBackground[] = {0, 0, 0, 0};
@@ -88,7 +88,7 @@ class RscTitles
             x = 0; y = 0; w = 0.001; h = 0.001;
         };
 
-        class FZA_CtrlVis_ModeATT : RscText
+        class BMKHS_CtrlVis_ModeATT : RscText
         {
             idc = 5113;
             colorBackground[] = {0, 0, 0, 0};
@@ -101,7 +101,7 @@ class RscTitles
         };
 
         // ── Collective bar ───────────────────────────────────────────────────
-        class FZA_CtrlVis_CollFrame : RscFrame
+        class BMKHS_CtrlVis_CollFrame : RscFrame
         {
             idc = 5120;
             colorFrame[] = {0.45, 0.45, 0.45, 0.80};
@@ -109,7 +109,7 @@ class RscTitles
         };
 
         // Collective scale labels (0 / 50 / 100)
-        class FZA_CtrlVis_CollLabel : RscText
+        class BMKHS_CtrlVis_CollLabel : RscText
         {
             idc = 5123;
             colorBackground[] = {0, 0, 0, 0};
@@ -122,7 +122,7 @@ class RscTitles
         };
 
         // Actual collective line (green)
-        class FZA_CtrlVis_CollAct : RscText
+        class BMKHS_CtrlVis_CollAct : RscText
         {
             idc = 5121;
             colorBackground[] = {0.20, 1.00, 0.20, 0.90};
@@ -132,7 +132,7 @@ class RscTitles
         };
 
         // Alt-hold collective indicator (red, only when alt hold active)
-        class FZA_CtrlVis_CollSAS : RscText
+        class BMKHS_CtrlVis_CollSAS : RscText
         {
             idc = 5122;
             colorBackground[] = {1.00, 0.25, 0.25, 0.85};
@@ -142,7 +142,7 @@ class RscTitles
         };
 
         // ── Cyclic display frame ─────────────────────────────────────────────
-        class FZA_CtrlVis_CycFrame : RscFrame
+        class BMKHS_CtrlVis_CycFrame : RscFrame
         {
             idc = 5130;
             colorFrame[] = {0.45, 0.45, 0.45, 0.80};
@@ -150,7 +150,7 @@ class RscTitles
         };
 
         // Crosshair horizontal line
-        class FZA_CtrlVis_CrossH : RscText
+        class BMKHS_CtrlVis_CrossH : RscText
         {
             idc = 5131;
             colorBackground[] = {0.35, 0.35, 0.35, 0.55};
@@ -160,7 +160,7 @@ class RscTitles
         };
 
         // Crosshair vertical line
-        class FZA_CtrlVis_CrossV : RscText
+        class BMKHS_CtrlVis_CrossV : RscText
         {
             idc = 5132;
             colorBackground[] = {0.35, 0.35, 0.35, 0.55};
@@ -170,7 +170,7 @@ class RscTitles
         };
 
         // SAS + ATT hold – H bar of cross (bottom layer)
-        class FZA_CtrlVis_CycSAS : RscText
+        class BMKHS_CtrlVis_CycSAS : RscText
         {
             idc = 5133;
             colorBackground[] = {0, 0, 0, 0};
@@ -180,7 +180,7 @@ class RscTitles
         };
 
         // SAS + ATT hold – V bar of cross (bottom layer, paired with 5133)
-        class FZA_CtrlVis_CycSAS_V : RscText
+        class BMKHS_CtrlVis_CycSAS_V : RscText
         {
             idc = 5136;
             colorBackground[] = {0, 0, 0, 0};
@@ -191,7 +191,7 @@ class RscTitles
 
         // Force trim reference – outer dot for ring (middle layer)
         // FT ring – transparent center baked into PAA; ring thickness matches Actual when rendered at half size
-        class FZA_CtrlVis_CycFT : RscText
+        class BMKHS_CtrlVis_CycFT : RscText
         {
             idc   = 5134;
             type  = 0;
@@ -203,7 +203,7 @@ class RscTitles
         };
 
         // Actual ring – transparent center baked into PAA
-        class FZA_CtrlVis_CycAct : RscText
+        class BMKHS_CtrlVis_CycAct : RscText
         {
             idc   = 5135;
             type  = 0;
@@ -215,7 +215,7 @@ class RscTitles
         };
 
         // ── Yaw / heading bar ────────────────────────────────────────────────
-        class FZA_CtrlVis_YawFrame : RscFrame
+        class BMKHS_CtrlVis_YawFrame : RscFrame
         {
             idc = 5140;
             colorFrame[] = {0.45, 0.45, 0.45, 0.80};
@@ -223,7 +223,7 @@ class RscTitles
         };
 
         // Yaw centre tick (thin vertical bar)
-        class FZA_CtrlVis_YawCtr : RscText
+        class BMKHS_CtrlVis_YawCtr : RscText
         {
             idc = 5144;
             colorBackground[] = {0.35, 0.35, 0.35, 0.55};
@@ -233,7 +233,7 @@ class RscTitles
         };
 
         // FT pedal indicator (orange)
-        class FZA_CtrlVis_YawFT : RscText
+        class BMKHS_CtrlVis_YawFT : RscText
         {
             idc = 5141;
             colorBackground[] = {0, 0, 0, 0};
@@ -246,7 +246,7 @@ class RscTitles
         };
 
         // Actual pedal position (green)
-        class FZA_CtrlVis_YawAct : RscText
+        class BMKHS_CtrlVis_YawAct : RscText
         {
             idc = 5142;
             colorBackground[] = {0, 0, 0, 0};
@@ -259,7 +259,7 @@ class RscTitles
         };
 
         // SAS yaw indicator (red)
-        class FZA_CtrlVis_YawSAS : RscText
+        class BMKHS_CtrlVis_YawSAS : RscText
         {
             idc = 5143;
             colorBackground[] = {0, 0, 0, 0};
@@ -272,7 +272,7 @@ class RscTitles
         };
 
         // HDG label
-        class FZA_CtrlVis_HDGLabel : RscText
+        class BMKHS_CtrlVis_HDGLabel : RscText
         {
             idc = 5145;
             colorBackground[] = {0, 0, 0, 0};
