@@ -39,10 +39,8 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
 
     //No gate means always armed, and every gate declared has to be on. A gated component
     //that is off is not failed - it just contributes nothing.
-    //A gate is a switch variable, or a {circuit, threshold} pair read live. The variable
-    //form is a frame stale for anything the solve itself publishes, which deadlocks a
-    //start: the APU gates on the battery bus, and that is published after producers run.
-    //_comp, not _x - the inner forEach rebinds it.
+    //A variable name, or {circuit, threshold} read live. _comp because the forEach
+    //rebinds _x.
     private _gateOn = true;
     {
         private _ok = if (_x isEqualType []) then {
