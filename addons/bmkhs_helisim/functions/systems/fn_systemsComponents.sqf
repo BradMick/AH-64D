@@ -216,10 +216,13 @@ if (_torqued isEqualTo []) then {
                 ["tqLimits",   _limits],
                 ["tqLimitsSE", _limitsSE],
                 ["breaksVar",  _breaks],
-                //No role claims these on an airframe that declares no drivetrain, so the
-                //damage lands on the rotors themselves - Arma's own hitpoints, which every
-                //helicopter has.
-                ["damages",    ["hithrotor", "hitvrotor"]]
+                //Only where NOTHING claims the role. An airframe with real gearbox
+                //hitpoints damages those; one without falls back to the rotors, which
+                //every helicopter has. Reading them when a role exists is wrong twice
+                //over - the damage lands in the wrong place, and mainRotor is written as
+                //a state flag by the engine controller, so it reads back as damage that
+                //was never taken.
+                ["damages",    [[], ["hithrotor", "hitvrotor"]] select (_count == 0)]
             ]);
         };
     } forEach [
