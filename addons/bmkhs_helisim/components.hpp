@@ -109,6 +109,9 @@
 //                the TOP LEVEL instead - xmsnTqLimits, ngbTqLimits and their SE pairs -
 //                which is what makes them apply with useSystems off
 //  tqLimitsSE[]  the same set, used while single-engine
+//  damagesHitpoints[]  hitpoints to damage directly, for a component whose damageRole
+//                nothing claims. Core uses this for the top-level drivetrain ratings, so
+//                an airframe declaring no drivetrain still has something to break
 //  breaksOnFailure  array variable set true at this member's index once the component is
 //                destroyed - a nose gearbox that has come apart overspeeds its engine
 //  networked     see above

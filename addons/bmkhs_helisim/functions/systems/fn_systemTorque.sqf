@@ -67,7 +67,16 @@ if (_torqued isEqualTo []) exitWith {};
         };
     };
 
-    private _damage = [_heli, _role, _index] call bmkhs_fnc_damageGet;
+    //Where no role claims this component, it damages named hitpoints instead - and reads
+    //its current damage from the worst of them.
+    private _direct = _comp get "damages";
+    private _damage = if (_direct isEqualTo []) then {
+        [_heli, _role, _index] call bmkhs_fnc_damageGet
+    } else {
+        private _worst = 0;
+        { _worst = _worst max ((_heli getHitPointDamage _x) max 0) } forEach _direct;
+        _worst
+    };
     private _accrue = 0;
 
 
@@ -103,7 +112,11 @@ if (_torqued isEqualTo []) exitWith {};
 
     if (_accrue > 0) then {
         _damage = _damage + (_accrue * _deltaTime);
-        [_heli, _role, _damage, _index] call bmkhs_fnc_damageSet;
+        if (_direct isEqualTo []) then {
+            [_heli, _role, _damage, _index] call bmkhs_fnc_damageSet;
+        } else {
+            { _heli setHitPointDamage [_x, _damage] } forEach _direct;
+        };
     };
 
     //A destroyed component takes something else with it - a gearbox that has come apart

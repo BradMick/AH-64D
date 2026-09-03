@@ -50,7 +50,8 @@ params ["_heli", "_config"];
     ["tqLimits",     getArray  (cfg >> "tqLimits")], \
     ["breaksVar",    getText   (cfg >> "breaksOnFailure")], \
     ["tqLimitsSE",   getArray  (cfg >> "tqLimitsSE")], \
-    ["torqueSum",    getNumber (cfg >> "torqueSum") > 0] \
+    ["torqueSum",    getNumber (cfg >> "torqueSum") > 0], \
+    ["damages",      getArray  (cfg >> "damagesHitpoints")] \
 ]
 
 private _circuits = createHashMap;
@@ -214,7 +215,11 @@ if (_torqued isEqualTo []) then {
                 ["torqueSum",  _sums],
                 ["tqLimits",   _limits],
                 ["tqLimitsSE", _limitsSE],
-                ["breaksVar",  _breaks]
+                ["breaksVar",  _breaks],
+                //No role claims these on an airframe that declares no drivetrain, so the
+                //damage lands on the rotors themselves - Arma's own hitpoints, which every
+                //helicopter has.
+                ["damages",    ["hithrotor", "hitvrotor"]]
             ]);
         };
     } forEach [
