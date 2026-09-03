@@ -79,14 +79,19 @@ if (_producers isEqualTo []) exitWith {};
     //A variable name, or {circuit, threshold} read live. _comp because the forEach
     //rebinds _x.
     private _gateOn = true;
+    private _gateWhy = "";
     {
         private _ok = if (_x isEqualType []) then {
             ([_heli, _x select 0] call bmkhs_fnc_systemCircuit) >= (_x select 1)
         } else {
             _heli getVariable [_x, false]
         };
-        if (!_ok) exitWith { _gateOn = false };
+        if (!_ok) exitWith {
+            _gateOn = false;
+            _gateWhy = if (_x isEqualType []) then {_x select 0} else {_x select [6]};
+        };
     } forEach (_comp get "gates");
+    _heli setVariable [_varName + "GateWhy", _gateWhy];
 
     //Per-component threshold: an autorotating rotor drives hydraulics at 0.45 but not
     //generators at 0.85.

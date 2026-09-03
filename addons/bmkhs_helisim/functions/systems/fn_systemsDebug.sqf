@@ -118,8 +118,8 @@ private _feeds = _heli getVariable ["bmkhs_sysFeeds", createHashMap];
                     [_heli getVariable [_v + "Tgt", -1]] call _fmt,
                     _comp get "rampRate",
                     ["", "SLEPT"] select (parseNumber (_heli getVariable [_v + "Slept", false]))];
-                _txt = _txt + format ["   dmg %1 gate %2 drv %3 sup %4 val %5 dt %6<br/>",
-                    _wDmg, _wGate, _wDrv,
+                _txt = _txt + format ["   dmg %1 gate %2 (%3) drv %4 sup %5 val %6 dt %7<br/>",
+                    _wDmg, _wGate, _heli getVariable [_v + "GateWhy", "?"], _wDrv,
                     [_wSup] call _fmt, [_wVal] call _fmt, _wDt toFixed 4];
             };
         } forEach _list;
