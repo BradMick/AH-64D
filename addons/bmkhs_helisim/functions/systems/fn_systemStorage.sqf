@@ -66,16 +66,14 @@ if (_storage isEqualTo []) exitWith {};
     };
     if (!_settle) then { _heli setVariable [_varName + "Sig", _sig] };
 
-    private _damage  = [_heli, _x get "damageRole", _x get "index"] call bmkhs_fnc_damageGet;
-    //Anything else that vents this store adds to its damage. _comp because the inner
-    //forEach rebinds _x.
-    private _comp = _x;
+    //_comp because every inner forEach below rebinds _x.
+    private _comp    = _x;
+    private _damage  = [_heli, _comp get "damageRole", _comp get "index"] call bmkhs_fnc_damageGet;
     {
         _damage = _damage + ([_heli, _x] call bmkhs_fnc_damageGet);
     } forEach (_comp get "drainedBy");
     private _damaged = _damage > SYS_COMP_DMG_THRESH;
 
-    private _comp2  = _x;
     //A variable name, or {circuit, threshold} read live.
     private _gateOn = true;
     {
@@ -85,37 +83,37 @@ if (_storage isEqualTo []) exitWith {};
             _heli getVariable [_x, false]
         };
         if (!_ok) exitWith { _gateOn = false };
-    } forEach (_comp2 get "gates");
+    } forEach (_comp get "gates");
 
     //Leaking is separate from discharging - a holed store empties with nothing drawing
     //from it. Rate ramps from the onset threshold to full damage.
-    private _leakStart = _x get "leakStartDmg";
+    private _leakStart = _comp get "leakStartDmg";
     if (_settle && _leakStart > 0 && _damage > _leakStart) then {
         if (_damage >= 1) then {
             //Destroyed holds nothing at all rather than draining out.
             _charge = 0;
         } else {
             private _frac = ((_damage - _leakStart) / (1 - _leakStart)) min 1;
-            private _rate = _x get "leakRate";
+            private _rate = _comp get "leakRate";
             _charge = (_charge - (_rate * _frac * _deltaTime)) max 0;
         };
     };
 
     //Below this it is spent - for a gas-charged store this is the precharge, which is
     //not usable pressure.
-    private _spentFrac = if (_nominal > 0) then {(_x get "stopBelow") / _nominal} else {0};
+    private _spentFrac = if (_nominal > 0) then {(_comp get "stopBelow") / _nominal} else {0};
 
     //Spent once when the start gate rises, not per frame - the thing being cranked only
     //comes up seconds later, so a continuous drain empties the store before it does.
     //StartOk latches whether there was enough, since the draw itself drops the store
     //below startAbove and would cut the start it is paying for.
-    private _startedBy = _x get "startedBy";
+    private _startedBy = _comp get "startedBy";
     if (_settle && _startedBy != "") then {
         private _latchVar = _varName + "Drawn";
         private _okVar    = _varName + "StartOk";
         if (_heli getVariable [_startedBy, false]) then {
             if !(_heli getVariable [_latchVar, false]) then {
-                private _above = _x get "startAbove";
+                private _above = _comp get "startAbove";
                 private _ok    = _nominal <= 0 || {_charge * _nominal >= _above};
                 //A start spends the usable charge, leaving the precharge behind.
                 if (_ok && _nominal > 0) then {
@@ -133,7 +131,7 @@ if (_storage isEqualTo []) exitWith {};
     //Anything else holding its nodes up makes the store a reserve, not a supply. On the
     //settle pass a node already carries this store's own supply, so compare against what
     //the producers put there rather than the total.
-    private _outputs  = _x get "outputs";
+    private _outputs  = _comp get "outputs";
     private _elseFeed = 0;
     {
         private _c = _x get "circuit";
@@ -151,15 +149,15 @@ if (_storage isEqualTo []) exitWith {};
     //Drains while nothing is covering for it. That is its charging source where it has
     //one - a battery runs down whenever the bus that charges it is dead - and otherwise
     //whatever else feeds its output.
-    private _rechargedBy = _x get "rechargedBy";
+    private _rechargedBy = _comp get "rechargedBy";
     private _covered     = if (_rechargedBy != "") then {
-        ([_heli, _rechargedBy] call bmkhs_fnc_systemCircuit) > (_x get "minRecharge")
+        ([_heli, _rechargedBy] call bmkhs_fnc_systemCircuit) > (_comp get "minRecharge")
     } else {
         _elseFeed > 0
     };
 
     if (_settle && _live && !_covered) then {
-        private _drain = _x get "emerRate";
+        private _drain = _comp get "emerRate";
         if (_drain > 0) then { _charge = (_charge - (_drain * _deltaTime)) max 0 };
     };
 
@@ -167,21 +165,21 @@ if (_storage isEqualTo []) exitWith {};
     if (_settle && _covered && _rechargedBy != "" && _charge < 1.0) then {
         //Over the usable band rather than the whole range, so the configured time is what
         //it actually takes - a store only ever refills from its floor.
-        private _rate = (_x get "rechargeRate") * (1 - _spentFrac);
+        private _rate = (_comp get "rechargeRate") * (1 - _spentFrac);
         if (_rate > 0) then { _charge = (_charge + (_rate * _deltaTime)) min 1.0 };
     };
 
     //Whether it is up, as a property of the component rather than of any node - the same
     //publish a producer does.
-    private _stateVar = _x get "stateVar";
+    private _stateVar = _comp get "stateVar";
     if (_stateVar != "") then {
-        [_heli, format ["bmkhs_%1", _stateVar], (_charge * _nominal) >= (_x get "stateAbove")]
+        [_heli, format ["bmkhs_%1", _stateVar], (_charge * _nominal) >= (_comp get "stateAbove")]
             call bmkhs_fnc_utilUpdateNetworkGlobal;
     };
 
     _heli setVariable [_varName + "Charge", _charge];
     private _published = _charge * _nominal;
-    if (_x get "networked") then {
+    if (_comp get "networked") then {
         [_heli, _varName, _published] call bmkhs_fnc_utilUpdateNetworkGlobal;
     } else {
         _heli setVariable [_varName, _published];

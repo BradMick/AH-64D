@@ -67,7 +67,7 @@ if (_converters isEqualTo []) exitWith {};
     };
     _heli setVariable [_varName + "Sig", _sig];
 
-    private _damaged = ([_heli, _x get "damageRole", _x get "index"] call bmkhs_fnc_damageGet)
+    private _damaged = ([_heli, _comp get "damageRole", _comp get "index"] call bmkhs_fnc_damageGet)
                             > SYS_COMP_DMG_THRESH;
 
     //A variable name, or {circuit, threshold} read live.
@@ -82,29 +82,29 @@ if (_converters isEqualTo []) exitWith {};
     } forEach (_comp get "gates");
 
     //What it has to work with. Nothing in, nothing out.
-    private _inVal = [_heli, _x get "input"] call bmkhs_fnc_systemCircuit;
-    private _hasIn = _inVal > (_x get "minInput");
+    private _inVal = [_heli, _comp get "input"] call bmkhs_fnc_systemCircuit;
+    private _hasIn = _inVal > (_comp get "minInput");
 
     //A fixed nominal converts to a level - a rectifier makes DC or it does not. Without
     //one it scales its input, which is what a gearbox ratio does.
-    private _nominal = _x get "nominal";
+    private _nominal = _comp get "nominal";
     private _out     = 0;
     if (!_damaged && _gateOn && _hasIn) then {
-        _out = if (_nominal > 0) then {_nominal} else {_inVal * (_x get "ratio")};
+        _out = if (_nominal > 0) then {_nominal} else {_inVal * (_comp get "ratio")};
     };
 
-    private _step = _x get "increment";
+    private _step = _comp get "increment";
     if (_step > 0) then { _out = round (_out / _step) * _step };
 
-    if (_x get "networked") then {
+    if (_comp get "networked") then {
         [_heli, _varName, _out] call bmkhs_fnc_utilUpdateNetworkGlobal;
     } else {
         _heli setVariable [_varName, _out];
     };
 
-    private _stateVar = _x get "stateVar";
+    private _stateVar = _comp get "stateVar";
     if (_stateVar != "") then {
-        [_heli, format ["bmkhs_%1", _stateVar], _out >= (_x get "stateAbove")]
+        [_heli, format ["bmkhs_%1", _stateVar], _out >= (_comp get "stateAbove")]
             call bmkhs_fnc_utilUpdateNetworkGlobal;
     };
 
