@@ -63,7 +63,9 @@ if (isAutoHoverOn _heli) then {
 //Damage - stub, see fn_damageApply
 //[_heli] call bmkhs_fnc_damageApply;
 
-if (bmkhs_fmDebug) then {
+//The systems display owns the hint while it is up - both use hintSilent, and this one
+//runs last, so it would simply overwrite the other.
+if (bmkhs_fmDebug && {isNil "bmkhs_sysDebug" || {!bmkhs_sysDebug}}) then {
     hintSilent format [
     "_cyclicFwdAft = %1
     \n_cyclicLeftRight = %2

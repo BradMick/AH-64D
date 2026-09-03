@@ -28,6 +28,8 @@ private _deltaTime = _heli getVariable ["bmkhs_deltaTime", 0];
 //as producers and storage rather than as functions Core wrote for them.
 [_heli, _deltaTime] call bmkhs_fnc_systemsSolve;
 
+[_heli] call bmkhs_fnc_systemsDebug;
+
 //Torque limits apply whether or not the aircraft models systems - an airframe does not
 //get to ignore what its drivetrain is rated for by declining to simulate the rest. This
 //needs no circuits, only a torque and a limit, so it runs outside the solve. An airframe
