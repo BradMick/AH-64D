@@ -12,5 +12,6 @@ Returns:
 ---------------------------------------------------------------------------- */
 params ["_heli"];
 
+[_heli] call bmkhs_fnc_systemsUpdate;
 [_heli] call bmkhs_fnc_coreUpdate;
 [_heli] call bmkhs_fnc_coreUpdateFlightModel;
