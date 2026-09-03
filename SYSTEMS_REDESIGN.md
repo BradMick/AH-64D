@@ -48,10 +48,15 @@ accessory section and supplies bleed air is one component with two outputs.
 
 ## Scheduling — dirty-flag propagation
 
-This is the agreed design and the reason for the redesign. It was specified,
-then not built; signature polling was built instead, which cost frame rate
-rather than saving it and left the APU unable to start. Restored here from
-`c8e685dde` so the document can contradict the code again.
+This is the agreed design and the reason for the redesign. **Built and flown** -
+a cold start propagates end to end: APU spools, drives the accessory section,
+pumps pressurise both sides, generators feed AC, rectifiers feed DC, the
+accumulator recharges.
+
+It was specified once, then not built - signature polling went in instead, which
+cost frame rate rather than saving it and left the APU unable to start. This
+section was restored from `c8e685dde`, where it was the only surviving copy,
+so the document can contradict the code again.
 
 **Systems sleep until something changes.** Most components are pure state
 functions recomputing an unchanged answer 60 times a second. A rectifier is
@@ -187,6 +192,24 @@ earns its place - it is what lets member count come from hitpoint count.
 ## Things that caught us
 
 Worth knowing before converting another domain.
+
+**A store must compare against OTHER sources, not the whole node.** Storage asks
+whether anything else already supplies its output circuit before feeding it. Once
+contributions persist between frames - which is what lets a component sleep - a
+store reading the node total reads its OWN supply back, decides it is covered,
+and cuts its feed. The battery did this to `BATT`, dropping it at the instant the
+APU evaluated its gate, so the APU would not start while the panel showed every
+gate passing. Read `bmkhs_sysProducerFeed_<circuit>`, never
+`bmkhs_fnc_systemCircuit`.
+
+**A debug panel that re-derives conditions can disagree with the component.** The
+panel evaluated gates live while the component evaluated them when it ran; both
+looked correct alone. Have the component record the terms it actually used.
+
+**`_x` is rebound by every inner `forEach`.** Any component-field read after a
+loop over gates or outputs must use a captured `_comp`, and `_forEachIndex` must
+be captured too. This was fixed in three kind files and then reintroduced twice
+in the graph builder written one commit later.
 
 **Damage by role returns the WORST member.** Reading it without an index fails
 every member because one is broken.
