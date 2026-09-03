@@ -54,6 +54,19 @@ private _feeds = _heli getVariable ["bmkhs_sysFeeds", createHashMap];
                 _v,
                 _heli getVariable [_v, 0],
                 ["SLEEP", "awake"] select (parseNumber (_heli getVariable [_v + "Awake", true]))];
+            //Which gate is holding it shut, if any.
+            private _comp = _x;
+            private _gs = "";
+            {
+                private _n = if (_x isEqualType []) then {_x select 0} else {_x};
+                private _r = if (_x isEqualType []) then {
+                    ([_heli, _x select 0] call bmkhs_fnc_systemCircuit) >= (_x select 1)
+                } else {
+                    _heli getVariable [_x, false]
+                };
+                _gs = _gs + format ["%1=%2 ", _n, _r];
+            } forEach (_comp get "gates");
+            if (_gs != "") then { _txt = _txt + format ["   gates: %1<br/>", _gs] };
         } forEach _list;
     };
 } forEach [
