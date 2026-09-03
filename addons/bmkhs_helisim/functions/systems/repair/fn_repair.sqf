@@ -19,6 +19,12 @@ Author:
 params ["_heli"];
 #include "\bmkhs_helisim\functions\systems\systems.hpp"
 
+//Runs when a HandleDamage event saw a hitpoint go DOWN - a repair announces itself, so
+//there is nothing to poll for. Each check below re-seeds to 0.000001 so a component that
+//has been restored reads as not-exactly-zero and does not trigger again.
+if !(_heli getVariable ["bmkhs_repairPending", false]) exitWith {};
+_heli setVariable ["bmkhs_repairPending", false];
+
 if (([_heli, "engines", 0] call bmkhs_fnc_damageGet) == 0) then {
     [_heli, "bmkhs_engineOverspeed", 0.0, false, true] call bmkhs_fnc_utilSetArrayVariable;
     [_heli, "engines", 0.000001, 0] call bmkhs_fnc_damageSet
