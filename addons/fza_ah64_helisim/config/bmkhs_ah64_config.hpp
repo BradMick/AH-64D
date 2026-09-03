@@ -8,10 +8,13 @@ class BMKHS_HeliSim {
 
     //Drivetrain ratings, worst first: {fraction of rated torque, seconds it will hold
     //there}. 0 seconds damages immediately. SE sets are used single-engine.
-    xmsnTqLimits[]   = {{1.20, 0}, {1.00, 6}};
-    xmsnTqLimitsSE[] = {{1.30, 0}, {1.20, 6}, {1.10, 150}};
-    ngbTqLimits[]    = {{1.20, 0}, {1.00, 6}};
-    ngbTqLimitsSE[]  = {{1.30, 0}, {1.20, 6}, {1.10, 150}};
+    //Transmission sees BOTH engines combined, so 2.30 is the pair at full output and it
+    //has no single-engine case - one engine can never overtorque it.
+    xmsnTqLimits[]   = {{2.30, 0}, {2.00, 6}};
+    //A nose gearbox carries its own engine only, which makes it the limiting part
+    //single-engine: 1.25 is all it will absorb.
+    ngbTqLimits[]    = {{1.15, 0}, {1.00, 6}};
+    ngbTqLimitsSE[]  = {{1.25, 0}, {1.22, 6}, {1.10, 150}};
 
     #include "bmkhs_config\helisim_airfoils.hpp"
     #include "bmkhs_config\helisim_components.hpp"
