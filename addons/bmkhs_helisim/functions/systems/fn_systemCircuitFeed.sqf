@@ -43,14 +43,16 @@ _heli setVariable ["bmkhs_sysFeeds", _feeds];
 //Recompute the node, and the producer-only total storage compares itself against.
 private _total    = 0;
 private _fromProd = 0;
+//Keyed by circuit AND source: one component feeds several nodes, and several feed one
+//node, so a flag per component alone gets overwritten by whichever wrote last.
 private _prodKeys = _heli getVariable ["bmkhs_sysFeedIsProducer", createHashMap];
-_prodKeys set [_source, _producer];
+_prodKeys set [_circuit + "/" + _source, _producer];
 _heli setVariable ["bmkhs_sysFeedIsProducer", _prodKeys];
 
 {
     private _v = _node get _x;
     _total = _total max _v;
-    if (_prodKeys getOrDefault [_x, true]) then { _fromProd = _fromProd max _v };
+    if (_prodKeys getOrDefault [_circuit + "/" + _x, true]) then { _fromProd = _fromProd max _v };
 } forEach (keys _node);
 
 private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];

@@ -56,7 +56,7 @@ private _feeds = _heli getVariable ["bmkhs_sysFeeds", createHashMap];
             _txt = _txt + format ["%1 = %2  %3<br/>",
                 _v,
                 _heli getVariable [_v, 0],
-                ["SLEEP", "awake"] select (_heli getVariable [_v + "Awake", true])];
+                ["SLEEP", "awake"] select (parseNumber (_heli getVariable [_v + "Awake", true]))];
         } forEach _list;
     };
 } forEach [
