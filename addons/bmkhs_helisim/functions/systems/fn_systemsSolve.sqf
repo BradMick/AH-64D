@@ -40,18 +40,9 @@ if !(local _heli) exitWith {};
 //model either, so nothing can degrade it.
 if !(_heli getVariable ["bmkhs_useSystems", false]) exitWith {};
 
-//Rebuilt each pass - a node holds only what its feeders put there this frame.
-private _circuits = createHashMap;
-{ _circuits set [_x, 0] } forEach (keys (_heli getVariable ["bmkhs_sysCircuits", createHashMap]));
-
-//Nr comes from the flight model, not a component, so it is seeded before anything reads
-//it. The accessory drive and everything mechanical hangs off it.
-_circuits set ["Nr", [_heli] call bmkhs_fnc_stateRtrRPM];
-
-_heli setVariable ["bmkhs_sysCircuits", _circuits];
-
-//Producer contributions are tracked per node so storage can tell its own supply apart.
-{ _heli setVariable ["bmkhs_sysProducerFeed_" + _x, 0] } forEach (keys _circuits);
+//Nr comes from the flight model rather than a component, so it is fed in like any other
+//contribution. Everything mechanical hangs off it.
+[_heli, "Nr", "rotor", [_heli] call bmkhs_fnc_stateRtrRPM, true] call bmkhs_fnc_systemCircuitFeed;
 
 [_heli, _deltaTime]        call bmkhs_fnc_systemStorage;
 [_heli, _deltaTime]        call bmkhs_fnc_systemProducer;

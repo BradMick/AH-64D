@@ -227,6 +227,7 @@ class CfgFunctions
         class systems {
             file = "\bmkhs_helisim\functions\systems";
             class systemCircuit {R;};
+            class systemCircuitFeed {R;};
             class systemCircuitState {R;};
             class systemConsumer {R;};
             class systemConverter {R;};

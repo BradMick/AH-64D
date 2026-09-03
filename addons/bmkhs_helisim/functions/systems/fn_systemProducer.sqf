@@ -25,14 +25,40 @@ params ["_heli", "_deltaTime"];
 private _producers = _heli getVariable ["bmkhs_sysProducers", []];
 if (_producers isEqualTo []) exitWith {};
 
-private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
-
 {
     //Not modelled with systems off - its state stays as seeded, which is the vanilla
     //contract: powered up, running, no start procedure.
     private _comp    = _x;
     private _varName = _x get "varName";
     private _nominal = _x get "nominal";
+
+    //What this component depends on. Unchanged since last frame, and not still ramping
+    //toward a target, means the answer is the same one - so there is nothing to do.
+    private _sig = [];
+    {
+        _sig pushBack (if (_x isEqualType []) then {
+            ([_heli, _x select 0] call bmkhs_fnc_systemCircuit) >= (_x select 1)
+        } else {
+            _heli getVariable [_x, false]
+        });
+    } forEach (_comp get "gates");
+
+    private _drvC = _comp get "drivenBy";
+    if (_drvC != "") then {
+        _sig pushBack (([_heli, _drvC] call bmkhs_fnc_systemCircuit) > (_comp get "minDrive"));
+    };
+    private _reqC = _comp get "requires";
+    if (_reqC != "") then { _sig pushBack (_heli getVariable [_reqC, 1]) };
+    _sig pushBack ([_heli, _comp get "damageRole", _comp get "index"] call bmkhs_fnc_damageGet);
+    //A component with no nominal CARRIES its drive value, so the value itself is an
+    //input - a shaft tracks Nr continuously rather than switching at a threshold.
+    if (_nominal <= 0 && {_drvC != ""}) then {
+        _sig pushBack ([_heli, _drvC] call bmkhs_fnc_systemCircuit);
+    };
+
+    if (!(_heli getVariable [_varName + "Awake", true])
+        && {_sig isEqualTo (_heli getVariable [_varName + "Sig", []])}) then { continue };
+    _heli setVariable [_varName + "Sig", _sig];
 
     private _damaged = ([_heli, _x get "damageRole", _x get "index"] call bmkhs_fnc_damageGet)
                             > SYS_COMP_DMG_THRESH;
@@ -89,6 +115,10 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     private _step = _x get "increment";
     if (_step > 0) then { _out = round (_out / _step) * _step };
 
+    //Awake while still moving toward the target. Once it IS the target, nothing changes
+    //again until an input does, and the signature above is what notices.
+    _heli setVariable [_varName + "Awake", _out != _target];
+
     if (_x get "networked") then {
         [_heli, _varName, _out] call bmkhs_fnc_utilUpdateNetworkGlobal;
     } else {
@@ -121,10 +151,6 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
             if (_fixed > 0) then {_fixed} else {_out * (_x get "ratio")}
         };
 
-        _circuits set [_circuit, (_circuits getOrDefault [_circuit, 0]) max _val];
-        private _feedVar = "bmkhs_sysProducerFeed_" + _circuit;
-        _heli setVariable [_feedVar, (_heli getVariable [_feedVar, 0]) max _val];
+        [_heli, _circuit, _varName, _val, true] call bmkhs_fnc_systemCircuitFeed;
     } forEach (_comp get "outputs");
 } forEach _producers;
-
-_heli setVariable ["bmkhs_sysCircuits", _circuits];

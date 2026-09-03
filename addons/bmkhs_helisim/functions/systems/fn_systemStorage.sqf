@@ -29,12 +29,33 @@ params ["_heli", "_deltaTime", ["_settle", false]];
 private _storage = _heli getVariable ["bmkhs_sysStorage", []];
 if (_storage isEqualTo []) exitWith {};
 
-private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
-
 {
     private _varName = _x get "varName";
     private _nominal = _x get "nominal";
     private _charge  = _heli getVariable [_varName + "Charge", 1.0];
+
+    //A store sleeps only when its charge cannot move: nothing it depends on changed, it
+    //is not leaking, and it is neither draining nor refilling. Settle passes always run,
+    //since that is where charge is applied.
+    private _comp0 = _x;
+    private _sig = [_charge];
+    {
+        _sig pushBack (if (_x isEqualType []) then {
+            ([_heli, _x select 0] call bmkhs_fnc_systemCircuit) >= (_x select 1)
+        } else {
+            _heli getVariable [_x, false]
+        });
+    } forEach (_comp0 get "gates");
+    private _rc = _comp0 get "rechargedBy";
+    if (_rc != "") then {
+        _sig pushBack (([_heli, _rc] call bmkhs_fnc_systemCircuit) > (_comp0 get "minRecharge"));
+    };
+    private _sb = _comp0 get "startedBy";
+    if (_sb != "") then { _sig pushBack (_heli getVariable [_sb, false]) };
+    _sig pushBack ([_heli, _comp0 get "damageRole", _comp0 get "index"] call bmkhs_fnc_damageGet);
+
+    if (!_settle && {_sig isEqualTo (_heli getVariable [_varName + "Sig", []])}) then { continue };
+    if (!_settle) then { _heli setVariable [_varName + "Sig", _sig] };
 
     private _damage  = [_heli, _x get "damageRole", _x get "index"] call bmkhs_fnc_damageGet;
     //Anything else that vents this store adds to its damage. _comp because the inner
@@ -108,8 +129,10 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
     {
         private _c = _x get "circuit";
         if (_c != "") then {
+            //Read live - contributions update as components run, so a captured copy of
+            //the node map goes stale within the pass.
             private _feed = if (_settle) then {_heli getVariable ["bmkhs_sysProducerFeed_" + _c, 0]}
-                                         else {_circuits getOrDefault [_c, 0]};
+                                         else {[_heli, _c] call bmkhs_fnc_systemCircuit};
             _elseFeed = _elseFeed max _feed;
         };
     } forEach _outputs;
@@ -155,17 +178,23 @@ private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
         _heli setVariable [_varName, _published];
     };
 
-    //Only feeds while it is the one supplying.
+    //Only feeds while it is the one supplying - and when it stops, its stored
+    //contribution has to be cleared or the node would hold it forever.
+    if !(_live && _elseFeed <= 0) then {
+        {
+            if ((_x get "circuit") != "") then {
+                [_heli, _x get "circuit", _varName, 0, false] call bmkhs_fnc_systemCircuitFeed;
+            };
+        } forEach _outputs;
+    };
     if (_live && _elseFeed <= 0) then {
         {
             private _c = _x get "circuit";
             if (_c != "") then {
                 private _fixed = _x get "nominal";
                 private _val   = if (_fixed > 0) then {_fixed} else {_charge * _nominal * (_x get "ratio")};
-                _circuits set [_c, (_circuits getOrDefault [_c, 0]) max _val];
+                [_heli, _c, _varName, _val, false] call bmkhs_fnc_systemCircuitFeed;
             };
         } forEach _outputs;
     };
 } forEach _storage;
-
-_heli setVariable ["bmkhs_sysCircuits", _circuits];

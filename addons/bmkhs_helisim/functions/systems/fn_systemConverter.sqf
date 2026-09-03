@@ -29,11 +29,34 @@ params ["_heli", "_deltaTime"];
 private _converters = _heli getVariable ["bmkhs_sysConverters", []];
 if (_converters isEqualTo []) exitWith {};
 
-private _circuits   = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
-
 {
     private _comp    = _x;
     private _varName = _x get "varName";
+
+    //Same rule as a producer: unchanged inputs mean the same answer.
+    private _sig = [];
+    {
+        _sig pushBack (if (_x isEqualType []) then {
+            ([_heli, _x select 0] call bmkhs_fnc_systemCircuit) >= (_x select 1)
+        } else {
+            _heli getVariable [_x, false]
+        });
+    } forEach (_comp get "gates");
+
+    private _inC = _comp get "input";
+    _sig pushBack (([_heli, _inC] call bmkhs_fnc_systemCircuit) > (_comp get "minInput"));
+    //No nominal means it scales its input, so the value itself matters.
+    if ((_comp get "nominal") <= 0) then {
+        _sig pushBack ([_heli, _inC] call bmkhs_fnc_systemCircuit);
+    };
+    private _clutchC = _comp get "disengageOn";
+    if (_clutchC != "") then {
+        _sig pushBack (([_heli, _clutchC] call bmkhs_fnc_systemCircuit) >= (_comp get "disengageAt"));
+    };
+    _sig pushBack ([_heli, _comp get "damageRole", _comp get "index"] call bmkhs_fnc_damageGet);
+
+    if (_sig isEqualTo (_heli getVariable [_varName + "Sig", []])) then { continue };
+    _heli setVariable [_varName + "Sig", _sig];
 
     private _damaged = ([_heli, _x get "damageRole", _x get "index"] call bmkhs_fnc_damageGet)
                             > SYS_COMP_DMG_THRESH;
@@ -91,10 +114,6 @@ private _circuits   = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
             if (_fixed > 0) then {_fixed} else {_out * (_x get "ratio")}
         };
 
-        _circuits set [_circuit, (_circuits getOrDefault [_circuit, 0]) max _val];
-        private _feedVar = "bmkhs_sysProducerFeed_" + _circuit;
-        _heli setVariable [_feedVar, (_heli getVariable [_feedVar, 0]) max _val];
+        [_heli, _circuit, _varName, _val, true] call bmkhs_fnc_systemCircuitFeed;
     } forEach (_comp get "outputs");
 } forEach _converters;
-
-_heli setVariable ["bmkhs_sysCircuits", _circuits];
