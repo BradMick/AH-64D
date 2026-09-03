@@ -46,6 +46,68 @@ accessory section and supplies bleed air is one component with two outputs.
 | Reservoir | folded into Storage | a reservoir is a store that leaks; agreed, not an accident |
 | — | `fn_systemTorque` | not in the original design: overtorque damage, which is a component property but not a supply one |
 
+## Scheduling — dirty-flag propagation
+
+This is the agreed design and the reason for the redesign. It was specified,
+then not built; signature polling was built instead, which cost frame rate
+rather than saving it and left the APU unable to start. Restored here from
+`c8e685dde` so the document can contradict the code again.
+
+**Systems sleep until something changes.** Most components are pure state
+functions recomputing an unchanged answer 60 times a second. A rectifier is
+`generatorOn && damage <= threshold` — it can only change when one of those
+changes.
+
+**Continuous is a runtime answer, not a static property.** The timer-driven
+components are not always integrating either:
+
+| component | integrates only while |
+|---|---|
+| battery | on battery bus AND AC bus down |
+| APU | spooling up or down, not at steady RPM |
+| reservoir | actually leaking |
+| accumulator | bleeding down |
+| transmission | over a torque limit |
+
+On a healthy running aircraft **none of these are integrating**, so steady-state
+cost should approach zero.
+
+The scheduler that expresses this: an update returns whether it wants the next
+frame.
+
+```sqf
+//true = keep me scheduled, false = sleep until a dependency changes
+[_heli, _index, _deltaTime] call bmkhs_fnc_systemProducer
+```
+
+Dirty-flag propagation wakes a sleeping component when a dependency changes; a
+component that is mid-transition keeps itself awake by returning true. Damage
+changes are just another dependency.
+
+**As built.** `fn_systemsComponents` derives the graph at load from the fields a
+component already declares — `gates`, `drivenBy`, `input`, `requires`,
+`rechargedBy`, `disengageOn` — rather than a separate `dependsOn` that could
+drift from what the code actually reads. Two indices come out of it:
+`bmkhs_sysReaders` maps a circuit to the components reading it, and
+`bmkhs_sysWatchers` maps a variable to the components gated on it.
+
+`fn_systemsSolve` then walks from what changed: variables whose value moved,
+damage that moved, Nr, and anything that asked for another frame. Each component
+that moves its own node dirties whatever reads that node, which appends to the
+queue, so the walk reaches exactly as far as the change does and stops.
+
+**Ordering falls out of the walk**, which is what removed the fixed
+`SYS_SOLVE_PASSES` re-resolve and the `deltaTime = 0` passes that went with it.
+A topological sort was never possible anyway: the accumulator starts the APU,
+which drives the accessory section, which turns the pumps, which recharge the
+accumulator. What cuts the cycle is that **charge is state, not supply** — a
+store delivers what was put there earlier, so it is a root of the walk and its
+recharge edge settles afterwards from the walk's own result.
+
+Circuit states and consumers feed nothing, so they are not in the walk; the
+solve publishes them from the settled graph, which also stops a node that fell
+quiet from keeping its last published state.
+
 ## Where it stands
 
 | domain | state |
@@ -71,7 +133,7 @@ fn_systemConsumer      supplied if ANY of its circuits is up, or all with needsA
 fn_systemCircuit       a named node; highest feeder wins
 fn_systemCircuitState  publishes whether a node is up
 fn_systemTorque        damages anything run past its limits
-fn_systemsSolve        storage, producers+converters, storage settle, circuits, consumers
+fn_systemsSolve        dirty walk from what changed; storage roots it, charge settles last
 fn_systemsComponents   config -> hashmaps, once, at init
 ```
 

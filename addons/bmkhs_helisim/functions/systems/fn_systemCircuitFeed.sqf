@@ -21,20 +21,21 @@ Parameters:
                 counted apart [Bool]
 
 Returns:
-    Nothing
+    Whether the NODE's value changed, which is what the walk propagates from
+    [Bool]
 
 Author:
     BradMick
 ---------------------------------------------------------------------------- */
 params ["_heli", "_circuit", "_source", "_value", ["_producer", true]];
 
-if (_circuit == "") exitWith {};
+if (_circuit == "") exitWith {false};
 
 private _feeds = _heli getVariable ["bmkhs_sysFeeds", createHashMap];
 private _node  = _feeds getOrDefault [_circuit, createHashMap];
 
 //Nothing to do if this feeder is already contributing exactly this.
-if ((_node getOrDefault [_source, -1]) isEqualTo _value) exitWith {};
+if ((_node getOrDefault [_source, -1]) isEqualTo _value) exitWith {false};
 
 _node set [_source, _value];
 _feeds set [_circuit, _node];
@@ -56,6 +57,11 @@ _heli setVariable ["bmkhs_sysFeedIsProducer", _prodKeys];
 } forEach (keys _node);
 
 private _circuits = _heli getVariable ["bmkhs_sysCircuits", createHashMap];
+private _was = _circuits getOrDefault [_circuit, 0];
 _circuits set [_circuit, _total];
 _heli setVariable ["bmkhs_sysCircuits", _circuits];
 _heli setVariable ["bmkhs_sysProducerFeed_" + _circuit, _fromProd];
+
+//One feeder changing does not necessarily move the node - highest wins, so a lesser
+//feeder rising under the winner changes nothing anyone reads.
+_total != _was

@@ -16,9 +16,12 @@ Description:
         D/d  drive    whatever turns it, above its own threshold
         F/f  fluid    what it draws from, above empty
         H/h  health   below its damage threshold
-        *    awake    still moving toward its target
+        *    awake    mid-transition, so it asked for the next frame
 
     So "GDFH *" is running and settling, and "GdFH" has lost its drive.
+
+    A component with no * is not being skipped by choice - it is settled, and
+    the walk will wake it when something it reads moves.
 
 Parameters:
     _heli - The helicopter [Object]
@@ -114,13 +117,12 @@ private _feeds = _heli getVariable ["bmkhs_sysFeeds", createHashMap];
             if (_label == "PRODUCERS") then {
                 (_heli getVariable [_v + "Why", [0,0,0,0,0,0]])
                     params ["_wDmg", "_wGate", "_wDrv", "_wSup", "_wVal", "_wDt"];
-                _txt = _txt + format ["   tgt %1 ramp %2 %3<br/>",
+                _txt = _txt + format ["   tgt %1 ramp %2<br/>",
                     [_heli getVariable [_v + "Tgt", -1]] call _fmt,
-                    _comp get "rampRate",
-                    ["", "SLEPT"] select (parseNumber (_heli getVariable [_v + "Slept", false]))];
-                _txt = _txt + format ["   dmg %1 gate %2 (%3) drv %4 sup %5 val %6 dt %7<br/>",
+                    _comp get "rampRate"];
+                _txt = _txt + format ["   dmg %1 gate %2 (%3) drv %4 sup %5 val %6<br/>",
                     _wDmg, _wGate, _heli getVariable [_v + "GateWhy", "?"], _wDrv,
-                    [_wSup] call _fmt, [_wVal] call _fmt, _wDt toFixed 4];
+                    [_wSup] call _fmt, [_wVal] call _fmt];
             };
         } forEach _list;
     };

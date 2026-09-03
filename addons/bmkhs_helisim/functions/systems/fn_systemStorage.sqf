@@ -23,51 +23,19 @@ Returns:
 Author:
     BradMick
 ---------------------------------------------------------------------------- */
-params ["_heli", "_deltaTime", ["_settle", false]];
+params ["_heli", "_index", "_deltaTime", ["_settle", false]];
 #include "\bmkhs_helisim\functions\systems\systems.hpp"
 
+//One component, named by the walk. Returns whether what it PUTS OUT moved; the settle
+//pass is where charge is applied, and runs for every store regardless.
 private _storage = _heli getVariable ["bmkhs_sysStorage", []];
-if (_storage isEqualTo []) exitWith {};
+if (_index >= (count _storage)) exitWith {false};
+private _comp = _storage select _index;
 
-{
-    private _varName = _x get "varName";
-    private _nominal = _x get "nominal";
-    private _charge  = _heli getVariable [_varName + "Charge", 1.0];
+private _varName = _comp get "varName";
+private _nominal = _comp get "nominal";
+private _charge  = _heli getVariable [_varName + "Charge", 1.0];
 
-    //A store sleeps only when its charge cannot move: nothing it depends on changed, it
-    //is not leaking, and it is neither draining nor refilling. Settle passes always run,
-    //since that is where charge is applied.
-    private _comp0 = _x;
-    private _sig = [_charge];
-    {
-        _sig pushBack (if (_x isEqualType []) then {
-            ([_heli, _x select 0] call bmkhs_fnc_systemCircuit) >= (_x select 1)
-        } else {
-            _heli getVariable [_x, false]
-        });
-    } forEach (_comp0 get "gates");
-    private _rc = _comp0 get "rechargedBy";
-    if (_rc != "") then {
-        _sig pushBack (([_heli, _rc] call bmkhs_fnc_systemCircuit) > (_comp0 get "minRecharge"));
-    };
-    private _sb = _comp0 get "startedBy";
-    if (_sb != "") then { _sig pushBack (_heli getVariable [_sb, false]) };
-    _sig pushBack ([_heli, _comp0 get "damageRole", _comp0 get "index"] call bmkhs_fnc_damageGet);
-
-    if (!_settle && {_sig isEqualTo (_heli getVariable [_varName + "Sig", []])}) then {
-        {
-            if ((_x get "circuit") != "") then {
-                [_heli, _x get "circuit", _varName,
-                 _heli getVariable [_varName + "Feed_" + (_x get "circuit"), 0], false]
-                    call bmkhs_fnc_systemCircuitFeed;
-            };
-        } forEach (_comp0 get "outputs");
-        continue;
-    };
-    if (!_settle) then { _heli setVariable [_varName + "Sig", _sig] };
-
-    //_comp because every inner forEach below rebinds _x.
-    private _comp    = _x;
     private _damage  = [_heli, _comp get "damageRole", _comp get "index"] call bmkhs_fnc_damageGet;
     {
         _damage = _damage + ([_heli, _x] call bmkhs_fnc_damageGet);
@@ -187,11 +155,14 @@ if (_storage isEqualTo []) exitWith {};
 
     //Only feeds while it is the one supplying - and when it stops, its stored
     //contribution has to be cleared or the node would hold it forever.
+    private _moved = false;
     if !(_live && _elseFeed <= 0) then {
         {
             if ((_x get "circuit") != "") then {
                 _heli setVariable [_varName + "Feed_" + (_x get "circuit"), 0];
-                [_heli, _x get "circuit", _varName, 0, false] call bmkhs_fnc_systemCircuitFeed;
+                if (([_heli, _x get "circuit", _varName, 0, false] call bmkhs_fnc_systemCircuitFeed)) then {
+                    _moved = true;
+                };
             };
         } forEach _outputs;
     };
@@ -202,8 +173,17 @@ if (_storage isEqualTo []) exitWith {};
                 private _fixed = _x get "nominal";
                 private _val   = if (_fixed > 0) then {_fixed} else {_charge * _nominal * (_x get "ratio")};
                 _heli setVariable [_varName + "Feed_" + _c, _val];
-                [_heli, _c, _varName, _val, false] call bmkhs_fnc_systemCircuitFeed;
+                if (([_heli, _c, _varName, _val, false] call bmkhs_fnc_systemCircuitFeed)) then {
+                    _moved = true;
+                };
             };
         } forEach _outputs;
     };
-} forEach _storage;
+
+//Mid-transition keeps itself awake: a store actively draining or refilling has more to do
+//next frame, the same way a spooling producer does.
+private _busy = _settle && _live && {(!_covered && {(_comp get "emerRate") > 0})
+                                  || {_covered && _rechargedBy != "" && _charge < 1.0}};
+_heli setVariable [_varName + "Awake", _busy];
+
+_moved

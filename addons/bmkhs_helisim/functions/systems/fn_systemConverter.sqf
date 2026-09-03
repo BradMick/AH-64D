@@ -23,49 +23,15 @@ Returns:
 Author:
     BradMick
 ---------------------------------------------------------------------------- */
-params ["_heli", "_deltaTime"];
+params ["_heli", "_index", "_deltaTime"];
 #include "\bmkhs_helisim\functions\systems\systems.hpp"
 
+//One component, named by the walk. Returns whether its output MOVED.
 private _converters = _heli getVariable ["bmkhs_sysConverters", []];
-if (_converters isEqualTo []) exitWith {};
+if (_index >= (count _converters)) exitWith {false};
+private _comp = _converters select _index;
 
-{
-    private _comp    = _x;
-    private _varName = _x get "varName";
-
-    //Same rule as a producer: unchanged inputs mean the same answer.
-    private _sig = [];
-    {
-        _sig pushBack (if (_x isEqualType []) then {
-            ([_heli, _x select 0] call bmkhs_fnc_systemCircuit) >= (_x select 1)
-        } else {
-            _heli getVariable [_x, false]
-        });
-    } forEach (_comp get "gates");
-
-    private _inC = _comp get "input";
-    _sig pushBack (([_heli, _inC] call bmkhs_fnc_systemCircuit) > (_comp get "minInput"));
-    //No nominal means it scales its input, so the value itself matters.
-    if ((_comp get "nominal") <= 0) then {
-        _sig pushBack ([_heli, _inC] call bmkhs_fnc_systemCircuit);
-    };
-    private _clutchC = _comp get "disengageOn";
-    if (_clutchC != "") then {
-        _sig pushBack (([_heli, _clutchC] call bmkhs_fnc_systemCircuit) >= (_comp get "disengageAt"));
-    };
-    _sig pushBack ([_heli, _comp get "damageRole", _comp get "index"] call bmkhs_fnc_damageGet);
-
-    if (_sig isEqualTo (_heli getVariable [_varName + "Sig", []])) then {
-        {
-            if ((_x get "circuit") != "") then {
-                [_heli, _x get "circuit", _varName,
-                 _heli getVariable [_varName + "Feed_" + (_x get "circuit"), 0], true]
-                    call bmkhs_fnc_systemCircuitFeed;
-            };
-        } forEach (_comp get "outputs");
-        continue;
-    };
-    _heli setVariable [_varName + "Sig", _sig];
+private _varName = _comp get "varName";
 
     private _damaged = ([_heli, _comp get "damageRole", _comp get "index"] call bmkhs_fnc_damageGet)
                             > SYS_COMP_DMG_THRESH;
@@ -96,6 +62,8 @@ if (_converters isEqualTo []) exitWith {};
     private _step = _comp get "increment";
     if (_step > 0) then { _out = round (_out / _step) * _step };
 
+    private _moved = _out != (_heli getVariable [_varName, 0]);
+
     if (_comp get "networked") then {
         [_heli, _varName, _out] call bmkhs_fnc_utilUpdateNetworkGlobal;
     } else {
@@ -124,6 +92,12 @@ if (_converters isEqualTo []) exitWith {};
         };
 
         _heli setVariable [_varName + "Feed_" + _circuit, _val];
-        [_heli, _circuit, _varName, _val, true] call bmkhs_fnc_systemCircuitFeed;
+        //Whether the NODE moved, not just this feeder.
+        if (([_heli, _circuit, _varName, _val, true] call bmkhs_fnc_systemCircuitFeed)) then {
+            _moved = true;
+        };
     } forEach (_comp get "outputs");
-} forEach _converters;
+
+//A converter creates nothing and holds no state, so it is never mid-transition - it has
+//either moved its node or it has not.
+_moved

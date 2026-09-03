@@ -2,20 +2,23 @@
 Function: bmkhs_fnc_systemsSolve
 
 Description:
-    One pass over the component graph, in a fixed order:
+    Walks the component graph from whatever changed, and nothing else.
 
-      1. storage    charge is state, so it supplies before anything is solved,
-                    which cuts the accumulator -> APU -> pumps -> accumulator
-                    startup loop
-      2. producers  resolve against circuits the stores have fed, and converters
-                    move what they made onto other circuits
-      3. storage    drains and refills from what actually solved
-      4. circuits   publish the state of any node the aircraft named
-      5. consumers  threshold what ended up on theirs
+    A component is woken by what it READS - a circuit whose value moved, or a
+    variable it is gated on. Waking it recomputes it; if its own output moves,
+    everything reading THAT is woken in turn, and so on until the queue empties.
+    A component mid-transition - an APU spooling, a store draining - keeps
+    itself awake by asking for the next frame.
 
-    Storage runs twice: once to put its charge onto circuits, once at the end to
-    move that charge from the solved result. Producers run twice so one driven
-    by another circuit does not read a stale value.
+    So a settled aircraft costs one check of the dirty set, not a pass over
+    every component. A change costs its own chain and no more.
+
+    Ordering falls out of the walk rather than needing a topological sort, which
+    a cycle could not have anyway: the accumulator starts the APU, which drives
+    the accessory section, which turns the pumps, which recharge the
+    accumulator. What cuts that cycle is that CHARGE IS STATE, not supply - a
+    store delivers what was put there earlier, so it is a root of the walk and
+    its recharge edge settles afterwards from the walk's own result.
 
 Parameters:
     _heli      - The helicopter [Object]
@@ -40,23 +43,118 @@ if !(local _heli) exitWith {};
 //model either, so nothing can degrade it.
 if !(_heli getVariable ["bmkhs_useSystems", false]) exitWith {};
 
-//Nr comes from the flight model rather than a component, so it is fed in like any other
-//contribution. Everything mechanical hangs off it.
-[_heli, "Nr", "rotor", [_heli] call bmkhs_fnc_stateRtrRPM, true] call bmkhs_fnc_systemCircuitFeed;
+private _producers  = _heli getVariable ["bmkhs_sysProducers",  []];
+private _converters = _heli getVariable ["bmkhs_sysConverters", []];
+private _storage    = _heli getVariable ["bmkhs_sysStorage",    []];
 
-[_heli, _deltaTime]        call bmkhs_fnc_systemStorage;
-[_heli, _deltaTime]        call bmkhs_fnc_systemProducer;
-[_heli, _deltaTime]        call bmkhs_fnc_systemConverter;
-//Re-resolved until the graph settles: a producer behind another producer's circuit reads
-//a stale value otherwise, and the chains run deeper than one hop - the transmission feeds
-//the accessory drive feeds the pumps, and a generator feeds AC feeds a rectifier feeds DC.
-//deltaTime 0 so re-resolving does not advance a ramp more than once in a frame.
-for "_i" from 1 to SYS_SOLVE_PASSES do {
-    [_heli, 0] call bmkhs_fnc_systemProducer;
-    [_heli, 0] call bmkhs_fnc_systemConverter;
+private _readers  = _heli getVariable ["bmkhs_sysReaders",  createHashMap];
+private _watchers = _heli getVariable ["bmkhs_sysWatchers", createHashMap];
+private _feedsOf  = _heli getVariable ["bmkhs_sysFeeds_of", createHashMap];
+
+//Anything a component is gated on is a dependency like any other, so a switch being
+//thrown or a hitpoint being lost enters the walk the same way a circuit moving does.
+private _watched = _heli getVariable ["bmkhs_sysWatchedLast", createHashMap];
+private _queue   = [];
+private _seen    = createHashMap;
+
+private _wake = {
+    params ["_ref"];
+    private _key = (_ref select 0) + str (_ref select 1);
+    if (_seen getOrDefault [_key, false]) exitWith {};
+    _seen set [_key, true];
+    _queue pushBack _ref;
 };
+
+//A node moving wakes everything that reads it.
+private _dirtyCircuit = {
+    params ["_circuit"];
+    { [_x] call _wake } forEach (_readers getOrDefault [_circuit, []]);
+};
+
+{
+    private _now = _heli getVariable [_x, false];
+    if !(_now isEqualTo (_watched getOrDefault [_x, "unset"])) then {
+        _watched set [_x, _now];
+        { [_x] call _wake } forEach (_watchers get _x);
+    };
+} forEach (keys _watchers);
+_heli setVariable ["bmkhs_sysWatchedLast", _watched];
+
+//Damage is a dependency too, and it has no variable to watch - so a component is woken
+//when the damage it reads has moved since it last ran.
+{
+    _x params ["_list", "_kind"];
+    {
+        if ((_x get "damageRole") != "") then {
+            private _d = [_heli, _x get "damageRole", _x get "index"] call bmkhs_fnc_damageGet;
+            if (_d != (_heli getVariable [(_x get "varName") + "DmgLast", -1])) then {
+                _heli setVariable [(_x get "varName") + "DmgLast", _d];
+                [[_kind, _forEachIndex]] call _wake;
+            };
+        };
+    } forEach _list;
+} forEach [
+    [_producers,  "producer"],
+    [_converters, "converter"],
+    [_storage,    "storage"]
+];
+
+//Nr comes from the flight model rather than a component, and it moves constantly, so it
+//is fed in first and wakes the drivetrain when it actually changes.
+private _nr = [_heli] call bmkhs_fnc_stateRtrRPM;
+if (([_heli, "Nr", "rotor", _nr, true] call bmkhs_fnc_systemCircuitFeed)) then {
+    ["Nr"] call _dirtyCircuit;
+};
+
+//Storage is a root: what it delivers was put there earlier, so it supplies before
+//anything has been solved. That is what breaks the start cycle.
+{
+    if (([_heli, _forEachIndex, _deltaTime, false] call bmkhs_fnc_systemStorage)) then {
+        { [_x] call _dirtyCircuit } forEach (_feedsOf getOrDefault ["storage" + str _forEachIndex, []]);
+    };
+} forEach _storage;
+
+//Anything mid-transition asked for the next frame last time it ran - a spooling APU, a
+//store still draining. It keeps itself in the walk until it reaches its target.
+{
+    _x params ["_list", "_kind"];
+    {
+        if (_heli getVariable [(_x get "varName") + "Awake", false]) then {
+            [[_kind, _forEachIndex]] call _wake;
+        };
+    } forEach _list;
+} forEach [
+    [_producers,  "producer"],
+    [_converters, "converter"],
+    [_storage,    "storage"]
+];
+
+//Drain the queue. Each component that MOVES dirties what it feeds, which appends to the
+//queue - so the walk reaches exactly as far as the change does and then stops.
+private _guard = 0;
+while {(count _queue) > 0 && {_guard < SYS_WALK_LIMIT}} do {
+    _guard = _guard + 1;
+    private _ref  = _queue deleteAt 0;
+    _ref params ["_kind", "_i"];
+    _seen set [_kind + str _i, false];
+
+    private _moved = switch (_kind) do {
+        case "producer":  { [_heli, _i, _deltaTime] call bmkhs_fnc_systemProducer };
+        case "converter": { [_heli, _i, _deltaTime] call bmkhs_fnc_systemConverter };
+        case "storage":   { [_heli, _i, _deltaTime, false] call bmkhs_fnc_systemStorage };
+        default           { false };
+    };
+
+    if (_moved) then {
+        { [_x] call _dirtyCircuit } forEach (_feedsOf getOrDefault [_kind + str _i, []]);
+    };
+};
+
 //Charge moves last, off the solved result - a store reading its recharge circuit any
-//earlier sees zero and never refills.
-[_heli, _deltaTime, true]  call bmkhs_fnc_systemStorage;
-[_heli]                    call bmkhs_fnc_systemCircuitState;
-[_heli]                    call bmkhs_fnc_systemConsumer;
+//earlier sees zero and never refills. This is the cycle's cut edge.
+{ [_heli, _forEachIndex, _deltaTime, true] call bmkhs_fnc_systemStorage } forEach _storage;
+
+//Publishing is cheap and reads the settled graph, so it is not worth waking selectively -
+//and it must not be skipped, or a node that fell quiet keeps its last published state.
+[_heli] call bmkhs_fnc_systemCircuitState;
+[_heli] call bmkhs_fnc_systemConsumer;

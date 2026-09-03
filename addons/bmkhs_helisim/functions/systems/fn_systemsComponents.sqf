@@ -244,3 +244,81 @@ _heli setVariable ["bmkhs_sysProducers", _producers];
 _heli setVariable ["bmkhs_sysStorage",   _storage];
 _heli setVariable ["bmkhs_sysConsumers", _consumers];
 _heli setVariable ["bmkhs_sysCircuits",  _circuits];
+
+//The dependency graph, built once. A component is woken by whatever it READS, so the
+//edges come from the fields it already declares rather than a separate dependsOn that
+//could drift out of step with what the code actually looks at.
+//
+//  bmkhs_sysReaders   circuit  -> [[kind, listIndex], ...] that read it
+//  bmkhs_sysWatchers  variable -> [[kind, listIndex], ...] gated on it
+//
+//Kinds are indices into the solve's own tables, so a woken component is dispatched
+//without searching for it.
+private _readers  = createHashMap;
+private _watchers = createHashMap;
+
+private _addEdge = {
+    params ["_map", "_key", "_ref"];
+    if (_key == "") exitWith {};
+    private _list = _map getOrDefault [_key, []];
+    if !(_ref in _list) then {
+        _list pushBack _ref;
+        _map set [_key, _list];
+    };
+};
+
+//Gates are read by every kind, and are either a variable or a {circuit, threshold}.
+private _addGates = {
+    params ["_comp", "_ref"];
+    {
+        if (_x isEqualType []) then {
+            [_readers, _x select 0, _ref] call _addEdge;
+        } else {
+            [_watchers, _x, _ref] call _addEdge;
+        };
+    } forEach (_comp get "gates");
+};
+
+{
+    _x params ["_list", "_kind"];
+    {
+        private _ref = [_kind, _forEachIndex];
+        [_x, _ref] call _addGates;
+        //What turns it, what it draws from, and the consumable it needs.
+        [_readers,  _x get "drivenBy",    _ref] call _addEdge;
+        [_readers,  _x get "input",       _ref] call _addEdge;
+        [_watchers, _x get "requires",    _ref] call _addEdge;
+        [_readers,  _x get "rechargedBy", _ref] call _addEdge;
+        [_watchers, _x get "startedBy",   _ref] call _addEdge;
+        //A clutch drops an output out, so the circuit it watches wakes the component.
+        { [_readers, _x get "disengageOn", _ref] call _addEdge } forEach (_x get "outputs");
+    } forEach _list;
+} forEach [
+    [_producers,  "producer"],
+    [_converters, "converter"],
+    [_storage,    "storage"]
+];
+
+//Circuit states and consumers feed nothing, so they are not in the walk - the solve
+//publishes them from the settled graph instead, which also stops a node that fell quiet
+//keeping its last published state.
+
+//What each component FEEDS, so waking it can mark its own outputs dirty in turn.
+private _feedsOf = createHashMap;
+{
+    _x params ["_list", "_kind"];
+    {
+        private _outs = [];
+        { if ((_x get "circuit") != "") then { _outs pushBackUnique (_x get "circuit") } }
+            forEach (_x get "outputs");
+        _feedsOf set [_kind + str _forEachIndex, _outs];
+    } forEach _list;
+} forEach [
+    [_producers,  "producer"],
+    [_converters, "converter"],
+    [_storage,    "storage"]
+];
+
+_heli setVariable ["bmkhs_sysReaders",  _readers];
+_heli setVariable ["bmkhs_sysWatchers", _watchers];
+_heli setVariable ["bmkhs_sysFeeds_of", _feedsOf];

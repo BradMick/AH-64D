@@ -19,57 +19,17 @@ Returns:
 Author:
     BradMick
 ---------------------------------------------------------------------------- */
-params ["_heli", "_deltaTime"];
+params ["_heli", "_index", "_deltaTime"];
 #include "\bmkhs_helisim\functions\systems\systems.hpp"
 
+//One component, named by the walk. Returns whether its output MOVED, which is what
+//decides if the things it feeds need waking.
 private _producers = _heli getVariable ["bmkhs_sysProducers", []];
-if (_producers isEqualTo []) exitWith {};
+if (_index >= (count _producers)) exitWith {false};
+private _comp = _producers select _index;
 
-{
-    //Not modelled with systems off - its state stays as seeded, which is the vanilla
-    //contract: powered up, running, no start procedure.
-    private _comp    = _x;
-    private _varName = _x get "varName";
-    private _nominal = _x get "nominal";
-
-    //What this component depends on. Unchanged since last frame, and not still ramping
-    //toward a target, means the answer is the same one - so there is nothing to do.
-    private _sig = [];
-    {
-        _sig pushBack (if (_x isEqualType []) then {
-            ([_heli, _x select 0] call bmkhs_fnc_systemCircuit) >= (_x select 1)
-        } else {
-            _heli getVariable [_x, false]
-        });
-    } forEach (_comp get "gates");
-
-    private _drvC = _comp get "drivenBy";
-    if (_drvC != "") then {
-        _sig pushBack (([_heli, _drvC] call bmkhs_fnc_systemCircuit) > (_comp get "minDrive"));
-    };
-    private _reqC = _comp get "requires";
-    if (_reqC != "") then { _sig pushBack (_heli getVariable [_reqC, 1]) };
-    _sig pushBack ([_heli, _comp get "damageRole", _comp get "index"] call bmkhs_fnc_damageGet);
-    //A component with no nominal CARRIES its drive value, so the value itself is an
-    //input - a shaft tracks Nr continuously rather than switching at a threshold.
-    if (_nominal <= 0 && {_drvC != ""}) then {
-        _sig pushBack ([_heli, _drvC] call bmkhs_fnc_systemCircuit);
-    };
-
-    private _slept = !(_heli getVariable [_varName + "Awake", true])
-                  && {_sig isEqualTo (_heli getVariable [_varName + "Sig", []])};
-    _heli setVariable [_varName + "Slept", _slept];
-    if (_slept) then {
-        {
-            if ((_x get "circuit") != "") then {
-                [_heli, _x get "circuit", _varName,
-                 _heli getVariable [_varName + "Feed_" + (_x get "circuit"), 0], true]
-                    call bmkhs_fnc_systemCircuitFeed;
-            };
-        } forEach (_comp get "outputs");
-        continue;
-    };
-    _heli setVariable [_varName + "Sig", _sig];
+private _varName = _comp get "varName";
+private _nominal = _comp get "nominal";
 
     private _damaged = ([_heli, _comp get "damageRole", _comp get "index"] call bmkhs_fnc_damageGet)
                             > SYS_COMP_DMG_THRESH;
@@ -134,10 +94,13 @@ if (_producers isEqualTo []) exitWith {};
     private _step = _comp get "increment";
     if (_step > 0) then { _out = round (_out / _step) * _step };
 
-    //Awake while still moving toward the target. Once it IS the target, nothing changes
-    //again until an input does, and the signature above is what notices.
+    //Mid-transition keeps ITSELF awake: a spooling APU has not reached its target, so it
+    //asks for the next frame. Everything else waits to be woken by what it reads.
+    private _ramping = _out != _target;
     _heli setVariable [_varName + "Tgt", _target];
-    _heli setVariable [_varName + "Awake", _out != _target];
+    _heli setVariable [_varName + "Awake", _ramping];
+
+    private _moved = _out != (_heli getVariable [_varName, 0]);
 
     if (_comp get "networked") then {
         [_heli, _varName, _out] call bmkhs_fnc_utilUpdateNetworkGlobal;
@@ -172,6 +135,11 @@ if (_producers isEqualTo []) exitWith {};
         };
 
         _heli setVariable [_varName + "Feed_" + _circuit, _val];
-        [_heli, _circuit, _varName, _val, true] call bmkhs_fnc_systemCircuitFeed;
+        //Whether the NODE moved, not just this feeder - that is what needs propagating.
+        if (([_heli, _circuit, _varName, _val, true] call bmkhs_fnc_systemCircuitFeed)) then {
+            _moved = true;
+        };
     } forEach (_comp get "outputs");
-} forEach _producers;
+
+//Moved, or still ramping - either way the walk has more to do with this one.
+_moved || _ramping
