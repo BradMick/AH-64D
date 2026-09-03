@@ -5,12 +5,9 @@ Description:
     Shows what the component graph is doing - every circuit's value, every
     component's output, and whether it is awake or asleep.
 
-    Turn it on with:
-
-        bmkhs_sysDebug = true;
-
-    It takes over the hint while up, so the flight model's debug panel is
-    suppressed rather than the two overwriting each other.
+    Turn it on in CBA settings - Addon Options, "Enable Systems Debugging",
+    beside the FM one. It takes over the hint while up, so the flight model's
+    panel is suppressed rather than the two overwriting each other.
 
     A component reading SLEEP is not being solved, because nothing it depends
     on changed. If something is stuck, look there first: asleep when it should
@@ -27,7 +24,7 @@ Author:
 ---------------------------------------------------------------------------- */
 params ["_heli"];
 
-if (isNil "bmkhs_sysDebug" || {!bmkhs_sysDebug}) exitWith {};
+if !(bmkhs_sysDebug) exitWith {};
 
 private _txt = "== CIRCUITS ==<br/>";
 

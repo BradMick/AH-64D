@@ -136,6 +136,15 @@
 ] call CBA_fnc_addSetting;
 
 [
+    "bmkhs_sysDebug",
+    "CHECKBOX",
+    ["Enable Systems Debugging", "Shows every circuit, what feeds it, and whether each component is awake or asleep. Takes over the hint from FM debugging while on."],
+    [BMKHS_SETTINGS_CATEGORY, "Flight model"],
+    [false],
+    2
+] call CBA_fnc_addSetting;
+
+[
     "bmkhs_rotorModel",
     "LIST",
     ["Rotor Model", "Selects the rotor aerodynamic model. Simple is stable and performant. BET (Blade Element Theory) is higher fidelity with induced flow, dissymmetry of lift, and flapping dynamics."],
