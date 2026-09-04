@@ -240,9 +240,9 @@ if !(_heli getVariable ["bmkhs_useSystems", false]) then {
         //one engine can never overtorque what is rated for two.
         ["transmission",  "bmkhs_engPctTQ", true,  getArray (_config >> "xmsnTqLimits"),
                           [], []],
-        //A nose gearbox carries its own engine, which is only enough to hurt it when that
-        //engine is doing the work of two - so it is rated single-engine and no other way.
-        ["noseGearboxes", "bmkhs_engPctTQ", false, [],
+        //A nose gearbox carries its own engine, which makes it the limiting part when one
+        //is doing the work of two.
+        ["noseGearboxes", "bmkhs_engPctTQ", false, getArray (_config >> "ngbTqLimits"),
                           getArray (_config >> "ngbTqLimitsSE"), ["bmkhs_engineOverspeed"]]
     ];
     //Only the ones the aircraft actually gave limits for.

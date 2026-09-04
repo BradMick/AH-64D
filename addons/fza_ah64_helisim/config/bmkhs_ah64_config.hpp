@@ -7,16 +7,15 @@ class BMKHS_HeliSim {
     useSystems = 1;
 
     //Drivetrain ratings for useSystems = 0 ONLY - with systems on, the components carry
-    //their own and these are not read at all. Same tiers the components declare, worst
-    //first: {fraction of rated torque, grace seconds, divisor}.
-    //The transmission sees BOTH engines combined, so 100% each is 2.00 and that is
-    //continuous; it has no single-engine case, since one engine cannot overtorque what is
-    //rated for two.
-    xmsnTqLimits[]   = {{2.30, 0, 20}, {2.00, 6, 10}};
-    //A nose gearbox carries its own engine only, so it is rated SINGLE-ENGINE ONLY - with
-    //both running neither is carrying enough to hurt it, and there is no dual-engine table
-    //for exactly that reason.
-    ngbTqLimitsSE[]  = {{1.25, 0, 40}, {1.22, 6, 20}, {1.10, 150, 10}};
+    //their own. Worst first: {fraction of rated torque, seconds it will hold there}.
+    //0 seconds damages immediately. SE sets are used single-engine.
+    //Transmission sees BOTH engines combined, so 2.30 is the pair at full output and it
+    //has no single-engine case - one engine can never overtorque it.
+    xmsnTqLimits[]   = {{2.30, 0}, {2.00, 6}};
+    //A nose gearbox carries its own engine only, which makes it the limiting part
+    //single-engine: 1.25 is all it will absorb.
+    ngbTqLimits[]    = {{1.15, 0}, {1.00, 6}};
+    ngbTqLimitsSE[]  = {{1.25, 0}, {1.22, 6}, {1.10, 150}};
 
     #include "bmkhs_config\helisim_airfoils.hpp"
     #include "bmkhs_config\helisim_components.hpp"
