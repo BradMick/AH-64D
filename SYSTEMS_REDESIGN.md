@@ -199,7 +199,8 @@ and overtorque are one number and a shot-up rotor is fragile under torque.
 ## What is left
 
 **Controls as components — the next piece of work.** Switches and power levers,
-the last domain still hardcoded. See `CONTROLS_AS_COMPONENTS.md`.
+the last domain still hardcoded. The design is already recorded below, under
+"Controls are components too".
 
 **Frame rate is unconfirmed.** Observed more stable and not dropping after the
 dirty walk went in, but that is an impression, not a measurement, and it needs
@@ -222,8 +223,10 @@ The accumulator refills on any repair, having no hitpoint of its own. That is
 correct while nothing else charges it: the recharge path off the accessory drive
 works, but a ground cart or hand pump is not implemented.
 
-**Overtorque with no drivetrain declared.** The top-level ratings damage
-`hithrotor` and `hitvrotor` directly, since no role claims them. Never flown.
+**Overtorque with no drivetrain declared** is flown and works - the top-level
+ratings damage `hithrotor` and `hitvrotor` directly. What is NOT exercised is an
+airframe that declares no drivetrain hitpoints at all, which is the case the
+fallback was written for.
 
 **Everything now runs from the pack.** `fn_perFrame` calls systemsUpdate,
 coreUpdate, coreUpdateFlightModel, ctrlVisUpdate and repair. Four of those moved
