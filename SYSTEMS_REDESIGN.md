@@ -198,9 +198,10 @@ and overtorque are one number and a shot-up rotor is fragile under torque.
 
 ## What is left
 
-**Controls as components — the next piece of work.** Switches and power levers,
-the last domain still hardcoded. The design is already recorded below, under
-"Controls are components too".
+**Controls — the piece in progress.** Switches, knobs and levers, the last
+domain still hardcoded. The design is specified below, under "Controls are
+components too": eight behaviours, interlocks reusing the gate form, and Core
+providing macros the aircraft pack invokes.
 
 **Frame rate is unconfirmed.** Observed more stable and not dropping after the
 dirty walk went in, but that is an impression, not a measurement, and it needs
@@ -342,29 +343,61 @@ an airframe that declares no components at all still respects them.
 
 ## Controls are components too — the remaining piece
 
-Every other domain is converted, so this is what is left of the redesign. Not
-started, and the design has to leave room for it or it gets retrofitted.
+Every other domain is converted, so this is what is left of the redesign.
 
 Every gate names a control: `bmkhs_emerHydOn`, `bmkhs_battSwitchOn`,
-`bmkhs_apuBtnOn`. A switch is a component with state, a hitpoint and a place in
-the graph, and should be declared once to produce three things: the variable a
-gate reads, the keybind, and the cockpit interaction.
+`bmkhs_apuBtnOn`. A control is declared once and produces three things: the
+variable a gate reads, the keybind, and the cockpit interaction.
 
 `CfgUserActions.hpp` already has `BMKHS_ANALOG` / `BMKHS_NONANALOG` /
 `BMKHS_ACTION`, each generating a keybind and its dispatch together. What is
-missing is switch BEHAVIOUR - everything is momentary, so anything else is
+missing is control BEHAVIOUR - everything is momentary, so anything else is
 hand-written SQF.
 
-| kind | behaviour |
-|---|---|
-| momentary | on while held - what exists today |
-| latching | press toggles, stays where it is put |
-| momentary-one-way | springs back from one position (start switch) |
-| multi-position | N discrete positions, stepped or selected |
-| guarded | needs the cover lifted first |
+**Scope: HeliSim's own controls only.** The switches, knobs and levers an
+AIRCRAFT is concerned with - what drives the systems model and the flight model.
+Not the mod's avionics: MPD bezels, sight select, weapon actions and the rest
+stay where they are. The test is whether a control feeds a gate or the flight
+model, not whether it happens to be in the cockpit.
 
-`fn_interactPowerLever` shows the gap: OFF / IDLE / FLY as an if-chain, once
-per engine.
+**HeliSim is a library.** Core provides the kinds and the macros; the aircraft
+pack declares which controls it has, and Core generates the keybinds from the
+pack's declaration. Same shape as every other domain: Core knows no airframe.
+
+### A control is N positions
+
+**A switch is nothing more than a gate.** The APU does not care that it is an APU
+switch, only that the signal arrived - so Core moves an index and publishes a
+value, and whatever gates on that value reacts. Core learns no switch semantics.
+
+**A control has N POSITIONS, and each position has its own output.** Not a
+boolean. The engine start switch is three positions: aft holds, centre rests,
+forward springs back. The index is canonical - Core tracks an index and nothing
+else, and the designer knows what each index means because they declared them in
+order. Position names are display labels for the bindings menu; Core never
+interprets them.
+
+That single model covers every behaviour a cockpit needs, with nothing left over:
+
+| behaviour | expressed as |
+|---|---|
+| momentary | 2 positions, one `springsBack` |
+| latching | 2 positions, neither springs |
+| one-way | 3 positions, one springs |
+| multi-position | N positions, none spring |
+| detented lever | N positions + `axis[]` + `axisMode` |
+| continuous | `steps = 0`, value interpolated |
+| rotary | N positions, `wraps = 1` |
+
+Multi-position and rotary are the generic answer to something like the UH-1's
+rotating generator selector: N positions the systems model reads, declared not
+coded.
+
+**Guard covers are not modelled.** A physical guard - the jettison button's lid -
+would need a keybind of its own just to lift it before the switch underneath
+could be thrown. That is a bind spent on ceremony, and every other position here
+is one the player wants to reach directly. A guarded switch is declared as the
+switch it is.
 
 **Power levers and throttles are not switches, and not each other.**
 
@@ -375,11 +408,109 @@ per engine.
 | use | set once per phase of flight | flown continuously |
 
 An aircraft may have one, both or neither - the AH-64 has no throttle at all
-because the governor holds Nr. So a power lever is a detented axis: a
-continuous range whose marked positions are what the systems model reads,
-wanting an analog binding as well as step-to-detent keys.
+because the governor holds Nr.
 
-The wrinkle to design around: **keybinds are config-time and static** while
-component counts are aircraft-declared. Three engines needs three power-lever
-binds generated from a count the aircraft chooses, and that is the part most
-likely to catch us if controls are bolted on afterwards.
+### What a position publishes
+
+Three variables per control, all derived, none interpreted by Core:
+
+| variable | is |
+|---|---|
+| `bmkhs_<name>Idx` | the position index - canonical |
+| `bmkhs_<name>Val` | the current position's declared value |
+| `bmkhs_<name>On` | `Val != 0` |
+
+`On` is what keeps the existing gates working untouched: a control named
+`battSwitch` publishes `bmkhs_battSwitchOn`, which is the name the electrical
+components already gate on. That makes the naming load-bearing - get it wrong
+and the bus silently never comes up.
+
+**Levels, not edges.** "Begin the start sequence" looks like it needs an edge,
+but nothing in the engine path depends on one: `fn_engine.sqf` transitions
+`STARTING -> ON` by testing whether Ng has crossed a threshold, and the start
+switch only ever compares engine state against the requested action. So the
+engine reads a level - `Val == 1` while the switch is held - and spring-back is
+what makes that level transient. Core never learns what STARTING means.
+
+This is also what leaves room for motoring later. Ignition override stops the
+start sequence today and this pass mirrors that exactly; making the position
+maintained instead of spring-loaded is a declaration change, not a Core one.
+
+### Interlocks reuse the gate form
+
+A control that cannot be thrown right now says so the way every component
+already does - a variable name, or `{circuit, threshold}` read live. No new
+syntax, because the whole point is reusing the established one.
+
+    enabledBy[]   = {{"BATT", 0.25}};        //all must be true to move it
+    inhibitedBy[] = {"bmkhs_rotorBrakeOn"};  //any true blocks it
+
+`enabledBy` is the APU button needing its bus; `inhibitedBy` is the rotor brake
+locking the power levers. Both entries go into `bmkhs_sysWatchers` exactly like
+a producer's gates, so a control is woken by the same walk.
+
+### Axis binding, and who owns the position
+
+A lever or throttle wants a real axis, so a player with hardware can fly it.
+But an axis is ABSOLUTE - where the physical lever sits is where the virtual one
+is - while a click or key is RELATIVE, nudging it from where it was. Both cannot
+own the position, so **the designer declares which**:
+
+    axisMode = "absolute";   //the axis IS the position; clicks do nothing
+    axisMode = "takeover";   //axis owns it while moving, clicks own it otherwise
+
+`absolute` suits an aircraft whose lever has no meaningful click travel;
+`takeover` suits one where both should work. Core defaults to `takeover`,
+which is the behaviour a player without hardware never notices.
+
+### Where a control sits in the graph
+
+**A control is not a component**, and this is the part worth getting right. A
+component feeds a circuit; a control feeds a VARIABLE, and the variable is what
+gates already read. So a control needs no new edge type and no place in the
+walk - `fn_systemsSolve` already wakes on any watched variable changing, and
+`bmkhs_apuBtnOn` is already a watcher key today.
+
+That means controls are solved BEFORE the walk, not inside it: a control reads
+its input, publishes its variable, and the existing dirty propagation carries it
+the rest of the way. The alternative - making a control a fourth kind in the
+queue - would have it dirtying circuits it does not feed.
+
+**`useSystems = 0` has no controls**, because it has no systems. Nothing is
+simulated, so there is nothing to switch: the aircraft spawns cold and wakes on
+the player's first collective or throttle input, and everything else stays at
+its seeded value. The control pass sits inside the same gate as the solve.
+
+This is not the `fn_systemTorque` case. Torque limits run outside the gate
+because a drivetrain is rated whether or not its systems are modelled - a
+physical fact about the airframe. A switch is not: it exists only because
+something declared a system for it to act on.
+
+### Keybinds
+
+**Keybinds are config-time and static** while component counts are
+aircraft-declared. Three engines needs three power-lever binds, and a count from
+hitpoints cannot reach a preprocessor.
+
+The answer follows from HeliSim being a library: **Core provides the macro, the
+pack writes one row per POSITION.** A pack with three engines writes three
+levers' worth of rows, so the count is fixed at config time on the side that
+knows it. `fza_ah64_controls` already does exactly this - `controls.hpp` has
+`e1off`, `e1idle` and `e1fly` as separate binds - so one bind per position is a
+proven pattern here rather than a new idea.
+
+**Every position is individually bindable, with a name the designer sets** -
+"Engine 1 Start - Ignition Override", "Battery - On". A player binds the position
+they want directly instead of cycling a switch to reach it, and what they read in
+the menu is what the designer wrote.
+
+The rows are dual-included: once inside `CfgUserActions` to emit the classes,
+then the macro is redefined and the same file included inside a `group[]` array
+to emit the group list. One data table, two views, so the binds and the group
+cannot drift apart. A separator macro expands to nothing in the first context and
+to a comma in the second.
+
+Cockpit controls get **their own group**, separate from flight controls, so the
+menu stays readable. They are deliberately left out of the conflict groups: every
+position of every switch would otherwise be flagged as conflicting with every
+other, which is not what a conflict means.
