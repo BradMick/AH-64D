@@ -67,15 +67,16 @@ if (_torqued isEqualTo []) exitWith {};
         };
     };
 
-    //Where no role claims this component, it damages named hitpoints instead - and reads
-    //its current damage from the worst of them.
+    //Where a component damages named hitpoints, what it has accrued is tracked HERE rather
+    //than read back off them. Those hitpoints are not ours alone - the engine controller
+    //writes hithrotor to 0.9 as a shift-lock while the engines are off - so reading them
+    //would take somebody else's state for damage this component had never taken, run it up
+    //through the persistent tiers and trip breaksOnFailure on a healthy aircraft.
     private _direct = _comp get "damages";
     private _damage = if (_direct isEqualTo []) then {
         [_heli, _role, _index] call bmkhs_fnc_damageGet
     } else {
-        private _worst = 0;
-        { _worst = _worst max ((_heli getHitPointDamage _x) max 0) } forEach _direct;
-        _worst
+        _heli getVariable [format ["bmkhs_tqDmg_%1%2", _role, _index], 0]
     };
     private _accrue = 0;
 
@@ -135,7 +136,10 @@ if (_torqued isEqualTo []) exitWith {};
         if (_direct isEqualTo []) then {
             [_heli, _role, _damage, _index] call bmkhs_fnc_damageSet;
         } else {
-            { _heli setHitPointDamage [_x, _damage] } forEach _direct;
+            _heli setVariable [format ["bmkhs_tqDmg_%1%2", _role, _index], _damage];
+            //Never below what the hitpoint already carries: this adds overtorque damage,
+            //it does not repair battle damage by overwriting it with a lower number.
+            { _heli setHitPointDamage [_x, (_heli getHitPointDamage _x) max _damage] } forEach _direct;
         };
     };
 
