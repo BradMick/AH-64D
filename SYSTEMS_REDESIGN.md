@@ -120,8 +120,10 @@ quiet from keeping its last published state.
 | hydraulics | **converted, flown** - pumps, reservoirs, accumulator, accessory drive |
 | electrical | **converted, flown** - battery, generators, rectifiers, buses |
 | APU | **converted, flown** - one component, driving accessories and bleed air |
-| drivetrain | **converted, flown** - transmission, gearboxes, torque limits |
+| drivetrain | **converted, flown** - transmission, gearboxes, torque limits, damage model |
+| scheduling | **built, flown** - dirty propagation; see below |
 | fuel | stays separate - it set the pattern the kinds follow |
+| controls | **not started** - switches and power levers, the last piece |
 
 Nineteen hardcoded functions replaced by declarations, and four per-domain
 configs absorbed into `helisim_components.hpp`, which is now the single place an
@@ -138,6 +140,8 @@ fn_systemConsumer      supplied if ANY of its circuits is up, or all with needsA
 fn_systemCircuit       a named node; highest feeder wins
 fn_systemCircuitState  publishes whether a node is up
 fn_systemTorque        damages anything run past its limits
+fn_systemTorqueJitter  what a damaged drive is doing to an engine's torque needle
+fn_systemCircuitFeed   records one feeder's contribution to a node
 fn_systemsSolve        dirty walk from what changed; storage roots it, charge settles last
 fn_systemsComponents   config -> hashmaps, once, at init
 ```
@@ -146,7 +150,62 @@ Member count comes from the damage role, and damage is read AT THE MEMBER'S
 INDEX - the role alone returns the worst member, which would fail all three
 generators because one is destroyed. That was the bug that started this.
 
+## Drivetrain damage — the model, written down
+
+This was deleted once by the conversion and rebuilt from the old code, so it is
+recorded here rather than living only in `fn_systemTorque`.
+
+A component declares its tiers worst-first as `{torque, grace seconds, divisor}`,
+torque being a fraction of rated. A tier's clock runs **only while the torque is
+in that tier** and resets the moment it leaves, so time spent higher up does not
+spend a lower tier's grace and a brief excursion is not cumulative. 0 seconds
+means no grace at all.
+
+Once any tier's clock expires, the rate is the **sum over every exceeded tier**
+of `(torque - limit) / divisor`. So it scales with the abuse - pulled harder, it
+comes apart faster - rather than being a flat rate whatever the overtorque.
+Nothing accrues with the engines off.
+
+Damage feeds itself past 25%: the persistent rate is `damage/600`, `/500` or
+`/400` by band, and the bands **replace** each other rather than stacking.
+
+`breaksOnFailure[]` is what a destroyed component takes with it. An entry naming
+a damage role destroys that role outright - the transmission is what holds the
+rotors, the generators and the pumps up. An entry naming a `bmkhs_` variable
+sets it at the member's index instead, which is how a nose gearbox that has come
+apart overspeeds its engine.
+
+`jittersTorque` makes a damaged drive wander the torque needle. The component
+publishes its OWN wander under its own variable and `fn_systemTorqueJitter` sums
+what reaches a given engine - its own component plus any that carries every
+engine. The old shared four-slot array was the "exactly two of everything,
+indexed by hand" assumption this refactor exists to remove.
+
+**The AH-64's ratings.** Transmission, both engines summed: 200% continuous, 200
+to 230 for six seconds, above 230 at once. Nose gearboxes, per engine and rated
+**single-engine only** - with both running neither carries enough to hurt it -
+110% continuous, 110 to 122 for two and a half minutes, 122 to 125 for six
+seconds, above 125 at once.
+
+### With no systems modelled
+
+`useSystems = 0` does exactly one thing: overtorque damages `hithrotor` and
+`hitvrotor`. Nothing else. No overspeed, no cascade, no jitter - there are no
+systems to fail. Limits come from `xmsnTqLimits` and `ngbTqLimitsSE` at the top
+level, which are read **only** on this path; with systems on the components
+carry their own. Damage is read back off the rotor hitpoints, so battle damage
+and overtorque are one number and a shot-up rotor is fragile under torque.
+
 ## What is left
+
+**Controls as components — the next piece of work.** Switches and power levers,
+the last domain still hardcoded. See `CONTROLS_AS_COMPONENTS.md`.
+
+**Frame rate is unconfirmed.** Observed more stable and not dropping after the
+dirty walk went in, but that is an impression, not a measurement, and it needs
+much more testing. The honest number is not FPS - it is how many components the
+walk runs per frame, which should be near zero on a settled aircraft and spike
+only when something changes. That counter is not in the debug panel yet.
 
 **Multiplayer with a CPG.** Never exercised, in any domain. The gunner is a
 genuine remote reader of everything a crew station displays, so anything missing
