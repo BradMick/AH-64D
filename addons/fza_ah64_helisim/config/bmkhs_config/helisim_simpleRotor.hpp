@@ -51,20 +51,18 @@
         { 1.00, -1.0000}
     };
 
-    //Tail authority vs airspeed (m/s). Flat: the OGE thrust point, with the
-    //fin offloading the rest.
-    tailRtrAuthorityTable[] = {
-        { 0.00, 1.00}, {10.29, 1.00}, {20.58, 1.00}, {36.01, 1.00},
-        {46.30, 1.00}, {51.44, 1.00}, {61.73, 1.00}, {66.88, 1.00},
-        {72.02, 1.00}
+    //Thrust vs airspeed (m/s). ONE curve: the old flat authority table times
+    //its (1 + V/Vbe)^0.4 term, evaluated at each breakpoint. Two terms became
+    //one; worst interpolation error against the original is 0.17% at 9 kt.
+    tailRtrThrustVsAirspeed[] = {
+        { 0.00, 1.0000}, {10.29, 1.0992}, {20.58, 1.1865}, {36.01, 1.3017},
+        {46.30, 1.3708}, {51.44, 1.4034}, {61.73, 1.4655}, {66.88, 1.4951},
+        {72.02, 1.5239}
     };
-
-    tailRtrAirspeedMod    = 0.4;     //exponent on (1 + V/Vbe)
     tailRtrRollCouple     = 0.25;    //fraction of the thrust moment reaching roll
     tailRtrDamageThresh   = 0.85;    //disc damage at which the rotor stops
 
     //Envelope speeds, m/s - the same values core.hpp holds as VEL_* macros.
     tailRtrVne            = 128.611;
-    tailRtrVbe            = 38.583;
     tailRtrVrs            = 24.384;
     tailRtrEtl            = 12.347;
