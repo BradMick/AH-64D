@@ -28,9 +28,11 @@
             climbGain         = 0.73;
             autoroTorque      = 5.0;
 
-            cyclicPitchTorque = 4500.0;
-            cyclicRollTorque  = 1500.0;
-            pedalYawTorque    = 5000.0;
+            //Multiples of baseThrust, not Nm. 3.17674 = the old 100000*3.25
+            //against baseThrust 102306, so authority is unchanged.
+            pitchAuthority    = 3.17674;
+            rollAuthority     = 0.95302;
+            yawAuthority      = 1.0;
 
             rollCouple        = 0.0;
             thrustTiltRoll    = -6.0;
@@ -90,7 +92,6 @@
             //scales off the tail's own thrust.
             torqueScalar      = 0.008;
 
-            pedalYawTorque    = 5000.0;
             rollCouple        = 0.25;
 
             vne               = 250;
