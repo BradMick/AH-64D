@@ -32,7 +32,8 @@
             //against baseThrust 102306, so authority is unchanged.
             pitchAuthority    = 3.17674;
             rollAuthority     = 0.95302;
-            yawAuthority      = 1.0;
+            //Trim on the reaction torque, not yaw control.
+            torqueReaction    = 1.0;
 
             rollCouple        = 0.0;
             thrustTiltRoll    = -6.0;
