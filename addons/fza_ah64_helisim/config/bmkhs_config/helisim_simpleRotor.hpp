@@ -17,8 +17,6 @@
     mainRtrBladeChord     = 0.533;   //m
     mainRtrBladeMass      = 72.108;  //kg
     mainRtrBladeHingeOff  = 0.038;   //fraction of blade radius
-    mainRtrBladePitchMin  = 1.0;     //deg
-    mainRtrBladePitchMax  = 19.0;    //deg
     mainRtrBaseThrust     = 102306;  //N, max gross weight * g
     mainRtrGearRatio      = 72.291;  //shared with the transmission model
 
@@ -41,22 +39,23 @@
         {8618, 0.310}, {9525, 0.509}
     };
 
-    //flat-pitch thrust fraction vs pressure altitude (ft)
-    mainRtrThrustMinTable[] = {
-        {0, 0.032}, {2000, 0.052}, {4000, 0.037},
-        {6000, 0.041}, {8000, 0.045}
-    };
-
-    //thrust per unit Nr vs pressure altitude (ft)
-    mainRtrThrustMaxTable[] = {
-        {0, 1.168}, {2000, 1.422}, {4000, 1.745},
-        {6000, 2.132}, {8000, 2.561}
-    };
-
     //tip loss vs gross weight (kg)
     mainRtrTipLossTable[] = {
         {6804, 1.108}, {7711, 1.050}, {8165, 1.000},
         {8618, 0.958}, {9525, 0.890}
+    };
+
+    //Thrust vs collective, by pressure altitude (ft). ONE 2-D surface: the old
+    //blade-pitch ramp, its altitude-indexed floor, and the per-Nr altitude
+    //table, evaluated together. Three terms became one; worst deviation
+    //against the original is 123 N of 102306, and under 0.18% above 0.3
+    //collective. Multiply by Nr fraction in the model, as before.
+    mainRtrThrustVsCollective[] = {
+        {   0, {{0.00, 0.0969}, {1.00, 1.1680}}},
+        {2000, {{0.00, 0.1449}, {1.00, 1.4220}}},
+        {4000, {{0.00, 0.1530}, {1.00, 1.7450}}},
+        {6000, {{0.00, 0.1950}, {1.00, 2.1320}}},
+        {8000, {{0.00, 0.2440}, {1.00, 2.5610}}}
     };
 
     //exponent on (1 + V/Vbe), vs airspeed (m/s)
@@ -160,9 +159,3 @@
         {72.02, 1.5239}
     };
     tailRtrRollCouple     = 0.25;    //fraction of the thrust moment reaching roll
-    tailRtrDamageThresh   = 0.85;    //disc damage at which the rotor stops
-
-    //Envelope speeds, m/s - the same values core.hpp holds as VEL_* macros.
-    tailRtrVne            = 128.611;
-    tailRtrVrs            = 24.384;
-    tailRtrEtl            = 12.347;
