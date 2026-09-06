@@ -32,3 +32,6 @@ releases/
 # NaturalDocs
 docs/
 naturaldocs/Working Data
+
+# HeliSim Core is its own repo, junctioned in for the build - never committed here.
+include/bmkhs_helisim/
