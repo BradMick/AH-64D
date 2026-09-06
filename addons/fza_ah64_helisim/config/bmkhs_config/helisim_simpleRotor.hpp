@@ -32,6 +32,11 @@
 
     //Tail rotor
     tailRtrPos[]          = {-0.87, -6.98, -0.075};  //m
+    //How the rotor is pointed - {pitch, roll, yaw} deg applied to a mast that
+    //starts vertical. Rolled 90 puts thrust along +X, which is what the model
+    //used to hardcode. Everything else - which flow is through the disc, which
+    //is across it, which way the moment goes - follows from this.
+    tailRtrRotation[]     = {0.0, 90.0, 0.0};        //deg
     tailRtrDesignRpm      = 1403.0;
     tailRtrRpmTrimVal     = 1.01;
     tailRtrGearRatio      = 14.90;
