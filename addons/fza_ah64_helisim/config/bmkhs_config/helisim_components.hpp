@@ -28,6 +28,15 @@
                 };
             };
         };
+        //Engine bleed air. Same 1.0 the APU puts out, so whichever is up holds PNEU and the
+        //handover either way is seamless - highest feeder wins the node.
+        class EngineBleed {
+            variableName = "engBleed";
+            output       = "PNEU";
+            gate[]       = {"bmkhs_engBleedAvail"};
+            nominal      = 1.0;
+            rampSeconds  = 0;
+        };
         //The transmission, turned by the engines or by the rotor in an autorotation - same
         //shaft either way, so the accessories keep turning with the engines dead.
         class Transmission {
@@ -35,17 +44,10 @@
             variableName = "xmsnDrive";
             drivenBy[]   = {"Nr"};        //any rotation; the pumps set their own floor
             rampSeconds  = 0;             //no nominal: it carries whatever Nr is doing
-            //Summed, since it carries both engines.
             torqueFrom   = "bmkhs_engPctTQ";
             torqueSum    = 1;
-            //Over 230% (115 each engine) damages at once; 202 to 230 takes six seconds.
-            //Combined, so 100% each engine is 2.00. Worst first: {torque, grace seconds,
-            //divisor}. Up to 200% is continuous, 200 to 230 gives six seconds, above 230
-            //damages at once. The divisor sets how fast, and the tiers stack.
             tqLimits[]   = {{2.30, 0, 20}, {2.00, 6, 10}};
-            jittersTorque = 1;            //a damaged transmission wanders both needles
-            //What it takes with it: the transmission is what holds the rotors, the
-            //generators and the pumps up.
+            jittersTorque = 1;
             breaksOnFailure[] = {"mainRotor", "tailRotor", "generators", "priPump", "utilPump"};
             class Outputs {
                 class Accessories { circuit = "ACCESSORY_DRIVE"; };
@@ -183,7 +185,7 @@
             startedBy       = "bmkhs_apuBtnOn";
             nominal         = 3000;       //psi at full charge
             startAbove      = 2600;       //psi needed to turn the APU over at all
-            startRecharge   = 8;          //sec to refill, once the pumps are turning
+            startRecharge   = 1.0;          //sec to refill, once the pumps are turning
             stopBelow       = 1650;       //psi nitrogen precharge - only what is above it
                                           //is usable, and a start spends that band
             emerDischarge   = 90;         //sec of emergency pressure

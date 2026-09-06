@@ -38,10 +38,8 @@ if (isNil "_animName") exitWith {["Variable name not valid: '%1'", _varName] cal
 
 _heli setVariable [_varName, _value, true];
 
-//Mirror the rotor brake into HeliSim - Core inhibits engine start/power lever on it
-if (_varName == "fza_ah64_rtrbrake") then {
-    _heli setVariable ["bmkhs_rotorBrakeOn", _value, true];
-};
+//No rotor brake mirror: the brake is a declared HeliSim control now, so Core publishes
+//bmkhs_rotorBrakeOn itself and writing it here would overwrite the position with a phase.
 
 private _animValue = if (typeName _value != "SCALAR") then {parseNumber _value} else {_value};
 

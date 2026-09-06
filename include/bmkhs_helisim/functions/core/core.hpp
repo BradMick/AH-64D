@@ -8,6 +8,11 @@
 #define HOTAS                   0
 #define KEYBOARD                1
 
+//Seconds for the rotor brake to stop a rotor turning at 100%, and the Nr at or above which
+//the system refuses to apply it at all.
+#define ROTOR_BRAKE_STOP_SEC    45
+#define ROTOR_BRAKE_MAX_NR      0.5
+
 #define ISA_STD                 0
 #define EUROPE_SUMMER           1
 #define EUROPE_WINTER           2

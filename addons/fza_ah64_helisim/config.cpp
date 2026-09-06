@@ -16,4 +16,5 @@ class CfgPatches
 
 #include "CfgFunctions.hpp"
 #include "config\CfgEventHandlers.hpp"
+#include "config\CfgUserActions.hpp"
 #include "config\cfgVehicles.hpp"

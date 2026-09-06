@@ -4,7 +4,7 @@
 class BMKHS_HeliSim {
     //Model the aircraft's systems (electrical, APU, hydraulics, drivetrain).
     //Off means vanilla behaviour and Core's optional-input defaults.
-    useSystems = 0;
+    useSystems = 1;
 
     //Drivetrain ratings for useSystems = 0, worst first: {fraction of rated torque, seconds
     //it will hold there, divisor}. 0 seconds damages immediately; the divisor sets how fast
@@ -15,6 +15,7 @@ class BMKHS_HeliSim {
 
     #include "bmkhs_config\helisim_airfoils.hpp"
     #include "bmkhs_config\helisim_components.hpp"
+    #include "bmkhs_config\helisim_controls.hpp"
     #include "bmkhs_config\helisim_engine.hpp"
     #include "bmkhs_config\helisim_flightControls.hpp"
     #include "bmkhs_config\helisim_fuel.hpp"

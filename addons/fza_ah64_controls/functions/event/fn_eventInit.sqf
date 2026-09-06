@@ -35,8 +35,7 @@ params["_heli"];
 [_heli] call fza_wca_fnc_init;
 [_heli] spawn fza_weapons_fnc_init;
 
-//flight setup
-[_heli] call fza_ah64_helisim_fnc_setup;
+//No flight setup call: the HeliSim pack starts itself from its own init handler.
 
 if (!(isNil "fza_ah64_noinit")) exitWith {};
 _heli addAction ["<t color='#ff0000'>Weapons inhibited</t>", {}, [], -10, false, false, "DefaultAction", "count (_target getVariable ""fza_ah64_weaponInhibited"") != 0"];

@@ -49,7 +49,15 @@ private _flag = {
     if (_ok) then {_yes} else {format ["<t color='#ff7070'>%1</t>", _no]}
 };
 
-private _txt = "<t size='0.75'><t color='#88ccff'>CIRCUITS</t><br/>";
+//What the dirty walk cost - components run this frame, and the worst seen recently. A
+//settled aircraft should sit at 0 and only spike when something actually changes; the peak
+//decays so it shows the last burst rather than the highest ever.
+private _cost = _heli getVariable ["bmkhs_sysWalkCost", 0];
+private _peak = ((_heli getVariable ["bmkhs_sysWalkPeak", 0]) - 1) max _cost max 0;
+_heli setVariable ["bmkhs_sysWalkPeak", _peak];
+
+private _txt = format ["<t size='0.75'>walk %1  peak %2<br/><t color='#88ccff'>CIRCUITS</t><br/>",
+                       _cost, _peak];
 
 private _feeds = _heli getVariable ["bmkhs_sysFeeds", createHashMap];
 {
@@ -131,6 +139,28 @@ private _feeds = _heli getVariable ["bmkhs_sysFeeds", createHashMap];
     [_heli getVariable ["bmkhs_sysConverters", []], "CONVERTERS"],
     [_heli getVariable ["bmkhs_sysStorage",    []], "STORAGE"]
 ];
+
+//Its own block, not a row in the table above - a control has no gates/drivenBy/damageRole
+//for that loop to read. HELD is a spring-back waiting on the walk.
+private _ctls = _heli getVariable ["bmkhs_ctrlList", []];
+if (_ctls isNotEqualTo []) then {
+    _txt = _txt + "<br/><t color='#88ccff'>CONTROLS</t><br/>";
+    {
+        private _ctl  = _x;
+        private _v    = _ctl get "varName";
+        private _i    = _heli getVariable [_v + "Idx", -1];
+        private _poss = _ctl get "positions";
+        private _why  = _heli getVariable [_v + "GateWhy", ""];
+
+        _txt = _txt + format ["%1 = %2 (%3) val %4%5%6<br/>",
+            _v select [6],
+            _i,
+            if (_i >= 0 && {_i < (count _poss)}) then {(_poss select _i) get "name"} else {"?"},
+            [_heli getVariable [_v + "Val", 0]] call _fmt,
+            ["", " HELD"] select ((_heli getVariable [_v + "Held", -1]) >= 0),
+            if (_why == "") then {""} else {format [" <t color='#ff7070'>shut: %1</t>", _why]}];
+    } forEach _ctls;
+};
 
 _txt = _txt + "<br/><t color='#88ccff'>PUBLISHED</t><br/>";
 {

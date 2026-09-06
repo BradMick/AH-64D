@@ -474,6 +474,25 @@ if (_priHydPumpDamage >= SYS_HYD_DMG_THRESH
     [_activeCaut, "FMC DISENG"] call fza_wca_fnc_wcaDelCaution;
 };
 
+//--Rotor brake. Set with a power lever off OFF is the caution; both levers off is the
+//advisory further down.
+//
+//A start begun with the brake set LATCHES the caution off and it stays off until the brake
+//comes off - a locked-rotor start is deliberate the whole way through, not just while the
+//starter turns. The latch is cleared in fn_transmissionUpdate, where the brake is read.
+private _rtrBrake = _heli getVariable ["bmkhs_rotorBrakeVal", 0];
+if (_rtrBrake > 0
+    && {(_heli getVariable ["bmkhs_rtrBrkStartLatch", 0]) == 0}
+    && {_eng1PwrLvrState != "OFF" || _eng2PwrLvrState != "OFF"}) then {
+    ([_heli, _activeCaut, "ROTOR BRAKE ON/LK", "RTR BRK ON/LK", _playCautAudio]
+        call fza_wca_fnc_wcaAddCaution) params ["_wcaAddCaution", "_playAudio"];
+
+    _playCautAudio = _playAudio;
+    _wcas pushBack _wcaAddCaution;
+} else {
+    [_activeCaut, "RTR BRK ON/LK"] call fza_wca_fnc_wcaDelCaution;
+};
+
 if (_playCautAudio) then {
     [_heli] call fza_audio_fnc_addCaution;
 };
@@ -552,7 +571,12 @@ if (_heli getVariable "bmkhs_altHoldActive") then {
         _wcas pushBack [WCA_ADVISORY, "BAR ALT HOLD", "BAR HOLD  "];
     };
 };
-if (_heli getVariable "fza_ah64_rtrbrake") then {
+//The rotor brake ADVISORY, with both levers off - or through a locked-rotor start, where the
+//caution is latched off and this stays up in its place until the brake comes off.
+//Its caution is up with the other cautions, before the audio gate.
+if ((_heli getVariable ["bmkhs_rotorBrakeVal", 0]) > 0
+    && {(_heli getVariable ["bmkhs_rtrBrkStartLatch", 0]) > 0
+        || {_eng1PwrLvrState == "OFF" && _eng2PwrLvrState == "OFF"}}) then {
     _wcas pushBack [WCA_ADVISORY, "ROTOR BRAKE ON", "RTR BRK ON"];
 };
 //--FCR

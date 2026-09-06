@@ -20,6 +20,10 @@ class vname {\
 
 #define BMKHS_ACTION(vname, vdisplayName, vtooltip) class vname {    displayName           = vdisplayName;    tooltip               = vtooltip;    onActivate            = __EVAL(format["['%1', true]  call bmkhs_fnc_inputControlHandle", #vname]);    onDeactivate          = __EVAL(format["['%1', false] call bmkhs_fnc_inputControlHandle", #vname]);}
 
+//Cockpit control macros live in their own header so a pack can take them without this
+//file's class, which it would collide with when reopening CfgUserActions for its own rows.
+#include "\bmkhs_helisim\controlMacros.hpp"
+
 class CfgUserActions {
     BMKHS_ANALOG(bmkhs_cyclicForward,"Cyclic Forward","Cyclic Forward");
     BMKHS_ANALOG(bmkhs_cyclicBackward,"Cyclic Backward","Cyclic Backward");

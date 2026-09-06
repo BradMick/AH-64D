@@ -13,6 +13,9 @@ Returns:
 ---------------------------------------------------------------------------- */
 params ["_heli"];
 
+//Once per aircraft. The pack's own init EH is what fires this.
+if (_heli getVariable ["bmkhs_initialised", false]) exitWith {};
+
 //AH-64 equipment - not flight model state, so it lives here rather than in Core.
 //Must be set before coreConfig: that calls bmkhs_fnc_fuelSet, which reads
 //IAFSInstalled with no default to decide the tank split.

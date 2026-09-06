@@ -4,7 +4,12 @@
 plan. This document tracks the systems model itself moving from hardcoded
 AH-64 structure to declared components.
 
-**The field reference is `addons/bmkhs_helisim/components.hpp`**, not this
+**HeliSim Core now lives in its own repository** at `E:\bmkhs_helisim`, built
+separately with its own HEMTT project. This repo reaches it through the
+`include\bmkhs_helisim` junction, so edits there are live here. The canonical
+copy of this document and the aircraft guide ship with Core, in its `docs/`.
+
+**The field reference is `components.hpp`**, in Core beside the code, not this
 document. That header is what a builder reads to declare an airframe; this one
 holds the design the code answers to, what is converted, and what bit us.
 
@@ -123,7 +128,7 @@ quiet from keeping its last published state.
 | drivetrain | **converted, flown** - transmission, gearboxes, torque limits, damage model |
 | scheduling | **built, flown** - dirty propagation; see below |
 | fuel | stays separate - it set the pattern the kinds follow |
-| controls | **not started** - switches and power levers, the last piece |
+| controls | **converted, flown** - switches, buttons and power levers |
 
 Nineteen hardcoded functions replaced by declarations, and four per-domain
 configs absorbed into `helisim_components.hpp`, which is now the single place an
@@ -144,6 +149,12 @@ fn_systemTorqueJitter  what a damaged drive is doing to an engine's torque needl
 fn_systemCircuitFeed   records one feeder's contribution to a node
 fn_systemsSolve        dirty walk from what changed; storage roots it, charge settles last
 fn_systemsComponents   config -> hashmaps, once, at init
+fn_control             one control, one index move: interlocks, wrap, publish, hold
+fn_controlPublish      the only writer of a control's Idx/Val/On
+fn_controlSet          the keybind target; resolve by name, translate a step
+fn_controlsUpdate      pre-walk: reconcile a control against an external writer
+fn_controlsRelease     post-walk: release a spring-back the walk has now read
+fn_controlsVariables   config -> bmkhs_ctrlList, once, at init
 ```
 
 Member count comes from the damage role, and damage is read AT THE MEMBER'S
@@ -198,16 +209,29 @@ and overtorque are one number and a shot-up rotor is fragile under torque.
 
 ## What is left
 
-**Controls — the piece in progress.** Switches, knobs and levers, the last
-domain still hardcoded. The design is specified below, under "Controls are
-components too": eight behaviours, interlocks reusing the gate form, and Core
-providing macros the aircraft pack invokes.
+**Controls are converted** - the four `fn_interact*` functions are gone and every
+switch is a declaration. Consumers read the published value rather than being
+pushed at: `fn_engineController` reads the start switch and power lever levels
+each frame and moves `bmkhs_engState` itself.
+
+Interlocks are declared **per position as well as per control**, which is what
+the power lever needed - the rotor brake blocks FLY without blocking IDLE, so a
+locked-rotor start still works. The `case "control"` wake that re-evaluates a
+control when its interlock moves is still UNPROVEN; nothing has exercised it.
+
+**Axis-bound levers were built and removed.** See "Axis binding" below. Worth
+retrying: the axis had its own publish path writing `Val`/`Idx` directly instead
+of going through `fn_controlPublish`, so two writers fought over the same
+variables. That is a better explanation for the oscillation than anything
+diagnosed at the time, and it no longer exists.
 
 **Frame rate is unconfirmed.** Observed more stable and not dropping after the
 dirty walk went in, but that is an impression, not a measurement, and it needs
 much more testing. The honest number is not FPS - it is how many components the
 walk runs per frame, which should be near zero on a settled aircraft and spike
-only when something changes. That counter is not in the debug panel yet.
+only when something changes. **That counter is now in the debug panel** as
+`walk N peak N` at the top; the peak decays so it shows the last burst rather
+than the highest ever.
 
 **Multiplayer with a CPG.** Never exercised, in any domain. The gunner is a
 genuine remote reader of everything a crew station displays, so anything missing
@@ -234,14 +258,23 @@ coreUpdate, coreUpdateFlightModel, ctrlVisUpdate and repair. Four of those moved
 out of `fza_ah64_controls`, and `ctrlVisUpdate` moved from a Draw3D context to
 per-frame.
 
-**What still is not standalone:** the scheduler that calls `fn_perFrame` lives in
-`fza_ah64_controls` and is gated on `vehicle player` and
-`isKindOf "fza_ah64base"`. So a second airframe needs its own, and AI or
-unoccupied aircraft run no systems at all.
+**The pack is standalone.** It starts itself from an `Extended_Init_EventHandlers`
+on its own `bmkhsBaseClass`, so nothing outside it calls in - `fza_ah64_controls`
+used to invoke `fn_setup` and no longer does. `fn_setup` guards on
+`bmkhs_initialised` so it cannot double-init.
 
-**`breaksOnFailure` has one user.** A nose gearbox overspeeding its engine is
-the only damage propagation declared, so the shape is unproven - worth a second
-case before trusting it.
+Its `XEH_preInit` then runs `fn_perFrame` for every LOCAL aircraft matching any
+pack's declared `bmkhsBaseClass`, so AI and unoccupied aircraft run their systems
+too - an AI Apache burns fuel and overtorques its gearboxes like a crewed one.
+
+The pack still calls OUT to `fza_fnc_animSetValue` and `fza_audio_fnc_flightTone`
+for cockpit animation and audio. That direction is correct: an aircraft pack is
+allowed to know its own aircraft, and Core knows neither.
+
+**`breaksOnFailure` has two users, and they use different halves of it.** The
+transmission names damage ROLES - it takes the rotors, generators and pumps with
+it - while a nose gearbox names a bmkhs_ VARIABLE, setting the overspeed flag at
+its own member index. Both shapes are declared, neither is proven in flight.
 
 **The tail rotor needs two consumers**, because its failure modes do not
 combine: hydraulic authority is an either-or across two circuits, the drive is a
@@ -282,6 +315,15 @@ have that component. Declaring NO role is different - present, but not
 separately damageable, like an accumulator with no p3d selection. Undeclared
 circuits must publish NOTHING rather than zero, so the read-side defaults that
 keep a no-hydraulics airframe flying still fire.
+
+**`utilUpdateNetworkGlobal` throws on a variable that has never been set.** It
+reads with the single-argument `getVariable` - no default - so the compare on the
+next line reads an undefined value. Latent forever, because every existing caller
+passes something `fn_systemsVariables` already seeded; the controls layer hit it
+immediately by publishing brand-new names. Seed with a plain `setVariable` before
+the first networked publish. The symptom misleads: the throw happens BEFORE the
+write, so the variable stays unset and the panel shows its fallback, which reads
+like a lookup failure rather than an exception.
 
 **Multiplayer fails silently.** The solve runs where the aircraft is local;
 everything else reads published results. The per-frame scheduler runs for the
@@ -341,17 +383,19 @@ throttle input, spooling over ten seconds. Torque limits still apply: they run
 outside the solve, and the ratings sit at the top level beside `useSystems` so
 an airframe that declares no components at all still respects them.
 
-## Controls are components too — the remaining piece
+## Controls are components too — converted
 
-Every other domain is converted, so this is what is left of the redesign.
+**Built and flown.** The battery switch, APU button, both start switches and both
+power levers are declarations; the four `fn_interact*` functions are shims onto
+them. The field reference is `addons/bmkhs_helisim/controls.hpp`.
 
 Every gate names a control: `bmkhs_emerHydOn`, `bmkhs_battSwitchOn`,
 `bmkhs_apuBtnOn`. A control is declared once and produces three things: the
 variable a gate reads, the keybind, and the cockpit interaction.
 
-`CfgUserActions.hpp` already has `BMKHS_ANALOG` / `BMKHS_NONANALOG` /
-`BMKHS_ACTION`, each generating a keybind and its dispatch together. What is
-missing is control BEHAVIOUR - everything is momentary, so anything else is
+`CfgUserActions.hpp` already had `BMKHS_ANALOG` / `BMKHS_NONANALOG` /
+`BMKHS_ACTION`, each generating a keybind and its dispatch together. What was
+missing was control BEHAVIOUR - everything was momentary, so anything else was
 hand-written SQF.
 
 **Scope: HeliSim's own controls only.** The switches, knobs and levers an
@@ -385,7 +429,7 @@ That single model covers every behaviour a cockpit needs, with nothing left over
 | latching | 2 positions, neither springs |
 | one-way | 3 positions, one springs |
 | multi-position | N positions, none spring |
-| detented lever | N positions + `axis[]` + `axisMode` |
+| detented lever | N positions, none spring |
 | continuous | `steps = 0`, value interpolated |
 | rotary | N positions, `wraps = 1` |
 
@@ -449,37 +493,60 @@ syntax, because the whole point is reusing the established one.
 locking the power levers. Both entries go into `bmkhs_sysWatchers` exactly like
 a producer's gates, so a control is woken by the same walk.
 
-### Axis binding, and who owns the position
+### Axis binding — attempted, removed
 
-A lever or throttle wants a real axis, so a player with hardware can fly it.
-But an axis is ABSOLUTE - where the physical lever sits is where the virtual one
-is - while a click or key is RELATIVE, nudging it from where it was. Both cannot
-own the position, so **the designer declares which**:
+**Not modelled. Controls are click-only.** An axis-bound power lever was built and
+abandoned: the lever oscillated between two discrete positions, flipping the engine
+between IDLE and FLY many times a second and spiking torque.
 
-    axisMode = "absolute";   //the axis IS the position; clicks do nothing
-    axisMode = "takeover";   //axis owns it while moving, clicks own it otherwise
+What the instrumentation established, so it is not re-derived: the stored axis half
+dropped to exactly 0.000 for **exactly one frame** at irregular intervals - measured
+gaps of 12, 89, 154, 29 and 531 frames, every dip one frame long - while the player's
+hand was off the hardware. Each full drop moved the lever a quarter of its travel and
+republished the engine state. The cause was never found.
 
-`absolute` suits an aircraft whose lever has no meaningful click travel;
-`takeover` suits one where both should work. Core defaults to `takeover`,
-which is the behaviour a player without hardware never notices.
+Several explanations were proposed and disproved along the way: the actuator lag
+filter (it returns its input unchanged on a healthy aircraft, so it filters nothing),
+the two-half bind design (correct - the collective binds identically), and the
+hardware (a live readout showed a clean -1 to +1 sweep). One real difference WAS
+found and fixed - the axis was read inside `fn_systemsSolve`, behind the locality
+and `useSystems` gates, rather than on the input path beside the collective - but
+correcting that did not stop the oscillation.
+
+Anyone reviving this should start from `fn_inputUpdate`'s collective block, put the
+lever read beside it, and confirm with a per-frame log before trusting it.
 
 ### Where a control sits in the graph
 
 **A control is not a component**, and this is the part worth getting right. A
 component feeds a circuit; a control feeds a VARIABLE, and the variable is what
-gates already read. So a control needs no new edge type and no place in the
-walk - `fn_systemsSolve` already wakes on any watched variable changing, and
-`bmkhs_apuBtnOn` is already a watcher key today.
+gates already read. So a control needs no new edge type - `fn_systemsSolve`
+already wakes on any watched variable changing, and `bmkhs_apuBtnOn` is already
+a watcher key today.
 
-That means controls are solved BEFORE the walk, not inside it: a control reads
-its input, publishes its variable, and the existing dirty propagation carries it
-the rest of the way. The alternative - making a control a fourth kind in the
-queue - would have it dirtying circuits it does not feed.
+Controls are solved BEFORE the walk, not inside it: a control reads its input,
+publishes its variable, and the existing dirty propagation carries it the rest of
+the way.
 
-**`useSystems = 0` has no controls**, because it has no systems. Nothing is
-simulated, so there is nothing to switch: the aircraft spawns cold and wakes on
-the player's first collective or throttle input, and everything else stays at
-its seeded value. The control pass sits inside the same gate as the solve.
+**As built, a control DOES get a wake ref** - one word of nuance the design missed.
+It has no place in the walk as a producer of circuit values: it feeds no circuit,
+dirties no node, appears in no `_feedsOf`. But its `enabledBy` / `inhibitedBy`
+entries land in `bmkhs_sysWatchers` like any gate, so the walk pops a
+`["control", N]` ref and `fn_systemsSolve` dispatches it with a `-1` sentinel
+meaning "re-evaluate where you are". Without that case the interlock wake would be
+silent dead weight. **Untested** - no airframe declares an interlock yet.
+
+Those edges are registered from inside `fn_systemsComponents`, not from
+`fn_controlsVariables` where the design put them: the graph builder creates
+`_readers`/`_watchers` FRESH and overwrites them at the end, so anything registered
+before it runs is destroyed.
+
+**`useSystems = 0` still has controls declared**, which the design got wrong.
+`fn_controlsVariables` runs from `fn_coreConfig` unconditionally, so the list and
+its variables exist whether or not systems are modelled - publishing needs no
+solve. Only the reconcile and spring-back release sit inside the gate, so a
+spring-back never releases with systems off. Harmless for the AH-64, whose only
+springing position is on a switch that path never reaches.
 
 This is not the `fn_systemTorque` case. Torque limits run outside the gate
 because a drivetrain is rated whether or not its systems are modelled - a
@@ -507,10 +574,23 @@ the menu is what the designer wrote.
 The rows are dual-included: once inside `CfgUserActions` to emit the classes,
 then the macro is redefined and the same file included inside a `group[]` array
 to emit the group list. One data table, two views, so the binds and the group
-cannot drift apart. A separator macro expands to nothing in the first context and
-to a comma in the second.
+cannot drift apart. **The separator carries the terminator** - `;` in the class
+view, `,` in the group view - because the row itself can carry neither.
 
 Cockpit controls get **their own group**, separate from flight controls, so the
 menu stays readable. They are deliberately left out of the conflict groups: every
 position of every switch would otherwise be flagged as conflicting with every
 other, which is not what a conflict means.
+
+**As built, two things differ from the design.**
+
+The macros live in their own `controlMacros.hpp`, not in Core's
+`CfgUserActions.hpp`. `requiredAddons` orders LOADING at runtime, not the
+preprocessor - each config is preprocessed independently - so a pack must include
+the macro header itself, and including Core's `CfgUserActions.hpp` would drag in
+its `class CfgUserActions` and collide with the pack reopening it.
+
+**Core ships no group class**, where the design had it declaring
+`bmkhs_cockpitControls`. Filling a `group[]` means `#include`ing a pack's header by
+path, which would name an airframe. The pack declares its own group instead - Arma
+merges `UserActionGroups` across addons - so Core stays airframe-agnostic.

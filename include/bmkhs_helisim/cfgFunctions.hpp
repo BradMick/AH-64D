@@ -125,12 +125,14 @@ class CfgFunctions
             class fuselageTop {R;};
             class fuselageVariables {R;};
         };
-        class interact {
-            file = "\bmkhs_helisim\functions\interact";
-            class interactAPUButton {R;};
-            class interactBattSwitch {R;};
-            class interactPowerLever {R;};
-            class interactStartSwitch {R;};
+        class controls {
+            file = "\bmkhs_helisim\functions\controls";
+            class control {R;};
+            class controlPublish {R;};
+            class controlSet {R;};
+            class controlsRelease {R;};
+            class controlsUpdate {R;};
+            class controlsVariables {R;};
         };
         class input {
             file = "\bmkhs_helisim\functions\input";

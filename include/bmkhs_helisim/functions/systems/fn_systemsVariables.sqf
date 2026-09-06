@@ -63,6 +63,10 @@ _heli setVariable ["bmkhs_dmgTimerCont",      0.0];
 _heli setVariable ["bmkhs_dmgTimerTrans",     0.0];
 
 _heli setVariable ["bmkhs_emerHydOn",         false, true];
+//Latched by a start begun with the rotor brake set; cleared only by the brake coming off.
+_heli setVariable ["bmkhs_rtrBrkStartLatch",  0, true];
+//A running engine is a bleed air source, alongside the APU.
+_heli setVariable ["bmkhs_engBleedAvail",     false, true];
 _heli setVariable ["bmkhs_engineOverspeed",   [false, false], true];
 
 //Systems tuning - the aircraft supplies these, Core keeps damage thresholds fixed

@@ -84,23 +84,13 @@ version_lines += "versionStr = \"" + ver_str + "\";\n";
 version_lines += "versionAr[] = {" + ver_ar + "};\n";
 let hash_line = "hash = \"" + hash + "\";\n";
 
-// HeliSim Core versions independently of the AH-64 mod - it ships on its own.
-let bmkhs_version_lines = "version = \"1.0.0.0\";\n";
-bmkhs_version_lines += "versionStr = \"1.0.0.0\";\n";
-bmkhs_version_lines += "versionAr[] = {1, 0, 0, 0};\n";
-
 let rfs_addons_path = HEMTT_RFS.join("addons");
 for name in addon_names {
     let version_file = addons_path.join(name).join("version.hpp");
     let out = version_file.create_file();
     let rfs_version_file = rfs_addons_path.join(name).join("version.hpp");
     let rfs_out = rfs_version_file.create_file();
-    if name.starts_with("bmkhs_") {
-        out.write(bmkhs_version_lines);
-        out.write(hash_line);
-        rfs_out.write(bmkhs_version_lines);
-        rfs_out.write(hash_line);
-    } else if name == controls_name {
+    if name == controls_name {
         out.write(version_lines);
         out.write(hash_line);
         out.write("pbos[] = {" + pbos_str + "};\n");

@@ -43,6 +43,9 @@ if !(local _heli) exitWith {};
 //model either, so nothing can degrade it.
 if !(_heli getVariable ["bmkhs_useSystems", false]) exitWith {};
 
+//Before the sweep: a control feeds a variable, and the sweep is what turns that into a wake.
+[_heli, _deltaTime] call bmkhs_fnc_controlsUpdate;
+
 private _producers  = _heli getVariable ["bmkhs_sysProducers",  []];
 private _converters = _heli getVariable ["bmkhs_sysConverters", []];
 private _storage    = _heli getVariable ["bmkhs_sysStorage",    []];
@@ -146,6 +149,9 @@ while {(count _queue) > 0 && {_guard < SYS_WALK_LIMIT}} do {
         case "producer":  { [_heli, _i, _deltaTime] call bmkhs_fnc_systemProducer };
         case "converter": { [_heli, _i, _deltaTime] call bmkhs_fnc_systemConverter };
         case "storage":   { [_heli, _i, _deltaTime, false] call bmkhs_fnc_systemStorage };
+        //A control feeds no circuit, so it dirties nothing - but an interlock that moved
+        //reaches it through the same wake. -1 is re-check where it already is.
+        case "control":   { [_heli, _i, -1] call bmkhs_fnc_control; false };
         default           { false };
     };
 
@@ -153,6 +159,10 @@ while {(count _queue) > 0 && {_guard < SYS_WALK_LIMIT}} do {
         { [_x] call _dirtyCircuit } forEach (_feedsOf getOrDefault [_kind + str _i, []]);
     };
 };
+
+//What the walk actually cost this frame. The honest measure of the dirty-flag design is
+//not frame rate but this: near zero on a settled aircraft, spiking only when something moves.
+_heli setVariable ["bmkhs_sysWalkCost", _guard];
 
 //Charge moves last, off the solved result - a store reading its recharge circuit any
 //earlier sees zero and never refills. This is the cycle's cut edge.
@@ -162,3 +172,7 @@ while {(count _queue) > 0 && {_guard < SYS_WALK_LIMIT}} do {
 //and it must not be skipped, or a node that fell quiet keeps its last published state.
 [_heli] call bmkhs_fnc_systemCircuitState;
 [_heli] call bmkhs_fnc_systemConsumer;
+
+//Last: a spring-back is released only once the walk has read it, or a tapped switch moves
+//and returns between two sweeps and wakes nothing.
+[_heli] call bmkhs_fnc_controlsRelease;

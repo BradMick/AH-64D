@@ -1,4 +1,5 @@
 params ["_heli"];
+#include "\bmkhs_helisim\functions\core\core.hpp"
 
 if (currentPilot _heli != player || !local _heli) exitWith {};
 
@@ -38,6 +39,27 @@ if (_outputRpm < 0.0) then {
     _outputRpm = 0.0;
 } else {
     _outputRpm = _outputRpm + _deltaRpm;
+};
+
+//The rotor brake. It will not act above ROTOR_BRAKE_MAX_NR - the switch moves and the crew
+//gets the caution, but the system refuses to apply it, so there is nothing to damage. Below
+//that, BRAKE drags the rotor down over ROTOR_BRAKE_STOP_SEC and LOCK holds it at zero, which
+//is what makes a locked-rotor start work: Nr reads 0 while the engines run and Np is normal.
+private _brakePos  = _heli getVariable ["bmkhs_rotorBrakeVal", 0];
+private _designRpm = _heli getVariable ["bmkhs_engDesignRPM", 20900];
+
+//The brake coming off is the only thing that clears the locked-rotor start latch.
+if (_brakePos == 0) then {
+    [_heli, "bmkhs_rtrBrkStartLatch", 0] call bmkhs_fnc_utilUpdateNetworkGlobal;
+};
+if (_brakePos >= 1 && {_outputRpm < (_designRpm * ROTOR_BRAKE_MAX_NR)}) then {
+    if (_brakePos >= 2) then {
+        _outputRpm = 0.0;
+        _deltaRpm  = 0.0;
+    } else {
+        private _deltaTime = _heli getVariable "bmkhs_deltaTime";
+        _outputRpm = (_outputRpm - ((_designRpm / ROTOR_BRAKE_STOP_SEC) * _deltaTime)) max 0.0;
+    };
 };
 
 //systemChat format ["_outputRpm = %1", _outputRpm];

@@ -77,6 +77,49 @@ if (local _heli) then {
     };
     */
     if (_useSystems) then {
+        //The cockpit switches are LEVELS the engine reads, not commands pushed at it. A
+        //start switch held at Start (+1) begins the sequence; ignition override (-1) aborts
+        //it. The power lever's own value is what the throttle follows, and FLY against a set
+        //rotor brake is refused here - the switch moves, the engine declines to drive it.
+        private _brakeOn = (_heli getVariable ["bmkhs_rotorBrakeVal", 0]) > 0;
+        {
+            private _e   = _x;
+            private _st  = _engState select _e;
+            private _sw  = _heli getVariable [format ["bmkhs_eng%1StartSwVal", _e + 1], 0];
+            private _lvr = _heli getVariable [format ["bmkhs_eng%1PwrLvrVal",  _e + 1], 0];
+
+            if (_sw > 0 && {_st == "OFF"}) then {
+                [_heli, "bmkhs_engState", _e, "STARTING", true] call bmkhs_fnc_utilSetArrayVariable;
+                //A start begun with the brake set latches its caution off until the brake
+                //comes off - a locked-rotor start is deliberate the whole way through.
+                if (_brakeOn) then {
+                    [_heli, "bmkhs_rtrBrkStartLatch", 1] call bmkhs_fnc_utilUpdateNetworkGlobal;
+                };
+            };
+            if (_sw < 0 && {_st == "STARTING"}) then {
+                [_heli, "bmkhs_engState", _e, "OFF", true] call bmkhs_fnc_utilSetArrayVariable;
+            };
+
+            private _want = switch (true) do {
+                case (_lvr >= 1.0): {"FLY"};
+                case (_lvr > 0.0):  {"IDLE"};
+                default             {"OFF"};
+            };
+            if (_want != (_engPwrLvrState select _e)) then {
+                [_heli, "bmkhs_engPowerLeverState", _e, _want, true] call bmkhs_fnc_utilSetArrayVariable;
+                if (_want == "OFF" && {_st == "ON"}) then {
+                    [_heli, "bmkhs_engState", _e, "OFF", true] call bmkhs_fnc_utilSetArrayVariable;
+                };
+            };
+        } forEach [0, 1];
+
+        //A running engine is a bleed air source. The aircraft gates its bleed component on
+        //this; whether that matters is the airframe's business, not the engine's.
+        private _lvrState = _heli getVariable "bmkhs_engPowerLeverState";
+        [_heli, "bmkhs_engBleedAvail",
+            (_lvrState select 0) == "FLY" || {(_lvrState select 1) == "FLY"}]
+                call bmkhs_fnc_utilUpdateNetworkGlobal;
+
         //With a start procedure, the engine runs when the procedure says so. Holding the
         //rotor off until then is what stops the player spinning it up with the throttle.
         if (([_heli, "mainRotor"] call bmkhs_fnc_damageGet) > 0.9) then {
@@ -119,15 +162,17 @@ if (local _heli) then {
         };
 
         if (_awake) then {
-            //Through interactPowerLever so the lever animates over its normal travel -
-            //setting the state directly snaps it, and the rotor surges with it.
+            //Through the control so the lever animates over its normal travel - setting the
+            //state directly snaps it, and the rotor surges with it.
             if (_eng1State == "OFF") then {
                 [_heli, "bmkhs_engState", 0, "STARTING", true] call bmkhs_fnc_utilSetArrayVariable;
-                [_heli, 0, "FLY"] call bmkhs_fnc_interactPowerLever;
+                [_heli, "bmkhs_engPowerLeverState", 0, "FLY", true] call bmkhs_fnc_utilSetArrayVariable;
+                ["eng1PwrLvr", 2, _heli] call bmkhs_fnc_controlSet;
             };
             if (_eng2State == "OFF") then {
                 [_heli, "bmkhs_engState", 1, "STARTING", true] call bmkhs_fnc_utilSetArrayVariable;
-                [_heli, 1, "FLY"] call bmkhs_fnc_interactPowerLever;
+                [_heli, "bmkhs_engPowerLeverState", 1, "FLY", true] call bmkhs_fnc_utilSetArrayVariable;
+                ["eng2PwrLvr", 2, _heli] call bmkhs_fnc_controlSet;
             };
         } else {
             if (_eng1State != "OFF") then {

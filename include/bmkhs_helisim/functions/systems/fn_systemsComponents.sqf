@@ -312,6 +312,21 @@ private _addGates = {
     [_storage,    "storage"]
 ];
 
+//A control is not a component and feeds no circuit, but its interlocks are read exactly
+//like a gate - so it is woken the same way. Registered here because the helpers are locals
+//of this scope and the maps above are created fresh.
+{
+    private _c   = _x;
+    private _ref = ["control", _forEachIndex];
+    {
+        if (_x isEqualType []) then {
+            [_readers,  _x select 0, _ref] call _addEdge;
+        } else {
+            [_watchers, _x,          _ref] call _addEdge;
+        };
+    } forEach ((_c get "enabledBy") + (_c get "inhibitedBy"));
+} forEach (_heli getVariable ["bmkhs_ctrlList", []]);
+
 //Circuit states and consumers feed nothing, so they are not in the walk - the solve
 //publishes them from the settled graph instead, which also stops a node that fell quiet
 //keeping its last published state.

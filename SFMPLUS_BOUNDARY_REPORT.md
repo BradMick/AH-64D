@@ -336,15 +336,19 @@ The fix is small and belongs with the pack boundary: `bmkhs_fnc_coreConfig` take
 
 ### Core's entry points already fit this shape
 
-Core exports the right four functions today; they are simply called from `fza_ah64_controls` instead of from a pack:
+**DONE.** Core exports the right four functions and the pack now calls all of
+them from its own lifecycle - nothing in `fza_ah64_controls` reaches into
+HeliSim any more:
 
-| Core function | Called from today | Pack equivalent |
+| Core function | Called from | Via |
 |---|---|---|
-| `bmkhs_fnc_init` + `bmkhs_fnc_coreConfig` | `controls/fn_eventInit.sqf:35,40` | `fnc_setup` |
-| `bmkhs_fnc_coreUpdate` + `bmkhs_fnc_coreUpdateFlightModel` | `controls/XEH_preInit.sqf:245` | `fnc_perFrame` |
-| `bmkhs_fnc_eventGetIn` | Core's own `extendedEventHandlers.hpp` | pack EH |
+| `bmkhs_fnc_coreInit` + `bmkhs_fnc_coreConfig` | pack's `Extended_Init_EventHandlers` | `fnc_setup` |
+| `bmkhs_fnc_coreUpdate` + `bmkhs_fnc_coreUpdateFlightModel` | pack's `XEH_preInit` EachFrame | `fnc_perFrame` |
+| `bmkhs_fnc_eventGetIn` | pack's `Extended_GetIn_EventHandlers` | pack EH |
 
-**Core is already nearly a pure library.** The only lifecycle inside it is the GetIn event handler registration and the two `fza_ah64base` guards in `fn_analogHandler.sqf:2` / `fn_nonAnalogHandler.sqf:2`. All three move to the pack; `fn_eventPreInit.sqf` sets two globals and is otherwise dead commented code.
+**Core is a pure library.** The GetIn registration moved to the pack and the two
+`fza_ah64base` guards are gone - the input handlers gate on `bmkhs_initialised`
+instead, which is Core's own flag and names no airframe.
 
 ### What the pack provides
 
