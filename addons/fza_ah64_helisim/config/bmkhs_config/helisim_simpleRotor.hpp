@@ -30,6 +30,101 @@
     mainRtrFlapbackLon    = 0.0;     //deg per unit mu
     mainRtrFlapbackLat    = 10.0;    //deg per unit mu
 
+
+    /////////////////////////////////////////////////////////////////////////
+    // Main rotor tables
+    /////////////////////////////////////////////////////////////////////////
+
+    //ground effect gain vs gross weight (kg)
+    mainRtrGndEffTable[] = {
+        {6804, 0.189}, {7711, 0.170}, {8165, 0.187},
+        {8618, 0.310}, {9525, 0.509}
+    };
+
+    //flat-pitch thrust fraction vs pressure altitude (ft)
+    mainRtrThrustMinTable[] = {
+        {0, 0.032}, {2000, 0.052}, {4000, 0.037},
+        {6000, 0.041}, {8000, 0.045}
+    };
+
+    //thrust per unit Nr vs pressure altitude (ft)
+    mainRtrThrustMaxTable[] = {
+        {0, 1.168}, {2000, 1.422}, {4000, 1.745},
+        {6000, 2.132}, {8000, 2.561}
+    };
+
+    //tip loss vs gross weight (kg)
+    mainRtrTipLossTable[] = {
+        {6804, 1.108}, {7711, 1.050}, {8165, 1.000},
+        {8618, 0.958}, {9525, 0.890}
+    };
+
+    //exponent on (1 + V/Vbe), vs airspeed (m/s)
+    mainRtrVelExponentTable[] = {
+        {0.00, 0.000}, {10.29, 0.209}, {20.58, 0.558},
+        {36.01, 0.606}, {46.30, 0.497}, {51.44, 0.474},
+        {61.73, 0.392}, {66.88, 0.397}, {72.02, 0.428}
+    };
+
+    //yaw torque scalar vs airspeed (m/s)
+    mainRtrTorqueScalarTable[] = {
+        {0.00, 1.00}, {10.29, 1.00}, {20.58, 1.00},
+        {36.01, 1.00}, {46.30, 1.00}, {51.44, 1.00},
+        {61.73, 1.00}, {66.88, 1.00}, {72.02, 1.00}
+    };
+
+    //thrust scalar vs airspeed (m/s)
+    mainRtrThrustVsAirspeed[] = {
+        {0.00, 1.164}, {10.29, 1.059}, {20.58, 0.953},
+        {36.01, 0.848}, {46.30, 0.889}, {51.44, 0.890},
+        {61.73, 0.947}, {66.88, 0.990}, {72.02, 1.043}
+    };
+
+    //induced power vs airspeed (m/s)
+    mainRtrInducedPwrVelTable[] = {
+        {0.00, 1.202}, {10.29, 0.970}, {20.58, 0.951},
+        {36.01, 0.923}, {46.30, 0.904}, {51.44, 0.895},
+        {61.73, 0.876}, {66.88, 0.867}, {69.96, 0.861},
+        {72.02, 0.899}
+    };
+
+    //collective correction on induced power, vs airspeed (m/s)
+    mainRtrInducedPwrCollTable[] = {
+        {0.00, 0.649}, {10.29, 0.591}, {20.58, 0.602},
+        {36.01, 0.760}, {46.30, 0.860}, {51.44, 0.871},
+        {61.73, 0.860}, {66.88, 0.827}, {69.96, 0.799},
+        {72.02, 0.840}
+    };
+
+    //torque correction vs collective
+    mainRtrCollTorqueCorrTable[] = {
+        {0.000, 0.000}, {0.050, 0.760}, {0.225, 0.798},
+        {0.250, 1.000}, {0.850, 1.000}, {1.000, 1.500}
+    };
+
+    //driving torque vs descent rate (m/s)
+    mainRtrAutoroTorqueTable[] = {
+        {-20.32, -100.0}, {-15.24, -50.0}, {-12.70, -25.0},
+        {-10.16, -10.0}, {-7.62, -5.0}, {0.00, 0.0}
+    };
+
+    //cruise torque reference vs airspeed (m/s)
+    mainRtrCruiseTqTable[] = {
+        {0.00, 0.94}, {2.57, 0.93}, {5.14, 0.90},
+        {7.72, 0.87}, {10.29, 0.82}, {12.86, 0.78},
+        {20.58, 0.62}, {25.72, 0.54}, {30.87, 0.50},
+        {36.01, 0.49}, {41.16, 0.50}, {46.30, 0.52},
+        {51.44, 0.56}, {56.59, 0.64}, {61.73, 0.72},
+        {66.88, 0.85}, {72.02, 1.01}, {77.17, 1.18}
+    };
+
+    //climb thrust vs excess torque
+    mainRtrTqRoCTable[] = {
+        {0.0, 0.000}, {0.1, 0.078}, {0.2, 0.151},
+        {0.3, 0.224}, {0.4, 0.297}, {0.5, 0.369},
+        {0.6, 0.457}, {0.7, 0.517}, {0.8, 0.587}
+    };
+
     //Tail rotor
     tailRtrPos[]          = {-0.87, -6.98, -0.075};  //m
     //How the rotor is pointed - {pitch, roll, yaw} deg applied to a mast that
