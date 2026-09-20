@@ -64,11 +64,11 @@
     fuselageFrontRotation[] = {5.00, 0.00,  0.00};
     fuselageFrontDragCoefTable[] =
     {
-     {   0, 0.200}
-    ,{2000, 0.270}
-    ,{4000, 0.300}
-    ,{6000, 0.520}
-    ,{8000, 0.750}
+     {   0, 0.800}
+    ,{2000, 1.080}
+    ,{4000, 1.200}
+    ,{6000, 2.080}
+    ,{8000, 3.000}
     };
     fuselageFrontCount = 9;
     fuselageFront[] =

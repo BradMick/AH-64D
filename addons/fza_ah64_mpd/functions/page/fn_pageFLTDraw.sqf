@@ -21,10 +21,12 @@ _heli setUserMFDText [MFD_INDEX_OFFSET(MFD_TEXT_IND_FLT_TORQUE), ( _torque * 100
 //Altitude and speed
 private _groundSpeed = (_heli getVariable "bmkhs_gndSpeed");//vectorMagnitude (velocity _heli call _2dvectTo3D);
 private _airspeed    = (_heli getVariable "bmkhs_vel2D");//vectorMagnitude (velocity _heli vectorDiff wind);
-([_heli] call bmkhs_fnc_stateAltitude)
-    params ["_barAlt", "_radAlt"];
+//HeliSim publishes the radar altitude in METRES; the MPD reads feet. The
+//barometric one is already feet.
+private _barAlt = _heli getVariable ["bmkhs_barAlt", 0.0];
+private _radAlt = (_heli getVariable ["bmkhs_radAlt", 0.0]) * SCALE_METERS_FEET;
 _heli setUserMFDText [MFD_INDEX_OFFSET(MFD_TEXT_IND_FLT_BALT),  _barAlt toFixed 0];
-_heli setUserMFDText [MFD_INDEX_OFFSET(MFD_TEXT_IND_FLT_GALT), [_radAlt toFixed 0, ""] select (_radAlt == 1420)];
+_heli setUserMFDText [MFD_INDEX_OFFSET(MFD_TEXT_IND_FLT_GALT), [_radAlt toFixed 0, ""] select (_radAlt >= 1419.5)];
 _heli setUserMFDText [MFD_INDEX_OFFSET(MFD_TEXT_IND_FLT_AIRSPEED), _airspeed toFixed 0];
 
 

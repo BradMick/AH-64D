@@ -49,7 +49,8 @@ private _autorange = [(ASLToAGL _tadsPosition)#2 /sin(-_elevation),0,50000] call
 
 private _range = -1;
 private _laserPos = getPosASL laserTarget _heli;
-if (_elevation < -1 && ([_heli] call bmkhs_fnc_stateAltitude)#1 < 1428) then {
+//Radar altitude is published in METRES; 1428 ft is the ceiling this gate wants.
+if (_elevation < -1 && {(_heli getVariable ["bmkhs_radAlt", 0.0]) < (1428.0 * FEET_TO_METERS)}) then {
     _range = _autorange;
 };
 if (_laserPos isNotEqualTo [0,0,0]) then {

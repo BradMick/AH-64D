@@ -10,10 +10,14 @@
     emptyMomNonFCR    = 34179.229;   //-> 213.12 in
     //emptyCoMNonFCR[]  = {0.0, -1.117, 0.0};     //m
 
+    //Maximum gross mass - bounds the fixed test weight
+    maxGrossMass      = 10433; //kg, 23,000 lb
+
     //Fuselage station datum and CG limits
     fsDatum             = 6.4;      //m, station 0 reference
     fwdCgLimit          = 1.117;    //m
     aftCgLimit          = 0.964;    //m
+    comCorrection[]     = {0.0, 0.0, 0.0};
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Indexed mass items ///////////////////////////////////////////////////////////////////////
@@ -34,14 +38,14 @@
     class Seats {
         class Seat01 {  //CPG, front
             arm[]      = {0.000, 4.312, 0.000};
-            mass       = 113.4;
+            mass       = 100.0;
             role       = "gunner";
             turret[]   = {0};
             cargoIndex = -1;
         };
         class Seat02 {  //PLT, rear
             arm[]      = {0.000, 2.760, 0.000};
-            mass       = 113.4;
+            mass       = 100.0;
             role       = "driver";
             turret[]   = {};
             cargoIndex = -1;

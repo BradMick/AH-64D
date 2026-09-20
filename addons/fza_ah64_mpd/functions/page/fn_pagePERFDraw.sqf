@@ -7,9 +7,7 @@ params ["_heli", "_mpdIndex"];
 
 private _config  = configOf _heli >> "BMKHS_HeliSim";
 
-([_heli] call bmkhs_fnc_stateAltitude)
-    params ["_barAlt", "_radAlt"];
-private _pa      = _barAlt;  //feet
+private _pa      = _heli getVariable ["bmkhs_barAlt", 0.0];  //feet
 private _fat     = _heli getVariable "bmkhs_FAT";
 private _gwt     = (_heli getVariable "bmkhs_GWT") * KG_TO_LBS;
 private _cg      = (_heli getVariable "bmkhs_CG") * M_TO_INCHES;

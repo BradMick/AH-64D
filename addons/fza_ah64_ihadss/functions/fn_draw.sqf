@@ -392,10 +392,12 @@ if (_collective == "scalar") then {
 };
 _speedkts = format["%1", (_heli getVariable "bmkhs_vel2D")];
 
-([_heli] call bmkhs_fnc_stateAltitude)
-    params ["_barAlt", "_radAlt"];
+//HeliSim publishes the radar altitude in METRES; the symbology is in feet. The
+//barometric one is already feet.
+private _barAlt = _heli getVariable ["bmkhs_barAlt", 0.0];
+private _radAlt = (_heli getVariable ["bmkhs_radAlt", 0.0]) * SCALE_METERS_FEET;
 _baraltft = format["%1",  _barAlt toFixed 0];
-_radaltft = format["%1", [_radAlt toFixed 0, ""] select (_radAlt == 1420)];
+_radaltft = format["%1", [_radAlt toFixed 0, ""] select (_radAlt >= 1419.5)];
 
 //FCR CenterLine
 _heli getVariable "fza_ah64_fcrLastScan" params ["_dir", "_pos", "_time"];
