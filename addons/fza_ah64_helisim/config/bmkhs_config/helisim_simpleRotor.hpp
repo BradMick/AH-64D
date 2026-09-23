@@ -1,41 +1,150 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
-// Simple Rotor /////////////////////////////////////////////////////////////////////////////
+// Rotors - Simple //////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
-//Control torques the simple rotor model applies. Not read by the BET rotor.
+//A rotor is a hub at a position turning blades of a given size, so its geometry, its blade
+//and what it does with the controls are defined together here. Core reads numSimpleRotors
+//and loops; nothing downstream indexes by rotor NUMBER.
+//
+//The simple model works four fixed blade positions and scales by blade count, so the lift
+//and drag tables carry what the rotor does rather than deriving it per blade element.
+//
+//  type         - "main" or "tail". What the rotor IS, so Core never assumes rotor 0 is
+//                 the main one.
+//  direction    - "ccw" or "cw", seen from above.
+//  numBlades    - the four modelled positions are scaled to this.
+//  pivot[]      - hub position, {lateral, longitudinal, vertical} in m,
+//                 right-positive / nose-positive / up-positive
+//  rotation[]   - disc orientation, {pitch, roll, yaw} in deg
+//  mastLength   - m along the disc's own up axis, from pivot to hub
+//  gearRatio    - rotor to engine shaft; shared with the transmission model
+//  torqueTau    - s, torque filter time constant
+//
+//  BLADE
+//  bladeRadius  - m
+//  bladeChord   - m
+//  bladeMass    - kg, one blade
+//
+//  DISC TILT - min / mid / max in deg, interpolated from the centred stick. A rotor whose
+//  disc does not tilt declares zeroes.
+//
+//  coneAngle    - deg at full collective. Coning lifts the tips, so the thrust position
+//                 moves inboard and the disc carries a vertical arm.
+//  flapBackRollMax / flapBackPitchMax - deg at an advance ratio of 1.0. The advancing blade
+//                 lifts more than the retreating one, so the disc tilts as speed builds.
+//                 Applied as blade flap, which moves both the thrust position and its
+//                 direction - it is NOT also applied to the lift coefficient.
+//  rollGain / pitchGain - cyclic lift coefficient increment, as a fraction of the base
+//                 coefficient. This is what makes the fore/aft and left/right blades carry
+//                 different lift, so the pitch and roll moments come out of real forces at
+//                 real positions rather than being applied as a torque.
+//  gndEffValue  - thrust multiplier on the deck, fading to 1.0 by one rotor diameter up.
+//                 A rotor that does not sit in ground effect declares 1.0.
+//  reacTqScalar - scales the tangential blade drag that produces the yaw reaction. The same
+//                 drag drives the transmission, which this does not touch.
+//
+//  liftCoefTable / dragCoefTable - rows are the control axis that loads this rotor
+//  (collective for a main, pedal for a tail), columns are the airspeeds in the header row,
+//  m/s. The drag table carries induced and profile together, and its airspeed columns carry
+//  how they vary with speed - that is what the transmission feels.
 
-    cyclicPitchTorque = 4500.0; //Nm
-    cyclicRollTorque  = 1500.0; //Nm
-    pedalYawTorque    = 5000.0; //Nm
+    numSimpleRotors = 2;
+    class SimpleRotors {
+        class SimpleRotor01 {
+            type         = "main";
+            direction    = "ccw";
+            numBlades    = 4;
+            pivot[]      = {0.00, 2.06, 0.000};
+            rotation[]   = {0.00, 0.00, 0.000};
+            mastLength   = 0.70;      //m
+            gearRatio    = 72.291;
+            torqueTau    = 0.10;      //s
 
-    //Main rotor
-    mainRtrPos[]          = {0.0, 2.06, 0.70};  //m, x = right, y = forward, z = up
-    mainRtrHeightAgl      = 3.606;   //m, hub height above ground on the wheels
-    mainRtrDesignRpm      = 289.0;
-    mainRtrRpmTrimVal     = 1.01;
-    mainRtrNumBlades      = 4;
-    mainRtrBladeRadius    = 7.315;   //m
-    mainRtrBladeChord     = 0.533;   //m
-    mainRtrBladeMass      = 72.108;  //kg
-    mainRtrBladeHingeOff  = 0.038;   //fraction of blade radius
-    mainRtrBladePitchMin  = 1.0;     //deg
-    mainRtrBladePitchMax  = 19.0;    //deg
-    mainRtrBaseThrust     = 102306;  //N, max gross weight * g
-    mainRtrGearRatio      = 72.291;  //shared with the transmission model
+            bladeRadius  = 7.315;     //m
+            bladeChord   = 0.533;     //m
+            bladeMass    = 72.108;    //kg
 
-    //Flapback gain, deg of disc tilt per unit advance ratio. The advancing blade lifts more
-    //than the retreating one, so the disc tilts as speed builds. The BET model derives this
-    //from blade dynamics; the simple model needs it as a gain.
-    //NOTE: longitudinal is NOT WIRED UP - see fn_simpleRotorMain. Lateral is active but its
-    //sign was never verified in the air. Both want a tuning session.
-    mainRtrFlapbackLon    = 0.0;     //deg per unit mu
-    mainRtrFlapbackLat    = 10.0;    //deg per unit mu
+            pitchFlapMin = -10.0;     //deg
+            pitchFlapMid =   0.0;
+            pitchFlapMax =  20.0;
+            rollFlapMin  = -10.5;
+            rollFlapMid  =   0.0;
+            rollFlapMax  =   7.0;
 
-    //Tail rotor
-    tailRtrPos[]          = {-0.87, -6.98, -0.075};  //m
-    tailRtrDesignRpm      = 1403.0;
-    tailRtrRpmTrimVal     = 1.01;
-    tailRtrGearRatio      = 14.90;
-    tailRtrNumBlades      = 4;
-    tailRtrBladeRadius    = 1.402;   //m
-    tailRtrBladeChord     = 0.253;   //m
-    tailRtrBaseThrust     = 10230;   //N
+            coneAngle        = 12.0;  //deg at full collective
+            flapBackRollMax  = 15.0;  //deg per unit advance ratio
+            flapBackPitchMax =  9.0;
+            rollGain         = 0.24;  //fraction of the base lift coefficient
+            pitchGain        = 0.90;
+            gndEffValue      = 1.225;
+            reacTqScalar     = 0.25;
+
+            //------------Coll----0.00---10.29---20.58---36.01---46.30---51.44---61.73---66.88---72.02
+            liftCoefTable[] = {
+                        {"A/S", 0.00,   10.29,  20.58,  36.01,  46.30,  51.44,  61.73,  66.88,  72.02}
+                        ,{0.00, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000}
+                        ,{0.20, 0.1666, 0.1695, 0.1826, 0.1904, 0.1841, 0.1786, 0.1666, 0.1541, 0.1252}
+                        ,{0.40, 0.2331, 0.2389, 0.2653, 0.2809, 0.2681, 0.2571, 0.2331, 0.2081, 0.1503}
+                        ,{0.64, 0.2997, 0.3084, 0.3479, 0.3713, 0.3522, 0.3357, 0.2997, 0.2622, 0.1755}
+                        ,{0.80, 0.3330, 0.4100, 0.5340, 0.6100, 0.5790, 0.5713, 0.4860, 0.3928, 0.2915}
+                        ,{1.00, 0.4120, 0.4120, 0.4120, 0.4120, 0.4120, 0.4120, 0.4120, 0.4120, 0.4120}
+                        };
+            //------------Coll----0.00---10.29---20.58---36.01---46.30---51.44---61.73---66.88---72.02
+            dragCoefTable[] = {
+                        {"A/S", 0.00,   10.29,  20.58,  36.01,  46.30,  51.44,  61.73,  66.88,  72.02}
+                        ,{0.00, 0.0085, 0.0085, 0.0065, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005}
+                        ,{0.20, 0.0206, 0.0190, 0.0160, 0.0106, 0.0107, 0.0108, 0.0117, 0.0117, 0.0117}
+                        ,{0.40, 0.0326, 0.0296, 0.0255, 0.0206, 0.0208, 0.0211, 0.0229, 0.0229, 0.0229}
+                        ,{0.64, 0.0447, 0.0401, 0.0350, 0.0307, 0.0310, 0.0314, 0.0341, 0.0341, 0.0341}
+                        ,{0.80, 0.0474, 0.0474, 0.0474, 0.0474, 0.0474, 0.0474, 0.0474, 0.0474, 0.0474}
+                        ,{1.00, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000}
+                        };
+        };
+
+        class SimpleRotor02 {
+            type         = "tail";
+            direction    = "ccw";
+            numBlades    = 4;
+            pivot[]      = {0.00, -6.98, -0.075};
+            rotation[]   = {0.00, 90.00,  0.000};
+            mastLength   = -0.87;     //m
+            gearRatio    = 14.90;
+            torqueTau    = 0.10;      //s
+
+            bladeRadius  = 1.402;     //m
+            bladeChord   = 0.253;     //m
+            bladeMass    = 5.131;     //kg
+
+            //The tail disc does not tilt - pedal changes its pitch, not its plane.
+            pitchFlapMin = 0.0;
+            pitchFlapMid = 0.0;
+            pitchFlapMax = 0.0;
+            rollFlapMin  = 0.0;
+            rollFlapMid  = 0.0;
+            rollFlapMax  = 0.0;
+
+            coneAngle        = 0.0;
+            flapBackRollMax  = 0.0;
+            flapBackPitchMax = 0.0;
+            rollGain         = 0.0;
+            pitchGain        = 0.0;
+            gndEffValue      = 1.0;
+            reacTqScalar     = 0.25;
+
+            //-----------Pedal----0.00---10.29---20.58---36.01---46.30---51.44---61.73---66.88---72.02
+            liftCoefTable[] = {
+                         {"A/S", 0.00,  10.29,  20.58,  36.01,  46.30,  51.44,  61.73,  66.88,  72.02}
+                        ,{-1.00, 0.5336, 0.5865, 0.6331, 0.6946, 0.7314, 0.7488, 0.7820, 0.7978, 0.8131}
+                        ,{-0.50, 0.3335, 0.3666, 0.3957, 0.4341, 0.4571, 0.4680, 0.4887, 0.4986, 0.5082}
+                        ,{ 0.00, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000}
+                        ,{ 0.50,-0.1868,-0.2053,-0.2216,-0.2431,-0.2560,-0.2621,-0.2737,-0.2792,-0.2846}
+                        ,{ 1.00,-0.2668,-0.2932,-0.3165,-0.3473,-0.3657,-0.3744,-0.3910,-0.3989,-0.4066}
+                        };
+            //-----------Pedal----0.00---10.29---20.58---36.01---46.30---51.44---61.73---66.88---72.02
+            dragCoefTable[] = {
+                         {"A/S", 0.00,  10.29,  20.58,  36.01,  46.30,  51.44,  61.73,  66.88,  72.02}
+                        ,{-1.00, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110}
+                        ,{ 0.00, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110}
+                        ,{ 1.00, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110}
+                        };
+        };
+    };
