@@ -33,8 +33,8 @@
 //                 lifts more than the retreating one, so the disc tilts as speed builds.
 //                 Applied as blade flap, which moves both the thrust position and its
 //                 direction - it is NOT also applied to the lift coefficient.
-//  rollGain / pitchGain - cyclic lift coefficient increment, as a fraction of the base
-//                 coefficient. This is what makes the fore/aft and left/right blades carry
+//  rollLiftCoef / pitchLiftCoef - the cyclic lift coefficient, independent of the
+//                 collective's. This is what makes the fore/aft and left/right blades carry
 //                 different lift, so the pitch and roll moments come out of real forces at
 //                 real positions rather than being applied as a torque.
 //  gndEffValue  - thrust multiplier on the deck, fading to 1.0 by one rotor diameter up.
@@ -50,33 +50,34 @@
     numSimpleRotors = 2;
     class SimpleRotors {
         class SimpleRotor01 {
-            type         = "main";
-            direction    = "ccw";
-            numBlades    = 4;
-            pivot[]      = {0.00, 2.06, 0.000};
-            rotation[]   = {0.00, 0.00, 0.000};
-            mastLength   = 0.70;      //m
-            gearRatio    = 72.291;
-            torqueTau    = 0.10;      //s
+            type             = "main";
+            direction        = "ccw";
+            numBlades        = 4;
+            pivot[]          = {0.00, 2.06, 0.000};
+            rotation[]       = {0.00, 0.00, 0.000};
+            mastLength       = 0.70;      //m
+            gearRatio        = 72.291;
+            torqueTau        = 0.10;      //s
 
-            bladeRadius  = 7.315;     //m
-            bladeChord   = 0.533;     //m
-            bladeMass    = 72.108;    //kg
+            bladeRadius      = 7.315;     //m
+            bladeChord       = 0.533;     //m
+            bladeMass        = 72.108;    //kg
 
-            pitchFlapMin = -10.0;     //deg
-            pitchFlapMid =   0.0;
-            pitchFlapMax =  20.0;
-            rollFlapMin  = -10.5;
-            rollFlapMid  =   0.0;
-            rollFlapMax  =   7.0;
+            pitchFlapMin     = -10.0;     //deg
+            pitchFlapMid     =   0.0;
+            pitchFlapMax     =  20.0;
+            rollFlapMin      = -10.5;
+            rollFlapMid      =   0.0;
+            rollFlapMax      =   7.0;
 
             coneAngle        = 12.0;  //deg at full collective
             flapBackRollMax  = 15.0;  //deg per unit advance ratio
-            flapBackPitchMax =  9.0;
-            rollGain         = 0.24;  //fraction of the base lift coefficient
-            pitchGain        = 0.90;
+            flapBackPitchMax =  9.0;  //deg per unit advance ratio
+            rollLiftCoef     = 0.19;
+            pitchLiftCoef    = 0.72;
             gndEffValue      = 1.225;
-            reacTqScalar     = 0.25;
+            reacTqScalar     = 0.50;
+            autoTorque       = 80.0;
 
             //------------Coll----0.00---10.29---20.58---36.01---46.30---51.44---61.73---66.88---72.02
             liftCoefTable[] = {
@@ -91,9 +92,9 @@
             //------------Coll----0.00---10.29---20.58---36.01---46.30---51.44---61.73---66.88---72.02
             dragCoefTable[] = {
                         {"A/S", 0.00,   10.29,  20.58,  36.01,  46.30,  51.44,  61.73,  66.88,  72.02}
-                        ,{0.00, 0.0085, 0.0085, 0.0065, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005}
-                        ,{0.20, 0.0206, 0.0190, 0.0160, 0.0106, 0.0107, 0.0108, 0.0117, 0.0117, 0.0117}
-                        ,{0.40, 0.0326, 0.0296, 0.0255, 0.0206, 0.0208, 0.0211, 0.0229, 0.0229, 0.0229}
+                        ,{0.00, 0.0078, 0.0078, 0.0060, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005}
+                        ,{0.20, 0.0193, 0.0178, 0.0150, 0.0099, 0.0100, 0.0101, 0.0110, 0.0110, 0.0110}
+                        ,{0.40, 0.0309, 0.0281, 0.0242, 0.0195, 0.0197, 0.0200, 0.0217, 0.0217, 0.0217}
                         ,{0.64, 0.0447, 0.0401, 0.0350, 0.0307, 0.0310, 0.0314, 0.0341, 0.0341, 0.0341}
                         ,{0.80, 0.0474, 0.0474, 0.0474, 0.0474, 0.0474, 0.0474, 0.0474, 0.0474, 0.0474}
                         ,{1.00, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000}
@@ -101,50 +102,53 @@
         };
 
         class SimpleRotor02 {
-            type         = "tail";
-            direction    = "ccw";
-            numBlades    = 4;
-            pivot[]      = {0.00, -6.98, -0.075};
-            rotation[]   = {0.00, 90.00,  0.000};
-            mastLength   = -0.87;     //m
-            gearRatio    = 14.90;
-            torqueTau    = 0.10;      //s
+            type             = "tail";
+            direction        = "ccw";
+            numBlades        = 4;
+            pivot[]          = {0.00, -6.98, -0.075};
+            rotation[]       = {0.00, 90.00,  0.000};
+            mastLength       = -0.87;     //m
+            gearRatio        = 14.90;
+            torqueTau        = 0.10;      //s
 
-            bladeRadius  = 1.402;     //m
-            bladeChord   = 0.253;     //m
-            bladeMass    = 5.131;     //kg
+            bladeRadius      = 1.402;     //m
+            bladeChord       = 0.253;     //m
+            bladeMass        = 5.131;     //kg
 
             //The tail disc does not tilt - pedal changes its pitch, not its plane.
-            pitchFlapMin = 0.0;
-            pitchFlapMid = 0.0;
-            pitchFlapMax = 0.0;
-            rollFlapMin  = 0.0;
-            rollFlapMid  = 0.0;
-            rollFlapMax  = 0.0;
+            pitchFlapMin     = 0.0;
+            pitchFlapMid     = 0.0;
+            pitchFlapMax     = 0.0;
+            rollFlapMin      = 0.0;
+            rollFlapMid      = 0.0;
+            rollFlapMax      = 0.0;
 
             coneAngle        = 0.0;
             flapBackRollMax  = 0.0;
             flapBackPitchMax = 0.0;
-            rollGain         = 0.0;
-            pitchGain        = 0.0;
+            rollLiftCoef     = 0.0;
+            pitchLiftCoef    = 0.0;
             gndEffValue      = 1.0;
             reacTqScalar     = 0.25;
+            autoTorque       = 0.0;
 
             //-----------Pedal----0.00---10.29---20.58---36.01---46.30---51.44---61.73---66.88---72.02
             liftCoefTable[] = {
                          {"A/S", 0.00,  10.29,  20.58,  36.01,  46.30,  51.44,  61.73,  66.88,  72.02}
-                        ,{-1.00, 0.5336, 0.5865, 0.6331, 0.6946, 0.7314, 0.7488, 0.7820, 0.7978, 0.8131}
-                        ,{-0.50, 0.3335, 0.3666, 0.3957, 0.4341, 0.4571, 0.4680, 0.4887, 0.4986, 0.5082}
+                        ,{-1.00, 2.1344, 2.3460, 2.5324, 2.7784, 2.9256, 2.9952, 3.1280, 3.1912, 3.2524}
+                        ,{-0.60, 0.1921, 0.2111, 0.2279, 0.2501, 0.2633, 0.2696, 0.2815, 0.2872, 0.2927}
                         ,{ 0.00, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000}
-                        ,{ 0.50,-0.1868,-0.2053,-0.2216,-0.2431,-0.2560,-0.2621,-0.2737,-0.2792,-0.2846}
-                        ,{ 1.00,-0.2668,-0.2932,-0.3165,-0.3473,-0.3657,-0.3744,-0.3910,-0.3989,-0.4066}
+                        ,{ 0.60,-0.1921,-0.2111,-0.2279,-0.2501,-0.2633,-0.2696,-0.2815,-0.2872,-0.2927}
+                        ,{ 1.00,-2.1344,-2.3460,-2.5324,-2.7784,-2.9256,-2.9952,-3.1280,-3.1912,-3.2524}
                         };
             //-----------Pedal----0.00---10.29---20.58---36.01---46.30---51.44---61.73---66.88---72.02
             dragCoefTable[] = {
                          {"A/S", 0.00,  10.29,  20.58,  36.01,  46.30,  51.44,  61.73,  66.88,  72.02}
-                        ,{-1.00, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110}
-                        ,{ 0.00, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110}
-                        ,{ 1.00, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110, 0.0110}
+                        ,{-1.00, 0.1200, 0.1200, 0.1200, 0.1200, 0.1200, 0.1200, 0.1200, 0.1200, 0.1200}
+                        ,{-0.60, 0.0226, 0.0226, 0.0226, 0.0226, 0.0226, 0.0226, 0.0226, 0.0226, 0.0226}
+                        ,{ 0.00, 0.0130, 0.0130, 0.0130, 0.0130, 0.0130, 0.0130, 0.0130, 0.0130, 0.0130}
+                        ,{ 0.60, 0.0122, 0.0122, 0.0122, 0.0122, 0.0122, 0.0122, 0.0122, 0.0122, 0.0122}
+                        ,{ 1.00, 0.0040, 0.0040, 0.0040, 0.0040, 0.0040, 0.0040, 0.0040, 0.0040, 0.0040}
                         };
         };
     };

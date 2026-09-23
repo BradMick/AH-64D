@@ -4,11 +4,10 @@
     //FCR
     emptyMassFCR      = 6609; //kg
     emptyMomFCR       = 34245.000;   //-> 204.00 in
-    //emptyCoMFCR[]     = {0.0, -1.121, 0.0};     //m
+
     //Non-FCR
     emptyMassNonFCR   = 6314; //kg
     emptyMomNonFCR    = 32877.000;   //-> 205.00 in
-    //emptyCoMNonFCR[]  = {0.0, -1.117, 0.0};     //m
 
     //Maximum gross mass - bounds the fixed test weight
     maxGrossMass      = 10433; //kg, 23,000 lb
@@ -17,7 +16,9 @@
     fsDatum             = 6.4;      //m, station 0 reference
     fwdCgLimit          = 1.295;    //m, 201 in
     aftCgLimit          = 1.142;    //m, 207 in
-    comCorrection[]     = {0.0, 0.0, -0.5};
+    comCorrection[]     = {0.0, 0.0, 0.224};
+    //Casual mode center of mass
+    casualModeCom[]     = {0.0, 2.06, -0.075};
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Indexed mass items ///////////////////////////////////////////////////////////////////////
