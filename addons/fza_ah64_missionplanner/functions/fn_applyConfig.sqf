@@ -55,12 +55,11 @@ if !(_heli isKindOf "Helicopter") exitWith {false};
     private _targetFuelKg = _settings getVariable ["fuel", 0];
     private _targetFuelKgClamped = _targetFuelKg max 0;
 
-    private _sfmPlusCfg = configOf _heli >> "BMKHS_HeliSim";
     private _ctrEnabled = [0, 1] select _iafsInstalled;
     private _tankCapacityKg =
-        getNumber (_sfmPlusCfg >> "fuelTank1Max") +
-        getNumber (_sfmPlusCfg >> "fuelTank3Max") +
-        (_ctrEnabled * getNumber (_sfmPlusCfg >> "fuelTank2Max"));
+        (_heli getVariable "bmkhs_fwdTankMax") +
+        (_heli getVariable "bmkhs_aftTankMax") +
+        (_ctrEnabled * (_heli getVariable "bmkhs_ctrTankMax"));
 
     private _targetFuelPct = if (_tankCapacityKg > 0) then { (_targetFuelKgClamped / _tankCapacityKg) max 0 min 1 } else { fuel _heli };
 

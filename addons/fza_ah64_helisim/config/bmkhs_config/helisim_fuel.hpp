@@ -34,6 +34,8 @@
     //                "main"     - a primary cell an engine can draw from
     //                "xfer"     - gravity/pump feeds the mains, engines never draw directly
     //              An aircraft with four mains gives all four role = "main".
+    //  Outputs   - xfer tanks only: which tanks it feeds, each with its own flowingVar. Omit
+    //              it and the cell feeds every main with no flags.
     //A tank leaks when the hitpoint claiming role "fuelTanks" at its index is damaged;
     //see helisim_hitpoints.hpp. A tank with no such hitpoint cannot leak.
 
@@ -57,6 +59,13 @@
     //the crew selected, so this maps the cockpit's labels onto the mains above. Core never
     //interprets the labels - "FWD"/"AFT" here could equally be "LH"/"RH".
     xferDestinations[] = {"FWD", "AFT"};
+    //Flag that reads true while the pump is filling each main, in the same order.
+    xferFlowingVars[]  = {"xferToFwdFlowing", "xferToAftFlowing"};
+
+    //FLOW FLAGS. Any path fuel moves along may name a variable - Core prefixes bmkhs_ - that
+    //reads true while fuel is moving on it. The name is the aircraft's; Core never learns what
+    //the path is. Paths sharing a name OR together, which is how two aux tanks light one
+    //indicator. A path with no flowingVar still moves fuel and reports nothing.
 
     numFuelTanks = 3;
     class FuelTanks {
@@ -75,6 +84,10 @@
             lowFuelKg = 0.0;
             removable = 1;
             role      = "xfer";
+            class Outputs {
+                class ToFwd { tank = "fwdTank"; flowingVar = "iafsFwdFlowing"; };
+                class ToAft { tank = "aftTank"; flowingVar = "iafsAftFlowing"; };
+            };
         };
         class FuelTank03 {
             variableName = "aftTank";
@@ -96,10 +109,11 @@
     //              pressurised air path, declared here rather than coded.
     //  group     - transfer switch that arms this tank. The AH-64 gangs its tanks left and
     //              right; an aircraft with one switch puts every tank in the same group.
+    //  flowingVar - flag while this tank is transferring; the AH-64 shares one per side.
     numAuxTanks = 4;
     class AuxTanks {
-        class AuxTank01 { variableName = "stn1Tank"; station = 1; capacity = 699.0; feedsTank = "fwdTank"; requires = "stn2Tank"; group = "L"; };
-        class AuxTank02 { variableName = "stn2Tank"; station = 2; capacity = 699.0; feedsTank = "fwdTank"; requires = "";         group = "L"; };
-        class AuxTank03 { variableName = "stn3Tank"; station = 3; capacity = 699.0; feedsTank = "aftTank"; requires = "";         group = "R"; };
-        class AuxTank04 { variableName = "stn4Tank"; station = 4; capacity = 699.0; feedsTank = "aftTank"; requires = "stn3Tank"; group = "R"; };
+        class AuxTank01 { variableName = "stn1Tank"; station = 1; capacity = 699.0; feedsTank = "fwdTank"; requires = "stn2Tank"; group = "L"; flowingVar = "lAuxFlowing"; };
+        class AuxTank02 { variableName = "stn2Tank"; station = 2; capacity = 699.0; feedsTank = "fwdTank"; requires = "";         group = "L"; flowingVar = "lAuxFlowing"; };
+        class AuxTank03 { variableName = "stn3Tank"; station = 3; capacity = 699.0; feedsTank = "aftTank"; requires = "";         group = "R"; flowingVar = "rAuxFlowing"; };
+        class AuxTank04 { variableName = "stn4Tank"; station = 4; capacity = 699.0; feedsTank = "aftTank"; requires = "stn3Tank"; group = "R"; flowingVar = "rAuxFlowing"; };
     };

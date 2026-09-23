@@ -69,10 +69,13 @@ _heli setUserMFDText [MFD_INDEX_OFFSET(MFD_TEXT_IND_FUEL_ENDR_TOT), ["", _totalE
 // FWD/AFT cell quantities (lbs) used by HPP threshold checks for low/empty states
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_FWD_LOW), _forwardCellWeight];
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_AFT_LOW), _aftCellWeight];
-_heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_INTERCELL_XFER_ACTIVE), BOOLTONUM(_heli getVariable ["bmkhs_intercellTransferActive", false])];
+// XFER pump flags, declared per destination in helisim_fuel.hpp
+private _xferToFwd       = _heli getVariable "bmkhs_xferToFwdFlowing";
+private _xferToAft       = _heli getVariable "bmkhs_xferToAftFlowing";
+private _intercellActive = _xferToFwd || _xferToAft;
+_heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_INTERCELL_XFER_ACTIVE), BOOLTONUM(_intercellActive)];
 private _intercellPhase = floor (CBA_missionTime * 6) % 4;
-private _intercellDir = _heli getVariable ["bmkhs_intercellTransferDir", 0];
-if (_intercellDir == 2) then {
+if (_xferToFwd) then {
     _intercellPhase = _intercellPhase + 4;
 };
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_INTERCELL_XFER_PHASE), _intercellPhase];
@@ -112,7 +115,6 @@ _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_ENG1_LINE_NEW), BOOLTONUM(_
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_ENG2_LINE_NEW), BOOLTONUM(_eng2LineNew)];
 
 // Intercell: flash when transfer becomes active
-private _intercellActive = _heli getVariable ["bmkhs_intercellTransferActive", false];
 if (_intercellActive && !(_heli getVariable ["bmkhs_prevIntercellActive", _intercellActive])) then {
     _heli setVariable ["bmkhs_intercellLineOpenTime", CBA_missionTime];
 };
@@ -120,11 +122,8 @@ _heli setVariable ["bmkhs_prevIntercellActive", _intercellActive];
 private _intercellLineNew = _intercellActive && ((CBA_missionTime - (_heli getVariable ["bmkhs_intercellLineOpenTime", -99])) < 3);
 _heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_INTERCELL_LINE_NEW), BOOLTONUM(_intercellLineNew)];
 
-// Intercell flowing: transfer active with source cell having fuel
-private _intercellXferDir = _heli getVariable ["bmkhs_intercellTransferDir", 0];
-private _intercellHasSourceFuel = if (_intercellXferDir == 0) then { _forwardCellWeight > 0 } else { _aftCellWeight > 0 };
-private _intercellFlowing = _intercellActive && _intercellHasSourceFuel;
-_heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_INTERCELL_FLOWING), BOOLTONUM(_intercellFlowing)];
+// Intercell flowing: a flag is only set while fuel actually moved, so the source had fuel
+_heli setUserMFDValue [MFD_INDEX_OFFSET(MFD_IND_FUEL_INTERCELL_FLOWING), BOOLTONUM(_intercellActive)];
 
 // IAFS: flash when centre tank transfer turns on
 if (_IAFSOn && !(_heli getVariable ["bmkhs_prevIAFSOn", _IAFSOn])) then {
