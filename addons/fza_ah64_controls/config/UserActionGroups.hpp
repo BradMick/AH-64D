@@ -44,20 +44,4 @@ class UserActionGroups {
             #include "\fza_ah64_controls\headers\controls.hpp"
         };
     };
-
-    class fza_ah64_input
-    {
-        name = "$STR_FZA_AH64_INPUT";
-        group[] = {
-            //HOTAS & Keyboard Cylic
-            //Mouse Cyclic
-            //fza_ah64_mouseCyclicForward,
-            //fza_ah64_mouseCyclicBackward,
-            //fza_ah64_mouseCyclicLeft,
-            //fza_ah64_mouseCyclicRight,
-            //HOTAS & Keyboard Collective
-            //Keyboard Collective
-            "fza_ah64_ctrlVisToggle"
-        };
-    };
 };

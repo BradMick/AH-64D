@@ -285,9 +285,6 @@ if (_value) then {
         case "fza_ah64_collectiveEmergJett": {
             _heli spawn fza_weapons_fnc_jettisonAll;
         };
-        case "fza_ah64_ctrlVisToggle": {
-            [_heli] call bmkhs_fnc_ctrlVisToggle;
-        };
     };
 };
 

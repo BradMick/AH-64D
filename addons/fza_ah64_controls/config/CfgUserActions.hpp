@@ -42,7 +42,6 @@ class CfgUserActions {
     CfgUserActionDef(fza_ah64_SensorSelect_DVO,"$STR_FZA_AH64_SENSOR_SELECT_DVO","$STR_FZA_AH64_SENSOR_SELECT_DVO_INFO");
     CfgUserActionDef(fza_ah64_tadsLHGLmc,"$STR_FZA_AH64_TADS_LHG_LMC","$STR_FZA_AH64_TADS_LHG_LMC_INFO");
     CfgUserActionDef(fza_ah64_collectiveEmergJett,"$STR_FZA_AH64_COLLECTIVE_EMERG_JETT","$STR_FZA_AH64_COLLECTIVE_EMERG_JETT_INFO");
-    CfgUserActionDef(fza_ah64_ctrlVisToggle,"$STR_FZA_AH64_CTRLVIS_TOGGLE","$STR_FZA_AH64_CTRLVIS_TOGGLE_INFO");
 
     #include "\fza_ah64_controls\headers\controls.hpp"
 };

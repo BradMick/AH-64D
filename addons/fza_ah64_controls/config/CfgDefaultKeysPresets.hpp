@@ -41,7 +41,6 @@ class CfgDefaultKeysPresets {
             fza_ah64_SensorSelect_DTV[] = {0x2A130031};
             fza_ah64_SensorSelect_DVO[] = {0x38130031};
             fza_ah64_collectiveEmergJett[] = {};
-            fza_ah64_ctrlVisToggle[]  = {0x1D130017};  // Ctrl+I (unassigned by default controls)
 
         };
     };
