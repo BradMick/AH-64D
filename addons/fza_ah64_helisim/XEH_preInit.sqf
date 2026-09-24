@@ -6,7 +6,11 @@
 //than surging with it. An axis-bound lever ignores this and tracks the player's hand.
 #define PWRLVR_CLICK_SPEED 0.125
 
-bmkhs_notifyHandler = {
+//This pack's airframe, from its own CfgPatches entry. Every installed pack schedules and
+//hears only its own aircraft, so two packs loaded together never touch each other's.
+fza_ah64_helisim_baseClass = getText (configFile >> "CfgPatches" >> "fza_ah64_helisim" >> "bmkhsBaseClass");
+
+[fza_ah64_helisim_baseClass, {
     params ["_heli", "_event", ["_data", []]];
 
     switch (_event) do {
@@ -65,18 +69,7 @@ bmkhs_notifyHandler = {
         //only ever knew the engine number, so it could not animate the right way.
         case "startSwitchPressed": {};
     };
-};
-
-//Every airframe any installed pack drives. A pack declares bmkhsBaseClass in its own
-//CfgPatches entry and touches no SQF - and two packs both get scheduled, rather than
-//whichever loaded first winning.
-bmkhs_packBaseClasses = [];
-{
-    private _cls = getText (_x >> "bmkhsBaseClass");
-    if (_cls != "" && {!(_cls in bmkhs_packBaseClasses)}) then {
-        bmkhs_packBaseClasses pushBack _cls;
-    };
-} forEach ("isClass _x" configClasses (configFile >> "CfgPatches"));
+}] call bmkhs_fnc_utilNotifyRegister;
 
 //The pack drives Core. Nothing else calls into HeliSim, so a second airframe ships its
 //own copy of this and needs no cockpit addon to schedule anything for it.
@@ -90,8 +83,5 @@ fza_ah64_helisim_frameHandler = addMissionEventHandler ["EachFrame", {
         if (alive _x && {_x getVariable ["bmkhs_initialised", false]}) then {
             [_x] call fza_ah64_helisim_fnc_perFrame;
         };
-    } forEach (vehicles select {
-        private _veh = _x;
-        local _veh && {bmkhs_packBaseClasses findIf {_veh isKindOf _x} > -1}
-    });
+    } forEach (vehicles select {local _x && {_x isKindOf fza_ah64_helisim_baseClass}});
 }];
