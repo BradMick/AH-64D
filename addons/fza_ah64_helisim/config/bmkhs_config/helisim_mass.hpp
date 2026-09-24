@@ -1,13 +1,20 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Mass and Balance /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
-    //FCR
-    emptyMassFCR      = 6609; //kg
-    emptyMomFCR       = 34245.000;   //-> 204.00 in
+    //Empty airframe, without the FCR
+    emptyMass         = 6314; //kg
+    emptyMom          = 32877.000;   //-> 205.00 in
 
-    //Non-FCR
-    emptyMassNonFCR   = 6314; //kg
-    emptyMomNonFCR    = 32877.000;   //-> 205.00 in
+    //Fitted equipment that changes the empty mass, each selected by one of the aircraft's own
+    //animations at a given phase. The first that matches applies.
+    class EmptyMassVariants {
+        class FCR {
+            animation = "fcr_enable";
+            phase     = 1;
+            mass      = 6609;        //kg
+            moment    = 34245.000;   //-> 204.00 in
+        };
+    };
 
     //Maximum gross mass - bounds the fixed test weight
     maxGrossMass      = 10433; //kg, 23,000 lb
